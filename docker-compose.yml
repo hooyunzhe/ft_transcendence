@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+    nestjs:
+      container_name: backend
+      build: ./backend
+      image: backend-nestjs
+      restart: on-failure
+      ports:
+        - "3000:3000"
