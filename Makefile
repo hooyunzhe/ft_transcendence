@@ -1,3 +1,4 @@
+DOCKER	= docker
 COMPOSE	= docker-compose
 
 UP				= up
@@ -17,6 +18,7 @@ clean:
 
 fclean:
 	$(COMPOSE) $(DOWN) $(CLEAN_IMAGES) $(CLEAN_ORPHANS) $(CLEAN_VOLUMES)
+	$(DOCKER) system prune -f
 
 re:	fclean all
 
