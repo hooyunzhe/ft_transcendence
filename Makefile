@@ -11,7 +11,7 @@ CLEAN_ORPHANS	= --remove-orphans
 CLEAN_VOLUMES	= --volumes
 
 all:
-	$(COMPOSE) $(UP) $(DETACHED) $(BUILD_IMAGES)
+	$(COMPOSE) $(UP) $(BUILD_IMAGES)
 
 clean:
 	$(COMPOSE) $(DOWN) $(CLEAN_IMAGES) $(CLEAN_ORPHANS)
