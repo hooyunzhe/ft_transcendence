@@ -7,6 +7,6 @@ import { MatchHistory } from './entities/match_history.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([MatchHistory])],
   controllers: [MatchHistoryController],
-  providers: [MatchHistoryService]
+  providers: [MatchHistoryService],
 })
 export class MatchHistoryModule {}
