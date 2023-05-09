@@ -18,20 +18,15 @@ export class MatchHistoryController {
     return this.matchHistoryService.findAllMatch();
   }
 
-  // @Get(':uid')
-  // getOneMatch(@Param('uid', ParseIntPipe) uid: number): Promise<MatchHistory> {
-  //   return this.matchHistoryService.findOneMatch(uid);
-  // }
-
-  @Get(':uid')
-  getPlayerMatch(@Param('player_uid', ParseIntPipe) playerUid: number): Promise<MatchHistory[]> {
-    return this.matchHistoryService.findPlayerMatch(playerUid);
+  @Get('player')
+  getPlayerMatch(@Query('player_uid', ParseIntPipe) player_uid: number): Promise<MatchHistory[]> {
+    return this.matchHistoryService.findPlayerMatch(player_uid);
   }
 
-  // @Put(':uid')
-  // update(@Param('uid', ParseIntPipe) uid: number, @Body() updateMatchHistoryDto: UpdateMatchHistoryDto): Promise<void> {
-  //   return this.matchHistoryService.update(uid, updateMatchHistoryDto);
-  // }
+  @Get(':uid')
+  getOneMatch(@Param('uid', ParseIntPipe) uid: number): Promise<MatchHistory> {
+    return this.matchHistoryService.findOneMatch(uid);
+  }
 
   @Delete(':id')
   removeUser(@Param('uid', ParseIntPipe) uid: number) {
