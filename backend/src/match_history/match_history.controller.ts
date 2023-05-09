@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from '@nestjs/common';
 import { MatchHistoryService } from './match_history.service';
 import { CreateMatchHistoryDto } from './dto/create-match_history.dto';
 import { UpdateMatchHistoryDto } from './dto/update-match_history.dto';
@@ -18,9 +18,14 @@ export class MatchHistoryController {
     return this.matchHistoryService.findAllMatch();
   }
 
+  // @Get(':uid')
+  // getOneMatch(@Param('uid', ParseIntPipe) uid: number): Promise<MatchHistory> {
+  //   return this.matchHistoryService.findOneMatch(uid);
+  // }
+
   @Get(':uid')
-  getOneMatch(@Param('uid', ParseIntPipe) uid: number): Promise<MatchHistory> {
-    return this.matchHistoryService.findOneMatch(uid);
+  getPlayerMatch(@Param('player_uid', ParseIntPipe) playerUid: number): Promise<MatchHistory[]> {
+    return this.matchHistoryService.findPlayerMatch(playerUid);
   }
 
   // @Put(':uid')

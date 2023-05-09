@@ -20,13 +20,22 @@ export class MatchHistoryService {
     return await this.matchHistoryRepository.findOneBy({uid});
   }
 
+  async findPlayerMatch(uid: number): Promise<MatchHistory[] | null> {
+    const matches = await this.matchHistoryRepository.find({
+      where: [
+        { p1_uid: uid },
+        { p2_uid: uid },
+      ]
+    });
+    return await matches;
+  }
   async createMatchHistory(createMatchHistoryDto: CreateMatchHistoryDto) {
     await this.matchHistoryRepository.save(createMatchHistoryDto);
   }
   async updateMatchHistory(uid: number, updateMatchHistoryDto: UpdateMatchHistoryDto): Promise<void> {
     await this.matchHistoryRepository.update(uid, updateMatchHistoryDto);
   }
-  
+
 	async removeMatchHistory(uid: number): Promise<void> {
 		await this.matchHistoryRepository.delete(uid);
 	}
