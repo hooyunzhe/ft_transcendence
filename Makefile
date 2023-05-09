@@ -22,4 +22,4 @@ fclean:
 
 re:	fclean hans
 
-.PHONY:	all clean fclean re r
+.PHONY:	all clean fclean re
