@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../users/entities/user.entity';
 
 @Module({
   imports: [
@@ -11,7 +10,7 @@ import { User } from '../users/entities/user.entity';
       username: 'admin',
       password: 'admin',
       database: 'ft_transcendence',
-      entities: [User],
+      autoLoadEntities: true,
       synchronize: true,
     }),
   ],

@@ -3,45 +3,44 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   ParseIntPipe,
-  Query,
 } from '@nestjs/common';
 import { MatchHistoryService } from './match_history.service';
-import { CreateMatchHistoryDto } from './dto/create-match_history.dto';
-import { UpdateMatchHistoryDto } from './dto/update-match_history.dto';
+import { CreateMatchHistoryDto } from './dto/create_match_history.dto';
 import { MatchHistory } from './entities/match_history.entity';
 
-@Controller('matchhistory')
+@Controller('match_history')
 export class MatchHistoryController {
   constructor(private readonly matchHistoryService: MatchHistoryService) {}
 
   @Post()
-  createMatchHistory(@Body() createMatchHistoryDto: CreateMatchHistoryDto) {
-    return this.matchHistoryService.createMatchHistory(createMatchHistoryDto);
+  create(@Body() createMatchHistoryDto: CreateMatchHistoryDto): Promise<void> {
+    return this.matchHistoryService.create(createMatchHistoryDto);
   }
 
   @Get()
-  getMatches() {
-    return this.matchHistoryService.findAllMatch();
-  }
-
-  @Get('player')
-  getPlayerMatch(
-    @Query('player_uid', ParseIntPipe) player_uid: number,
-  ): Promise<MatchHistory[]> {
-    return this.matchHistoryService.findPlayerMatch(player_uid);
+  findAll(): Promise<MatchHistory[]> {
+    return this.matchHistoryService.findAll();
   }
 
   @Get(':uid')
-  getOneMatch(@Param('uid', ParseIntPipe) uid: number): Promise<MatchHistory> {
-    return this.matchHistoryService.findOneMatch(uid);
+  findOne(
+    @Param('uid', ParseIntPipe) uid: number,
+  ): Promise<MatchHistory | null> {
+    return this.matchHistoryService.findOne(uid);
   }
 
-  @Delete(':id')
-  removeUser(@Param('uid', ParseIntPipe) uid: number) {
-    return this.matchHistoryService.removeMatchHistory(uid);
+  @Get('player/:uid')
+  findAllWithPlayer(
+    @Param('uid', ParseIntPipe) uid: number,
+  ): Promise<MatchHistory[]> {
+    return this.matchHistoryService.findAllWithPlayer(uid);
+  }
+
+  @Delete(':uid')
+  remove(@Param('uid', ParseIntPipe) uid: number): Promise<void> {
+    return this.matchHistoryService.remove(uid);
   }
 }

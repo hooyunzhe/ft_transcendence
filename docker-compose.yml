@@ -5,6 +5,8 @@ services:
       container_name: backend
       build: ./backend
       image: backend-nestjs
+      depends_on:
+        - postgres
       restart: on-failure
       volumes:
         - ./backend:/ft_transcendence-nestjs
