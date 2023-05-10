@@ -15,7 +15,7 @@ import { UpdateUserDto } from './dto/update_user.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get()
   getUsers(): Promise<User[]> {
