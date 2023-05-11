@@ -14,13 +14,15 @@ import { Friend } from './entities/friend.entity';
 
 @Controller('friends')
 export class FriendsController {
-  constructor(private readonly friendsService: FriendsService) {}
+  constructor(private readonly friendsService: FriendsService) { }
 
   @Post()
   async create(
     @Body('sender') senderFriendDto: CreateFriendDto,
     @Body('receiver') receiverFriendDto: CreateFriendDto,
   ): Promise<void> {
+    console.log(senderFriendDto);
+    console.log(receiverFriendDto);
     Promise.all([
       this.friendsService.create(senderFriendDto),
       this.friendsService.create(receiverFriendDto),

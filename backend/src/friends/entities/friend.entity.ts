@@ -1,5 +1,11 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { FriendStatus } from '../friends.enum';
+
+export enum FriendStatus {
+  Friend = "friend",
+  Invited = "invited",
+  Pending = "pending",
+  Blocked = "blocked",
+}
 
 @Entity()
 export class Friend {
@@ -7,10 +13,10 @@ export class Friend {
   uid: number;
 
   @Column()
-  p1_uid: string;
+  p1_uid: number;
 
   @Column()
-  p2_uid: string;
+  p2_uid: number;
 
   @Column()
   status: FriendStatus;
