@@ -28,7 +28,7 @@ export class AchievementsController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Achievement | null> {
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<Achievement> {
     return this.achievementsService.findOne(id);
   }
 

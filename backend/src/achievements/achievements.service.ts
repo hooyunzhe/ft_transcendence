@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreateAchievementDto } from './dto/create-achievement.dto';
 import { Achievement } from './entities/achievement.entity';
 
@@ -10,6 +10,7 @@ export class AchievementsService {
     @InjectRepository(Achievement)
     private achievementRepository: Repository<Achievement>,
   ) {}
+
   async create(createAchievementDto: CreateAchievementDto): Promise<void> {
     await this.achievementRepository.save(createAchievementDto);
   }

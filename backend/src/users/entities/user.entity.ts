@@ -1,8 +1,10 @@
+import { Achievement } from 'src/achievements/entities/achievement.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  ManyToMany,
 } from 'typeorm';
 
 @Entity()
@@ -21,4 +23,7 @@ export class User {
 
   @Column({ default: 'offline' })
   status: string;
+
+  @ManyToMany(() => Achievement, (achievement) => achievement.user)
+  achievement: Achievement[];
 }
