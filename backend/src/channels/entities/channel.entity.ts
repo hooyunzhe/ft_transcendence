@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { UserChannel } from '../../channel_users/entities/channel_user.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum ChannelType {
   Public = 'public',
@@ -20,4 +21,7 @@ export class Channel {
 
   @Column({ default: null })
   hash: string;
+
+  @OneToMany(() => UserChannel, (userChannel) => userChannel.channel)
+  userChannels: UserChannel[];
 }

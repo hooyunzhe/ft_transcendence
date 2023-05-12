@@ -16,6 +16,17 @@ export class ChannelsService {
     await this.channelsRepository.save(createChannelDto);
   }
 
+  async addUser(id: number, user_id: number): Promise<void> {
+    let currentChannel = await this.channelsRepository.findOneBy({ id });
+    let updatedUserChannels = {
+      channel_id: id,
+      user_id: user_id,
+    };
+    await this.channelsRepository.update(id, {
+      userChannels: [...currentChannel.userChannels, updatedUserChannels],
+    });
+  }
+
   async findAll(): Promise<Channel[]> {
     return await this.channelsRepository.find();
   }
