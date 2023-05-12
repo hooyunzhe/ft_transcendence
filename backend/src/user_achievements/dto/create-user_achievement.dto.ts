@@ -1,4 +1,4 @@
 export class CreateUserAchievementDto {
-  user_id: string;
-  achievement_id: string;
+  user_id: number;
+  achievement_id: number;
 }

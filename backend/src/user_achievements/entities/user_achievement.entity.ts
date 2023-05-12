@@ -6,8 +6,8 @@ export class UserAchievement {
   id: number;
 
   @Column()
-  user_id: string;
+  user_id: number;
 
   @Column()
-  achievement_id: string;
+  achievement_id: number;
 }
