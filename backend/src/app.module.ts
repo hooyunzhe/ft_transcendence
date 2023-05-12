@@ -5,9 +5,16 @@ import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { MatchHistoryModule } from './match_history/match_history.module';
 import { AchievementsModule } from './achievements/achievements.module';
+import { UserAchievementsModule } from './user_achievements/user_achievements.module';
 
 @Module({
-  imports: [DatabaseModule, UsersModule, MatchHistoryModule, AchievementsModule],
+  imports: [
+    DatabaseModule,
+    UsersModule,
+    MatchHistoryModule,
+    AchievementsModule,
+    UserAchievementsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

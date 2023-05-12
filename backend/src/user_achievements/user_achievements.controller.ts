@@ -10,10 +10,10 @@ import {
 } from '@nestjs/common';
 import { UserAchievementsService } from './user_achievements.service';
 import { CreateUserAchievementDto } from './dto/create-user_achievement.dto';
-import { UpdateUserAchievementDto } from './dto/update-user_achievement.dto';
+// import { UpdateUserAchievementDto } from './dto/update-user_achievement.dto';
 import { UserAchievement } from './entities/user_achievement.entity';
 
-@Controller('user-achievements')
+@Controller('user_achievements')
 export class UserAchievementsController {
   constructor(
     private readonly userAchievementsService: UserAchievementsService,
