@@ -1,10 +1,8 @@
-import { UserChannel } from 'src/channel_users/entities/channel_user.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  OneToMany,
 } from 'typeorm';
 
 @Entity()
@@ -23,7 +21,4 @@ export class User {
 
   @Column({ default: 'offline' })
   status: string;
-
-  @OneToMany(() => UserChannel, (userChannel) => userChannel.user)
-  userChannels: UserChannel[];
 }

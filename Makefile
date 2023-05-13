@@ -20,6 +20,6 @@ fclean:
 	$(COMPOSE) $(DOWN) $(CLEAN_IMAGES) $(CLEAN_ORPHANS) $(CLEAN_VOLUMES)
 	$(DOCKER) system prune -f
 
-re:	fclean hans
+re:	fclean all
 
 .PHONY:	all clean fclean re
