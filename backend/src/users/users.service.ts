@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create_user.dto';
 import { UpdateUserDto } from './dto/update_user.dto';
 import { User } from './entities/user.entity';
+import { Channel } from 'src/channels/entities/channel.entity';
 
 @Injectable()
 export class UsersService {
@@ -20,15 +21,28 @@ export class UsersService {
     return await this.usersRepository.find();
   }
 
-  async findOne(uid: number): Promise<User | null> {
-    return await this.usersRepository.findOneBy({ uid });
+  async findOne(id: number): Promise<User | null> {
+    return await this.usersRepository.findOneBy({ id });
   }
 
-  async update(uid: number, updateUserDto: UpdateUserDto): Promise<void> {
-    await this.usersRepository.update(uid, updateUserDto);
+  async getChannels(id: number): Promise<Channel[]> {
+    let currentUser = await this.usersRepository.findOne({
+      relations: {
+        channelMembers: true,
+      },
+      where: { id },
+    });
+
+    return currentUser.channelMembers.map(
+      (channelMember) => channelMember.channel,
+    );
   }
 
-  async remove(uid: number): Promise<void> {
-    await this.usersRepository.delete(uid);
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<void> {
+    await this.usersRepository.update(id, updateUserDto);
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.usersRepository.delete(id);
   }
 }

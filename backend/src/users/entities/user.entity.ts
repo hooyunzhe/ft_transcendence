@@ -3,12 +3,14 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { ChannelMember } from 'src/channel_members/entities/channel_member.entity';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  uid: number;
+  id: number;
 
   @Column()
   intra_uid: string;
@@ -21,4 +23,7 @@ export class User {
 
   @Column({ default: 'offline' })
   status: string;
+
+  @OneToMany(() => ChannelMember, (channelMember) => channelMember.user)
+  channelMembers: ChannelMember[];
 }
