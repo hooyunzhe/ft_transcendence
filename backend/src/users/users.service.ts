@@ -24,6 +24,15 @@ export class UsersService {
     return await this.usersRepository.findOneBy({ id });
   }
 
+  async findAchieved(id: number): Promise<User[]> {
+    return await this.usersRepository.find({
+      relations: {
+        userAchievements: true,
+      },
+      where: { id },
+    });
+  }
+
   async update(id: number, updateUserDto: UpdateUserDto): Promise<void> {
     await this.usersRepository.update(id, updateUserDto);
   }

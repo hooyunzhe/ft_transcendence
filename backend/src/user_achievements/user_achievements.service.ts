@@ -22,12 +22,15 @@ export class UserAchievementsService {
   ) {}
 
   async create(user_id: number, achievement_id: number): Promise<void> {
-    let newUserAchievement = this.userAchievementRepository.create({
-      user: await this.userRepository.findOneBy({ id: user_id }),
-      achievement: await this.achievementRepository.findOneBy({
-        id: achievement_id,
-      }),
+    let user = await this.userRepository.findOneBy({ id: user_id });
+    let achievement = await this.achievementRepository.findOneBy({
+      id: achievement_id,
     });
+    let newUserAchievement = this.userAchievementRepository.create({
+      user: user,
+      achievement: achievement,
+    });
+
     await this.userAchievementRepository.save(newUserAchievement);
   }
 

@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { Achievement } from './entities/achievement.entity';
 import { AchievementsService } from './achievements.service';
@@ -32,6 +33,10 @@ export class AchievementsController {
     return this.achievementsService.findOne(id);
   }
 
+  @Get(':id/achievers')
+  findAchievers(@Param('id') id: number): Promise<Achievement[]> {
+    return this.achievementsService.findAchievers(id);
+  }
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.achievementsService.remove(id);

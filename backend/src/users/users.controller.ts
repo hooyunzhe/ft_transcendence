@@ -12,6 +12,7 @@ import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create_user.dto';
 import { UpdateUserDto } from './dto/update_user.dto';
+import { Achievement } from 'src/achievements/entities/achievement.entity';
 
 @Controller('users')
 export class UsersController {
@@ -32,6 +33,10 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
+  @Get(':id/achieved')
+  findAchieved(@Param('id') id: number): Promise<User[]> {
+    return this.usersService.findAchieved(id);
+  }
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,

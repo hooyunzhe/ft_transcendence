@@ -2,11 +2,9 @@ import { AchievementsModule } from 'src/achievements/achievements.module';
 import { Achievement } from 'src/achievements/entities/achievement.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
-  Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -18,9 +16,13 @@ export class UserAchievement {
   @CreateDateColumn()
   creationDate: Date;
 
-  @ManyToOne(() => User, (user) => user.userAchievements)
+  @ManyToOne(() => User, (user) => user.userAchievements, {
+    eager: true,
+  })
   user: User;
 
-  @ManyToOne(() => Achievement, (achievement) => achievement.userAchievements)
+  @ManyToOne(() => Achievement, (achievement) => achievement.userAchievements, {
+    eager: true,
+  })
   achievement: Achievement;
 }
