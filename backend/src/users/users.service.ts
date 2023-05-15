@@ -20,15 +20,15 @@ export class UsersService {
     return await this.usersRepository.find();
   }
 
-  async findOne(uid: number): Promise<User | null> {
-    return await this.usersRepository.findOneBy({ uid });
+  async findOne(id: number): Promise<User | null> {
+    return await this.usersRepository.findOneBy({ id });
   }
 
-  async update(uid: number, updateUserDto: UpdateUserDto): Promise<void> {
-    await this.usersRepository.update(uid, updateUserDto);
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<void> {
+    await this.usersRepository.update(id, updateUserDto);
   }
 
-  async remove(uid: number): Promise<void> {
-    await this.usersRepository.delete(uid);
+  async remove(id: number): Promise<void> {
+    await this.usersRepository.delete(id);
   }
 }

@@ -32,14 +32,6 @@ export class AchievementsController {
     return this.achievementsService.findOne(id);
   }
 
-  // @Patch(':id')
-  // update(
-  //   @Param('id') id: string,
-  //   @Body() updateAchievementDto: UpdateAchievementDto,
-  // ) {
-  //   return this.achievementsService.update(+id, updateAchievementDto);
-  // }
-
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.achievementsService.remove(id);

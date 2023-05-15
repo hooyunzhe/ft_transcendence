@@ -1,3 +1,4 @@
+import { UserAchievement } from 'src/user_achievements/entities/user_achievement.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Entity,
@@ -5,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 
 @Entity()
@@ -18,7 +20,13 @@ export class Achievement {
   @Column()
   description: string;
 
-  @ManyToMany(() => User, (user) => user.achievement)
-  @JoinTable()
-  user: User[];
+  @OneToMany(
+    () => UserAchievement,
+    (userAchievement) => userAchievement.achievement,
+  )
+  userAchievements: UserAchievement[];
+
+  // @ManyToMany(() => User, (user) => user.achievement)
+  // @JoinTable()
+  // user: User[];
 }
