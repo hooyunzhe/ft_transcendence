@@ -1,4 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class MatchHistory {
@@ -20,6 +25,6 @@ export class MatchHistory {
   @Column()
   p2_score: number;
 
-  @Column()
+  @CreateDateColumn()
   date_of_creation: Date;
 }
