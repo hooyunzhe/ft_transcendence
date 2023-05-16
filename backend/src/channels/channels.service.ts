@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Channel } from './entities/channel.entity';
 import { User } from 'src/users/entities/user.entity';
+import { Message } from 'src/messages/entities/message.entity';
 
 @Injectable()
 export class ChannelsService {
@@ -34,6 +35,15 @@ export class ChannelsService {
     return currentChannel.channelMembers.map(
       (channelMember) => channelMember.user,
     );
+  }
+
+  async getMessages(id: number): Promise<Message[]> {
+    let currentChannel = await this.channelsRepository.findOne({
+      relations: { messages: true },
+      where: { id },
+    });
+
+    return currentChannel.messages;
   }
 
   async update(id: number, updateChannelDto: UpdateChannelDto): Promise<void> {

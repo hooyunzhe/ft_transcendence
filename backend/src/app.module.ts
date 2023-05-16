@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { MatchHistoryModule } from './match_history/match_history.module';
 import { ChannelsModule } from './channels/channels.module';
 import { ChannelMembersModule } from './channel_members/channel_members.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ChannelMembersModule } from './channel_members/channel_members.module';
     MatchHistoryModule,
     ChannelsModule,
     ChannelMembersModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
