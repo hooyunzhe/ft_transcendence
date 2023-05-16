@@ -3,17 +3,14 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   ParseIntPipe,
-  HttpCode,
 } from '@nestjs/common';
 import { Achievement } from './entities/achievement.entity';
 import { AchievementsService } from './achievements.service';
 import { CreateAchievementDto } from './dto/create-achievement.dto';
 import { User } from 'src/users/entities/user.entity';
-// import { UpdateAchievementDto } from './dto/update-achievement.dto';
 
 @Controller('achievements')
 export class AchievementsController {
