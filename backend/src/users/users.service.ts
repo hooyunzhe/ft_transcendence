@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create_user.dto';
 import { UpdateUserDto } from './dto/update_user.dto';
 import { User } from './entities/user.entity';
+import { Channel } from 'src/channels/entities/channel.entity';
 import { Achievement } from 'src/achievements/entities/achievement.entity';
 
 @Injectable()
@@ -25,6 +26,14 @@ export class UsersService {
     return await this.usersRepository.findOneBy({ id });
   }
 
+  async getChannels(id: number): Promise<Channel[]> {
+    let currentUser = await this.usersRepository.findOne({
+      relations: {
+        channelMembers: true,
+    
+    return currentUser.channelMembers.map(
+      (channelMember) => channelMember.channel);
+      
   async findAchieved(id: number): Promise<Achievement[]> {
     let currentUser = await this.usersRepository.findOne({
       relations: {
@@ -34,8 +43,7 @@ export class UsersService {
     });
 
     return currentUser.userAchievements.map(
-      (userAchievement) => userAchievement.achievement,
-    );
+      (userAchievement) => userAchievement.achievement);
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<void> {
