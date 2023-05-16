@@ -34,7 +34,7 @@ export class UsersController {
   }
 
   @Get(':id/achieved')
-  findAchieved(@Param('id') id: number): Promise<User[]> {
+  findAchieved(@Param('id') id: number): Promise<Achievement[]> {
     return this.usersService.findAchieved(id);
   }
   @Patch(':id')

@@ -47,7 +47,7 @@ export class UserAchievementsController {
   @Get('achievement/:achievement_id')
   getTimesAchieved(
     @Param('achievement_id', ParseIntPipe) id: number,
-  ): Promise<number> {
+  ): Promise<UserAchievement[]> {
     return this.userAchievementsService.getTimesAchieved(id);
   }
   @Delete(':id')

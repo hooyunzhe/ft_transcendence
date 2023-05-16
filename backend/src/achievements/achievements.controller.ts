@@ -12,6 +12,7 @@ import {
 import { Achievement } from './entities/achievement.entity';
 import { AchievementsService } from './achievements.service';
 import { CreateAchievementDto } from './dto/create-achievement.dto';
+import { User } from 'src/users/entities/user.entity';
 // import { UpdateAchievementDto } from './dto/update-achievement.dto';
 
 @Controller('achievements')
@@ -34,7 +35,7 @@ export class AchievementsController {
   }
 
   @Get(':id/achievers')
-  findAchievers(@Param('id') id: number): Promise<Achievement[]> {
+  findAchievers(@Param('id') id: number): Promise<User[]> {
     return this.achievementsService.findAchievers(id);
   }
   @Delete(':id')

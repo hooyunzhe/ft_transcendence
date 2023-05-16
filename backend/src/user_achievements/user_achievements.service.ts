@@ -53,8 +53,8 @@ export class UserAchievementsService {
     });
   }
 
-  async getTimesAchieved(achievement_id: number): Promise<number> {
-    return await this.userAchievementRepository.countBy({
+  async getTimesAchieved(achievement_id: number): Promise<UserAchievement[]> {
+    return await this.userAchievementRepository.findBy({
       achievement: { id: achievement_id },
     });
   }

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create_user.dto';
 import { UpdateUserDto } from './dto/update_user.dto';
 import { User } from './entities/user.entity';
+import { Achievement } from 'src/achievements/entities/achievement.entity';
 
 @Injectable()
 export class UsersService {
@@ -24,13 +25,17 @@ export class UsersService {
     return await this.usersRepository.findOneBy({ id });
   }
 
-  async findAchieved(id: number): Promise<User[]> {
-    return await this.usersRepository.find({
+  async findAchieved(id: number): Promise<Achievement[]> {
+    let currentUser = await this.usersRepository.findOne({
       relations: {
         userAchievements: true,
       },
       where: { id },
     });
+
+    return currentUser.userAchievements.map(
+      (userAchievement) => userAchievement.achievement,
+    );
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<void> {
