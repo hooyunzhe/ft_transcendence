@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { MatchHistoryModule } from './match_history/match_history.module';
 import { AchievementsModule } from './achievements/achievements.module';
 import { UserAchievementsModule } from './user_achievements/user_achievements.module';
+import { FriendsModule } from './friends/friends.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserAchievementsModule } from './user_achievements/user_achievements.mo
     MatchHistoryModule,
     AchievementsModule,
     UserAchievementsModule,
+    FriendsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
