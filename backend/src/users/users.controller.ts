@@ -12,6 +12,7 @@ import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create_user.dto';
 import { UpdateUserDto } from './dto/update_user.dto';
+import { Achievement } from 'src/achievements/entities/achievement.entity';
 
 @Controller('users')
 export class UsersController {
@@ -27,21 +28,25 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get(':uid')
-  findOne(@Param('uid', ParseIntPipe) uid: number): Promise<User | null> {
-    return this.usersService.findOne(uid);
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
+    return this.usersService.findOne(id);
   }
 
-  @Patch(':uid')
+  @Get(':id/achieved')
+  findAchieved(@Param('id') id: number): Promise<Achievement[]> {
+    return this.usersService.findAchieved(id);
+  }
+  @Patch(':id')
   update(
-    @Param('uid', ParseIntPipe) uid: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<void> {
-    return this.usersService.update(uid, updateUserDto);
+    return this.usersService.update(id, updateUserDto);
   }
 
-  @Delete(':uid')
-  remove(@Param('uid', ParseIntPipe) uid: number): Promise<void> {
-    return this.usersService.remove(uid);
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.usersService.remove(id);
   }
 }

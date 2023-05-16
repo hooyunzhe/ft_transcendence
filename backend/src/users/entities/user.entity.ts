@@ -1,14 +1,18 @@
+import { Achievement } from 'src/achievements/entities/achievement.entity';
+import { UserAchievement } from 'src/user_achievements/entities/user_achievement.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  ManyToMany,
+  OneToMany,
 } from 'typeorm';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  uid: number;
+  id: number;
 
   @Column()
   intra_uid: string;
@@ -21,4 +25,7 @@ export class User {
 
   @Column({ default: 'offline' })
   status: string;
+
+  @OneToMany(() => UserAchievement, (userAchievement) => userAchievement.user)
+  userAchievements: UserAchievement[];
 }
