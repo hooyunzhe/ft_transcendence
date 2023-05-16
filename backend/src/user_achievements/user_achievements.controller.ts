@@ -45,10 +45,10 @@ export class UserAchievementsController {
   }
 
   @Get('achievement/:achievement_id')
-  getTimesAchieved(
+  getAchieverByAchievement(
     @Param('achievement_id', ParseIntPipe) id: number,
   ): Promise<UserAchievement[]> {
-    return this.userAchievementsService.getTimesAchieved(id);
+    return this.userAchievementsService.AchieverByAchievement(id);
   }
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
