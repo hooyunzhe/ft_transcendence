@@ -12,13 +12,13 @@ export enum FriendStatus {
 @Entity()
 export class Friend {
   @PrimaryGeneratedColumn()
-  uid: number;
+  id: number;
 
   @Column()
-  p1_uid: number;
+  user1_id: number;
 
   @Column()
-  p2_uid: number;
+  user2_id: number;
 
   @Column()
   status: FriendStatus;
