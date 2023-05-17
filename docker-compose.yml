@@ -11,7 +11,7 @@ services:
       volumes:
         - ./backend:/ft_transcendence-nestjs
       ports:
-        - "3000:3000"
+        - "4242:3000"
     postgres:
         container_name: database
         image: postgres:15-alpine
@@ -22,3 +22,14 @@ services:
           - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
         expose:
           - "5432"
+    nextjs:
+      container_name: frontend
+      build: ./frontend
+      image: frontend-nextjs
+      depends_on:
+        - nestjs
+      restart: on-failure
+      volumes:
+        - ./frontend:/ft_transcendence-nextjs
+      ports:
+        - "3000:3000"

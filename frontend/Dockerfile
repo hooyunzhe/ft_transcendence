@@ -1,6 +1,6 @@
 FROM node:18-alpine
 
-WORKDIR /ft_transcendence-nestjs
+WORKDIR /ft_transcendence-nextjs
 
 # COPY ./package.json ./
 # COPY ./yarn.lock ./
@@ -13,4 +13,4 @@ WORKDIR /ft_transcendence-nestjs
 # RUN yarn build
 
 # CMD ["yarn", "start"]
-CMD ["yarn", "start:dev"]
+CMD ["yarn", "dev"]
