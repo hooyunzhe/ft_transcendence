@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from './database/database.module';
+import { DatabaseModule } from './database.module';
 import { UsersModule } from './users/users.module';
 import { MatchHistoryModule } from './match_history/match_history.module';
 import { ChannelsModule } from './channels/channels.module';

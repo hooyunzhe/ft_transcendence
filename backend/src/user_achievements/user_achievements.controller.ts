@@ -48,7 +48,7 @@ export class UserAchievementsController {
   getAchieverByAchievement(
     @Param('achievement_id', ParseIntPipe) id: number,
   ): Promise<UserAchievement[]> {
-    return this.userAchievementsService.AchieverByAchievement(id);
+    return this.userAchievementsService.getAchieversByAchievement(id);
   }
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {

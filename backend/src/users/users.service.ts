@@ -30,10 +30,14 @@ export class UsersService {
     let currentUser = await this.usersRepository.findOne({
       relations: {
         channelMembers: true,
-    
+      },
+    });
+
     return currentUser.channelMembers.map(
-      (channelMember) => channelMember.channel);
-      
+      (channelMember) => channelMember.channel,
+    );
+  }
+
   async findAchieved(id: number): Promise<Achievement[]> {
     let currentUser = await this.usersRepository.findOne({
       relations: {
@@ -43,7 +47,8 @@ export class UsersService {
     });
 
     return currentUser.userAchievements.map(
-      (userAchievement) => userAchievement.achievement);
+      (userAchievement) => userAchievement.achievement,
+    );
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<void> {
