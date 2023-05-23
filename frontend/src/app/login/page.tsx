@@ -1,17 +1,16 @@
 'use client';
-import { Box, TextField } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { Box, Button, TextField } from '@mui/material';
+import { useState } from 'react';
+import { useSession, signIn } from 'next-auth/react';
+import WithSessionProvider from '@/components/WithSessionProvider';
 
-export default function Login() {
-  const [username, setUsername] = useState('');
-  const router = useRouter();
-  const pathname = usePathname();
+export default async function Login() {
+  // const [username, setUsername] = useState('');
 
-  // useEffect(() => {
-  //   console.log(pathname);
-  //   router.push('/');
-  // }, [pathname]);
+  const { data: session, status } = useSession();
+
+  console.log(session);
+  console.log(status);
 
   return (
     <Box
@@ -22,19 +21,22 @@ export default function Login() {
         minHeight: '100vh',
       }}
     >
-      <TextField
-        id='username'
-        label='Username'
-        onChange={(e) => {
-          setUsername(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            console.log('HELLO FROM ENTER');
-            router.push('/42_oauth');
-          }
-        }}
-      ></TextField>
+      <h1>{JSON.stringify(session)}</h1>
+      <Button variant='contained' onClick={() => signIn('42-school')}>
+        Continue with 42
+      </Button>
+      {/* <TextField
+			id='username'
+			label='Username'
+			onChange={(e) => {
+				setUsername(e.target.value);
+			}}
+			onKeyDown={(e) => {
+				if (e.key === 'Enter') {
+					signIn('42-school');
+				}
+			}}
+		></TextField> */}
     </Box>
   );
 }
