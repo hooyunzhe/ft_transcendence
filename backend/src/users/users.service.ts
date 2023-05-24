@@ -14,12 +14,16 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<void> {
-    await this.usersRepository.save(createUserDto);
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    return await this.usersRepository.save(createUserDto);
   }
 
   async findAll(): Promise<User[]> {
     return await this.usersRepository.find();
+  }
+
+  async findByToken(refresh_token: string): Promise<User | null> {
+    return await this.usersRepository.findOneBy({ refresh_token });
   }
 
   async findOne(id: number): Promise<User | null> {
@@ -31,6 +35,7 @@ export class UsersService {
       relations: {
         channelMembers: true,
       },
+      where: { id },
     });
 
     return currentUser.channelMembers.map(

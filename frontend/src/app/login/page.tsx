@@ -1,17 +1,20 @@
 'use client';
 import { Box, Button, TextField } from '@mui/material';
 import { useState } from 'react';
-import { useSession, signIn, getSession, signOut } from 'next-auth/react';
-
-async function getCurrentSession() {
-  return await getSession();
-}
+import { useSession, signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { signUp } from '@/lib/signUp';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [showSession, setShowSession] = useState(false);
 
   const { data: session, status } = useSession();
+  const router = useRouter();
+
+  if (session?.user) {
+    router.push('/');
+  }
 
   return (
     <Box
@@ -70,22 +73,26 @@ export default function Login() {
         >
           Show Session
         </Button>
-        <Button variant='contained' onClick={() => signIn('42-school')}>
-          Continue with 42
-        </Button>
+        {session ? (
+          <TextField
+            id='username'
+            label='Username'
+            onChange={(e) => {
+              setUsername(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                signUp(username, session.refresh_token);
+                router.push('/');
+              }
+            }}
+          ></TextField>
+        ) : (
+          <Button variant='contained' onClick={() => signIn('42-school')}>
+            Continue with 42
+          </Button>
+        )}
       </div>
-      {/* <TextField
-			id='username'
-			label='Username'
-			onChange={(e) => {
-				setUsername(e.target.value);
-			}}
-			onKeyDown={(e) => {
-				if (e.key === 'Enter') {
-					signIn('42-school');
-				}
-			}}
-		></TextField> */}
     </Box>
   );
 }
