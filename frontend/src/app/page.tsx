@@ -1,6 +1,6 @@
-import { ChannelList } from '@/components/ChannelList';
+import { FriendList } from '@/components/FriendList';
 import React, { useState } from 'react';
 export default function Home() {
   //@ts-expect-error Server Component
-  return <ChannelList API={'channels'}></ChannelList>;
+  return <FriendList API={'friends'}></FriendList>;
 }
