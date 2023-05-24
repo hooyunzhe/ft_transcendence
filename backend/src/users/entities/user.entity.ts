@@ -29,7 +29,7 @@ export class User {
 
   @OneToMany(() => ChannelMember, (channelMember) => channelMember.user)
   channelMembers: ChannelMember[];
-  
+
   @OneToMany(() => UserAchievement, (userAchievement) => userAchievement.user)
   userAchievements: UserAchievement[];
 }
