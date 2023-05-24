@@ -1,5 +1,4 @@
-import NextAuth, { Account, NextAuthOptions, Profile } from 'next-auth';
-import { JWT } from 'next-auth/jwt';
+import NextAuth, { NextAuthOptions } from 'next-auth';
 import FortyTwoProvider from 'next-auth/providers/42-school';
 
 export const authOptions: NextAuthOptions = {
@@ -11,20 +10,16 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
-      // console.log(token);
-      // console.log('----------------');
-      // console.log(account);
-      if (token && account && profile) {
-        token.refresh_token = account.refresh_token;
-        token.image = profile.image;
+      if (account && profile) {
+        token.access_token = account.access_token ?? '';
+        token.refresh_token = account.refresh_token ?? '';
       }
       return token;
     },
-    async session({ session, token, user }) {
-      // if (session?) {
-      //   session.refresh_token = token.refresh_token;
-      //   session.image = token.image;
-      // }
+    async session({ session, token }) {
+      session.user.id = 0;
+      session.access_token = token.access_token;
+      session.refresh_token = token.refresh_token;
       return session;
     },
   },
