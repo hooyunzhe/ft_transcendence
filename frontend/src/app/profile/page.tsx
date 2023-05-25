@@ -1,8 +1,9 @@
 'use client';
+import { prettyPrintObject } from '@/lib/prettyPrintObject';
 import { useSession } from 'next-auth/react';
 
 export default function Profile() {
-  const session = useSession();
+  const { data: session } = useSession();
 
-  return <h1>{JSON.stringify(session)}</h1>;
+  return <h2>{prettyPrintObject(session ?? {})}</h2>;
 }
