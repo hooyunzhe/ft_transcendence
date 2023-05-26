@@ -19,11 +19,8 @@ export class FriendsController {
   constructor(private readonly friendsService: FriendsService) {}
 
   @Post()
-  async create(
-    @Body('user1_id', ParseIntPipe) user1_id: number,
-    @Body('user2_id', ParseIntPipe) user2_id: number,
-  ): Promise<void> {
-    await this.friendsService.create(user1_id, user2_id);
+  async create(@Body() createFriendDto: CreateFriendDto): Promise<void> {
+    await this.friendsService.create(createFriendDto);
   }
 
   @Get('user')
