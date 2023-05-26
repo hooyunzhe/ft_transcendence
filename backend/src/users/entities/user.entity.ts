@@ -9,6 +9,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { ChannelMember } from 'src/channel_members/entities/channel_member.entity';
+import { Message } from 'src/messages/entities/message.entity';
 
 @Entity()
 export class User {
@@ -29,6 +30,9 @@ export class User {
 
   @OneToMany(() => ChannelMember, (channelMember) => channelMember.user)
   channelMembers: ChannelMember[];
+
+  @OneToMany(() => Message, (message) => message.user)
+  messages: Message[];
 
   @OneToMany(() => UserAchievement, (userAchievement) => userAchievement.user)
   userAchievements: UserAchievement[];

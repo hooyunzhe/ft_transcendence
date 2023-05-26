@@ -1,8 +1,10 @@
 import { Channel } from 'src/channels/entities/channel.entity';
+import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -17,9 +19,6 @@ export class Message {
   id: number;
 
   @Column()
-  sender_id: number;
-
-  @Column()
   content: string;
 
   @Column()
@@ -32,4 +31,9 @@ export class Message {
     eager: true,
   })
   channel: Channel;
+
+  @ManyToOne(() => User, (user) => user.messages, {
+    eager: true,
+  })
+  user: User;
 }

@@ -5,12 +5,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Message } from './entities/message.entity';
 import { Repository } from 'typeorm';
 import { Channel } from 'src/channels/entities/channel.entity';
+import { User } from 'src/users/entities/user.entity';
+import { CreateUserDto } from 'src/users/dto/create_user.dto';
 
 @Injectable()
 export class MessagesService {
   constructor(
     @InjectRepository(Message)
     private messagesRepository: Repository<Message>,
+
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
 
     @InjectRepository(Channel)
     private channelsRepository: Repository<Channel>,
@@ -21,8 +26,13 @@ export class MessagesService {
       id: createMessageDto.channel_id,
     });
 
+    let user = await this.userRepository.findOneBy({
+      id: createMessageDto.user_id,
+    });
+
     let newMessage = this.messagesRepository.create({
       ...createMessageDto,
+      user: user,
       channel: channel,
     });
 
@@ -57,7 +67,7 @@ export class MessagesService {
     user_id: number,
   ): Promise<Message[]> {
     return this.messagesRepository.findBy({
-      sender_id: user_id,
+      user: { id: user_id },
       channel: { id: channel_id },
     });
   }
