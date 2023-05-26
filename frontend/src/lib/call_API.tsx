@@ -1,4 +1,4 @@
-export default async function call_API(route: string) {
+export default async function call_API(route: string): Promise<any> {
   const domain = 'http://localhost:4242/api/';
 
   console.log(domain + route);
@@ -11,11 +11,24 @@ export default async function call_API(route: string) {
   //   body: JSON.stringify({ intra_uid: 4242, username: 'WORKS' }),
   // });
 
-  return await fetch(domain + route, {
+  // return fetch(domain + route, {
+  //   cache: 'no-store',
+  // })
+  //   .then((data) => data.json())
+  //   .catch((error) => {
+  //     console.log('Error :', error);
+  //   });
+
+  let res;
+
+  await fetch(domain + route, {
     cache: 'no-store',
   })
-    .then((data) => data.json())
+    .then((data) => (res = data.json()))
     .catch((error) => {
       console.log('Error :', error);
+      res = error;
     });
+
+  return res;
 }
