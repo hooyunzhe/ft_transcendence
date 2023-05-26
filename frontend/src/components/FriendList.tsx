@@ -3,15 +3,25 @@
 import { List } from '@mui/material';
 import { Friend, FriendVar } from './Friend';
 import call_API from '@/lib/call_API';
+import { useEffect, useState } from 'react';
 
-export async function FriendList({ API }: { API: string }) {
-  const data = await call_API(API);
-  console.log('friend');
+export function FriendList({ API }: { API: string }) {
+  const [friends, setFriends] = useState([]);
+
+  useEffect(() => {
+    async function getFriend() {
+      const data = await call_API(API);
+      setFriends(data);
+    }
+    getFriend();
+  }, []);
+
+  console.log(' --- friend ---\n');
 
   return (
     <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-      {data.map((obj: FriendVar, index: number) => (
-        <Friend {...obj}></Friend>
+      {friends.map((obj: FriendVar, index: number) => (
+        <Friend key={index} {...obj}></Friend>
       ))}
     </List>
   );
