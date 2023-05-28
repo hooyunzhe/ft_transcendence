@@ -1,5 +1,6 @@
 import { randomInt } from 'crypto';
 import React, { useRef, useState, useEffect } from 'react';
+import { Socket, io } from 'socket.io-client';
 
 const ballStyle = {
   height: '35px',
