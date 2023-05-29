@@ -8,7 +8,7 @@ import { MessagesModule } from './messages/messages.module';
 import { AchievementsModule } from './achievements/achievements.module';
 import { UserAchievementsModule } from './user_achievements/user_achievements.module';
 import { FriendsModule } from './friends/friends.module';
-import { GameGateway } from './game.gateway';
+import { GameGateway } from './game/game.gateway';
 
 @Module({
   imports: [
