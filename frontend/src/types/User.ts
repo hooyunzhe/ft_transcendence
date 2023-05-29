@@ -1,4 +1,4 @@
-export interface Users {
+export interface User {
   id: number;
   intra_uid: number;
   username: string;
