@@ -10,6 +10,7 @@ export class FriendsService {
   constructor(
     @InjectRepository(Friend)
     private friendRepository: Repository<Friend>,
+
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
@@ -25,16 +26,17 @@ export class FriendsService {
     ]);
 
     let newOutgoingFriendship = this.friendRepository.create({
-      outgoingFriend: outgoingUser,
-      incomingFriend: incomingUser,
+      outgoing_friend: outgoingUser,
+      incoming_friend: incomingUser,
       status: FriendStatus.Invited,
     });
 
     let newIncomingFriendship = this.friendRepository.create({
-      outgoingFriend: incomingUser,
-      incomingFriend: outgoingUser,
+      outgoing_friend: incomingUser,
+      incoming_friend: outgoingUser,
       status: FriendStatus.Pending,
     });
+
     await this.friendRepository.save([
       newOutgoingFriendship,
       newIncomingFriendship,
@@ -62,7 +64,7 @@ export class FriendsService {
 
   async findFriendsOfUser(outgoing_id: number): Promise<Friend[] | null> {
     return await this.friendRepository.findBy({
-      outgoingFriend: { id: outgoing_id },
+      outgoing_friend: { id: outgoing_id },
     });
   }
 
@@ -71,8 +73,8 @@ export class FriendsService {
     incoming_id: number,
   ): Promise<Friend | null> {
     return await this.friendRepository.findOneBy({
-      outgoingFriend: { id: outgoing_id },
-      incomingFriend: { id: incoming_id },
+      outgoing_friend: { id: outgoing_id },
+      incoming_friend: { id: incoming_id },
     });
   }
 
@@ -95,21 +97,17 @@ export class FriendsService {
     if (friendDto.status === FriendStatus.Accept) {
       Promise.all([
         this.friendRepository.update(
-          (
-            await this.findExactMatch(
-              friendDto.outgoing_id,
-              friendDto.incoming_id,
-            )
-          ).id,
+          {
+            outgoing_friend: { id: friendDto.outgoing_id },
+            incoming_friend: { id: friendDto.incoming_id },
+          },
           { status: FriendStatus.Friend },
         ),
         this.friendRepository.update(
-          (
-            await this.findExactMatch(
-              friendDto.incoming_id,
-              friendDto.outgoing_id,
-            )
-          ).id,
+          {
+            outgoing_friend: { id: friendDto.incoming_id },
+            incoming_friend: { id: friendDto.outgoing_id },
+          },
           { status: FriendStatus.Friend },
         ),
       ]);
@@ -129,8 +127,14 @@ export class FriendsService {
     incoming_id: number,
   ): Promise<void> {
     Promise.all([
-      this.remove((await this.findExactMatch(outgoing_id, incoming_id)).id),
-      this.remove((await this.findExactMatch(incoming_id, outgoing_id)).id),
+      this.friendRepository.delete({
+        outgoing_friend: { id: outgoing_id },
+        incoming_friend: { id: incoming_id },
+      }),
+      this.friendRepository.delete({
+        outgoing_friend: { id: incoming_id },
+        incoming_friend: { id: outgoing_id },
+      }),
     ]);
   }
 }

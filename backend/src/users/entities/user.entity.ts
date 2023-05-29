@@ -29,9 +29,9 @@ export class User {
   @OneToMany(() => UserAchievement, (userAchievement) => userAchievement.user)
   userAchievements: UserAchievement[];
 
-  @OneToMany(() => Friend, (friend) => friend.outgoingFriend)
+  @OneToMany(() => Friend, (friend) => friend.outgoing_friend)
   outgoingFriendships: Friend[];
 
-  @OneToMany(() => Friend, (friend) => friend.incomingFriend)
+  @OneToMany(() => Friend, (friend) => friend.incoming_friend)
   incomingFriendships: Friend[];
 }

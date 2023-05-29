@@ -18,12 +18,12 @@ export class Friend {
   @ManyToOne(() => User, (user) => user.outgoingFriendships, {
     eager: true,
   })
-  outgoingFriend: User;
+  outgoing_friend: User;
 
   @ManyToOne(() => User, (user) => user.incomingFriendships, {
     eager: true,
   })
-  incomingFriend: User;
+  incoming_friend: User;
 
   @Column()
   status: FriendStatus;

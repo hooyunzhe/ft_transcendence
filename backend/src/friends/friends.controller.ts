@@ -25,10 +25,11 @@ export class FriendsController {
 
   @Get('user')
   async findFriendships(
-    @Query('user1_id', ParseIntPipe) user1_id: number,
-    @Query('user2_id', new DefaultValuePipe(0), ParseIntPipe) user2_id: number,
+    @Query('outgoing_id', ParseIntPipe) outgoing_id: number,
+    @Query('incoming_id', new DefaultValuePipe(0), ParseIntPipe)
+    incoming_id: number,
   ): Promise<Friend[] | Friend | null> {
-    return this.friendsService.findFriendships(user1_id, user2_id);
+    return this.friendsService.findFriendships(outgoing_id, incoming_id);
   }
 
   @Get()
@@ -48,9 +49,9 @@ export class FriendsController {
 
   @Delete()
   async remove(
-    @Body('user1_id', ParseIntPipe) user1_id: number,
-    @Body('user2_id', ParseIntPipe) user2_id: number,
+    @Body('outgoing_id', ParseIntPipe) outgoing_id: number,
+    @Body('incoming_id', ParseIntPipe) incoming_id: number,
   ): Promise<void> {
-    await this.friendsService.deleteRelationship(user1_id, user2_id);
+    await this.friendsService.deleteRelationship(outgoing_id, incoming_id);
   }
 }
