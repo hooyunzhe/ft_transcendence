@@ -13,6 +13,9 @@ CLEAN_VOLUMES	= --volumes
 all:
 	$(COMPOSE) $(UP) $(DETACHED) $(BUILD_IMAGES)
 
+dev:
+	$(COMPOSE) $(UP) $(BUILD_IMAGES)
+
 clean:
 	$(COMPOSE) $(DOWN) $(CLEAN_IMAGES) $(CLEAN_ORPHANS)
 

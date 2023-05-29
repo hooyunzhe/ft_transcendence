@@ -1,6 +1,20 @@
 import { FriendList } from '@/components/FriendList';
-import React, { useState } from 'react';
+import { io } from 'socket.io-client';
+
 export default function Home() {
-  //@ts-expect-error Server Component
-  return <FriendList API={'friends'}></FriendList>;
+  // return <FriendList API={'friends'}></FriendList>;
+
+  const socket = io('http://localhost:4242/gateway/friends', {
+    query: {
+      id: 1,
+    },
+  });
+
+  socket.on('newConnection', (data) => {
+    console.log(data);
+  });
+
+  socket.emit('checkStatus', (data: any) => {
+    console.log(data);
+  });
 }

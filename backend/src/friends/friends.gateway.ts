@@ -4,8 +4,11 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
+
+type UserSocket = Socket & { user_id: number };
 
 @WebSocketGateway({
   cors: {
@@ -16,17 +19,22 @@ import { Socket } from 'socket.io';
 export class FriendsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
-  connectedUsers = new Set();
+  @WebSocketServer()
+  server: Server;
 
-  handleConnection(client: Socket) {
+  async handleConnection(client: UserSocket) {
     const user_id = Number(client.handshake.query['id']);
-    this.connectedUsers.add(user_id);
+    // this.connectedUsers.add(user_id);
+    client.user_id = user_id;
     client.broadcast.emit('newConnection', user_id);
+    const sockets = await this.server.fetchSockets();
+    console.log(sockets.length);
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(client: UserSocket) {
     const user_id = Number(client.handshake.query['id']);
-    this.connectedUsers.delete(user_id);
+    // this.connectedUsers.delete(user_id);
+    client.user_id = user_id;
     client.broadcast.emit('newDisconnect', user_id);
   }
 
@@ -34,7 +42,7 @@ export class FriendsGateway
   checkStatus(@MessageBody('users') users: number[]) {
     const statuses = users.map((user) => ({
       user_id: user,
-      connected: this.connectedUsers.has(user),
+      connected: false,
     }));
 
     return statuses;
