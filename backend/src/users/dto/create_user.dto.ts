@@ -1,4 +1,4 @@
 export class CreateUserDto {
-  intra_uid: string;
   username: string;
+  refresh_token: string;
 }

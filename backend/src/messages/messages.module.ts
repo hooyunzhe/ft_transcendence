@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Message } from './entities/message.entity';
 import { Channel } from 'src/channels/entities/channel.entity';
 import { User } from 'src/users/entities/user.entity';
+import { MessagesGateway } from './messages.gateway';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Message, Channel, User])],
   controllers: [MessagesController],
-  providers: [MessagesService],
+  providers: [MessagesService, MessagesGateway],
 })
 export class MessagesModule {}

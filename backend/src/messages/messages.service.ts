@@ -10,6 +10,8 @@ import { CreateUserDto } from 'src/users/dto/create_user.dto';
 
 @Injectable()
 export class MessagesService {
+  clientToUser = [];
+
   constructor(
     @InjectRepository(Message)
     private messagesRepository: Repository<Message>,
@@ -20,6 +22,14 @@ export class MessagesService {
     @InjectRepository(Channel)
     private channelsRepository: Repository<Channel>,
   ) {}
+
+  identify(name: string, clientId: string) {
+    this.clientToUser[clientId] = name;
+  }
+
+  getClientName(clientId: string) {
+    return this.clientToUser[clientId];
+  }
 
   async create(createMessageDto: CreateMessageDto): Promise<void> {
     let channel = await this.channelsRepository.findOneBy({

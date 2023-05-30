@@ -1,7 +1,6 @@
 export interface User {
   id: number;
-  intra_uid: number;
   username: string;
+  refresh_token: string;
   date_of_creation: Date;
-  status: string;
 }

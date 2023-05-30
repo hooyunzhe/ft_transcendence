@@ -1,34 +1,21 @@
-export default async function call_API(route: string): Promise<any> {
+export default async function call_API(
+  route: string,
+  method: string,
+  messageBody?: any,
+): Promise<any> {
   const domain = 'http://localhost:4242/api/';
-
-  console.log(domain + route);
-
-  // await fetch(domain + route, {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({ intra_uid: 4242, username: 'WORKS' }),
-  // });
-
-  // return fetch(domain + route, {
-  //   cache: 'no-store',
-  // })
-  //   .then((data) => data.json())
-  //   .catch((error) => {
-  //     console.log('Error :', error);
-  //   });
-
-  let res;
+  let response, text;
 
   await fetch(domain + route, {
-    cache: 'no-store',
+    method: method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(messageBody),
   })
-    .then((data) => (res = data.json()))
+    .then((data) => (text = data.text()))
+    .then((text) => (response = text.length ? JSON.parse(text) : null))
     .catch((error) => {
       console.log('Error :', error);
-      res = error;
+      response = error;
     });
-
-  return res;
+  return response;
 }
