@@ -15,10 +15,10 @@ export class User {
   id: number;
 
   @Column()
-  intra_uid: string;
+  username: string;
 
   @Column()
-  username: string;
+  refresh_token: string;
 
   @CreateDateColumn()
   date_of_creation: Date;

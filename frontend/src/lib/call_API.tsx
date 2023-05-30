@@ -1,21 +1,21 @@
-export default async function call_API(route: string) {
+export default async function call_API(
+  route: string,
+  method: string,
+  body?: any,
+): Promise<string> {
   const domain = 'http://localhost:4242/api/';
 
-  console.log(domain + route);
-
-  // await fetch(domain + route, {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({ intra_uid: 4242, username: 'WORKS' }),
-  // });
-
-  return await fetch(domain + route, {
+  return fetch(domain + route, {
     cache: 'no-store',
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: body,
   })
-    .then((data) => data.json())
+    .then((data) => data.text())
     .catch((error) => {
       console.log('Error :', error);
+      return error;
     });
 }

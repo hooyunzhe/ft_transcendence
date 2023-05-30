@@ -79,15 +79,15 @@ export class FriendsService {
   }
 
   async update(friendDto: CreateFriendDto) {
-    const friendhship = await this.findExactMatch(
+    const friendship = await this.findExactMatch(
       friendDto.outgoing_id,
       friendDto.incoming_id,
     );
-    if (friendhship.status === FriendStatus.Pending) {
+    if (friendship.status === FriendStatus.Pending) {
       this.updateFriendRequest(friendDto);
-    } else if (friendhship.status == FriendStatus.Friend) {
+    } else if (friendship.status == FriendStatus.Friend) {
       if (friendDto.status === FriendStatus.Blocked)
-        await this.friendRepository.update(friendhship.id, {
+        await this.friendRepository.update(friendship.id, {
           status: friendDto.status,
         });
     }
