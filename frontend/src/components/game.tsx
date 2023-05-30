@@ -1,20 +1,20 @@
 'use client';
+import { checkCustomRoutes } from 'next/dist/lib/load-custom-routes';
 import Phaser from 'phaser';
 import { useEffect } from 'react';
-import { start } from 'repl';
 
 class Example extends Phaser.Scene {
   constructor() {
     super();
   }
 
+  private dog: { key: string }[] = [];
   preload() {
     this.load.setBaseURL('http://localhost:3000');
-    // this.load.image('ball', 'cyberpong.png');
-    this.load.image('ball', './cyberpong.png');
-    // this.load.setBaseURL('https://labs.phaser.io');
-    // this.load.image('red', 'assets/particles/red.png');
-    // this.load.image('ball', cyberpong);
+    for (let i = 0; i < 25; i++) {
+      this.load.image('ball' + i, '/ball/' + i + '.png');
+      this.dog.push({ key: 'ball' + i });
+    }
   }
 
   create() {
@@ -24,13 +24,21 @@ class Example extends Phaser.Scene {
       blendMode: 'ADD',
     });
 
-    const logo = this.physics.add.image(100, 100, 'ball');
+    const ball = this.physics.add.sprite(100, 100, 'ball0');
+    ball.setVelocity(200, 200);
+    ball.setBounce(1, 1);
+    ball.setCollideWorldBounds(true);
+    particles.startFollow(ball);
+    // ball.setScale(0.5, 0.5);
 
-    logo.setVelocity(500, 500);
-    logo.setBounce(1, 1);
-    logo.setCollideWorldBounds(true);
+    this.anims.create({
+      key: 'ballani',
+      frames: this.dog,
+      frameRate: 60,
+      repeat: -1,
+    });
 
-    particles.startFollow(logo);
+    ball.anims.play('ballani', true);
   }
 }
 
