@@ -1,7 +1,6 @@
 'use client';
-import Phaser from 'phaser';
+import Phaser, { Scene } from 'phaser';
 import { io } from 'socket.io-client';
-
 class Example extends Phaser.Scene {
   constructor() {
     super();
@@ -23,15 +22,16 @@ class Example extends Phaser.Scene {
   }
 
   create() {
-    const particles = this.add.particles(0, 0, 'red', {
+    const particles = this.add.particles(0, 0, 'ball2', {
       speed: 100,
-      scale: { start: 1, end: 0 },
+      scale: { start: 0.1, end: 0 },
       blendMode: 'ADD',
     });
   
     this.ball = this.physics.add.sprite(0.5 * window.innerWidth, 0.5 * window.innerHeight, 'ball0');
-    this.ball.setBounce(1, 1);
-    this.ball.setCollideWorldBounds(true);
+    // this.ball.setBounce(1, 1);
+    // this.ball.setCollideWorldBounds(true);
+    this.ball.setScale(0.2, 0.2);
     particles.startFollow(this.ball);
   
     this.anims.create({
@@ -43,26 +43,24 @@ class Example extends Phaser.Scene {
   
     this.ball.anims.play('ballani', true);
   
-
     this.GameSocket = io('http://localhost:4242/gateway/game');
-  
+   
+    
+    const bodysize: {width: number, height: number} = {
+      width: (this.ball.body?.width ?? 0) / 800,
+      height: (this.ball.body?.height ?? 0) / 600,
+    }
 
+    console.log("width is :", this.ball.width, ", body width: ", bodysize.width);
+    console.log("height is :",this.ball.height, ", body height: ", bodysize.height);
+    this.GameSocket.emit("initialize", (bodysize));
     this.GameSocket.on("game", (data: { x: number, y: number }) => {
-      this.targetX = data.x * window.innerWidth;
-      this.targetY = data.y * window.innerHeight;
+      this.targetX = data.x * 800;
+      this.targetY = data.y * 600;
     });
   
-  
-    this.physics.world.on('worldbounds', () => {
-      console.log("HIT!");
-      this.GameSocket.emit('collide');
-    });
   }
   
-  handleCollision() {
-    console.log("HIT!");
-    this.GameSocket.emit('collide');
-  }
 
   update() {
     if (this.targetX !== -1 && this.targetY !== -1) {
@@ -79,11 +77,20 @@ class Example extends Phaser.Scene {
 const startGame = () => {
   const config = {
     type: Phaser.AUTO,
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: 800,
+    height: 600,
+    scale: {
+      mode: Phaser.Scale.RESIZE,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
     physics: {
       default: 'arcade',
-      arcade: {},
+      arcade: {
+        gravity: false,
+      },
+    },
+    fps: {
+      target: 30
     },
     scene: Example,
   };

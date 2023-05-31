@@ -13,5 +13,10 @@ export default function Game() {
   const triggerOn = () => {
     GameSocket.emit('game');
   };
-  return( <div><button onClick={triggerOn}>triggerOn</button></div>);
+
+  const resetGame = () => {
+    GameSocket.emit('reset');
+  }
+  return( <div><button onClick={triggerOn}>triggerOn</button>
+  <button onClick={resetGame}>Reset</button></div>);
 }
