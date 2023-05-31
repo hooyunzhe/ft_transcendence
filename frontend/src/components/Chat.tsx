@@ -1,9 +1,8 @@
 'use client';
 
 import { ListItem, ListItemText } from '@mui/material';
-import { useEffect, useState } from 'react';
-import './Chat.css';
 import { Message } from '@/types/Message';
+import './Chat.css';
 
 export default function Chat({
   id,
@@ -13,17 +12,8 @@ export default function Chat({
   channel,
   user,
 }: Message) {
-  const [messages, setMessages] = useState([]);
-
-  useEffect(() => {
-    async function getChatUsers() {
-      // const messageData = await call_API(messageAPI, 'GET');
-      // setMessages(messageData);
-      // console.log(messageData);
-    }
-    getChatUsers();
-  }, []);
-
+  console.log(user.username);
+  console.log(content);
   return (
     <ListItem>
       {/* Where we have to put our chat box contents */}

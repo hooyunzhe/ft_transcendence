@@ -1,6 +1,7 @@
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -16,37 +17,19 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
   },
   namespace: 'gateway/messages',
 })
-export class MessagesGateway {
+export class MessagesGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
   constructor(private readonly messagesService: MessagesService) {}
 
-  @SubscribeMessage('createMessage')
-  async create(
-    @MessageBody() createMessageDto: CreateMessageDto,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const message = this.messagesService.create(createMessageDto);
-    console.log('hi');
-
-    this.server.emit('message', message);
-    return message;
+  handleConnection(@ConnectedSocket() client: Socket) {
+    client.join('temp_channel_id');
   }
 
   @SubscribeMessage('join')
   joinRoom(@MessageBody('id') name: string, @ConnectedSocket() client: Socket) {
     return this.messagesService.identify(name, client.id);
-  }
-
-  @SubscribeMessage('typing')
-  async typing(
-    @MessageBody('isTyping') isTyping: boolean,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const name = await this.messagesService.getClientName(client.id);
-
-    client.broadcast.emit('typing', { name, isTyping });
   }
 
   @SubscribeMessage('test')
@@ -57,14 +40,24 @@ export class MessagesGateway {
     return data;
   }
 
-  @SubscribeMessage('sendmessage')
+  @SubscribeMessage('typing')
+  userTyping(
+    @MessageBody() data: Message,
+    @ConnectedSocket() client: Socket,
+  ): string {
+    console.log(`You are sending to ${client.id}`);
+    this.server.to('usertyping').emit('newMessage', data);
+    return 'message received';
+  }
+
+  @SubscribeMessage('newMessage')
   sendMessage(
-    @MessageBody() data: string,
+    @MessageBody() data: Message,
     @ConnectedSocket() client: Socket,
   ): string {
     console.log('Received Sent message from client!');
     console.log(`You are sending to ${client.id}`);
-    this.server.to(client.id).emit('Yes', 'printing data');
-    return data;
+    this.server.to('temp_channel_id').emit('newMessage', data);
+    return 'message received';
   }
 }

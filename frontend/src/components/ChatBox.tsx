@@ -1,37 +1,44 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { messageSocket } from '@/lib/messageSocket';
 import Chat from './Chat';
 import { Message } from '@/types/Message';
-import call_API from '@/lib/call_API';
-import { io } from 'socket.io-client';
+import callAPI from '@/lib/callAPI';
 import {
   Box,
   Container,
   Divider,
   Grid,
   List,
-  ListItem,
-  ListItemText,
   Paper,
   Typography,
 } from '@mui/material';
 import ChatBar from './ChatBar';
 
 export default function ChatBox({ messageAPI }: { messageAPI: string }) {
-  const [messages, setMessages] = useState([]);
+  const [messageList, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    // getting mess
     async function getChatUsers() {
-      const messageData = await call_API(messageAPI, 'GET');
+      const messageData = JSON.parse(await callAPI('GET', messageAPI));
       setMessages(messageData);
       console.log(messageData);
     }
     getChatUsers();
+
+    messageSocket.on('typing', (data: Message) => {
+      console.log(`You are connected with id ${messageSocket.id}`);
+    });
+
+    messageSocket.on('newMessage', (data: Message) => {
+      console.log('Yes received from server!');
+      console.log(`You are connected with id ${messageSocket.id}`);
+      setMessages((messageData) => [...messageData, data]);
+    });
   }, []);
 
-  console.log('--- Chat Bar After Use Effect!---');
+  console.log('-- Printing ChatBox --');
 
   return (
     <>
@@ -45,13 +52,15 @@ export default function ChatBox({ messageAPI }: { messageAPI: string }) {
             <Grid container spacing={4} alignItems='center'>
               <Grid id='chat-window' xs={12} item>
                 <List>
-                  {messages.map((obj: Message, index: number) => (
-                    <Chat key={index} {...obj}></Chat>
-                  ))}
+                  {messageList.map(
+                    (obj: Message, index: number) =>
+                      index >= messageList.length - 5 && (
+                        <Chat key={index} {...obj}></Chat>
+                      ),
+                  )}
                 </List>
               </Grid>
-              {/* // I shouldn't map this */}
-              <ChatBar messageObj={messages}></ChatBar>
+              <ChatBar />
               <Grid item></Grid>
             </Grid>
           </Box>
