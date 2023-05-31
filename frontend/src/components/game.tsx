@@ -31,7 +31,7 @@ class Example extends Phaser.Scene {
     this.ball = this.physics.add.sprite(0.5 * window.innerWidth, 0.5 * window.innerHeight, 'ball0');
     // this.ball.setBounce(1, 1);
     // this.ball.setCollideWorldBounds(true);
-    this.ball.setScale(0.2, 0.2);
+    this.ball.setScale(0.3, 0.3);
     particles.startFollow(this.ball);
   
     this.anims.create({
@@ -55,8 +55,10 @@ class Example extends Phaser.Scene {
     console.log("height is :",this.ball.height, ", body height: ", bodysize.height);
     this.GameSocket.emit("initialize", (bodysize));
     this.GameSocket.on("game", (data: { x: number, y: number }) => {
-      this.targetX = data.x * 800;
-      this.targetY = data.y * 600;
+      this.targetX = (data.x /100 )* window.innerWidth;
+      this.targetY = (data.y /100) * window.innerHeight;
+      console.log(data.x);
+      console.log(data.y);
     });
   
   }
@@ -77,8 +79,8 @@ class Example extends Phaser.Scene {
 const startGame = () => {
   const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    width: window.innerWidth,
+    height: window.innerHeight,
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,

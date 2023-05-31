@@ -29,6 +29,7 @@
     "@nestjs/schedule": "^2.2.2",
     "@nestjs/typeorm": "^9.0.1",
     "@nestjs/websockets": "^9.4.2",
+    "@types/matter-js": "^0.18.5",
     "matter-js": "^0.19.0",
     "pg": "^8.10.0",
     "reflect-metadata": "^0.1.13",
