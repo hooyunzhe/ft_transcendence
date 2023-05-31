@@ -1,4 +1,8 @@
+import { User } from 'src/users/entities/user.entity';
+
 export class NewRequestDto {
-  outgoing_id: number;
-  incoming_id: number;
+  sender: User;
+  receiver: {
+    id: number;
+  };
 }

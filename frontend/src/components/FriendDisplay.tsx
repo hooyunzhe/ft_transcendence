@@ -1,37 +1,45 @@
+'use client';
 import { Friend } from '@/types/Friend';
 import {
   Avatar,
-  Divider,
   ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemText,
+  Paper,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
+
+interface FriendDisplayProps {
+  friend: Friend;
+  selectedFriend: number;
+  setSelectedFriend: Dispatch<SetStateAction<number>>;
+}
 
 export function FriendDisplay({
-  id,
-  status,
-  outgoing_friend,
-  incoming_friend,
-}: Friend) {
-  // const [friendStatus, setFriendStatus] = useState(status);
-
-  // useEffect(() => {
-  //   console.log('blahhhh');
-  // }, [friendStatus]);
+  friend,
+  selectedFriend,
+  setSelectedFriend,
+}: FriendDisplayProps) {
   return (
-    <>
-      <ListItem>
-        <ListItemAvatar>
-          <Avatar alt=''></Avatar>
-        </ListItemAvatar>
-        <ListItemText
-          primary={incoming_friend.username}
-          secondary={'Friend ID: ' + id}
-        />
-        <ListItemText sx={{ textAlign: 'center' }} secondary={status} />
-      </ListItem>
-      <Divider />
-    </>
+    <Paper elevation={2}>
+      <ListItemButton
+        selected={selectedFriend === friend.id}
+        onClick={() => setSelectedFriend(friend.id)}
+      >
+        <ListItem>
+          <ListItemAvatar>
+            <Avatar alt=''></Avatar>
+          </ListItemAvatar>
+          <ListItemText
+            primary={friend.incoming_friend.username + ' (' + friend.id + ')'}
+          />
+          <ListItemText
+            sx={{ textAlign: 'center' }}
+            secondary={friend.status}
+          />
+        </ListItem>
+      </ListItemButton>
+    </Paper>
   );
 }

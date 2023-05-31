@@ -1,6 +1,6 @@
 export default async function call_API(
-  route: string,
   method: string,
+  route: string,
   body?: any,
 ): Promise<string> {
   const domain = 'http://localhost:4242/api/';

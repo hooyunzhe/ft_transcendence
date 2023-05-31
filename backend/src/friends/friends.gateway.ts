@@ -44,18 +44,9 @@ export class FriendsGateway
   }
 
   @SubscribeMessage('newRequest')
-  async newRequest(@MessageBody() newRequestDto: NewRequestDto) {
-    const connectedSockets = await this.server.fetchSockets();
-    const targetSocket = connectedSockets.find(
-      (socket) => socket.data.user_id === newRequestDto.incoming_id,
-    );
-
-    if (targetSocket) {
-      this.server
-        .to(targetSocket.id)
-        .emit('newRequest', newRequestDto.outgoing_id);
-    } else {
-      return 'Error: user with incoming_id cannot be found...';
-    }
+  newRequest(@MessageBody() newRequestDto: NewRequestDto) {
+    this.server
+      .to(String(newRequestDto.receiver.id))
+      .emit('newRequest', newRequestDto.sender);
   }
 }
