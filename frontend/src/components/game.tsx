@@ -15,29 +15,57 @@ class Example extends Phaser.Scene {
   private GameSocket: Socket<DefaultEventsMap, DefaultEventsMap>;
   preload() {
     this.load.setBaseURL('http://localhost:3000');
-    for (let i = 0; i < 25; i++) {
-      this.load.image('ball' + i, '/ball/' + i + '.png');
-      this.dog.push({ key: 'ball' + i });
-    }
+    this.load.multiatlas('ballsprite', '/newball/spritesheet.json', 'newball');
   }
 
   create() {
-    const particles = this.add.particles(0, 0, 'ball2', {
+    const particles = this.add.particles(0, 0, 'red', {
       speed: 100,
       scale: { start: 0.1, end: 0 },
       blendMode: 'ADD',
     });
+
+    const graphics = this.add.graphics();
+
+    const borderWidth = 4; // Border width
+    const borderColor = 0xffffff; // Border color (white)
   
-    this.ball = this.physics.add.sprite(0.5 * window.innerWidth, 0.5 * window.innerHeight, 'ball0');
+    function drawWindowBorder() {
+      const { width, height } = this.sys.game.canvas;
+      const x = borderWidth / 2; // X-coordinate of the window (offset by half of the border width)
+      const y = borderWidth / 2; // Y-coordinate of the window (offset by half of the border width)
+  
+      // Clear previous drawings
+      graphics.clear();
+  
+      // Draw the border
+      graphics.lineStyle(borderWidth, borderColor);
+      graphics.strokeRect(x, y, width - borderWidth, height - borderWidth);
+    }
+    drawWindowBorder.call(this); // Initial draw
+
+    // Redraw the border on window resize
+    this.scale.on('resize', drawWindowBorder, this);
+    this.ball = this.physics.add.sprite(0.5 * window.innerWidth, 0.5 * window.innerHeight, 'ballsprite', '1.png');
     // this.ball.setBounce(1, 1);
     // this.ball.setCollideWorldBounds(true);
-    this.ball.setScale(0.2, 0.2);
+    // this.ball.setVelocityX(100);
+    // this.ball.setVelocityY(100);
+    this.ball.setScale(1, 1);
     particles.startFollow(this.ball);
   
+    const frames = this.anims.generateFrameNames('ballsprite', {
+      start: 1,
+      end: 48, 
+      zeroPad: 0, 
+      suffix: '.png', 
+    });
+
     this.anims.create({
       key: 'ballani',
-      frames: this.dog,
+      frames: frames,
       frameRate: 60,
+      duration: 50,
       repeat: -1,
     });
   
@@ -55,8 +83,8 @@ class Example extends Phaser.Scene {
     console.log("height is :",this.ball.height, ", body height: ", bodysize.height);
     this.GameSocket.emit("initialize");
     this.GameSocket.on("game", (data: { x: number, y: number }) => {
-      this.targetX = data.x /100 * window.innerWidth;
-      this.targetY = data.y /100 * window.innerHeight;
+      this.targetX = data.x;
+      this.targetY = data.y;
     });
   
   }
@@ -80,7 +108,7 @@ const startGame = () => {
     width: 800,
     height: 600,
     scale: {
-      mode: Phaser.Scale.RESIZE,
+      mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     physics: {

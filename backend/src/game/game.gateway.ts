@@ -1,4 +1,4 @@
-import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 
 import { Interval } from '@nestjs/schedule';
 import { Server } from 'http';
@@ -41,5 +41,10 @@ export class GameGateway {
   @SubscribeMessage('Stop')
   Stop(){
     clearInterval(this.id);
+  }
+  
+  @SubscribeMessage('Set')
+  SetPosition(@MessageBody() position :{x: number, y: number}): void {
+    this.game.gameSetPosition(position.x, position.y);
   }
 }
