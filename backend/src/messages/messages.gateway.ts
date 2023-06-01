@@ -7,10 +7,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { MessagesService } from './messages.service';
-import { CreateMessageDto } from './dto/create-message.dto';
 import { Server, Socket } from 'socket.io';
 import { Message } from './entities/message.entity';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -42,11 +40,15 @@ export class MessagesGateway implements OnGatewayConnection {
 
   @SubscribeMessage('typing')
   userTyping(
-    @MessageBody() data: Message,
-    @ConnectedSocket() client: Socket,
+    @MessageBody() isTyping: boolean,
+    @ConnectedSocket()
+    client: Socket,
   ): string {
+    const name = this.messagesService.getClientName(client.id);
+
+    client.broadcast.emit('typing');
     console.log(`You are sending to ${client.id}`);
-    this.server.to('usertyping').emit('newMessage', data);
+    // this.server.to(client.id).emit('typing', isTyping);
     return 'message received';
   }
 

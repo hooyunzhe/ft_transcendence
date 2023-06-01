@@ -27,10 +27,6 @@ export default function ChatBox({ messageAPI }: { messageAPI: string }) {
     }
     getChatUsers();
 
-    messageSocket.on('typing', (data: Message) => {
-      console.log(`You are connected with id ${messageSocket.id}`);
-    });
-
     messageSocket.on('newMessage', (data: Message) => {
       console.log('Yes received from server!');
       console.log(`You are connected with id ${messageSocket.id}`);

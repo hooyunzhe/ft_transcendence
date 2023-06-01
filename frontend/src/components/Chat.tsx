@@ -12,8 +12,6 @@ export default function Chat({
   channel,
   user,
 }: Message) {
-  console.log(user.username);
-  console.log(content);
   return (
     <ListItem>
       {/* Where we have to put our chat box contents */}
