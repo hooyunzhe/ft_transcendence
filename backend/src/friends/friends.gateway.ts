@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { CheckStatusDto } from './dto/check-status.dto';
-import { NewRequestDto } from './dto/new-request.dto';
+import { FriendRequestDto } from './dto/friend-request.dto';
 
 @WebSocketGateway({
   cors: {
@@ -44,9 +44,23 @@ export class FriendsGateway
   }
 
   @SubscribeMessage('newRequest')
-  newRequest(@MessageBody() newRequestDto: NewRequestDto) {
+  newRequest(@MessageBody() newRequestDto: FriendRequestDto) {
     this.server
       .to(String(newRequestDto.receiver.id))
       .emit('newRequest', newRequestDto.sender);
+  }
+
+  @SubscribeMessage('acceptRequest')
+  acceptRequest(@MessageBody() acceptRequestDto: FriendRequestDto) {
+    this.server
+      .to(String(acceptRequestDto.receiver.id))
+      .emit('acceptRequest', acceptRequestDto.sender);
+  }
+
+  @SubscribeMessage('rejectRequest')
+  rejectRequest(@MessageBody() rejectRequestDto: FriendRequestDto) {
+    this.server
+      .to(String(rejectRequestDto.receiver.id))
+      .emit('rejectRequest', rejectRequestDto.sender);
   }
 }

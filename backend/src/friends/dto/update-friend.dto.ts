@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateFriendDto } from './create-friend.dto';
+import { FriendAction } from '../entities/friend.entity';
 
-export class UpdateFriendDto extends PartialType(CreateFriendDto) {}
+export class UpdateFriendDto {
+  outgoing_id: number;
+  incoming_id: number;
+  action: FriendAction;
+}

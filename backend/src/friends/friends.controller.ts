@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { FriendsService } from './friends.service';
 import { CreateFriendDto } from './dto/create-friend.dto';
+import { UpdateFriendDto } from './dto/update-friend.dto';
 import { Friend } from './entities/friend.entity';
 
 @Controller('friends')
@@ -43,7 +44,7 @@ export class FriendsController {
   }
 
   @Patch()
-  async update(@Body() friendDto: CreateFriendDto): Promise<void> {
+  async update(@Body() friendDto: UpdateFriendDto): Promise<void> {
     await this.friendsService.update(friendDto);
   }
 

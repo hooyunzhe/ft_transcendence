@@ -6,8 +6,12 @@ export enum FriendStatus {
   Invited = 'invited',
   Pending = 'pending',
   Blocked = 'blocked',
+}
+
+export enum FriendAction {
+  Block = 'block',
   Accept = 'accept',
-  Deny = 'deny',
+  Reject = 'reject',
 }
 
 @Entity()

@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
+import { Friend, FriendStatus, FriendAction } from './entities/friend.entity';
 import { CreateFriendDto } from './dto/create-friend.dto';
-import { Friend, FriendStatus } from './entities/friend.entity';
+import { UpdateFriendDto } from './dto/update-friend.dto';
 
 @Injectable()
 export class FriendsService {
@@ -78,7 +79,7 @@ export class FriendsService {
     });
   }
 
-  async update(friendDto: CreateFriendDto) {
+  async update(friendDto: UpdateFriendDto) {
     const friendship = await this.findExactMatch(
       friendDto.outgoing_id,
       friendDto.incoming_id,
@@ -86,15 +87,15 @@ export class FriendsService {
     if (friendship.status === FriendStatus.Pending) {
       this.updateFriendRequest(friendDto);
     } else if (friendship.status == FriendStatus.Friend) {
-      if (friendDto.status === FriendStatus.Blocked)
+      if (friendDto.action === FriendAction.Block)
         await this.friendRepository.update(friendship.id, {
-          status: friendDto.status,
+          status: FriendStatus.Blocked,
         });
     }
   }
 
-  async updateFriendRequest(friendDto: CreateFriendDto) {
-    if (friendDto.status === FriendStatus.Accept) {
+  async updateFriendRequest(friendDto: UpdateFriendDto) {
+    if (friendDto.action === FriendAction.Accept) {
       Promise.all([
         this.friendRepository.update(
           {
@@ -111,7 +112,7 @@ export class FriendsService {
           { status: FriendStatus.Friend },
         ),
       ]);
-    } else if (friendDto.status === FriendStatus.Deny)
+    } else if (friendDto.action === FriendAction.Reject)
       await this.deleteRelationship(
         friendDto.outgoing_id,
         friendDto.incoming_id,
