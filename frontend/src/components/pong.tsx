@@ -8,7 +8,7 @@ const Pong = () => {
   const [started, setStarted] = useState(false);
   const GameSocket = io('http://localhost:4242/gateway/game');
   const startGame = () => {
-    GameSocket.emit('game');
+    GameSocket.emit('GameStart');
   };
   return (
     <div style={{ overflow: 'hidden' }}>

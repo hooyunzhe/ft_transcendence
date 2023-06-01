@@ -53,10 +53,10 @@ class Example extends Phaser.Scene {
 
     console.log("width is :", this.ball.width, ", body width: ", bodysize.width);
     console.log("height is :",this.ball.height, ", body height: ", bodysize.height);
-    this.GameSocket.emit("initialize", (bodysize));
+    this.GameSocket.emit("initialize");
     this.GameSocket.on("game", (data: { x: number, y: number }) => {
-      this.targetX = data.x * 800;
-      this.targetY = data.y * 600;
+      this.targetX = data.x /100 * window.innerWidth;
+      this.targetY = data.y /100 * window.innerHeight;
     });
   
   }
