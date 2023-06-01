@@ -46,9 +46,9 @@ export class MessagesGateway implements OnGatewayConnection {
   ): string {
     const name = this.messagesService.getClientName(client.id);
 
-    client.broadcast.emit('typing');
+    console.log(isTyping);
+    client.broadcast.emit('typing', isTyping);
     console.log(`You are sending to ${client.id}`);
-    // this.server.to(client.id).emit('typing', isTyping);
     return 'message received';
   }
 

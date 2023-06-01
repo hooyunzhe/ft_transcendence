@@ -7,17 +7,63 @@ import { messageSocket } from '@/lib/messageSocket';
 export default function ChatBar() {
   const [message, setMessage] = useState('');
   const [typingText, setTypingText] = useState('');
+  const [isTypingState, setIsTypingState] = useState(false);
+  const [timeElapsed, setTimeElasped] = useState(new Date());
+  const [startTime, setStartTime] = useState(new Date());
 
-  let isTyping = true;
   useEffect(() => {
-    messageSocket.on('typing', () => {
-      if (isTyping === true) {
-        setTypingText('Send help...');
-      } else setTypingText('');
+    messageSocket.on('typing', (typingEvent: boolean) => {
+      if (typingEvent === true) {
+        setTypingText('Receiving help...');
+      } else {
+        setTypingText('');
+      }
     });
   }, []);
 
-  let timeout;
+  useEffect(() => {
+    if (isTypingState === true) {
+      // console.log('SENT EVENT TYPING TRUE');
+      messageSocket.emit('typing', true);
+    } else {
+      // console.log('SENT EVENT TYPING false');
+      messageSocket.emit('typing', false);
+    }
+  }, [isTypingState]);
+
+  const updateElapsedTime = () => {
+    setTimeElasped(new Date());
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      updateElapsedTime();
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [startTime]);
+
+  useEffect(() => {
+    let seconds = (timeElapsed.getTime() - startTime.getTime()) / 1000;
+
+    // console.log('seconds = ', seconds);
+
+    if (seconds >= 5 && isTypingState === true) {
+      setIsTypingState(false);
+      setStartTime(new Date());
+      setTimeElasped(new Date());
+    } else if (isTypingState === false) {
+      setTimeElasped(new Date());
+      setStartTime(new Date());
+    }
+  }, [timeElapsed]);
+
+  let timeout: NodeJS.Timeout;
+
+  function isDurationElapsed(duration: number): boolean {
+    const currentTime = Date.now();
+    const targetTime = currentTime + duration;
+    return currentTime >= targetTime;
+  }
 
   return (
     <>
@@ -26,16 +72,14 @@ export default function ChatBar() {
           <TextField
             onChange={(event: any) => {
               setMessage(event.target.value);
-              messageSocket.emit('typing', { isTyping: true });
-              timeout = setTimeout(() => {
-                console.log('timeout functino');
-                messageSocket.emit('typing', { isTyping: false });
-              }, 2000);
+              setStartTime(new Date());
+              setIsTypingState(true);
             }}
             value={message}
             label='Type your message...'
             variant='outlined'
             helperText={typingText}
+            autoComplete='off'
           />
         </FormControl>
       </Grid>
