@@ -12,6 +12,8 @@ class RectObj {
     this.y = y;
     this.width = width;
     this.height = height;
+    this.velocityX = 1;
+    this.velocityY = 1;
   }
   left() {
     return this.x - this.width / 2;
@@ -30,8 +32,10 @@ class RectObj {
   }
   x: number;
   y: number;
-  private width: number;
-  private height: number;
+  width: number;
+  height: number;
+  velocityX: number;
+  velocityY: number;
 }
 @Injectable()
 export class GameService {
@@ -41,6 +45,7 @@ export class GameService {
   Paddle1: RectObj;
   Paddle2: RectObj;
   velocity: number;
+  i: number = 0;
 
   constructor() {
     this.windowSize = {
@@ -57,14 +62,14 @@ export class GameService {
       40,
       40,
     );
-    this.Paddle1 = new RectObj(15, this.windowSize.y / 2, 15, 100);
+    this.Paddle1 = new RectObj(15, this.windowSize.y / 2, 10, 110);
     this.Paddle2 = new RectObj(
       this.windowSize.x - 15,
       this.windowSize.y / 2,
-      2,
-      100,
+      10,
+      110,
     );
-    this.velocity = 0.5;
+    this.velocity = 10;
   }
 
   gameStart() {
@@ -78,6 +83,8 @@ export class GameService {
   gameReset() {
     this.Ball.x = this.windowSize.x / 2;
     this.Ball.y = this.windowSize.y / 2;
+    this.Paddle1.y = this.windowSize.y / 2;
+    this.Paddle2.y = this.windowSize.y / 2;
     this.direction = {
       x: 0,
       y: 0,
@@ -98,7 +105,7 @@ export class GameService {
     //     this.Ball.right(),
     //   );
     // }
-    if (this.Ball.left() < 0 || this.Ball.right() > this.windowSize.x)
+    if (this.Ball.right() < 0 || this.Ball.left() > this.windowSize.x)
       this.gameReset();
     if (
       (this.gameCollision(this.Ball, this.Paddle1) && this.direction.x < 0) ||
@@ -107,6 +114,7 @@ export class GameService {
       this.direction.x *= -1;
       console.log('x:', this.Ball.x, ' y:', this.Ball.y);
     }
+
     // console.log("ball left:",this.Ball.left, " paddle right:",this.Paddle1.right)
     // console.log(this.gameCollision(this.Paddle1, this.Ball));
     server.emit('game', {
@@ -126,17 +134,29 @@ export class GameService {
 
   gameSetPaddlePosition(player: number, direction: number) {
     if (player === 1) {
-      if (direction > 0) this.gameMovePaddle(this.Paddle1, 50);
-      else if (direction < 0) this.gameMovePaddle(this.Paddle1, -50);
+      if (direction > 0)
+        this.gameMovePaddle(this.Paddle1, 50 * this.Paddle1.velocityY);
+      else if (direction < 0)
+        this.gameMovePaddle(this.Paddle1, -50 * this.Paddle1.velocityY);
+      this.Paddle1.velocityY += 0.5;
     } else if (player === 2) {
-      if (direction > 0) this.gameMovePaddle(this.Paddle2, 50);
-      else if (direction < 0) this.gameMovePaddle(this.Paddle2, -50);
+      if (direction > 0)
+        this.gameMovePaddle(this.Paddle2, 50 * this.Paddle2.velocityY);
+      else if (direction < 0)
+        this.gameMovePaddle(this.Paddle2, -50 * this.Paddle2.velocityY);
+      this.Paddle2.velocityY += 0.5;
     }
   }
 
+  gameSetPaddleStop(player: number) {
+    if (player === 1) this.Paddle1.velocityY = 1;
+    if (player === 2) this.Paddle2.velocityY = 1;
+  }
   gameMovePaddle(obj: RectObj, dir: number) {
     if (obj.top() + dir >= 0 && obj.bottom() + dir <= this.windowSize.y)
       obj.y += dir;
+    else if (dir > 0) obj.y = this.windowSize.y - obj.height / 2;
+    else if (dir < 0) obj.y = obj.height / 2;
   }
   gameCollision(obj1: RectObj, obj2: RectObj) {
     return (

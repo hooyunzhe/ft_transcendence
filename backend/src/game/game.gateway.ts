@@ -5,10 +5,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 
-import { Interval } from '@nestjs/schedule';
 import { Server } from 'http';
 import { GameService } from './game.service';
-import { start } from 'repl';
 
 interface Coor {
   x: number;
@@ -30,7 +28,8 @@ export class GameGateway {
   Init() {
     this.id = setInterval(() => {
       this.game.gameUpdate(this.server);
-    });
+      // this.game.resetI();
+    }, 50);
   }
 
   @SubscribeMessage('Start')
@@ -59,5 +58,7 @@ export class GameGateway {
     if (movement === 's') this.game.gameSetPaddlePosition(1, 1);
     if (movement === 'up') this.game.gameSetPaddlePosition(2, -1);
     if (movement === 'down') this.game.gameSetPaddlePosition(2, 1);
+    if (movement === '1') this.game.gameSetPaddleStop(1);
+    if (movement === '2') this.game.gameSetPaddleStop(2);
   }
 }

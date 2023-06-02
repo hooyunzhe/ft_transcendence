@@ -21,7 +21,7 @@ class Example extends Phaser.Scene {
   preload() {
     this.load.setBaseURL('http://localhost:3000');
     this.load.multiatlas('ballsprite', '/newball/spritesheet.json', 'newball');
-    this.load.image('red', '/ball/0.png');
+    this.load.image('red', '/ball/bubble.png');
     this.load.image('paddle1', '/ball/paddle1.png');
   }
 
@@ -109,8 +109,8 @@ class Example extends Phaser.Scene {
       }) => {
         this.targetX = data.ball.x;
         this.targetY = data.ball.y;
-        this.paddle1.x = data.paddle1.x;
-        this.paddle1.y = data.paddle1.y;
+        this.paddlecoor1x = data.paddle1.x;
+        this.paddlecoor1y = data.paddle1.y;
         this.paddle2.x = data.paddle2.x;
         this.paddle2.y = data.paddle2.y;
       },
@@ -121,29 +121,49 @@ class Example extends Phaser.Scene {
       else if (event.key == 's') this.GameSocket.emit('Player', 's');
     });
 
+    window.addEventListener('keyup', (event) => {
+      if (event.key == 'w' || event.key == 's')
+        this.GameSocket.emit('Player', '1');
+    });
+
     window.addEventListener('keydown', (event) => {
       if (event.key == 'ArrowUp') this.GameSocket.emit('Player', 'up');
       else if (event.key == 'ArrowDown') this.GameSocket.emit('Player', 'down');
     });
+
+    window.addEventListener('keyup', (event) => {
+      if (event.key == 'ArrowUp' || event.key == 'ArrowDown')
+        this.GameSocket.emit('Player', '2');
+    });
   }
 
   update() {
-    // if (this.targetX !== -1 && this.targetY !== -1) {
-    //   const deltaX = this.targetX - this.ball.x;
-    //   const deltaY = this.targetY - this.ball.y;
-    //   const interpolatedX = Phaser.Math.Interpolation.SmoothStep(
-    //     0.1,
-    //     0,
-    //     deltaX,
-    //   );
-    //   const interpolatedY = Phaser.Math.Interpolation.SmoothStep(
-    //     0.1,
-    //     0,
-    //     deltaY,
-    //   );
-    this.ball.x = this.targetX;
-    this.ball.y = this.targetY;
+    const balltween = this.tweens.add({
+      targets: this.ball,
+      x: this.targetX,
+      y: this.targetY,
+      duration: 50, // Adjust the duration as needed for desired smoothness
+      ease: 'Linear',
+    });
 
+    // Update current position after the tween completes
+    balltween.on('complete', () => {
+      this.ball.x = this.targetX;
+      this.ball.y = this.targetY;
+    });
+
+    const paddletween = this.tweens.add({
+      targets: this.paddle1,
+      x: this.paddlecoor1x,
+      y: this.paddlecoor1y,
+      duration: 50, // Adjust the duration as needed for desired smoothness
+      ease: 'Linear',
+    });
+
+    paddletween.on('complete', () => {
+      this.paddle1.x = this.paddlecoor1x;
+      this.paddle1.y = this.paddlecoor1y;
+    });
     // }
   }
 }
