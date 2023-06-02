@@ -1,4 +1,9 @@
-import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 
 import { Interval } from '@nestjs/schedule';
 import { Server } from 'http';
@@ -20,31 +25,39 @@ export class GameGateway {
   server: Server;
 
   private id;
-  game =  new GameService();
+  game = new GameService();
   @SubscribeMessage('initialize')
-  Init(){
-  this.id = setInterval(()=>{
-    this.game.gameUpdate(this.server);
-  });
-}
+  Init() {
+    this.id = setInterval(() => {
+      this.game.gameUpdate(this.server);
+    });
+  }
 
   @SubscribeMessage('Start')
-  start(){
+  start() {
     this.game.gameStart();
   }
 
   @SubscribeMessage('Reset')
-  reset(){
+  reset() {
     this.game.gameReset();
   }
-  
+
   @SubscribeMessage('Stop')
-  Stop(){
+  Stop() {
     clearInterval(this.id);
   }
-  
+
   @SubscribeMessage('Set')
-  SetPosition(@MessageBody() position :{x: number, y: number}): void {
+  SetPosition(@MessageBody() position: { x: number; y: number }): void {
     this.game.gameSetPosition(position.x, position.y);
+  }
+
+  @SubscribeMessage('Player')
+  MovePaddle(@MessageBody() movement: string): void {
+    if (movement === 'w') this.game.gameSetPaddlePosition(1, -1);
+    if (movement === 's') this.game.gameSetPaddlePosition(1, 1);
+    if (movement === 'up') this.game.gameSetPaddlePosition(2, -1);
+    if (movement === 'down') this.game.gameSetPaddlePosition(2, 1);
   }
 }
