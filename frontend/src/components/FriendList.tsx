@@ -1,15 +1,19 @@
 'use client';
-import { Button, Stack } from '@mui/material';
+import { Button, Collapse, List, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { FriendDisplay } from './FriendDisplay';
 import callAPI from '@/lib/callAPI';
 import { Friend } from '@/types/Friend';
 import { User } from '@/types/User';
 import { friends_socket } from '@/lib/socket';
+import FriendDropdown from './FriendDropdown';
 
 export function FriendList() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedFriend, setSelectedFriend] = useState(0);
+  const [pendingOpen, setPendingOpen] = useState(false);
+  const [sentOpen, setSentOpen] = useState(false);
+  const [friendsOpen, setFriendsOpen] = useState(false);
 
   const current_user: User = {
     id: 4,
@@ -50,6 +54,20 @@ export function FriendList() {
     };
   }, []);
 
+  function addFriend() {
+    callAPI('POST', 'friends', {
+      outgoing_id: 4,
+      incoming_id: 1,
+      status: 'invited',
+    });
+    friends_socket.emit('newRequest', {
+      sender: current_user,
+      receiver: {
+        id: 1,
+      },
+    });
+  }
+
   return (
     <Stack
       width='100%'
@@ -58,32 +76,68 @@ export function FriendList() {
       justifyContent='center'
       spacing={1}
     >
-      <Button
-        variant='contained'
-        onClick={() => {
-          callAPI('POST', 'friends', {
-            outgoing_id: 4,
-            incoming_id: 1,
-            status: 'invited',
-          });
-          friends_socket.emit('newRequest', {
-            sender: current_user,
-            receiver: {
-              id: 1,
-            },
-          });
-        }}
-      >
+      <Button variant='contained' onClick={addFriend}>
         Add Friend
       </Button>
-      {friends.map((obj: Friend, index: number) => (
-        <FriendDisplay
-          key={index}
-          friend={obj}
-          selectedFriend={selectedFriend}
-          setSelectedFriend={setSelectedFriend}
-        ></FriendDisplay>
-      ))}
+      <FriendDropdown
+        category={'Pending'}
+        open={pendingOpen}
+        setOpen={setPendingOpen}
+      >
+        <Collapse in={pendingOpen} timeout='auto' unmountOnExit>
+          <List>
+            {friends.map(
+              (friend: Friend, index: number) =>
+                friend.status === 'pending' && (
+                  <FriendDisplay
+                    key={index}
+                    friend={friend}
+                    selectedFriend={selectedFriend}
+                    setSelectedFriend={setSelectedFriend}
+                  ></FriendDisplay>
+                ),
+            )}
+          </List>
+        </Collapse>
+      </FriendDropdown>
+      <FriendDropdown category={'Sent'} open={sentOpen} setOpen={setSentOpen}>
+        <Collapse in={sentOpen} timeout='auto' unmountOnExit>
+          <List>
+            {friends.map(
+              (friend: Friend, index: number) =>
+                friend.status === 'invited' && (
+                  <FriendDisplay
+                    key={index}
+                    friend={friend}
+                    selectedFriend={selectedFriend}
+                    setSelectedFriend={setSelectedFriend}
+                  ></FriendDisplay>
+                ),
+            )}
+          </List>
+        </Collapse>
+      </FriendDropdown>
+      <FriendDropdown
+        category={'Friends'}
+        open={friendsOpen}
+        setOpen={setFriendsOpen}
+      >
+        <Collapse in={friendsOpen} timeout='auto' unmountOnExit>
+          <List>
+            {friends.map(
+              (friend: Friend, index: number) =>
+                friend.status === 'friend' && (
+                  <FriendDisplay
+                    key={index}
+                    friend={friend}
+                    selectedFriend={selectedFriend}
+                    setSelectedFriend={setSelectedFriend}
+                  ></FriendDisplay>
+                ),
+            )}
+          </List>
+        </Collapse>
+      </FriendDropdown>
     </Stack>
   );
 }

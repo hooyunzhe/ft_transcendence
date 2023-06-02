@@ -8,7 +8,7 @@ import {
   ListItemText,
   Paper,
 } from '@mui/material';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 
 interface FriendDisplayProps {
   friend: Friend;
