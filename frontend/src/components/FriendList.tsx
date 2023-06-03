@@ -12,7 +12,7 @@ export function FriendList() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedFriend, setSelectedFriend] = useState(0);
   const [pendingOpen, setPendingOpen] = useState(false);
-  const [sentOpen, setSentOpen] = useState(false);
+  const [invitedOpen, setInvitedOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
 
   const current_user: User = {
@@ -27,30 +27,50 @@ export function FriendList() {
       const data = JSON.parse(
         await callAPI('GET', 'friends/user?outgoing_id=4'),
       );
-
-      console.log(data);
       setFriends(data);
     }
     getFriend();
 
     function handleNewRequest(sender: User) {
-      setFriends((friends) => {
-        return [
-          ...friends,
-          {
-            id: friends.length + 1,
-            status: 'pending',
-            outgoing_friend: current_user,
-            incoming_friend: sender,
-          },
-        ];
-      });
+      setFriends((friends) => [
+        ...friends,
+        {
+          id: friends.length + 1,
+          outgoing_friend: current_user,
+          incoming_friend: sender,
+          status: 'pending',
+        },
+      ]);
+    }
+
+    function handleAcceptRequest(sender: User) {
+      setFriends((friends) =>
+        friends.map((friend) => {
+          if (
+            friend.incoming_friend.id === sender.id &&
+            friend.status === 'invited'
+          ) {
+            friend.status = 'friend';
+          }
+          return friend;
+        }),
+      );
+    }
+
+    function handleRejectRequest(sender: User) {
+      setFriends((friends) =>
+        friends.filter((friend) => friend.incoming_friend.id !== sender.id),
+      );
     }
 
     friends_socket.on('newRequest', handleNewRequest);
+    friends_socket.on('acceptRequest', handleAcceptRequest);
+    friends_socket.on('rejectRequest', handleRejectRequest);
 
     return () => {
       friends_socket.off('newRequest', handleNewRequest);
+      friends_socket.off('acceptRequest', handleAcceptRequest);
+      friends_socket.off('rejectRequest', handleRejectRequest);
     };
   }, []);
 
@@ -60,6 +80,20 @@ export function FriendList() {
       incoming_id: 1,
       status: 'invited',
     });
+    setFriends((friends) => [
+      ...friends,
+      {
+        id: friends.length + 1,
+        outgoing_friend: current_user,
+        incoming_friend: {
+          id: 1,
+          username: 'test',
+          refresh_token: 'test_token',
+          date_of_creation: new Date(),
+        },
+        status: 'invited',
+      },
+    ]);
     friends_socket.emit('newRequest', {
       sender: current_user,
       receiver: {
@@ -100,8 +134,12 @@ export function FriendList() {
           </List>
         </Collapse>
       </FriendDropdown>
-      <FriendDropdown category={'Sent'} open={sentOpen} setOpen={setSentOpen}>
-        <Collapse in={sentOpen} timeout='auto' unmountOnExit>
+      <FriendDropdown
+        category={'Invited'}
+        open={invitedOpen}
+        setOpen={setInvitedOpen}
+      >
+        <Collapse in={invitedOpen} timeout='auto' unmountOnExit>
           <List>
             {friends.map(
               (friend: Friend, index: number) =>

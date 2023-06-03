@@ -11,7 +11,7 @@ export default async function call_API(
     headers: {
       'Content-Type': 'application/json',
     },
-    body: body,
+    body: JSON.stringify(body),
   })
     .then((data) => data.text())
     .catch((error) => {

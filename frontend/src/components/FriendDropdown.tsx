@@ -33,7 +33,7 @@ export default function FriendDropdown({
         <ListItemButton onClick={() => setOpen(!open)}>
           <ListItemIcon>
             {category === 'Pending' && <MoveToInboxRounded />}
-            {category === 'Sent' && <OutboxRounded />}
+            {category === 'Invited' && <OutboxRounded />}
             {category === 'Friends' && <PeopleRounded />}
           </ListItemIcon>
           <ListItemText primary={category}></ListItemText>
