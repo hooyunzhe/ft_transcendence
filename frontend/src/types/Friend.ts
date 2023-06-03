@@ -1,6 +1,6 @@
-import { User } from './User';
+import User from './User';
 
-export interface Friend {
+export default interface Friend {
   id: number;
   outgoing_friend: User;
   incoming_friend: User;

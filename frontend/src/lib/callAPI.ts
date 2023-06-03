@@ -1,4 +1,4 @@
-export default async function call_API(
+export default async function callAPI(
   method: string,
   route: string,
   body?: any,

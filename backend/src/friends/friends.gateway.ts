@@ -7,6 +7,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { GetStatusDto } from './dto/get-status.dto';
 import { CheckStatusDto } from './dto/check-status.dto';
 import { FriendRequestDto } from './dto/friend-request.dto';
 
@@ -32,15 +33,26 @@ export class FriendsGateway
     client.broadcast.emit('newDisconnect', client.data.user_id);
   }
 
+  @SubscribeMessage('getStatus')
+  async getStatus(@MessageBody() getStatusDto: GetStatusDto) {
+    const connectedSockets = await this.server.fetchSockets();
+    const onlineUsers = connectedSockets.map((socket) => socket.data.user_id);
+    let statusDictionary: { [key: number]: string } = {};
+
+    getStatusDto.user_ids.forEach((user_id) => {
+      statusDictionary[user_id] = onlineUsers.includes(user_id)
+        ? 'online'
+        : 'offline';
+    });
+    return statusDictionary;
+  }
+
   @SubscribeMessage('checkStatus')
   async checkStatus(@MessageBody() checkStatusDto: CheckStatusDto) {
     const connectedSockets = await this.server.fetchSockets();
     const onlineUsers = connectedSockets.map((socket) => socket.data.user_id);
 
-    return checkStatusDto.user_ids.map((user_id) => ({
-      id: user_id,
-      online: onlineUsers.includes(user_id),
-    }));
+    return onlineUsers.includes(checkStatusDto.user_id) ? 'online' : 'offline';
   }
 
   @SubscribeMessage('newRequest')
@@ -48,6 +60,13 @@ export class FriendsGateway
     this.server
       .to(String(newRequestDto.receiver.id))
       .emit('newRequest', newRequestDto.sender);
+  }
+
+  @SubscribeMessage('deleteRequest')
+  deleteRequest(@MessageBody() deleteRequestDto: FriendRequestDto) {
+    this.server
+      .to(String(deleteRequestDto.receiver.id))
+      .emit('deleteRequest', deleteRequestDto.sender);
   }
 
   @SubscribeMessage('acceptRequest')

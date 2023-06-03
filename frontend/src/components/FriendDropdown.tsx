@@ -7,10 +7,12 @@ import {
   PeopleRounded,
 } from '@mui/icons-material';
 import {
+  Collapse,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Paper,
+  Stack,
 } from '@mui/material';
 import { Dispatch, ReactNode, SetStateAction } from 'react';
 
@@ -40,7 +42,17 @@ export default function FriendDropdown({
           {open ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
       </Paper>
-      {children}
+      <Collapse in={open} timeout='auto' unmountOnExit>
+        <Stack
+          width='100%'
+          maxWidth={360}
+          direction='column'
+          justifyContent='center'
+          spacing={1}
+        >
+          {children}
+        </Stack>
+      </Collapse>
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-export const friends_socket = io('http://localhost:4242/gateway/friends', {
+export const friendsSocket = io('http://localhost:4242/gateway/friends', {
   query: { id: 4 },
 });
 

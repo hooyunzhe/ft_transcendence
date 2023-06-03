@@ -1,3 +1,3 @@
 export class CheckStatusDto {
-  user_ids: number[];
+  user_id: number;
 }
