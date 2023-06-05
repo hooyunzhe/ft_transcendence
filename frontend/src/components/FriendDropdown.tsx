@@ -18,7 +18,7 @@ import {
 import FriendDisplay from './FriendDisplay';
 import { Dispatch, SetStateAction } from 'react';
 
-interface FriendDisplayProps {
+interface FriendDropdownProps {
   category: string;
   open: boolean;
   friends: Friend[];
@@ -41,7 +41,7 @@ export default function FriendDropdown({
   selectedFriend,
   setSelectedFriend,
   friendsStatus,
-}: FriendDisplayProps) {
+}: FriendDropdownProps) {
   return (
     <>
       <Paper elevation={2}>

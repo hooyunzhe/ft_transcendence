@@ -1,21 +1,26 @@
 'use client';
-import { Button, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
+import FriendPrompt from './FriendPrompt';
 import FriendDropdown from './FriendDropdown';
 import callAPI from '@/lib/callAPI';
 import { friendsSocket } from '@/lib/socket';
 import Friend from '@/types/Friend';
 import User from '@/types/User';
 
-export function FriendList() {
+export default function FriendList() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [friendsStatus, setFriendsStatus] = useState<{
     [key: number]: string;
   }>({});
-  const [selectedFriend, setSelectedFriend] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState<{
     [key: string]: boolean;
-  }>({});
+  }>({
+    pending: true,
+    invited: true,
+    friends: true,
+  });
+  const [selectedFriend, setSelectedFriend] = useState(0);
 
   const current_user: User = {
     id: 4,
@@ -141,10 +146,10 @@ export function FriendList() {
     };
   }, []);
 
-  function addFriend() {
+  function addFriend(username: string) {
     const new_friend: User = {
       id: 1,
-      username: 'test',
+      username: username,
       refresh_token: 'test_token',
       date_of_creation: new Date(),
     };
@@ -181,9 +186,7 @@ export function FriendList() {
       justifyContent='center'
       spacing={1}
     >
-      <Button variant='contained' onClick={addFriend}>
-        Add Friend
-      </Button>
+      <FriendPrompt addFriend={addFriend}></FriendPrompt>
       {categories.map((category, index) => (
         <FriendDropdown
           key={index}

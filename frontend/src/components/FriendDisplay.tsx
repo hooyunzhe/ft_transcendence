@@ -69,7 +69,7 @@ export default function FriendDisplay({
           <DeleteRounded />
         </IconButton>
       )}
-      {category === 'friend' && (
+      {category === 'friends' && (
         <ListItemText
           sx={{ textAlign: 'center' }}
           secondaryTypographyProps={{
