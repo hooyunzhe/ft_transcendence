@@ -47,14 +47,6 @@ export class FriendsGateway
     return statusDictionary;
   }
 
-  @SubscribeMessage('checkStatus')
-  async checkStatus(@MessageBody() checkStatusDto: CheckStatusDto) {
-    const connectedSockets = await this.server.fetchSockets();
-    const onlineUsers = connectedSockets.map((socket) => socket.data.user_id);
-
-    return onlineUsers.includes(checkStatusDto.user_id) ? 'online' : 'offline';
-  }
-
   @SubscribeMessage('newRequest')
   newRequest(@MessageBody() newRequestDto: FriendRequestDto) {
     this.server

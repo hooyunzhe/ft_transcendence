@@ -86,7 +86,7 @@ export class FriendsService {
     );
     if (friendship.status === FriendStatus.Pending) {
       this.updateFriendRequest(friendDto);
-    } else if (friendship.status == FriendStatus.Friend) {
+    } else if (friendship.status == FriendStatus.Friends) {
       if (friendDto.action === FriendAction.Block)
         await this.friendRepository.update(friendship.id, {
           status: FriendStatus.Blocked,
@@ -102,14 +102,14 @@ export class FriendsService {
             outgoing_friend: { id: friendDto.outgoing_id },
             incoming_friend: { id: friendDto.incoming_id },
           },
-          { status: FriendStatus.Friend },
+          { status: FriendStatus.Friends },
         ),
         this.friendRepository.update(
           {
             outgoing_friend: { id: friendDto.incoming_id },
             incoming_friend: { id: friendDto.outgoing_id },
           },
-          { status: FriendStatus.Friend },
+          { status: FriendStatus.Friends },
         ),
       ]);
     } else if (friendDto.action === FriendAction.Reject)

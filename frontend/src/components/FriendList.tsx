@@ -1,7 +1,6 @@
 'use client';
-import { Button, ListItemButton, Paper, Stack } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
-import FriendDisplay from './FriendDisplay';
 import FriendDropdown from './FriendDropdown';
 import callAPI from '@/lib/callAPI';
 import { friendsSocket } from '@/lib/socket';
@@ -14,9 +13,9 @@ export function FriendList() {
     [key: number]: string;
   }>({});
   const [selectedFriend, setSelectedFriend] = useState(0);
-  const [pendingOpen, setPendingOpen] = useState(false);
-  const [invitedOpen, setInvitedOpen] = useState(false);
-  const [friendsOpen, setFriendsOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const current_user: User = {
     id: 4,
@@ -25,91 +24,120 @@ export function FriendList() {
     date_of_creation: new Date(),
   };
 
+  function callFriendsAPI(
+    incoming_id: number,
+    action: 'new' | 'accept' | 'reject' | 'delete',
+  ) {
+    callAPI(
+      action === 'new' ? 'POST' : action === 'delete' ? 'DELETE' : 'PATCH',
+      'friends',
+      {
+        outgoing_id: current_user.id,
+        incoming_id: incoming_id,
+        ...((action === 'accept' || action === 'reject') && { action: action }),
+      },
+    );
+  }
+
+  function addRequest(incoming_user: User, direction: 'outgoing' | 'incoming') {
+    setFriends((friends) => [
+      ...friends,
+      {
+        id: friends.length + 1,
+        outgoing_friend: current_user,
+        incoming_friend: incoming_user,
+        status: direction === 'outgoing' ? 'invited' : 'pending',
+      },
+    ]);
+  }
+
+  function changeRequest(
+    incoming_user: User,
+    action: 'accept' | 'reject' | 'delete',
+  ) {
+    setFriends((friends) => {
+      if (action === 'accept') {
+        return friends.map((friend) => {
+          if (
+            friend.incoming_friend.id === incoming_user.id &&
+            (friend.status === 'invited' || friend.status === 'pending')
+          ) {
+            friend.status = 'friends';
+          }
+          return friend;
+        });
+      } else {
+        return friends.filter(
+          (friend) => friend.incoming_friend.id !== incoming_user.id,
+        );
+      }
+    });
+  }
+
+  function addStatus(user_ids: number[]) {
+    friendsSocket.emit(
+      'getStatus',
+      { user_ids: user_ids },
+      (data: { [key: number]: string }) => {
+        setFriendsStatus((friendsStatus) => ({ ...friendsStatus, ...data }));
+      },
+    );
+  }
+
+  function changeStatus(user_id: number, new_status: 'online' | 'offline') {
+    setFriendsStatus((friendsStatus) => ({
+      ...friendsStatus,
+      [user_id]: new_status,
+    }));
+  }
+
+  function emitRequest(
+    receiver_id: number,
+    action: 'new' | 'accept' | 'reject' | 'delete',
+  ) {
+    friendsSocket.emit(action + 'Request', {
+      sender: current_user,
+      receiver: { id: receiver_id },
+    });
+  }
+
   useEffect(() => {
     async function getFriends() {
       const data = JSON.parse(
         await callAPI('GET', 'friends/user?outgoing_id=4'),
       );
       setFriends(data);
-      friendsSocket.emit(
-        'getStatus',
-        { user_ids: data.map((friend: Friend) => friend.incoming_friend.id) },
-        (data: { [key: number]: string }) => {
-          setFriendsStatus(data);
-        },
-      );
+      addStatus(data.map((friend: Friend) => friend.incoming_friend.id));
     }
-
-    function handleNewConnection(user_id: number) {
-      setFriendsStatus((friendsStatus) => ({
-        ...friendsStatus,
-        [user_id]: 'online',
-      }));
-    }
-
-    function handleNewDisconnect(user_id: number) {
-      setFriendsStatus((friendsStatus) => ({
-        ...friendsStatus,
-        [user_id]: 'offline',
-      }));
-    }
-
-    function handleNewRequest(sender: User) {
-      setFriends((friends) => [
-        ...friends,
-        {
-          id: friends.length + 1,
-          outgoing_friend: current_user,
-          incoming_friend: sender,
-          status: 'pending',
-        },
-      ]);
-      friendsSocket.emit(
-        'checkStatus',
-        { user_id: sender.id },
-        (data: string) => {
-          setFriendsStatus((friendsStatus) => ({
-            ...friendsStatus,
-            [sender.id]: data,
-          }));
-        },
-      );
-    }
-
-    function handleAcceptRequest(sender: User) {
-      setFriends((friends) =>
-        friends.map((friend) => {
-          if (
-            friend.incoming_friend.id === sender.id &&
-            friend.status === 'invited'
-          ) {
-            friend.status = 'friend';
-          }
-          return friend;
-        }),
-      );
-    }
-
-    function handleRejectRequest(sender: User) {
-      setFriends((friends) =>
-        friends.filter((friend) => friend.incoming_friend.id !== sender.id),
-      );
-    }
-
     getFriends();
 
-    friendsSocket.on('newConnection', handleNewConnection);
-    friendsSocket.on('newDisconnect', handleNewDisconnect);
-    friendsSocket.on('newRequest', handleNewRequest);
-    friendsSocket.on('acceptRequest', handleAcceptRequest);
-    friendsSocket.on('rejectRequest', handleRejectRequest);
+    friendsSocket.on('newConnection', (user_id: number) => {
+      changeStatus(user_id, 'online');
+    });
+
+    friendsSocket.on('newDisconnect', (user_id: number) => {
+      changeStatus(user_id, 'offline');
+    });
+
+    friendsSocket.on('newRequest', (sender: User) => {
+      addRequest(sender, 'incoming');
+      addStatus([sender.id]);
+    });
+
+    friendsSocket.on('acceptRequest', (sender: User) => {
+      changeRequest(sender, 'accept');
+    });
+
+    friendsSocket.on('rejectRequest', (sender: User) => {
+      changeRequest(sender, 'reject');
+    });
 
     return () => {
-      friendsSocket.off('newConnection', handleNewConnection);
-      friendsSocket.off('newDisconnect', handleNewDisconnect);
-      friendsSocket.off('newRequest', handleNewRequest);
-      friendsSocket.off('acceptRequest', handleAcceptRequest);
-      friendsSocket.off('rejectRequest', handleRejectRequest);
+      friendsSocket.off('newConnection');
+      friendsSocket.off('newDisconnect');
+      friendsSocket.off('newRequest');
+      friendsSocket.off('acceptRequest');
+      friendsSocket.off('rejectRequest');
     };
   }, []);
 
@@ -121,70 +149,29 @@ export function FriendList() {
       date_of_creation: new Date(),
     };
 
-    callAPI('POST', 'friends', {
-      outgoing_id: 4,
-      incoming_id: 1,
-      status: 'invited',
-    });
-    setFriends((friends) => [
-      ...friends,
-      {
-        id: friends.length + 1,
-        outgoing_friend: current_user,
-        incoming_friend: new_friend,
-        status: 'invited',
-      },
-    ]);
-    friendsSocket.emit('newRequest', {
-      sender: current_user,
-      receiver: {
-        id: 1,
-      },
-    });
-    friendsSocket.emit(
-      'checkStatus',
-      { user_id: new_friend.id },
-      (data: string) => {
-        setFriendsStatus((friendsStatus) => ({
-          ...friendsStatus,
-          [new_friend.id]: data,
-        }));
-      },
-    );
+    callFriendsAPI(new_friend.id, 'new');
+    addRequest(new_friend, 'outgoing');
+    emitRequest(new_friend.id, 'new');
+    addStatus([new_friend.id]);
   }
 
-  function handleRequest(request: Friend, action: string) {
-    if (action === 'delete') {
-      callAPI('DELETE', 'friends', {
-        outgoing_id: request.outgoing_friend.id,
-        incoming_id: request.incoming_friend.id,
-      });
-    } else {
-      callAPI('PATCH', 'friends', {
-        outgoing_id: request.outgoing_friend.id,
-        incoming_id: request.incoming_friend.id,
-        action: action,
-      });
-    }
-    setFriends((friends) => {
-      if (action === 'accept') {
-        return friends.map((friend) => {
-          if (friend.incoming_friend.id === request.incoming_friend.id) {
-            friend.status = 'friend';
-          }
-          return friend;
-        });
-      } else {
-        return friends.filter(
-          (friend) => friend.incoming_friend.id !== request.incoming_friend.id,
-        );
-      }
-    });
-    friendsSocket.emit(action + 'Request', {
-      sender: current_user,
-      receiver: { id: request.incoming_friend.id },
-    });
+  function handleRequest(
+    request: Friend,
+    action: 'accept' | 'reject' | 'delete',
+  ) {
+    callFriendsAPI(request.incoming_friend.id, action);
+    changeRequest(request.incoming_friend, action);
+    emitRequest(request.incoming_friend.id, action);
   }
+
+  function toggleDropdown(category: string) {
+    setDropdownOpen((dropdownOpen) => ({
+      ...dropdownOpen,
+      [category]: !dropdownOpen[category],
+    }));
+  }
+
+  const categories = ['pending', 'invited', 'friends'];
 
   return (
     <Stack
@@ -197,69 +184,19 @@ export function FriendList() {
       <Button variant='contained' onClick={addFriend}>
         Add Friend
       </Button>
-      <FriendDropdown
-        category={'Pending'}
-        open={pendingOpen}
-        setOpen={setPendingOpen}
-      >
-        {friends.map(
-          (friend: Friend, index: number) =>
-            friend.status === 'pending' && (
-              <Paper elevation={2} sx={{ p: '8px 16px' }}>
-                <FriendDisplay
-                  key={index}
-                  category={'pending'}
-                  friend={friend}
-                  handleAction={handleRequest}
-                ></FriendDisplay>
-              </Paper>
-            ),
-        )}
-      </FriendDropdown>
-      <FriendDropdown
-        category={'Invited'}
-        open={invitedOpen}
-        setOpen={setInvitedOpen}
-      >
-        {friends.map(
-          (friend: Friend, index: number) =>
-            friend.status === 'invited' && (
-              <Paper elevation={2} sx={{ p: '8px 16px' }}>
-                <FriendDisplay
-                  key={index}
-                  category={'invited'}
-                  friend={friend}
-                  handleAction={handleRequest}
-                ></FriendDisplay>
-              </Paper>
-            ),
-        )}
-      </FriendDropdown>
-      <FriendDropdown
-        category={'Friends'}
-        open={friendsOpen}
-        setOpen={setFriendsOpen}
-      >
-        {friends.map(
-          (friend: Friend, index: number) =>
-            friend.status === 'friend' && (
-              <Paper elevation={2}>
-                <ListItemButton
-                  selected={selectedFriend === friend.id}
-                  onClick={() => setSelectedFriend(friend.id)}
-                >
-                  <FriendDisplay
-                    key={index}
-                    category={'friend'}
-                    friend={friend}
-                    status={friendsStatus[friend.incoming_friend.id]}
-                    handleAction={handleRequest}
-                  ></FriendDisplay>
-                </ListItemButton>
-              </Paper>
-            ),
-        )}
-      </FriendDropdown>
+      {categories.map((category, index) => (
+        <FriendDropdown
+          key={index}
+          category={category}
+          open={dropdownOpen[category]}
+          friends={friends.filter((friend) => friend.status === category)}
+          toggleDropdown={toggleDropdown}
+          handleRequest={handleRequest}
+          selectedFriend={selectedFriend}
+          setSelectedFriend={setSelectedFriend}
+          friendsStatus={friendsStatus}
+        ></FriendDropdown>
+      ))}
     </Stack>
   );
 }

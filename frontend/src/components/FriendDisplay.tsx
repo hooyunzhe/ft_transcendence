@@ -17,7 +17,10 @@ interface FriendDisplayProps {
   category: string;
   friend: Friend;
   status?: string;
-  handleAction: (request: Friend, action: string) => void;
+  handleAction: (
+    request: Friend,
+    action: 'accept' | 'reject' | 'delete',
+  ) => void;
 }
 
 export default function FriendDisplay({

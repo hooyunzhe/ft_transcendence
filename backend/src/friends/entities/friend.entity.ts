@@ -2,7 +2,7 @@ import { User } from 'src/users/entities/user.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum FriendStatus {
-  Friend = 'friend',
+  Friends = 'friends',
   Invited = 'invited',
   Pending = 'pending',
   Blocked = 'blocked',
