@@ -20,7 +20,7 @@ class Example extends Phaser.Scene {
   private GameSocket: Socket<DefaultEventsMap, DefaultEventsMap>;
   preload() {
     this.load.setBaseURL('http://localhost:3000');
-    this.load.multiatlas('ballsprite', '/newball/spritesheet.json', 'newball');
+    this.load.multiatlas('ballsprite', '/ball/ballsprite.json', 'ball');
     this.load.image('red', '/ball/bubble.png');
     this.load.image('paddle1', '/ball/paddle1.png');
   }
@@ -53,19 +53,19 @@ class Example extends Phaser.Scene {
 
     // Redraw the border on window resize
     // this.scale.on('resize', drawWindowBorder, this);
-    this.ball = this.physics.add.sprite(0, 0, 'ballsprite', '1.png');
+    this.ball = this.physics.add.sprite(400, 300, 'ballsprite', '0.png');
     // this.ball.setBounce(1, 1);
     // this.ball.setCollideWorldBounds(true);
     // this.ball.setVelocityX(100);
     // this.ball.setVelocityY(100);
-    this.ball.setScale(0.5, 0.5);
+    this.ball.setScale(1, 1);
     this.paddle1 = this.physics.add.sprite(15, 300, 'paddle1');
     this.paddle2 = this.physics.add.sprite(785, 300, 'paddle1');
     particles.startFollow(this.ball);
     const paddleleft = this.add.graphics();
     const frames = this.anims.generateFrameNames('ballsprite', {
-      start: 1,
-      end: 48,
+      start: 0,
+      end: 215,
       zeroPad: 0,
       suffix: '.png',
     });
@@ -73,8 +73,7 @@ class Example extends Phaser.Scene {
     this.anims.create({
       key: 'ballani',
       frames: frames,
-      frameRate: 60,
-      duration: 50,
+      frameRate: 24,
       repeat: -1,
     });
 
