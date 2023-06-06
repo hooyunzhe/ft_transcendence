@@ -1,23 +1,16 @@
 'use client';
+import { gameSocket } from '@/lib/socket';
 import Phaser, { Scene } from 'phaser';
-import { io } from 'socket.io-client';
 class Example extends Phaser.Scene {
   constructor() {
     super();
   }
-
-  private dog: { key: string }[] = [];
   private ball: Phaser.Physics.Arcade.Sprite;
   private targetX: number = -1;
   private targetY: number = -1;
-
-  private paddlecoor1x: number = 0;
-  private paddlecoor1y: number = 0;
-
+  private score = { player1: 5, player2: 5 };
   private paddle1: Phaser.Physics.Arcade.Sprite;
   private paddle2: Phaser.Physics.Arcade.Sprite;
-  private interpolationFactor: number = 0.1; // Controls the smoothness of movement
-  private GameSocket: Socket<DefaultEventsMap, DefaultEventsMap>;
   preload() {
     this.load.setBaseURL('http://localhost:3000');
     this.load.multiatlas('ballsprite', '/ball/ballsprite.json', 'ball');
@@ -58,6 +51,18 @@ class Example extends Phaser.Scene {
     // this.ball.setCollideWorldBounds(true);
     // this.ball.setVelocityX(100);
     // this.ball.setVelocityY(100);
+    const gameState = this.add.text(
+      400,
+      50,
+      'Player 1: ' +
+        this.score.player1 +
+        ' | ' +
+        'Player 2: ' +
+        this.score.player2,
+      { align: 'center' },
+    );
+    console.log(this.score.player1, this.score.player2);
+    gameState.setOrigin(0.5);
     this.ball.setScale(1, 1);
     this.paddle1 = this.physics.add.sprite(15, 300, 'paddle1');
     this.paddle2 = this.physics.add.sprite(785, 300, 'paddle1');
@@ -73,100 +78,100 @@ class Example extends Phaser.Scene {
     this.anims.create({
       key: 'ballani',
       frames: frames,
-      frameRate: 24,
+      frameRate: 18,
       repeat: -1,
     });
 
     this.ball.anims.play('ballani', true);
-
-    this.GameSocket = io('http://localhost:4242/gateway/game');
 
     const bodysize: { width: number; height: number } = {
       width: (this.ball.body?.width ?? 0) / 800,
       height: (this.ball.body?.height ?? 0) / 600,
     };
 
-    console.log(
-      'width is :',
-      this.ball.width,
-      ', body width: ',
-      bodysize.width,
-    );
-    console.log(
-      'height is :',
-      this.ball.height,
-      ', body height: ',
-      bodysize.height,
-    );
-    this.GameSocket.emit('initialize');
-    this.GameSocket.on(
+    // console.log(
+    //   'width is :',
+    //   this.ball.width,
+    //   ', body width: ',
+    //   bodysize.width,
+    // );
+    // console.log(
+    //   'height is :',
+    //   this.ball.height,
+    //   ', body height: ',
+    //   bodysize.height,
+    // );
+
+    gameSocket.emit('initialize', {
+      paddle1size: { width: this.paddle1.width, height: this.paddle1.height },
+      paddle2size: { width: this.paddle2.width, height: this.paddle2.height },
+    });
+    gameSocket.on(
       'game',
       (data: {
         ball: { x: number; y: number };
         paddle1: { x: number; y: number };
         paddle2: { x: number; y: number };
+        score: { player1: number; player2: number };
       }) => {
-        this.targetX = data.ball.x;
-        this.targetY = data.ball.y;
-        this.paddlecoor1x = data.paddle1.x;
-        this.paddlecoor1y = data.paddle1.y;
-        this.paddle2.x = data.paddle2.x;
+        this.ball.x = data.ball.x;
+        this.ball.y = data.ball.y;
+        this.paddle1.y = data.paddle1.y;
         this.paddle2.y = data.paddle2.y;
+        this.score.player1 = data.score.player1;
+        this.score.player2 = data.score.player2;
       },
     );
-
-    window.addEventListener('keydown', (event) => {
-      if (event.key == 'w') this.GameSocket.emit('Player', 'w');
-      else if (event.key == 's') this.GameSocket.emit('Player', 's');
-    });
-
-    window.addEventListener('keyup', (event) => {
-      if (event.key == 'w' || event.key == 's')
-        this.GameSocket.emit('Player', '1');
-    });
-
-    window.addEventListener('keydown', (event) => {
-      if (event.key == 'ArrowUp') this.GameSocket.emit('Player', 'up');
-      else if (event.key == 'ArrowDown') this.GameSocket.emit('Player', 'down');
-    });
-
-    window.addEventListener('keyup', (event) => {
-      if (event.key == 'ArrowUp' || event.key == 'ArrowDown')
-        this.GameSocket.emit('Player', '2');
-    });
   }
 
   update() {
-    const balltween = this.tweens.add({
-      targets: this.ball,
-      x: this.targetX,
-      y: this.targetY,
-      duration: 50, // Adjust the duration as needed for desired smoothness
-      ease: 'Linear',
-    });
+    // const balltween = this.tweens.add({
+    //   targets: this.ball,
+    //   x: this.targetX,
+    //   y: this.targetY,
+    //   duration: 50, // Adjust the duration as needed for desired smoothness
+    //   ease: 'Linear',
+    // });
 
-    // Update current position after the tween completes
-    balltween.on('complete', () => {
-      this.ball.x = this.targetX;
-      this.ball.y = this.targetY;
-    });
+    // // Update current position after the tween completes
+    // balltween.on('complete', () => {
+    //   this.ball.x = this.targetX;
+    //   this.ball.y = this.targetY;
+    // });
 
-    const paddletween = this.tweens.add({
-      targets: this.paddle1,
-      x: this.paddlecoor1x,
-      y: this.paddlecoor1y,
-      duration: 50, // Adjust the duration as needed for desired smoothness
-      ease: 'Linear',
-    });
-
-    paddletween.on('complete', () => {
-      this.paddle1.x = this.paddlecoor1x;
-      this.paddle1.y = this.paddlecoor1y;
-    });
+    keyLoop();
     // }
   }
 }
-
+const keyState: { [key: string]: boolean } = {};
+window.addEventListener(
+  'keydown',
+  function (e) {
+    keyState[e.key] = true;
+  },
+  true,
+);
+window.addEventListener(
+  'keyup',
+  function (e) {
+    keyState[e.key] = false;
+  },
+  true,
+);
+const keyLoop = () => {
+  if (keyState['w']) {
+    gameSocket.emit('Player', 'w');
+  }
+  if (keyState['s']) {
+    gameSocket.emit('Player', 's');
+  }
+  if (keyState['i']) {
+    gameSocket.emit('Player', 'up');
+  }
+  if (keyState['k']) {
+    gameSocket.emit('Player', 'down');
+  }
+};
 const startGame = () => {
   const config = {
     type: Phaser.AUTO,

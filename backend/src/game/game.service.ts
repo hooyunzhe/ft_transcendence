@@ -15,6 +15,7 @@ class RectObj {
     this.velocityX = 1;
     this.velocityY = 1;
   }
+
   left() {
     return this.x - this.width / 2;
   }
@@ -45,7 +46,7 @@ export class GameService {
   Paddle1: RectObj;
   Paddle2: RectObj;
   velocity: number;
-  i: number = 0;
+  score: { player1: number; player2: number };
 
   constructor() {
     this.windowSize = {
@@ -62,14 +63,11 @@ export class GameService {
       40,
       40,
     );
-    this.Paddle1 = new RectObj(15, this.windowSize.y / 2, 10, 110);
-    this.Paddle2 = new RectObj(
-      this.windowSize.x - 15,
-      this.windowSize.y / 2,
-      10,
-      110,
-    );
-    this.velocity = 10;
+    this.velocity = 7;
+    this.score = {
+      player1: 0,
+      player2: 0,
+    };
   }
 
   gameStart() {
@@ -91,6 +89,24 @@ export class GameService {
     };
   }
 
+  gamePaddleConstruct(
+    paddle1size: { width: number; height: number },
+    paddle2size: { width: number; height: number },
+  ) {
+    this.Paddle1 = new RectObj(
+      15,
+      this.windowSize.y / 2,
+      paddle1size.width,
+      paddle1size.height,
+    );
+    this.Paddle2 = new RectObj(
+      this.windowSize.x - 15,
+      this.windowSize.y / 2,
+      paddle2size.width,
+      paddle2size.height,
+    );
+    console.log(paddle1size.width, paddle2size.width);
+  }
   gameUpdate(server: Server) {
     this.Ball.x += this.direction.x * this.velocity;
     this.Ball.y += this.direction.y * this.velocity;
@@ -105,8 +121,12 @@ export class GameService {
     //     this.Ball.right(),
     //   );
     // }
-    if (this.Ball.right() < 0 || this.Ball.left() > this.windowSize.x)
-      this.gameReset();
+    if (this.Ball.right() < 0) {
+      this.gameHandleVictory(2);
+    }
+    if (this.Ball.left() > this.windowSize.x) {
+      this.gameHandleVictory(1);
+    }
     if (
       (this.gameCollision(this.Ball, this.Paddle1) && this.direction.x < 0) ||
       (this.gameCollision(this.Ball, this.Paddle2) && this.direction.x > 0)
@@ -124,7 +144,20 @@ export class GameService {
       },
       paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
       paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
+      score: this.score,
     });
+  }
+
+  gameHandleVictory(player: number) {
+    if (player === 1) this.score.player1++;
+    else this.score.player2++;
+    console.log(
+      'Player 1: ',
+      this.score.player1,
+      ' | Player 2: ',
+      this.score.player2,
+    );
+    this.gameReset();
   }
 
   gameSetPosition(x: number, y: number) {
@@ -134,17 +167,11 @@ export class GameService {
 
   gameSetPaddlePosition(player: number, direction: number) {
     if (player === 1) {
-      if (direction > 0)
-        this.gameMovePaddle(this.Paddle1, 50 * this.Paddle1.velocityY);
-      else if (direction < 0)
-        this.gameMovePaddle(this.Paddle1, -50 * this.Paddle1.velocityY);
-      this.Paddle1.velocityY += 0.5;
+      if (direction > 0) this.gameMovePaddle(this.Paddle1, 10);
+      else if (direction < 0) this.gameMovePaddle(this.Paddle1, -10);
     } else if (player === 2) {
-      if (direction > 0)
-        this.gameMovePaddle(this.Paddle2, 50 * this.Paddle2.velocityY);
-      else if (direction < 0)
-        this.gameMovePaddle(this.Paddle2, -50 * this.Paddle2.velocityY);
-      this.Paddle2.velocityY += 0.5;
+      if (direction > 0) this.gameMovePaddle(this.Paddle2, 10);
+      else if (direction < 0) this.gameMovePaddle(this.Paddle2, -10);
     }
   }
 

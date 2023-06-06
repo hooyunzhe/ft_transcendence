@@ -23,9 +23,16 @@ export class GameGateway {
   server: Server;
 
   private id;
-  game = new GameService();
+  private game = new GameService();
   @SubscribeMessage('initialize')
-  Init() {
+  Init(
+    @MessageBody()
+    data: {
+      paddle1size: { width: number; height: number };
+      paddle2size: { width: number; height: number };
+    },
+  ): void {
+    this.game.gamePaddleConstruct(data.paddle1size, data.paddle2size);
     this.id = setInterval(() => {
       this.game.gameUpdate(this.server);
       // this.game.resetI();
@@ -58,7 +65,5 @@ export class GameGateway {
     if (movement === 's') this.game.gameSetPaddlePosition(1, 1);
     if (movement === 'up') this.game.gameSetPaddlePosition(2, -1);
     if (movement === 'down') this.game.gameSetPaddlePosition(2, 1);
-    if (movement === '1') this.game.gameSetPaddleStop(1);
-    if (movement === '2') this.game.gameSetPaddleStop(2);
   }
 }
