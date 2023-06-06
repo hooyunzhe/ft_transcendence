@@ -29,6 +29,11 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('username/:username')
+  findOneByUsername(@Param('username') username: string): Promise<User | null> {
+    return this.usersService.findOneByUsername(username);
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
     return this.usersService.findOne(id);
@@ -43,7 +48,7 @@ export class UsersController {
   findAchieved(@Param('id') id: number): Promise<Achievement[]> {
     return this.usersService.findAchieved(id);
   }
-  
+
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,

@@ -146,18 +146,19 @@ export default function FriendList() {
     };
   }, []);
 
-  function addFriend(username: string) {
-    const new_friend: User = {
-      id: 1,
-      username: username,
-      refresh_token: 'test_token',
-      date_of_creation: new Date(),
-    };
-
-    callFriendsAPI(new_friend.id, 'new');
-    addRequest(new_friend, 'outgoing');
-    emitRequest(new_friend.id, 'new');
-    addStatus([new_friend.id]);
+  async function addFriend(username: string) {
+    return callAPI('GET', 'users/username/' + username).then((data) => {
+      if (!data.length) {
+        return false;
+      } else {
+        const new_friend = JSON.parse(data);
+        callFriendsAPI(new_friend.id, 'new');
+        addRequest(new_friend, 'outgoing');
+        emitRequest(new_friend.id, 'new');
+        addStatus([new_friend.id]);
+        return true;
+      }
+    });
   }
 
   function handleRequest(
