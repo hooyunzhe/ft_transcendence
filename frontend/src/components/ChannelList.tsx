@@ -1,31 +1,72 @@
 'use client';
 import List from '@mui/material/List';
-import { Channel, ChannelVar } from './Channel';
-import { Button, FormControl, Grid, IconButton, TextField } from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { ChannelDisplay } from './ChannelDisplay';
+import {
+  Button,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  Grid,
+  IconButton,
+  Switch,
+  TextField,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import callAPI from '@/lib/callAPI';
+import DialogPrompt from './DialogPrompt';
+import Channel from '@/types/Channel';
 
+export function ChannelList() {
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [channelType, setChannelType] = useState('public');
 
-export async function ChannelList({ channelAPI }: { channelAPI: string }) {
+  async function addChannel(channelName: string) {
+    const channelData = JSON.parse(
+      await callAPI('POST', 'channels', {
+        name: channelName,
+        type: channelType,
+      }),
+    );
+    callAPI('GET', 'channels/name/' + channels).then((data) => {
+      const new_channel = JSON.parse(data);
+      if (new_channel) {
+        setChannels((channels: Channel[]) => [...channels, new_channel]);
+      }
+    });
+    return false;
+  }
 
-  const [message, setMessage] = useState('');
-  const [channels, setChannels] = useState([]);
+  function handleChange() {
+    setChannelType('protected');
+  }
 
   useEffect(() => {
     async function getChannels() {
-      const messageData = JSON.parse(await callAPI('GET', channelAPI));
-      setChannels(messageData);
-      console.log(messageData);
+      const channelData = JSON.parse(await callAPI('GET', 'channels'));
+      setChannels(channelData);
+      console.log(channelData);
     }
     getChannels();
   }, []);
-  
 
   return (
     <>
-      <Grid sx={{ width: '100%', maxWidth: 360}} xs={8} item>
-        <FormControl>
+      <Grid sx={{ width: '100%', maxWidth: 360 }} xs={8} item>
+        <DialogPrompt
+          buttonText='test'
+          dialogTitle='test2'
+          labelText='test3'
+          actionButtonText='test4'
+          actionHandler={addChannel}
+          successMessage='Channel added'
+          errorMessage='Channel already exists'
+        >
+          <Switch
+            onChange={handleChange}
+            inputProps={{ 'aria-label': 'controlled' }}
+          />
+        </DialogPrompt>
+        {/* <FormControl>
           <TextField
             onChange={(event: any) => {
               setMessage(event.target.value);
@@ -38,11 +79,11 @@ export async function ChannelList({ channelAPI }: { channelAPI: string }) {
         </FormControl>
         <IconButton>
           <AddCircleOutlineIcon />
-        </IconButton>
+        </IconButton> */}
       </Grid>
       <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-      {channels.map((obj: ChannelVar, index: number) => (
-        <Channel {...obj}></Channel>
+        {channels.map((obj: Channel, index: number) => (
+          <ChannelDisplay {...obj}></ChannelDisplay>
         ))}
       </List>
     </>

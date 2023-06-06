@@ -6,13 +6,13 @@ import {
   ListItemText,
 } from '@mui/material';
 
-export interface ChannelVar {
+export interface ChannelDisplayProps {
   id: number;
   name: string;
   type: string;
 }
 
-export function Channel({ id, name, type }: ChannelVar) {
+export function ChannelDisplay({ id, name, type }: ChannelDisplayProps) {
   return (
     <>
       <ListItem>
