@@ -8,7 +8,6 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GetStatusDto } from './dto/get-status.dto';
-import { CheckStatusDto } from './dto/check-status.dto';
 import { FriendRequestDto } from './dto/friend-request.dto';
 
 @WebSocketGateway({

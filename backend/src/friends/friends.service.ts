@@ -86,11 +86,17 @@ export class FriendsService {
     );
     if (friendship.status === FriendStatus.Pending) {
       this.updateFriendRequest(friendDto);
-    } else if (friendship.status == FriendStatus.Friends) {
+    } else if (friendship.status === FriendStatus.Friends) {
       if (friendDto.action === FriendAction.Block)
         await this.friendRepository.update(friendship.id, {
           status: FriendStatus.Blocked,
         });
+    } else if (friendship.status === FriendStatus.Blocked) {
+      if (friendDto.action === FriendAction.Unblock) {
+        await this.friendRepository.update(friendship.id, {
+          status: FriendStatus.Friends,
+        });
+      }
     }
   }
 

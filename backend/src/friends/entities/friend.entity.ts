@@ -10,6 +10,7 @@ export enum FriendStatus {
 
 export enum FriendAction {
   Block = 'block',
+  Unblock = 'unblock',
   Accept = 'accept',
   Reject = 'reject',
 }
