@@ -8,14 +8,16 @@ class Example extends Phaser.Scene {
   private ball: Phaser.Physics.Arcade.Sprite;
   private targetX: number = -1;
   private targetY: number = -1;
-  private score = { player1: 5, player2: 5 };
+  private score = { player1: 0, player2: 0 };
   private paddle1: Phaser.Physics.Arcade.Sprite;
   private paddle2: Phaser.Physics.Arcade.Sprite;
+  private gameState;
   preload() {
     this.load.setBaseURL('http://localhost:3000');
     this.load.multiatlas('ballsprite', '/ball/ballsprite.json', 'ball');
     this.load.image('red', '/ball/bubble.png');
     this.load.image('paddle1', '/ball/paddle1.png');
+    this.load.image('paddle2', '/ball/paddle2.png');
   }
 
   create() {
@@ -47,27 +49,14 @@ class Example extends Phaser.Scene {
     // Redraw the border on window resize
     // this.scale.on('resize', drawWindowBorder, this);
     this.ball = this.physics.add.sprite(400, 300, 'ballsprite', '0.png');
-    // this.ball.setBounce(1, 1);
-    // this.ball.setCollideWorldBounds(true);
-    // this.ball.setVelocityX(100);
-    // this.ball.setVelocityY(100);
-    const gameState = this.add.text(
-      400,
-      50,
-      'Player 1: ' +
-        this.score.player1 +
-        ' | ' +
-        'Player 2: ' +
-        this.score.player2,
-      { align: 'center' },
-    );
+
+    this.gameState = this.add.text(400, 50, '', { align: 'center' });
     console.log(this.score.player1, this.score.player2);
-    gameState.setOrigin(0.5);
+    this.gameState.setOrigin(0.5);
     this.ball.setScale(1, 1);
-    this.paddle1 = this.physics.add.sprite(15, 300, 'paddle1');
+    this.paddle1 = this.physics.add.sprite(15, 300, 'paddle2');
     this.paddle2 = this.physics.add.sprite(785, 300, 'paddle1');
     particles.startFollow(this.ball);
-    const paddleleft = this.add.graphics();
     const frames = this.anims.generateFrameNames('ballsprite', {
       start: 0,
       end: 215,
@@ -78,16 +67,11 @@ class Example extends Phaser.Scene {
     this.anims.create({
       key: 'ballani',
       frames: frames,
-      frameRate: 18,
+      frameRate: 60,
       repeat: -1,
     });
 
     this.ball.anims.play('ballani', true);
-
-    const bodysize: { width: number; height: number } = {
-      width: (this.ball.body?.width ?? 0) / 800,
-      height: (this.ball.body?.height ?? 0) / 600,
-    };
 
     // console.log(
     //   'width is :',
@@ -140,6 +124,13 @@ class Example extends Phaser.Scene {
     // });
 
     keyLoop();
+    this.gameState.setText(
+      'Player 1: ' +
+        this.score.player1 +
+        ' | ' +
+        'Player 2: ' +
+        this.score.player2,
+    );
     // }
   }
 }
