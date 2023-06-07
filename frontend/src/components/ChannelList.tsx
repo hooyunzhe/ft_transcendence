@@ -1,16 +1,7 @@
 'use client';
 import List from '@mui/material/List';
 import { ChannelDisplay } from './ChannelDisplay';
-import {
-  Button,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  Grid,
-  IconButton,
-  Switch,
-  TextField,
-} from '@mui/material';
+import { Grid, Switch } from '@mui/material';
 import { useEffect, useState } from 'react';
 import callAPI from '@/lib/callAPI';
 import DialogPrompt from './DialogPrompt';
@@ -21,23 +12,34 @@ export function ChannelList() {
   const [channelType, setChannelType] = useState('public');
 
   async function addChannel(channelName: string) {
+    const hasChannel = channels.some((item) => {
+      if (item.name === channelName) {
+        console.log('HELLLLPP');
+        return true;
+      }
+      return false;
+    });
     const channelData = JSON.parse(
       await callAPI('POST', 'channels', {
         name: channelName,
         type: channelType,
       }),
     );
+
     callAPI('GET', 'channels/name/' + channels).then((data) => {
       const new_channel = JSON.parse(data);
       if (new_channel) {
         setChannels((channels: Channel[]) => [...channels, new_channel]);
       }
     });
+    console.log(channelName);
+    console.log(channelType);
     return false;
   }
 
-  function handleChange() {
-    setChannelType('protected');
+  function handleChange(event: any) {
+    if (channelType === 'public') setChannelType('protected');
+    else if (channelType === 'protected') setChannelType('public');
   }
 
   useEffect(() => {
@@ -53,10 +55,10 @@ export function ChannelList() {
     <>
       <Grid sx={{ width: '100%', maxWidth: 360 }} xs={8} item>
         <DialogPrompt
-          buttonText='test'
-          dialogTitle='test2'
-          labelText='test3'
-          actionButtonText='test4'
+          buttonText='Add channel'
+          dialogTitle='Add channel here'
+          labelText='Enter channel that you wanna add~'
+          actionButtonText='ADD NOW!~!!'
           actionHandler={addChannel}
           successMessage='Channel added'
           errorMessage='Channel already exists'
@@ -66,24 +68,10 @@ export function ChannelList() {
             inputProps={{ 'aria-label': 'controlled' }}
           />
         </DialogPrompt>
-        {/* <FormControl>
-          <TextField
-            onChange={(event: any) => {
-              setMessage(event.target.value);
-              console.log('changed');
-            }}
-            value={message}
-            label='Add Channel Here...'
-            variant='outlined'
-          />
-        </FormControl>
-        <IconButton>
-          <AddCircleOutlineIcon />
-        </IconButton> */}
       </Grid>
       <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
         {channels.map((obj: Channel, index: number) => (
-          <ChannelDisplay {...obj}></ChannelDisplay>
+          <ChannelDisplay key={index} {...obj}></ChannelDisplay>
         ))}
       </List>
     </>

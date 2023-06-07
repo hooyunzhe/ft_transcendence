@@ -31,7 +31,7 @@ export class ChannelsService {
   }
 
   async getMembers(id: number): Promise<User[]> {
-    let currentChannel = await this.channelsRepository.findOne({
+    const currentChannel = await this.channelsRepository.findOne({
       relations: { channelMembers: true },
       where: { id },
     });
@@ -42,7 +42,7 @@ export class ChannelsService {
   }
 
   async getMessages(id: number): Promise<Message[]> {
-    let currentChannel = await this.channelsRepository.findOne({
+    const currentChannel = await this.channelsRepository.findOne({
       relations: { messages: true },
       where: { id },
     });
