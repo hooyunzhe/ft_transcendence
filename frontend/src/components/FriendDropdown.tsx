@@ -6,6 +6,7 @@ import {
   MoveToInboxRounded,
   OutboxRounded,
   PeopleRounded,
+  PersonOff,
 } from '@mui/icons-material';
 import {
   Collapse,
@@ -25,7 +26,7 @@ interface FriendDropdownProps {
   toggleDropdown: (category: string) => void;
   handleRequest: (
     request: Friend,
-    action: 'accept' | 'reject' | 'delete',
+    action: 'accept' | 'reject' | 'block' | 'unblock' | 'delete',
   ) => void;
   selectedFriend: number;
   setSelectedFriend: Dispatch<SetStateAction<number>>;
@@ -54,6 +55,7 @@ export default function FriendDropdown({
             {category === 'pending' && <MoveToInboxRounded />}
             {category === 'invited' && <OutboxRounded />}
             {category === 'friends' && <PeopleRounded />}
+            {category === 'blocked' && <PersonOff />}
           </ListItemIcon>
           <ListItemText
             primary={category.charAt(0).toUpperCase() + category.slice(1)}

@@ -19,6 +19,7 @@ export default function FriendList() {
     pending: true,
     invited: true,
     friends: true,
+    blocked: false,
   });
   const [selectedFriend, setSelectedFriend] = useState(0);
 
@@ -31,7 +32,7 @@ export default function FriendList() {
 
   function callFriendsAPI(
     incoming_id: number,
-    action: 'new' | 'accept' | 'reject' | 'delete',
+    action: 'new' | 'accept' | 'reject' | 'block' | 'unblock' | 'delete',
   ) {
     callAPI(
       action === 'new' ? 'POST' : action === 'delete' ? 'DELETE' : 'PATCH',
@@ -39,7 +40,7 @@ export default function FriendList() {
       {
         outgoing_id: current_user.id,
         incoming_id: incoming_id,
-        ...((action === 'accept' || action === 'reject') && { action: action }),
+        ...(action !== 'new' && action !== 'delete' && { action: action }),
       },
     );
   }
@@ -58,23 +59,28 @@ export default function FriendList() {
 
   function changeRequest(
     incoming_user: User,
-    action: 'accept' | 'reject' | 'delete',
+    action: 'accept' | 'reject' | 'block' | 'unblock' | 'delete',
   ) {
     setFriends((friends) => {
-      if (action === 'accept') {
-        return friends.map((friend) => {
-          if (
-            friend.incoming_friend.id === incoming_user.id &&
-            (friend.status === 'invited' || friend.status === 'pending')
-          ) {
-            friend.status = 'friends';
-          }
-          return friend;
-        });
-      } else {
+      if (action === 'delete' || action === 'reject') {
         return friends.filter(
           (friend) => friend.incoming_friend.id !== incoming_user.id,
         );
+      } else {
+        return friends.map((friend) => {
+          if (friend.incoming_friend.id === incoming_user.id) {
+            if (friend.status === 'friends' && action === 'block') {
+              friend.status = 'blocked';
+            }
+            if (
+              (friend.status === 'blocked' && action === 'unblock') ||
+              ((friend.status === 'invited' || friend.status === 'pending') &&
+                action === 'accept')
+            )
+              friend.status = 'friends';
+          }
+          return friend;
+        });
       }
     });
   }
@@ -163,11 +169,12 @@ export default function FriendList() {
 
   function handleRequest(
     request: Friend,
-    action: 'accept' | 'reject' | 'delete',
+    action: 'accept' | 'reject' | 'block' | 'unblock' | 'delete',
   ) {
     callFriendsAPI(request.incoming_friend.id, action);
     changeRequest(request.incoming_friend, action);
-    emitRequest(request.incoming_friend.id, action);
+    if (action !== 'block' && action !== 'unblock')
+      emitRequest(request.incoming_friend.id, action);
   }
 
   function toggleDropdown(category: string) {
@@ -177,7 +184,7 @@ export default function FriendList() {
     }));
   }
 
-  const categories = ['pending', 'invited', 'friends'];
+  const categories = ['pending', 'invited', 'friends', 'blocked'];
 
   return (
     <Stack

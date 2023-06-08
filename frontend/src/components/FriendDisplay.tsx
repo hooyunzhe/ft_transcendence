@@ -8,9 +8,11 @@ import {
 } from '@mui/material';
 import Friend from '@/types/Friend';
 import {
+  BlockRounded,
   CancelRounded,
   CheckCircleRounded,
   DeleteRounded,
+  RestoreRounded,
 } from '@mui/icons-material';
 
 interface FriendDisplayProps {
@@ -19,7 +21,7 @@ interface FriendDisplayProps {
   status?: string;
   handleAction: (
     request: Friend,
-    action: 'accept' | 'reject' | 'delete',
+    action: 'accept' | 'reject' | 'block' | 'unblock' | 'delete',
   ) => void;
 }
 
@@ -70,13 +72,31 @@ export default function FriendDisplay({
         </IconButton>
       )}
       {category === 'friends' && (
-        <ListItemText
-          sx={{ textAlign: 'center' }}
-          secondaryTypographyProps={{
-            style: { color: status === 'online' ? 'green' : 'grey' },
+        <>
+          <IconButton
+            onClick={() => {
+              handleAction(friend, 'block');
+            }}
+          >
+            <BlockRounded />
+          </IconButton>
+          <IconButton>
+            <DeleteRounded
+              onClick={() => {
+                handleAction(friend, 'delete');
+              }}
+            />
+          </IconButton>
+        </>
+      )}
+      {category === 'blocked' && (
+        <IconButton
+          onClick={() => {
+            handleAction(friend, 'unblock');
           }}
-          secondary={status}
-        />
+        >
+          <RestoreRounded />
+        </IconButton>
       )}
     </ListItem>
   );
