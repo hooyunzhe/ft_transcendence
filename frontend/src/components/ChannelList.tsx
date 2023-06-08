@@ -1,39 +1,50 @@
 'use client';
 import List from '@mui/material/List';
 import { ChannelDisplay } from './ChannelDisplay';
-import { Grid, Switch } from '@mui/material';
+import {
+  FormControlLabel,
+  FormGroup,
+  Grid,
+  Switch,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import callAPI from '@/lib/callAPI';
 import DialogPrompt from './DialogPrompt';
 import Channel from '@/types/Channel';
+import { NewReleasesRounded } from '@mui/icons-material';
 
 export function ChannelList() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [channelType, setChannelType] = useState('public');
+  const [input, setInput] = useState('');
 
   async function addChannel(channelName: string) {
     const hasChannel = channels.some((item) => {
       if (item.name === channelName) {
-        console.log('HELLLLPP');
         return true;
       }
       return false;
     });
-    const channelData = JSON.parse(
-      await callAPI('POST', 'channels', {
-        name: channelName,
-        type: channelType,
-      }),
-    );
 
-    callAPI('GET', 'channels/name/' + channels).then((data) => {
-      const new_channel = JSON.parse(data);
-      if (new_channel) {
-        setChannels((channels: Channel[]) => [...channels, new_channel]);
-      }
-    });
-    console.log(channelName);
-    console.log(channelType);
+    // probably need to check the channelData here me thinks
+    if (hasChannel === false) {
+      const channelData = JSON.parse(
+        await callAPI('POST', 'channels', {
+          name: channelName,
+          type: channelType,
+        }),
+      );
+
+      callAPI('GET', 'channels/name/' + channelName).then((data) => {
+        const new_channel = JSON.parse(data);
+        if (new_channel) {
+          setChannels([...channels, new_channel]);
+        }
+      });
+      return true;
+    }
     return false;
   }
 
@@ -56,17 +67,33 @@ export function ChannelList() {
       <Grid sx={{ width: '100%', maxWidth: 360 }} xs={8} item>
         <DialogPrompt
           buttonText='Add channel'
-          dialogTitle='Add channel here'
-          labelText='Enter channel that you wanna add~'
+          dialogTitle='Channel creation'
+          labelText='Channel name...'
           actionButtonText='ADD NOW!~!!'
           actionHandler={addChannel}
           successMessage='Channel added'
           errorMessage='Channel already exists'
         >
-          <Switch
-            onChange={handleChange}
-            inputProps={{ 'aria-label': 'controlled' }}
-          />
+          <FormGroup>
+            <FormControlLabel
+              control={<Switch onChange={handleChange}></Switch>}
+              label={channelType}
+            />
+          </FormGroup>
+          <TextField
+            sx={{ width: '70%', height: '30%' }}
+            autoFocus
+            margin='dense'
+            id='input'
+            label='Please key in password...'
+            variant='standard'
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value);
+            }}
+            disabled={channelType === 'public'}
+            required
+          ></TextField>
         </DialogPrompt>
       </Grid>
       <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>

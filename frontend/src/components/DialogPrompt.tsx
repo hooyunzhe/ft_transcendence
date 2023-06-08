@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   Snackbar,
   TextField,
@@ -32,6 +33,7 @@ export default function DialogPrompt({
   successMessage,
   errorMessage,
 }: DialogPromptProps) {
+  const [emptyError, setEmptyError] = useState(false);
   const [open, setOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [alertLevel, setAlertLevel] = useState<AlertColor>();
@@ -57,22 +59,31 @@ export default function DialogPrompt({
       >
         <DialogTitle>{dialogTitle}</DialogTitle>
         <DialogContent>
+          <DialogContentText>
+            Enter channel that you wanna add~
+          </DialogContentText>
           <TextField
             autoFocus
             fullWidth
             margin='dense'
+            variant='standard'
             id='input'
             label={labelText}
             value={input}
             onChange={(e) => {
+              setEmptyError(!e.target.value);
               setInput(e.target.value);
             }}
+            error={emptyError}
+            helperText={emptyError ? 'Channel name cannot be empty' : ''}
           ></TextField>
           {children}
         </DialogContent>
         <DialogActions>
           <Button
+            disabled={!input}
             onClick={() => {
+              setInput('');
               actionHandler(input).then((result) => {
                 if (result) {
                   setAlertLevel('success');
