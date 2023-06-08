@@ -72,7 +72,7 @@ export function ChannelList() {
           actionButtonText='ADD NOW!~!!'
           actionHandler={addChannel}
           successMessage='Channel added'
-          errorMessage='Channel already exists'
+          errorMessage='Channel already exists '
         >
           <FormGroup>
             <FormControlLabel
