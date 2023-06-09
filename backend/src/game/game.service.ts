@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Server } from 'http';
+import { Server } from 'socket.io';
 
 interface Coor {
   x: number;

@@ -4,56 +4,45 @@ import startGame from '@/components/game';
 import { useEffect, useState } from 'react';
 import Pong from '../../components/pong';
 import { io } from 'socket.io-client';
+import { useSession } from 'next-auth/react';
 
 export default function Game() {
-  useEffect(() => {
-    startGame(), [window.innerWidth];
+  // const [session, setSession] = useState(useSession());
+  const { data: session } = useSession();
+  const gameSocket = io('http://localhost:4242/gateway/game', {
+    query: {
+      user_id: session?.user?.id,
+    },
   });
-  const GameSocket = io('http://localhost:4242/gateway/game');
-  const triggerOn = () => {
-    GameSocket.emit('Start');
+
+  console.log(session);
+  // session.data?.user;
+
+  useEffect(() => {}, []);
+
+  const Start = () => {
+    gameSocket.emit('connection', session?.user);
+    gameSocket.emit('Start');
   };
 
   const resetGame = () => {
-    GameSocket.emit('Reset');
-  }
-
-  const stopGame = () => {
-    GameSocket.emit('Stop');
-  }
-
-  const InitGame = () => {
-    GameSocket.emit('initialize');
-  }
-
-  const [x, setX] = useState(0);
-  const [y, setY] = useState(0);
-
-  const handleSubmit = () => {
-
-    const pos = { x, y };
-    SetPos(pos);
+    gameSocket.emit('Reset');
   };
 
+  const stopGame = () => {
+    gameSocket.emit('Stop');
+  };
 
-  const SetPos = (pos: {x: number, y: number}) => {
-    
-    GameSocket.emit('set',pos);
-  }
-  return( <div><button onClick={triggerOn}>triggerOn</button>
-  <button onClick={resetGame}>Reset</button>
-  <button onClick={stopGame}>Stop</button>
-  <button onClick={InitGame}>Init</button>
-  <form>
-      <label>
-        x:
-        <input type="number" value={x} onChange={(e) => setX(Number(e.target.value))} />
-      </label>
-      <label>
-        y:
-        <input type="number" value={y} onChange={(e) => setY(Number(e.target.value))} />
-      </label>
-      <button type="button" onClick={handleSubmit}>Submit</button>
-    </form>
-  </div>);
+  const InitGame = () => {
+    gameSocket.emit('initialize');
+  };
+
+  return (
+    <div>
+      <button onClick={Start}>triggerOn</button>
+      <button onClick={resetGame}>Reset</button>
+      <button onClick={stopGame}>Stop</button>
+      <button onClick={InitGame}>Init</button>
+    </div>
+  );
 }

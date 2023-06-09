@@ -27,29 +27,7 @@ class Example extends Phaser.Scene {
       blendMode: 'ADD',
     });
 
-    // const graphics = this.add.graphics();
-
-    // const borderWidth = 4; // Border width
-    // const borderColor = 0xffffff; // Border color (white)
-
-    // function drawWindowBorder() {
-    //   const { width, height } = this.sys.game.canvas;
-    //   const x = borderWidth / 2; // X-coordinate of the window (offset by half of the border width)
-    //   const y = borderWidth / 2; // Y-coordinate of the window (offset by half of the border width)
-
-    //   // Clear previous drawings
-    //   graphics.clear();
-
-    //   // Draw the border
-    //   graphics.lineStyle(borderWidth, borderColor);
-    //   graphics.strokeRect(x, y, width - borderWidth, height - borderWidth);
-    // }
-    // drawWindowBorder.call(this); // Initial draw
-
-    // Redraw the border on window resize
-    // this.scale.on('resize', drawWindowBorder, this);
     this.ball = this.physics.add.sprite(400, 300, 'ballsprite', '0.png');
-
     this.gameState = this.add.text(400, 50, '', { align: 'center' });
     console.log(this.score.player1, this.score.player2);
     this.gameState.setOrigin(0.5);

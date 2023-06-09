@@ -1,11 +1,12 @@
 import {
   MessageBody,
+  OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 
-import { Server } from 'http';
+import { Server, Socket } from 'socket.io';
 import { GameService } from './game.service';
 
 interface Coor {
@@ -18,12 +19,29 @@ interface Coor {
   },
   namespace: 'gateway/game',
 })
-export class GameGateway {
+export class GameGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
+  // join room
+  // put in a room
+  // emit to both
+  //matchmaking room -> find match ->
+
+  private client_id_list = new Map();
+  async handleConnection(client: Socket) {
+    client.data.user_id ??= Number(client.handshake.query['user_id']);
+    const connectedSockets = await this.server.fetchSockets();
+    const onlineUsers = connectedSockets.map((socket) => socket.data.user_id);
+    if (onlineUsers.length === 2) {
+      onlineUsers[0].join('room1');
+      onlineUsers[1].join('room1');
+    }
+  }
+
   private id;
   private game = new GameService();
+
   @SubscribeMessage('initialize')
   Init(
     @MessageBody()
