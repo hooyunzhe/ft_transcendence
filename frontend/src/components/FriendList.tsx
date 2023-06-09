@@ -7,6 +7,7 @@ import callAPI from '@/lib/callAPI';
 import { friendsSocket } from '@/lib/socket';
 import Friend from '@/types/Friend';
 import User from '@/types/User';
+import ConfirmationPrompt from './ConfirmationPrompt';
 
 export default function FriendList() {
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -22,6 +23,16 @@ export default function FriendList() {
     blocked: false,
   });
   const [selectedFriend, setSelectedFriend] = useState(0);
+  const [confirmation, setConfirmation] = useState<
+    | {
+        required: boolean;
+        title: string;
+        description: string;
+        request: Friend;
+        action: 'block' | 'unblock' | 'delete';
+      }
+    | undefined
+  >();
 
   const current_user: User = {
     id: 4,
@@ -167,6 +178,39 @@ export default function FriendList() {
     });
   }
 
+  function handleAction(
+    request: Friend,
+    action: 'accept' | 'reject' | 'block' | 'unblock' | 'delete',
+  ) {
+    if (action === 'accept' || action === 'reject') {
+      handleRequest(request, action);
+    } else {
+      const actionTitle =
+        action === 'delete'
+          ? 'Unfriend '
+          : action.charAt(0).toUpperCase() + action.slice(1) + ' ';
+
+      const actionDescription =
+        action === 'delete'
+          ? 'This action is permanent!'
+          : action === 'block'
+          ? 'You will not see ' +
+            request.incoming_friend.username +
+            "'s messages anymore!"
+          : 'You will now see ' +
+            request.incoming_friend.username +
+            "'s messages!";
+
+      setConfirmation({
+        required: true,
+        title: actionTitle + request.incoming_friend.username + '?',
+        description: actionDescription,
+        request: request,
+        action: action,
+      });
+    }
+  }
+
   function handleRequest(
     request: Friend,
     action: 'accept' | 'reject' | 'block' | 'unblock' | 'delete',
@@ -184,7 +228,7 @@ export default function FriendList() {
     }));
   }
 
-  const categories = ['pending', 'invited', 'friends', 'blocked'];
+  const categories = ['friends', 'pending', 'invited', 'blocked'];
 
   return (
     <Stack
@@ -202,12 +246,26 @@ export default function FriendList() {
           open={dropdownOpen[category]}
           friends={friends.filter((friend) => friend.status === category)}
           toggleDropdown={toggleDropdown}
-          handleRequest={handleRequest}
+          handleAction={handleAction}
           selectedFriend={selectedFriend}
           setSelectedFriend={setSelectedFriend}
           friendsStatus={friendsStatus}
         ></FriendDropdown>
       ))}
+      {confirmation && (
+        <ConfirmationPrompt
+          open={confirmation.required}
+          onCloseHandler={() => {
+            setConfirmation(undefined);
+          }}
+          promptTitle={confirmation.title}
+          promptDescription={confirmation.description}
+          actionHandler={() => {
+            handleRequest(confirmation.request, confirmation.action);
+            setConfirmation(undefined);
+          }}
+        ></ConfirmationPrompt>
+      )}
     </Stack>
   );
 }

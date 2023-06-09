@@ -24,7 +24,7 @@ interface FriendDropdownProps {
   open: boolean;
   friends: Friend[];
   toggleDropdown: (category: string) => void;
-  handleRequest: (
+  handleAction: (
     request: Friend,
     action: 'accept' | 'reject' | 'block' | 'unblock' | 'delete',
   ) => void;
@@ -38,7 +38,7 @@ export default function FriendDropdown({
   open,
   friends,
   toggleDropdown,
-  handleRequest,
+  handleAction,
   selectedFriend,
   setSelectedFriend,
   friendsStatus,
@@ -82,7 +82,7 @@ export default function FriendDropdown({
                     category={category}
                     friend={friend}
                     status={friendsStatus[friend.incoming_friend.id]}
-                    handleAction={handleRequest}
+                    handleAction={handleAction}
                   ></FriendDisplay>
                 </ListItemButton>
               </Paper>
@@ -91,7 +91,7 @@ export default function FriendDropdown({
                 <FriendDisplay
                   category={category}
                   friend={friend}
-                  handleAction={handleRequest}
+                  handleAction={handleAction}
                 ></FriendDisplay>
               </Paper>
             ),

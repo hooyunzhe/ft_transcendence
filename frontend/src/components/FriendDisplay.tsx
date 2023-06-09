@@ -44,6 +44,24 @@ export default function FriendDisplay({
           ')'
         }
       />
+      {category === 'friends' && (
+        <>
+          <IconButton
+            onClick={() => {
+              handleAction(friend, 'block');
+            }}
+          >
+            <BlockRounded />
+          </IconButton>
+          <IconButton>
+            <DeleteRounded
+              onClick={() => {
+                handleAction(friend, 'delete');
+              }}
+            />
+          </IconButton>
+        </>
+      )}
       {category === 'pending' && (
         <>
           <IconButton
@@ -70,24 +88,6 @@ export default function FriendDisplay({
         >
           <DeleteRounded />
         </IconButton>
-      )}
-      {category === 'friends' && (
-        <>
-          <IconButton
-            onClick={() => {
-              handleAction(friend, 'block');
-            }}
-          >
-            <BlockRounded />
-          </IconButton>
-          <IconButton>
-            <DeleteRounded
-              onClick={() => {
-                handleAction(friend, 'delete');
-              }}
-            />
-          </IconButton>
-        </>
       )}
       {category === 'blocked' && (
         <IconButton
