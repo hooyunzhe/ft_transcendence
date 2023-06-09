@@ -16,6 +16,7 @@ interface DialogPromptProps {
   children?: ReactNode;
   buttonText: string;
   dialogTitle: string;
+  dialogDescription: string;
   labelText: string;
   actionButtonText: string;
   actionHandler: (...args: any) => Promise<boolean>;
@@ -27,6 +28,7 @@ export default function DialogPrompt({
   children,
   buttonText,
   dialogTitle,
+  dialogDescription,
   labelText,
   actionButtonText,
   actionHandler,
@@ -59,9 +61,7 @@ export default function DialogPrompt({
       >
         <DialogTitle>{dialogTitle}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Enter channel that you wanna add~
-          </DialogContentText>
+          <DialogContentText>{dialogDescription}</DialogContentText>
           <TextField
             autoFocus
             fullWidth
@@ -81,17 +81,26 @@ export default function DialogPrompt({
         </DialogContent>
         <DialogActions>
           <Button
+            onClick={() => {
+              if (actionButtonText === 'Back') {
+                //wip SEND HELP
+              }
+            }}
+          ></Button>
+          <Button
             disabled={!input}
             onClick={() => {
               setInput('');
               actionHandler(input).then((result) => {
-                if (result) {
-                  setAlertLevel('success');
-                  setOpen(false);
-                } else {
-                  setAlertLevel('error');
+                if (actionButtonText === 'Create') {
+                  if (result) {
+                    setAlertLevel('success');
+                    setOpen(false);
+                  } else {
+                    setAlertLevel('error');
+                  }
+                  setSnackbarOpen(true);
                 }
-                setSnackbarOpen(true);
               });
             }}
           >

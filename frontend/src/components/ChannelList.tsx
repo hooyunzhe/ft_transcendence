@@ -1,26 +1,20 @@
 'use client';
 import List from '@mui/material/List';
 import { ChannelDisplay } from './ChannelDisplay';
-import {
-  FormControlLabel,
-  FormGroup,
-  Grid,
-  Switch,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
 import { useEffect, useState } from 'react';
 import callAPI from '@/lib/callAPI';
 import DialogPrompt from './DialogPrompt';
 import Channel from '@/types/Channel';
-import { NewReleasesRounded } from '@mui/icons-material';
 
 export function ChannelList() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [channelType, setChannelType] = useState('public');
-  const [input, setInput] = useState('');
+  const [channelName, setChannelName] = useState('');
+  const [isProtected, setIsProtected] = useState(false);
 
-  async function addChannel(channelName: string) {
+  async function addChannel(password?: string) {
+    // checking naming duplicate
     const hasChannel = channels.some((item) => {
       if (item.name === channelName) {
         return true;
@@ -53,6 +47,21 @@ export function ChannelList() {
     else if (channelType === 'protected') setChannelType('public');
   }
 
+  async function handlePromptAction(input: string) {
+    setChannelName(input);
+    if (channelType === 'public') {
+      addChannel();
+    } else {
+      console.log('derp');
+      setIsProtected(true);
+    }
+    return true;
+  }
+
+  // Create Channel (public) => (channelName) => {addChannel}
+  // Next (public) => (channelName) => {setChannelName(channelName), setIsProtected(true)}
+  // Create Channel (protected) => (password) => {addChannel(password)}
+
   useEffect(() => {
     async function getChannels() {
       const channelData = JSON.parse(await callAPI('GET', 'channels'));
@@ -65,36 +74,42 @@ export function ChannelList() {
   return (
     <>
       <Grid sx={{ width: '100%', maxWidth: 360 }} xs={8} item>
-        <DialogPrompt
-          buttonText='Add channel'
-          dialogTitle='Channel creation'
-          labelText='Channel name...'
-          actionButtonText='ADD NOW!~!!'
-          actionHandler={addChannel}
-          successMessage='Channel added'
-          errorMessage='Channel already exists '
-        >
-          <FormGroup>
-            <FormControlLabel
-              control={<Switch onChange={handleChange}></Switch>}
-              label={channelType}
-            />
-          </FormGroup>
-          <TextField
-            sx={{ width: '70%', height: '30%' }}
-            autoFocus
-            margin='dense'
-            id='input'
-            label='Please key in password...'
-            variant='standard'
-            value={input}
-            onChange={(e) => {
-              setInput(e.target.value);
+        {isProtected ? (
+          // protected
+          <DialogPrompt
+            buttonText='Add channel'
+            dialogTitle='Set channel password'
+            dialogDescription='Enter the channel password of your desire.'
+            labelText='Password'
+            actionButtonText={'Create'}
+            // Next
+            actionHandler={async () => {
+              return false;
             }}
-            disabled={channelType === 'public'}
-            required
-          ></TextField>
-        </DialogPrompt>
+            successMessage='Channel added'
+            errorMessage='Channel already exists'
+          ></DialogPrompt>
+        ) : (
+          // public
+          <DialogPrompt
+            buttonText='Add channel'
+            dialogTitle='Channel creation'
+            dialogDescription='Create your channel here'
+            labelText='Channel name...'
+            actionButtonText={channelType === 'public' ? 'Create' : 'Next'}
+            // add channel if not add protected
+            actionHandler={handlePromptAction}
+            successMessage='Channel added'
+            errorMessage='Channel already exists'
+          >
+            <FormGroup>
+              <FormControlLabel
+                control={<Switch onChange={handleChange}></Switch>}
+                label={channelType}
+              />
+            </FormGroup>
+          </DialogPrompt>
+        )}
       </Grid>
       <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
         {channels.map((obj: Channel, index: number) => (
