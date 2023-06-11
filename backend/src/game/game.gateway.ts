@@ -31,14 +31,14 @@ export class GameGateway implements OnGatewayConnection {
   private client_id_list = new Map();
   async handleConnection(client: Socket) {
     client.data.user_id ??= Number(client.handshake.query['user_id']);
-    const connectedSockets = await this.server.fetchSockets();
-    const onlineUsers = connectedSockets.map((socket) => socket.data.user_id);
-    if (onlineUsers.length === 2) {
-      onlineUsers[0].join('room1');
-      onlineUsers[1].join('room1');
-    }
+    console.log(client.data.user_id);
   }
 
+  @SubscribeMessage('join')
+  createRoom(@MessageBody() data: number)
+  {
+    
+  }
   private id;
   private game = new GameService();
 

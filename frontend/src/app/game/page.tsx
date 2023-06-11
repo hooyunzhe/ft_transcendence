@@ -12,37 +12,44 @@ export default function Game() {
   const gameSocket = io('http://localhost:4242/gateway/game', {
     query: {
       user_id: session?.user?.id,
-    },
+    }, autoConnect: false,
   });
 
-  console.log(session);
-  // session.data?.user;
-
-  useEffect(() => {}, []);
-
   const Start = () => {
-    gameSocket.emit('connection', session?.user);
-    gameSocket.emit('Start');
+    const matchSocket = io('http://localhost:4242/gateway/matchmaking', {
+      query: {
+        user_id: session?.user?.id,
+      },
+    });
+    matchSocket.on('match',(data: number) => {
+      gameSocket.connect(),
+      gameSocket.emit('join', data);
+    });
   };
 
-  const resetGame = () => {
-    gameSocket.emit('Reset');
-  };
+   // console.log(session);
+  // // session.data?.user;
 
-  const stopGame = () => {
-    gameSocket.emit('Stop');
-  };
+  // useEffect(() => {}, []);
 
-  const InitGame = () => {
-    gameSocket.emit('initialize');
-  };
+  // const resetGame = () => {
+  //   gameSocket.emit('Reset');
+  // };
+
+  // const stopGame = () => {
+  //   gameSocket.emit('Stop');
+  // };
+
+  // const InitGame = () => {
+  //   gameSocket.emit('initialize');
+  // };
 
   return (
     <div>
       <button onClick={Start}>triggerOn</button>
-      <button onClick={resetGame}>Reset</button>
+      {/* <button onClick={resetGame}>Reset</button>
       <button onClick={stopGame}>Stop</button>
-      <button onClick={InitGame}>Init</button>
+      <button onClick={InitGame}>Init</button> */}
     </div>
   );
 }
