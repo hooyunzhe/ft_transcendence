@@ -12,7 +12,8 @@ export default function Game() {
   const gameSocket = io('http://localhost:4242/gateway/game', {
     query: {
       user_id: session?.user?.id,
-    }, autoConnect: false,
+    },
+    autoConnect: false,
   });
 
   const Start = () => {
@@ -21,16 +22,15 @@ export default function Game() {
         user_id: session?.user?.id,
       },
     });
-    matchSocket.on('match',(data: number) => {
-      gameSocket.connect(),
-      gameSocket.emit('join', data);
+    matchSocket.on('match', (data: number) => {
+      gameSocket.connect(), gameSocket.emit('join', data);
     });
   };
 
-   // console.log(session);
+  // console.log(session);
   // // session.data?.user;
 
-  // useEffect(() => {}, []);
+  useEffect(() => {}, []);
 
   // const resetGame = () => {
   //   gameSocket.emit('Reset');

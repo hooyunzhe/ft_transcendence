@@ -47,8 +47,11 @@ export class GameService {
   Paddle2: RectObj;
   velocity: number;
   score: { player1: number; player2: number };
+  roomid: string;
+  server: Server;
+  intervalID: NodeJS.Timer;
 
-  constructor() {
+  constructor(roomid: string, server: Server) {
     this.windowSize = {
       x: 800,
       y: 600,
@@ -76,6 +79,7 @@ export class GameService {
       x: Math.cos(heading),
       y: Math.sin(heading),
     };
+    this.gameUpdate();
   }
 
   gameReset() {
@@ -87,6 +91,7 @@ export class GameService {
       x: 0,
       y: 0,
     };
+    clearInterval(this.intervalID);
   }
 
   gamePaddleConstruct(
@@ -107,20 +112,11 @@ export class GameService {
     );
     console.log(paddle1size.width, paddle2size.width);
   }
-  gameUpdate(server: Server) {
+  gameRefresh() {
     this.Ball.x += this.direction.x * this.velocity;
     this.Ball.y += this.direction.y * this.velocity;
     if (this.Ball.top() <= 0 || this.Ball.bottom() >= this.windowSize.y)
       this.direction.y *= -1;
-    // if (this.Ball.left() <= 0 || this.Ball.right() >= this.windowSize.x) {
-    //   this.direction.x *= -1;
-    //   console.log(
-    //     'ball left:',
-    //     this.Ball.left(),
-    //     'ball right :',
-    //     this.Ball.right(),
-    //   );
-    // }
     if (this.Ball.right() < 0) {
       this.gameHandleVictory(2);
     }
@@ -133,21 +129,23 @@ export class GameService {
     ) {
       this.direction.x *= -1;
       console.log('x:', this.Ball.x, ' y:', this.Ball.y);
+      this.server.to(this.roomid).emit('game', {
+        ball: {
+          x: this.Ball.x,
+          y: this.Ball.y,
+        },
+        paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
+        paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
+        score: this.score,
+      });
     }
-
-    // console.log("ball left:",this.Ball.left, " paddle right:",this.Paddle1.right)
-    // console.log(this.gameCollision(this.Paddle1, this.Ball));
-    server.emit('game', {
-      ball: {
-        x: this.Ball.x,
-        y: this.Ball.y,
-      },
-      paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
-      paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
-      score: this.score,
-    });
   }
 
+  gameUpdate() {
+    this.intervalID = setInterval(() => {
+      this.gameRefresh();
+    }, 50);
+  }
   gameHandleVictory(player: number) {
     if (player === 1) this.score.player1++;
     else this.score.player2++;

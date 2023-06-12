@@ -15,24 +15,25 @@ import { Server, Socket } from 'socket.io';
   },
   namespace: 'gateway/matchmaking',
 })
-export class MatchmakingGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class MatchmakingGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
   private client_list: Socket[] = [];
   async handleConnection(client: Socket) {
     client.data.user_id ??= Number(client.handshake.query['user_id']);
-    this.client_list.push(client)
+    this.client_list.push(client);
     if (this.client_list.length >= 2)
       await this.handleMatchMaking(this.client_list.splice(0, 2));
-
   }
   async handleDisconnect(client: Socket) {
     this.client_list = this.client_list.filter((user) => user !== client);
   }
 
   async handleMatchMaking(clients: Socket[]) {
-    const uniquekey = Date.now();
+    const uniquekey = clients[0].id;
     clients.forEach((client) => {
       client.emit('match', uniquekey);
     });
