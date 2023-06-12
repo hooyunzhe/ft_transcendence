@@ -1,5 +1,11 @@
 import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 
 export enum FriendStatus {
   Friends = 'friends',
@@ -15,6 +21,7 @@ export enum FriendAction {
   Reject = 'reject',
 }
 
+@Unique('friendship', ['outgoing_friend', 'incoming_friend'])
 @Entity()
 export class Friend {
   @PrimaryGeneratedColumn()

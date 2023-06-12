@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -25,6 +25,14 @@ export class FriendsService {
         id: friendDto.incoming_id,
       }),
     ]);
+
+    if (!outgoingUser) {
+      throw new NotFoundException('Outgoing user not found');
+    }
+
+    if (!incomingUser) {
+      throw new NotFoundException('Incoming user not found');
+    }
 
     let newOutgoingFriendship = this.friendRepository.create({
       outgoing_friend: outgoingUser,
