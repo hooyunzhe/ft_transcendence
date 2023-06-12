@@ -38,7 +38,7 @@ class RectObj {
   velocityX: number;
   velocityY: number;
 }
-@Injectable()
+
 export class GameService {
   windowSize: Coor;
   direction: Coor;
@@ -71,6 +71,15 @@ export class GameService {
       player1: 0,
       player2: 0,
     };
+    this.Paddle1 = new RectObj(15, this.windowSize.y / 2, 10, 80);
+    this.Paddle2 = new RectObj(
+      this.windowSize.x - 15,
+      this.windowSize.y / 2,
+      10,
+      80,
+    );
+    this.roomid = roomid;
+    this.server = server;
   }
 
   gameStart() {
@@ -129,16 +138,16 @@ export class GameService {
     ) {
       this.direction.x *= -1;
       console.log('x:', this.Ball.x, ' y:', this.Ball.y);
-      this.server.to(this.roomid).emit('game', {
-        ball: {
-          x: this.Ball.x,
-          y: this.Ball.y,
-        },
-        paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
-        paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
-        score: this.score,
-      });
     }
+    this.server.to(this.roomid).emit('game', {
+      ball: {
+        x: this.Ball.x,
+        y: this.Ball.y,
+      },
+      paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
+      paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
+      score: this.score,
+    });
   }
 
   gameUpdate() {

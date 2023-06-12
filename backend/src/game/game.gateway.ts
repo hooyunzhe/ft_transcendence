@@ -2,6 +2,7 @@ import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -20,7 +21,7 @@ interface Coor {
   },
   namespace: 'gateway/game',
 })
-export class GameGateway implements OnGatewayConnection {
+export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -28,7 +29,12 @@ export class GameGateway implements OnGatewayConnection {
 
   async handleConnection(client: Socket) {
     client.data.user_id ??= Number(client.handshake.query['user_id']);
-    console.log(client.data.user_id);
+    client.data.roomid ??= '';
+    console.log('HERER');
+  }
+
+  async handleDisconnect(client: Socket) {
+    await this.roomlist.delete(client.data.roomid);
   }
 
   @SubscribeMessage('join')
@@ -36,10 +42,15 @@ export class GameGateway implements OnGatewayConnection {
     @MessageBody() roomid: string,
     @ConnectedSocket() client: Socket,
   ) {
-    client.data.roomid = roomid;
-    client.join(roomid);
+    if (!client.data.roomid) {
+      client.join(roomid);
+      client.data.roomid = roomid;
+    }
     if ((await this.server.in(roomid).fetchSockets()).length === 1) {
+      console.log('event: create room: ', roomid);
       this.roomlist.set(roomid, new GameService(roomid, this.server));
+      console.log(this.roomlist.size);
+      // console.log(this.roomlist);
     }
   }
 
@@ -59,12 +70,13 @@ export class GameGateway implements OnGatewayConnection {
 
   @SubscribeMessage('Start')
   start(@ConnectedSocket() client: Socket) {
-    this.roomlist[client.data.roomid].gameStart();
+    console.log('within start: ', client.data.roomid);
+    this.roomlist.get(client.data.roomid).gameStart();
   }
 
   @SubscribeMessage('Reset')
   reset(@ConnectedSocket() client: Socket) {
-    this.roomlist[client.data.roomid].gameReset();
+    this.roomlist.get(client.data.roomid).gameReset();
   }
   // @SubscribeMessage('Stop')
   // Stop() {

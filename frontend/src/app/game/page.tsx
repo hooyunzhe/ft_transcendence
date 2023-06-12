@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Pong from '../../components/pong';
 import { io } from 'socket.io-client';
 import { useSession } from 'next-auth/react';
+import { start } from 'repl';
 
 export default function Game() {
   // const [session, setSession] = useState(useSession());
@@ -16,25 +17,32 @@ export default function Game() {
     autoConnect: false,
   });
 
-  const Start = () => {
+  const FindMatch = () => {
     const matchSocket = io('http://localhost:4242/gateway/matchmaking', {
       query: {
         user_id: session?.user?.id,
       },
     });
     matchSocket.on('match', (data: number) => {
-      gameSocket.connect(), gameSocket.emit('join', data);
+      gameSocket.connect();
+      gameSocket.emit('join', data);
     });
   };
 
   // console.log(session);
   // // session.data?.user;
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    startGame();
+  }, []);
 
-  // const resetGame = () => {
-  //   gameSocket.emit('Reset');
-  // };
+  const Start = () => {
+    gameSocket.emit('Start');
+  };
+
+  const resetGame = () => {
+    gameSocket.emit('Reset');
+  };
 
   // const stopGame = () => {
   //   gameSocket.emit('Stop');
@@ -46,10 +54,9 @@ export default function Game() {
 
   return (
     <div>
-      <button onClick={Start}>triggerOn</button>
-      {/* <button onClick={resetGame}>Reset</button>
-      <button onClick={stopGame}>Stop</button>
-      <button onClick={InitGame}>Init</button> */}
+      <button onClick={FindMatch}>Find Match</button>
+      <button onClick={Start}>Start</button>
+      <button onClick={resetGame}>Reset</button>
     </div>
   );
 }

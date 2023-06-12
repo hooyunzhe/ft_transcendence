@@ -9,8 +9,7 @@ import { AchievementsModule } from './achievements/achievements.module';
 import { UserAchievementsModule } from './user_achievements/user_achievements.module';
 import { FriendsModule } from './friends/friends.module';
 import { GameModule } from './game/game.module';
-import { MatchmakingGateway } from './matchmaking/matchmaking.gateway';
-import { MatchmakingService } from './matchmaking/matchmaking.service';
+import { MatchmakingModule } from './matchmaking/matchmaking.module';
 
 @Module({
   imports: [
@@ -23,9 +22,9 @@ import { MatchmakingService } from './matchmaking/matchmaking.service';
     AchievementsModule,
     UserAchievementsModule,
     FriendsModule,
-    GameModule
+    GameModule,
+    MatchmakingModule,
   ],
   controllers: [],
-  providers: [MatchmakingGateway, MatchmakingService],
 })
 export class AppModule {}

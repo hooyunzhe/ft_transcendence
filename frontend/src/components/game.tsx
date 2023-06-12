@@ -64,10 +64,10 @@ class Example extends Phaser.Scene {
     //   bodysize.height,
     // );
 
-    gameSocket.emit('initialize', {
-      paddle1size: { width: this.paddle1.width, height: this.paddle1.height },
-      paddle2size: { width: this.paddle2.width, height: this.paddle2.height },
-    });
+    // gameSocket.emit('initialize', {
+    //   paddle1size: { width: this.paddle1.width, height: this.paddle1.height },
+    //   paddle2size: { width: this.paddle2.width, height: this.paddle2.height },
+    // });
     gameSocket.on(
       'game',
       (data: {
@@ -76,6 +76,7 @@ class Example extends Phaser.Scene {
         paddle2: { x: number; y: number };
         score: { player1: number; player2: number };
       }) => {
+        console.log('UPDATE!');
         this.ball.x = data.ball.x;
         this.ball.y = data.ball.y;
         this.paddle1.y = data.paddle1.y;
