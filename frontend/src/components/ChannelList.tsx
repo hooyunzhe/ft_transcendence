@@ -13,14 +13,16 @@ export function ChannelList() {
   const [channelName, setChannelName] = useState('');
   const [isProtected, setIsProtected] = useState(false);
 
-  async function addChannel(password?: string) {
-    // checking naming duplicate
-    const hasChannel = channels.some((item) => {
-      if (item.name === channelName) {
-        return true;
-      }
-      return false;
-    });
+  console.log('-----------Entering ChannelList-------------');
+
+  function checkChannelDuplicate(name: string) {
+    return channels.some((item) => (item.name === name ? true : false));
+  }
+
+  async function addChannel(channelName: string, password?: string) {
+    console.log('Entering addChannel()');
+    const hasChannel = checkChannelDuplicate(channelName);
+    console.log('hasChannel: ' + hasChannel);
 
     // probably need to check the channelData here me thinks
     if (hasChannel === false) {
@@ -31,28 +33,42 @@ export function ChannelList() {
         }),
       );
 
-      callAPI('GET', 'channels/name/' + channelName).then((data) => {
+      console.log('channelName: ' + channelName);
+      await callAPI('GET', 'channels/name/' + channelName).then((data) => {
         const new_channel = JSON.parse(data);
         if (new_channel) {
           setChannels([...channels, new_channel]);
         }
       });
+      console.log('true');
       return true;
     }
+    console.log('false');
     return false;
   }
 
   function handleChange(event: any) {
-    if (channelType === 'public') setChannelType('protected');
-    else if (channelType === 'protected') setChannelType('public');
+    channelType === 'public'
+      ? setChannelType('protected')
+      : setChannelType('public');
   }
 
   async function handlePromptAction(input: string) {
-    setChannelName(input);
+    console.log('--------HANDLE PROMPT ACTION--------');
+    console.log('channeltype: ' + channelType);
+    console.log('input:' + input);
+
+    const hasDuplicate = checkChannelDuplicate(input);
+    console.log(hasDuplicate);
+    if (hasDuplicate) {
+      return false;
+    }
     if (channelType === 'public') {
-      addChannel();
+      console.log('setIsPublic');
+      addChannel(input);
     } else {
-      console.log('derp');
+      console.log('setIsProtected');
+      setChannelName(input);
       setIsProtected(true);
     }
     return true;
@@ -75,28 +91,39 @@ export function ChannelList() {
     <>
       <Grid sx={{ width: '100%', maxWidth: 360 }} xs={8} item>
         {isProtected ? (
-          // protected
+          // 2nd page
           <DialogPrompt
             buttonText='Add channel'
             dialogTitle='Set channel password'
             dialogDescription='Enter the channel password of your desire.'
             labelText='Password'
+            backButtonText={'Back'}
+            backHandler={async () => {
+              setIsProtected(false);
+              setChannelType('public');
+            }}
             actionButtonText={'Create'}
-            // Next
-            actionHandler={async () => {
-              return false;
+            actionHandler={async (input) => {
+              // hash input later
+              setIsProtected(false);
+              setChannelType('public');
+              return addChannel(channelName, input);
             }}
             successMessage='Channel added'
             errorMessage='Channel already exists'
           ></DialogPrompt>
         ) : (
-          // public
+          // 1st page
           <DialogPrompt
             buttonText='Add channel'
             dialogTitle='Channel creation'
             dialogDescription='Create your channel here'
             labelText='Channel name...'
             actionButtonText={channelType === 'public' ? 'Create' : 'Next'}
+            backButtonText={'Cancel'}
+            backHandler={async () => {
+              setChannelType('public');
+            }}
             // add channel if not add protected
             actionHandler={handlePromptAction}
             successMessage='Channel added'
@@ -104,6 +131,7 @@ export function ChannelList() {
           >
             <FormGroup>
               <FormControlLabel
+                // this is the children
                 control={<Switch onChange={handleChange}></Switch>}
                 label={channelType}
               />

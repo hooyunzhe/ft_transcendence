@@ -14,10 +14,13 @@ import { ReactNode, useState } from 'react';
 
 interface DialogPromptProps {
   children?: ReactNode;
+  closeHandler?: (...args: any) => Promise<void>;
   buttonText: string;
   dialogTitle: string;
   dialogDescription: string;
   labelText: string;
+  backButtonText: string;
+  backHandler: (...args: any) => Promise<void>;
   actionButtonText: string;
   actionHandler: (...args: any) => Promise<boolean>;
   successMessage: string;
@@ -30,6 +33,8 @@ export default function DialogPrompt({
   dialogTitle,
   dialogDescription,
   labelText,
+  backButtonText,
+  backHandler,
   actionButtonText,
   actionHandler,
   successMessage,
@@ -82,11 +87,21 @@ export default function DialogPrompt({
         <DialogActions>
           <Button
             onClick={() => {
-              if (actionButtonText === 'Back') {
-                //wip SEND HELP
-              }
+              // can be improved
+              backHandler(input).then(() => {
+                if (backButtonText === 'Back') {
+                  console.log('BACK BUTTON');
+                  return;
+                } else {
+                  setInput('');
+                  setOpen(false);
+                }
+              });
             }}
-          ></Button>
+            size='large'
+          >
+            {backButtonText}
+          </Button>
           <Button
             disabled={!input}
             onClick={() => {
