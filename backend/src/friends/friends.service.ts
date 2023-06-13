@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
+import { EntityNotFoundError, Repository } from 'typeorm';
 import { Friend, FriendStatus, FriendAction } from './entities/friend.entity';
 import { CreateFriendDto } from './dto/create-friend.dto';
 import { UpdateFriendDto } from './dto/update-friend.dto';
@@ -16,7 +16,7 @@ export class FriendsService {
     private userRepository: Repository<User>,
   ) {}
 
-  async create(friendDto: CreateFriendDto): Promise<void> {
+  async create(friendDto: CreateFriendDto): Promise<Friend | void> {
     const [outgoingUser, incomingUser] = await Promise.all([
       this.userRepository.findOneBy({
         id: friendDto.outgoing_id,
@@ -27,11 +27,17 @@ export class FriendsService {
     ]);
 
     if (!outgoingUser) {
-      throw new NotFoundException('Outgoing user not found');
+      throw new EntityNotFoundError(
+        Friend,
+        'outgoing_id: ' + friendDto.outgoing_id,
+      );
     }
 
     if (!incomingUser) {
-      throw new NotFoundException('Incoming user not found');
+      throw new EntityNotFoundError(
+        Friend,
+        'incoming_id: ' + friendDto.incoming_id,
+      );
     }
 
     let newOutgoingFriendship = this.friendRepository.create({
@@ -46,10 +52,12 @@ export class FriendsService {
       status: FriendStatus.Pending,
     });
 
-    await this.friendRepository.save([
+    const friendships = await this.friendRepository.save([
       newOutgoingFriendship,
       newIncomingFriendship,
     ]);
+
+    return friendships[0];
   }
 
   async findAll() {
@@ -57,7 +65,12 @@ export class FriendsService {
   }
 
   async findOne(id: number): Promise<Friend | null> {
-    return await this.friendRepository.findOneBy({ id });
+    const found = await this.friendRepository.findOneBy({ id });
+
+    if (!found) {
+      throw new EntityNotFoundError(Friend, 'id: ' + id);
+    }
+    return found;
   }
 
   async findFriendships(
@@ -81,10 +94,18 @@ export class FriendsService {
     outgoing_id: number,
     incoming_id: number,
   ): Promise<Friend | null> {
-    return await this.friendRepository.findOneBy({
+    const found = await this.friendRepository.findOneBy({
       outgoing_friend: { id: outgoing_id },
       incoming_friend: { id: incoming_id },
     });
+
+    if (!found) {
+      throw new EntityNotFoundError(
+        Friend,
+        'outgoing_id: ' + outgoing_id + ', incoming_id: ' + incoming_id,
+      );
+    }
+    return found;
   }
 
   async update(friendDto: UpdateFriendDto) {
