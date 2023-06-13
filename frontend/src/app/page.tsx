@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <div>
       <Bar></Bar>
-      <ChatBox messageAPI='messages'></ChatBox>
+      <ChatBox></ChatBox>
     </div>
   );
 }

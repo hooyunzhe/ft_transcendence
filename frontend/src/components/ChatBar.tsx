@@ -23,10 +23,8 @@ export default function ChatBar() {
 
   useEffect(() => {
     if (isTypingState === true) {
-      // console.log('SENT EVENT TYPING TRUE');
       messageSocket.emit('typing', true);
     } else {
-      // console.log('SENT EVENT TYPING false');
       messageSocket.emit('typing', false);
     }
   }, [isTypingState]);
@@ -56,14 +54,6 @@ export default function ChatBar() {
       setStartTime(new Date());
     }
   }, [timeElapsed]);
-
-  let timeout: NodeJS.Timeout;
-
-  function isDurationElapsed(duration: number): boolean {
-    const currentTime = Date.now();
-    const targetTime = currentTime + duration;
-    return currentTime >= targetTime;
-  }
 
   return (
     <>

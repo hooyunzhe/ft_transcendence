@@ -16,12 +16,12 @@ import {
 } from '@mui/material';
 import ChatBar from './ChatBar';
 
-export default function ChatBox({ messageAPI }: { messageAPI: string }) {
+export default function ChatBox() {
   const [messageList, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     async function getChatUsers() {
-      const messageData = JSON.parse(await callAPI('GET', messageAPI));
+      const messageData = JSON.parse(await callAPI('GET', 'messages'));
       setMessages(messageData);
       console.log(messageData);
     }
