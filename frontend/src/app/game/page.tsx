@@ -1,42 +1,46 @@
 'use client';
-
-import startGame from '@/components/game';
 import { useEffect, useState } from 'react';
-import Pong from '../../components/pong';
 import { io } from 'socket.io-client';
 import { useSession } from 'next-auth/react';
-import { start } from 'repl';
+import RunGame from '@/components/game';
 
-export default function Game() {
+export default function GamePage() {
   // const [session, setSession] = useState(useSession());
   const { data: session } = useSession();
-  const gameSocket = io('http://localhost:4242/gateway/game', {
-    query: {
-      user_id: session?.user?.id,
-    },
-    autoConnect: false,
-  });
-
-  const FindMatch = () => {
-    const matchSocket = io('http://localhost:4242/gateway/matchmaking', {
+  const [loaded, setLoaded] = useState(false);
+  const gameSocket = io(
+    `http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/gateway/game`,
+    {
       query: {
         user_id: session?.user?.id,
       },
-    });
+      autoConnect: false,
+    },
+  );
+
+  const FindMatch = () => {
+    const matchSocket = io(
+      `http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/gateway/matchmaking`,
+      {
+        query: {
+          user_id: session?.user?.id,
+        },
+      },
+    );
+    console.log(session?.user?.id);
     matchSocket.on('match', (data: number) => {
       gameSocket.connect();
       gameSocket.emit('join', data);
+      setLoaded(true);
+      matchSocket.disconnect();
     });
   };
 
   // console.log(session);
   // // session.data?.user;
 
-  useEffect(() => {
-    startGame();
-  }, []);
-
   const Start = () => {
+    console.log('starting game');
     gameSocket.emit('Start');
   };
 
@@ -51,6 +55,10 @@ export default function Game() {
   // const InitGame = () => {
   //   gameSocket.emit('initialize');
   // };
+
+  useEffect(() => {
+    RunGame(gameSocket);
+  }, [loaded]);
 
   return (
     <div>

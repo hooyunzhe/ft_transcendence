@@ -100,6 +100,15 @@ export class GameService {
       x: 0,
       y: 0,
     };
+    this.server.to(this.roomid).emit('game', {
+      ball: {
+        x: this.Ball.x,
+        y: this.Ball.y,
+      },
+      paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
+      paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
+      score: this.score,
+    });
     clearInterval(this.intervalID);
   }
 
@@ -137,8 +146,8 @@ export class GameService {
       (this.gameCollision(this.Ball, this.Paddle2) && this.direction.x > 0)
     ) {
       this.direction.x *= -1;
-      console.log('x:', this.Ball.x, ' y:', this.Ball.y);
     }
+    console.log('x:', this.Ball.x, ' y:', this.Ball.y);
     this.server.to(this.roomid).emit('game', {
       ball: {
         x: this.Ball.x,

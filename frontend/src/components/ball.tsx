@@ -24,7 +24,7 @@ interface Coor {
 // };
 
 const Ball = () => {
-  const GameSocket = io('http://localhost:4242/gateway/game');
+  const GameSocket = io(`http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/gateway/game');
   const [ball, setBall] = useState<Coor>({ x: 50, y: 50 });
   
   useEffect(() => {

@@ -1,5 +1,5 @@
 export function signUp(username: string, refresh_token: string) {
-  fetch('http://localhost:4242/api/users', {
+  fetch(`http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/api/users`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

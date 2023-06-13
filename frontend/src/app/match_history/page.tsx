@@ -8,7 +8,7 @@ import {MatchHistoryComponent, MatchHistoryHeadComponent} from "../../components
 // };
 
  async function callAPIs(route: string) {
-  const domain = 'http://backend:3000/api/';
+  const domain = `http://backend:3000/api/';
 
   console.log(domain + route);
 

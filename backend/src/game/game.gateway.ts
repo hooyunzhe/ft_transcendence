@@ -30,11 +30,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket) {
     client.data.user_id ??= Number(client.handshake.query['user_id']);
     client.data.roomid ??= '';
-    console.log('HERER');
+    console.log('user id:', client.data.user_id);
   }
 
   async handleDisconnect(client: Socket) {
-    await this.roomlist.delete(client.data.roomid);
+    // await this.roomlist.delete(client.data.roomid);
   }
 
   @SubscribeMessage('join')
@@ -45,11 +45,22 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!client.data.roomid) {
       client.join(roomid);
       client.data.roomid = roomid;
+      console.log(
+        'user id: ',
+        client.data.user_id,
+        'get assigned with room: ',
+        roomid,
+      );
     }
-    if ((await this.server.in(roomid).fetchSockets()).length === 1) {
+
+    const player_in_room = await this.server.in(roomid).fetchSockets();
+    console.log('player in this room: ', roomid, ': ', player_in_room.length);
+    if (player_in_room.length === 2) {
+      player_in_room[0].data.player = 1;
+      player_in_room[1].data.player = 2;
       console.log('event: create room: ', roomid);
       this.roomlist.set(roomid, new GameService(roomid, this.server));
-      console.log(this.roomlist.size);
+      console.log('room size : ', this.roomlist.size);
       // console.log(this.roomlist);
     }
   }
@@ -76,6 +87,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('Reset')
   reset(@ConnectedSocket() client: Socket) {
+    console.log('HEHAHSUHDJKSAHDJKAHDKSADSA');
     this.roomlist.get(client.data.roomid).gameReset();
   }
   // @SubscribeMessage('Stop')
@@ -88,7 +100,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() position: { x: number; y: number },
     @ConnectedSocket() client: Socket,
   ): void {
-    this.roomlist[client.data.roomid].gameSetPosition(position.x, position.y);
+    this.roomlist
+      .get(client.data.roomid)
+      .gameSetPosition(position.x, position.y);
   }
 
   @SubscribeMessage('Player')
@@ -97,12 +111,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ): void {
     if (movement === 'w')
-      this.roomlist[client.data.roomid].gameSetPaddlePosition(1, -1);
+      this.roomlist
+        .get(client.data.roomid)
+        .gameSetPaddlePosition(client.data.player, -1);
     if (movement === 's')
-      this.roomlist[client.data.roomid].gameSetPaddlePosition(1, 1);
-    if (movement === 'up')
-      this.roomlist[client.data.roomid].gameSetPaddlePosition(2, -1);
-    if (movement === 'down')
-      this.roomlist[client.data.roomid].gameSetPaddlePosition(2, 1);
+      this.roomlist
+        .get(client.data.roomid)
+        .gameSetPaddlePosition(client.data.player, 1);
   }
 }

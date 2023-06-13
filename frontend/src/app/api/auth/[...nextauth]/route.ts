@@ -18,7 +18,8 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       session.user = await fetch(
-        'http://localhost:4242/api/users/token/' + token.refresh_token,
+        `http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/api/users/token/` +
+          token.refresh_token,
         {
           method: 'GET',
         },
