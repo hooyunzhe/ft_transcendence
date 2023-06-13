@@ -19,7 +19,7 @@ export class ChannelsController {
   constructor(private readonly channelsService: ChannelsService) {}
 
   @Post()
-  create(@Body() createChannelDto: CreateChannelDto): Promise<void> {
+  create(@Body() createChannelDto: CreateChannelDto): Promise<Channel | null> {
     return this.channelsService.create(createChannelDto);
   }
 
@@ -28,6 +28,10 @@ export class ChannelsController {
     return this.channelsService.findAll();
   }
 
+  @Get('name/:name')
+  findOneByName(@Param('name') name: string): Promise<Channel | null> {
+    return this.channelsService.findOneByName(name);
+  }
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<Channel | null> {
     return this.channelsService.findOne(id);
