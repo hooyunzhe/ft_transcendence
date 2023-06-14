@@ -52,9 +52,9 @@ export default function FriendDropdown({
           }}
         >
           <ListItemIcon>
+            {category === 'friends' && <PeopleRounded />}
             {category === 'pending' && <MoveToInboxRounded />}
             {category === 'invited' && <OutboxRounded />}
-            {category === 'friends' && <PeopleRounded />}
             {category === 'blocked' && <PersonOff />}
           </ListItemIcon>
           <ListItemText

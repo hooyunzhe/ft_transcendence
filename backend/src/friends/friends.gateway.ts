@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GetStatusDto } from './dto/get-status.dto';
-import { FriendRequestDto } from './dto/friend-request.dto';
+import { Friend } from './entities/friend.entity';
 
 @WebSocketGateway({
   cors: {
@@ -47,30 +47,30 @@ export class FriendsGateway
   }
 
   @SubscribeMessage('newRequest')
-  newRequest(@MessageBody() newRequestDto: FriendRequestDto) {
+  newRequest(@MessageBody() newRequestDto: Friend) {
     this.server
-      .to(String(newRequestDto.receiver.id))
-      .emit('newRequest', newRequestDto.sender);
+      .to(String(newRequestDto.outgoing_friend.id))
+      .emit('newRequest', newRequestDto);
   }
 
   @SubscribeMessage('deleteRequest')
-  deleteRequest(@MessageBody() deleteRequestDto: FriendRequestDto) {
+  deleteRequest(@MessageBody() deleteRequestDto: Friend) {
     this.server
-      .to(String(deleteRequestDto.receiver.id))
-      .emit('deleteRequest', deleteRequestDto.sender);
+      .to(String(deleteRequestDto.incoming_friend.id))
+      .emit('deleteRequest', deleteRequestDto.outgoing_friend);
   }
 
   @SubscribeMessage('acceptRequest')
-  acceptRequest(@MessageBody() acceptRequestDto: FriendRequestDto) {
+  acceptRequest(@MessageBody() acceptRequestDto: Friend) {
     this.server
-      .to(String(acceptRequestDto.receiver.id))
-      .emit('acceptRequest', acceptRequestDto.sender);
+      .to(String(acceptRequestDto.incoming_friend.id))
+      .emit('acceptRequest', acceptRequestDto.outgoing_friend);
   }
 
   @SubscribeMessage('rejectRequest')
-  rejectRequest(@MessageBody() rejectRequestDto: FriendRequestDto) {
+  rejectRequest(@MessageBody() rejectRequestDto: Friend) {
     this.server
-      .to(String(rejectRequestDto.receiver.id))
-      .emit('rejectRequest', rejectRequestDto.sender);
+      .to(String(rejectRequestDto.incoming_friend.id))
+      .emit('rejectRequest', rejectRequestDto.outgoing_friend);
   }
 }

@@ -16,7 +16,7 @@ export class FriendsService {
     private userRepository: Repository<User>,
   ) {}
 
-  async create(friendDto: CreateFriendDto): Promise<Friend | void> {
+  async create(friendDto: CreateFriendDto): Promise<Friend[]> {
     const [outgoingUser, incomingUser] = await Promise.all([
       this.userRepository.findOneBy({
         id: friendDto.outgoing_id,
@@ -52,12 +52,10 @@ export class FriendsService {
       status: FriendStatus.Pending,
     });
 
-    const friendships = await this.friendRepository.save([
+    return await this.friendRepository.save([
       newOutgoingFriendship,
       newIncomingFriendship,
     ]);
-
-    return friendships[0];
   }
 
   async findAll() {
