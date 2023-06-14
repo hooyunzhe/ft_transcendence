@@ -10,6 +10,7 @@ export enum ChannelMemberRole {
 export enum ChannelMemberStatus {
   Banned = 'banned',
   Muted = 'muted',
+  Default = 'default',
 }
 
 export default interface ChannelMembers {
