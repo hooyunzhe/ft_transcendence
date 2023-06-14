@@ -21,7 +21,7 @@ interface FriendDisplayProps {
   status?: string;
   handleAction: (
     request: Friend,
-    action: 'accept' | 'reject' | 'block' | 'unblock' | 'delete',
+    action: 'accept' | 'reject' | 'remove' | 'block' | 'unblock' | 'delete',
   ) => void;
 }
 
@@ -36,14 +36,7 @@ export default function FriendDisplay({
       <ListItemAvatar>
         <Avatar alt=''></Avatar>
       </ListItemAvatar>
-      <ListItemText
-        primary={
-          friend.incoming_friend.username +
-          ' (' +
-          friend.incoming_friend.id +
-          ')'
-        }
-      />
+      <ListItemText primary={friend.incoming_friend.username} />
       {category === 'friends' && (
         <>
           <IconButton
@@ -83,7 +76,7 @@ export default function FriendDisplay({
       {category === 'invited' && (
         <IconButton
           onClick={() => {
-            handleAction(friend, 'delete');
+            handleAction(friend, 'remove');
           }}
         >
           <DeleteRounded />

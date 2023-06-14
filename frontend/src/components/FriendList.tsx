@@ -174,10 +174,10 @@ export default function FriendList() {
 
   function handleAction(
     request: Friend,
-    action: 'accept' | 'reject' | 'block' | 'unblock' | 'delete',
+    action: 'accept' | 'reject' | 'remove' | 'block' | 'unblock' | 'delete',
   ): void {
-    if (action === 'accept' || action === 'reject') {
-      handleRequest(request, action);
+    if (action === 'accept' || action === 'reject' || action === 'remove') {
+      handleRequest(request, action === 'remove' ? 'delete' : action);
     } else {
       const actionTitle =
         action === 'delete'
