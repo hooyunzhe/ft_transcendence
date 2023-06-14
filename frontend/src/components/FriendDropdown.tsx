@@ -26,7 +26,7 @@ interface FriendDropdownProps {
   toggleDropdown: (category: string) => void;
   handleAction: (
     request: Friend,
-    action: 'accept' | 'reject' | 'block' | 'unblock' | 'delete',
+    action: 'accept' | 'reject' | 'remove' | 'block' | 'unblock' | 'delete',
   ) => void;
   selectedFriend: number;
   setSelectedFriend: Dispatch<SetStateAction<number>>;
@@ -43,6 +43,17 @@ export default function FriendDropdown({
   setSelectedFriend,
   friendsStatus,
 }: FriendDropdownProps) {
+  if (category === 'friends') {
+    const onlineFriends = friends.filter(
+      (friend) => friendsStatus[friend.incoming_friend.id] === 'online',
+    );
+    const offlineFriends = friends.filter(
+      (friend) => friendsStatus[friend.incoming_friend.id] === 'offline',
+    );
+
+    friends = [onlineFriends, offlineFriends].flat();
+  }
+
   return (
     <>
       <Paper elevation={2}>
