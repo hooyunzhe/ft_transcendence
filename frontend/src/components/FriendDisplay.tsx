@@ -32,7 +32,13 @@ export default function FriendDisplay({
   handleAction,
 }: FriendDisplayProps) {
   return (
-    <ListItem sx={{ opacity: status === 'online' ? '100%' : '20%' }}>
+    <ListItem
+      sx={{
+        ...(category === 'friends' && {
+          opacity: status === 'online' ? '100%' : '20%',
+        }),
+      }}
+    >
       <ListItemAvatar>
         <Avatar alt=''></Avatar>
       </ListItemAvatar>
