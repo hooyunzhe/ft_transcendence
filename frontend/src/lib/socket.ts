@@ -4,6 +4,8 @@ export const friendsSocket = io('http://localhost:4242/gateway/friends', {
   query: { id: 4 },
 });
 
+export const gameSocket = io('http://localhost:4242/gateway/game');
+
 // friends_socket.on('newConnection', (data) => {
 //   console.log(data);
 // });

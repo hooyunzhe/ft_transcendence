@@ -20,7 +20,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto): Promise<void> {
+  create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);
   }
 
@@ -30,8 +30,15 @@ export class UsersController {
   }
 
   @Get('username/:username')
-  findOneByUsername(@Param('username') username: string): Promise<User | null> {
-    return this.usersService.findOneByUsername(username);
+  findByUsername(@Param('username') username: string): Promise<User | null> {
+    return this.usersService.findByUsername(username);
+  }
+
+  @Get('token/:refresh_token')
+  findByToken(
+    @Param('refresh_token') refresh_token: string,
+  ): Promise<User | null> {
+    return this.usersService.findByToken(refresh_token);
   }
 
   @Get(':id')

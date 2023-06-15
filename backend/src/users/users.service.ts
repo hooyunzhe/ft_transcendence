@@ -14,22 +14,26 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<void> {
-    await this.usersRepository.save(createUserDto);
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    return await this.usersRepository.save(createUserDto);
   }
 
   async findAll(): Promise<User[]> {
     return await this.usersRepository.find();
   }
 
-  async findOne(id: number): Promise<User | null> {
-    return await this.usersRepository.findOneBy({ id });
-  }
-
-  async findOneByUsername(username: string): Promise<User | null> {
+  async findByUsername(username: string): Promise<User | null> {
     return await this.usersRepository.findOneBy({
       username: ILike(username),
     });
+  }
+
+  async findByToken(refresh_token: string): Promise<User | null> {
+    return await this.usersRepository.findOneBy({ refresh_token });
+  }
+
+  async findOne(id: number): Promise<User | null> {
+    return await this.usersRepository.findOneBy({ id });
   }
 
   async getChannels(id: number): Promise<Channel[]> {
@@ -37,6 +41,7 @@ export class UsersService {
       relations: {
         channelMembers: true,
       },
+      where: { id },
     });
 
     return currentUser.channelMembers.map(

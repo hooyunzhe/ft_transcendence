@@ -1,14 +1,14 @@
 'use client';
 import { AlertColor, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
-import FriendPrompt from './FriendPrompt';
+import FriendPrompt from './utils/FriendPrompt';
 import FriendDropdown from './FriendDropdown';
 import callAPI from '@/lib/callAPI';
 import { friendsSocket } from '@/lib/socket';
 import Friend from '@/types/Friend';
 import User from '@/types/User';
-import ConfirmationPrompt from './ConfirmationPrompt';
-import NotificationBar from './NotificationBar';
+import ConfirmationPrompt from './utils/ConfirmationPrompt';
+import NotificationBar from './utils/NotificationBar';
 
 export default function FriendList() {
   const [friends, setFriends] = useState<Friend[]>([]);

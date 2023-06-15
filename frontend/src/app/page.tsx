@@ -1,5 +1,12 @@
 import FriendList from '@/components/FriendList';
-
+import ChannelHeader from '@/components/ChannelHeader';
+import { ChannelList } from '@/components/ChannelList';
 export default function Home() {
-  return <FriendList></FriendList>;
+  return (
+    <>
+      <ChannelHeader></ChannelHeader>
+      <ChannelList></ChannelList>
+      {/* <FriendList></FriendList> */}
+    </>
+  );
 }

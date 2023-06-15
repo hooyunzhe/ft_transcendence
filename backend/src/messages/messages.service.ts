@@ -17,11 +17,11 @@ export class MessagesService {
   ) {}
 
   async create(createMessageDto: CreateMessageDto): Promise<void> {
-    let channel = await this.channelsRepository.findOneBy({
+    const channel = await this.channelsRepository.findOneBy({
       id: createMessageDto.channel_id,
     });
 
-    let newMessage = this.messagesRepository.create({
+    const newMessage = this.messagesRepository.create({
       ...createMessageDto,
       channel: channel,
     });
