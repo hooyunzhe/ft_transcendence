@@ -147,7 +147,6 @@ export class GameService {
     ) {
       this.direction.x *= -1;
     }
-    console.log('x:', this.Ball.x, ' y:', this.Ball.y);
     this.server.to(this.roomid).emit('game', {
       ball: {
         x: this.Ball.x,

@@ -7,6 +7,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { subscribe } from 'diagnostics_channel';
 
 import { Server, Socket } from 'socket.io';
 import { GameService } from './game.service';
@@ -27,18 +28,23 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private roomlist = new Map<string, GameService>();
 
-  async handleConnection(client: Socket) {
-    client.data.user_id ??= Number(client.handshake.query['user_id']);
-    client.data.roomid ??= '';
-    console.log('user id:', client.data.user_id);
-  }
+  async handleConnection(client: Socket) {}
 
+  @SubscribeMessage('init')
+  async setup(
+    @MessageBody() user_id: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.data.user_id ??= user_id;
+    client.data.roomid ??= '';
+    console.log('user id :', client.data.user_id);
+  }
   async handleDisconnect(client: Socket) {
-    Promise.all([
-      this.roomlist.delete(client.data.roomid),
-      (client.data.user_id ??= ''),
-      (client.data.roomid ??= ''),
-    ]);
+    // Promise.all([
+    //   this.roomlist.delete(client.data.roomid),
+    //   (client.data.user_id ??= ''),
+    //   (client.data.roomid ??= ''),
+    // ]);
   }
 
   @SubscribeMessage('start')
@@ -64,11 +70,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     const player_in_room = await this.server.in(roomid).fetchSockets();
-    console.log('player in this room: ', roomid, ': ', player_in_room.length);
+    console.log('player in thisroom: ', roomid, ': ', player_in_room.length);
     if (player_in_room.length === 2) {
       player_in_room[0].data.player = 1;
       player_in_room[1].data.player = 2;
-      console.log('event: create room: ', roomid);
+      console.log('event: createroom: ', roomid);
       this.roomlist.set(roomid, new GameService(roomid, this.server));
       console.log('room size : ', this.roomlist.size);
       // console.log(this.roomlist);
@@ -77,7 +83,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('reset')
   reset(@ConnectedSocket() client: Socket) {
-    console.log('HEHAHSUHDJKSAHDJKAHDSASA');
+    console.log('HEHAHSUHDJSJKHASA');
     this.roomlist.get(client.data.roomid).gameReset();
   }
 

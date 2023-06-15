@@ -61,7 +61,6 @@ export default function RunGame(gameSocket: Socket) {
           paddle2: { x: number; y: number };
           score: { player1: number; player2: number };
         }) => {
-          console.log('UPDATE!');
           this.ball.x = data.ball.x;
           this.ball.y = data.ball.y;
           this.paddle1.y = data.paddle1.y;
