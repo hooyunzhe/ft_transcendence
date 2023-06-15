@@ -23,10 +23,12 @@ export class MatchmakingGateway
 
   private client_list: Socket[] = [];
   async handleConnection(client: Socket) {
-    client.data.user_id ??= Number(client.handshake.query['user_id']);
-    this.client_list.push(client);
+    if (!client.data.user_id) {
+      client.data.user_id ??= Number(client.handshake.query['user_id']);
+      this.client_list.push(client);
+    }
     console.log('client with id: ', client.data.user_id, 'is finding match');
-    console.log(this.client_list.length);
+    console.log('client currently finding match: ', this.client_list.length);
     if (this.client_list.length === 2) {
       console.log('event: length == 2, match found');
       await this.handleMatchMaking(this.client_list.splice(0, 2));

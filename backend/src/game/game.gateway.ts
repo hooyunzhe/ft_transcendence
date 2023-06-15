@@ -34,7 +34,17 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleDisconnect(client: Socket) {
-    // await this.roomlist.delete(client.data.roomid);
+    Promise.all([
+      this.roomlist.delete(client.data.roomid),
+      (client.data.user_id ??= ''),
+      (client.data.roomid ??= ''),
+    ]);
+  }
+
+  @SubscribeMessage('start')
+  start(@ConnectedSocket() client: Socket) {
+    console.log('within start: ', client.data.roomid);
+    this.roomlist.get(client.data.roomid).gameStart();
   }
 
   @SubscribeMessage('join')
@@ -65,35 +75,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  // Init(
-  //   @MessageBody()
-  //   data: {
-  //     paddle1size: { width: number; height: number };
-  //     paddle2size: { width: number; height: number };
-  //   },
-  // ): void {
-  //   this.game.gamePaddleConstruct(data.paddle1size, data.paddle2size);
-  //   this.id = setInterval(() => {
-  //     this.game.gameUpdate(this.server);
-  //     // this.game.resetI();
-  //   }, 50);
-  // }
-
-  @SubscribeMessage('Start')
-  start(@ConnectedSocket() client: Socket) {
-    console.log('within start: ', client.data.roomid);
-    this.roomlist.get(client.data.roomid).gameStart();
-  }
-
-  @SubscribeMessage('Reset')
+  @SubscribeMessage('reset')
   reset(@ConnectedSocket() client: Socket) {
-    console.log('HEHAHSUHDJKSAHDJKAHDKSADSA');
+    console.log('HEHAHSUHDJKSAHDJKAHDSASA');
     this.roomlist.get(client.data.roomid).gameReset();
   }
-  // @SubscribeMessage('Stop')
-  // Stop() {
-  //   clearInterval(this.id);
-  // }
 
   @SubscribeMessage('Set')
   SetPosition(
