@@ -19,61 +19,94 @@ import ChannelMembers, {
 import { Grid, List } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { ChannelMemberDisplay } from './ChannelMemberDisplay';
+import ConfirmationPrompt from './ConfirmationPrompt';
 
 export function ChannelMemberList() {
   const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
+
   const [confirmation, setConfirmation] = useState<
     | {
         required: boolean;
         title: string;
         description: string;
-        request: ChannelMembers;
-        action: 'banned';
+        request: ChannelMembers | undefined;
+        action: ChannelMemberRole | ChannelMemberStatus;
       }
     | undefined
   >();
 
-  async function changeRole(incoming_id: number, newRole: ChannelMemberRole) {
-    callAPI('PATCH', 'channel_members/' + incoming_id, {
+  async function changeRole(
+    member: ChannelMembers,
+    newRole: ChannelMemberRole,
+  ) {
+    callAPI('PATCH', 'channel_members/' + member.id, {
       role: newRole,
     });
     setChannelMembers((channelMembers) => {
-      return channelMembers.map((member) => {
-        if (member.id === incoming_id) {
-          member.role = newRole;
+      return channelMembers.map((localMember) => {
+        if (localMember.id === member.id) {
+          localMember.role = newRole;
         }
-        return member;
+        return localMember;
       });
     });
   }
 
   async function changeStatus(
-    incoming_id: number,
+    member: ChannelMembers,
     newStatus: ChannelMemberStatus,
-    duration?: number,
+    duration?: Date,
   ) {
     console.log(newStatus);
-    callAPI('PATCH', 'channel_members/' + incoming_id, {
+    callAPI('PATCH', 'channel_members/' + member.id, {
       status: newStatus,
     });
     setChannelMembers((channelMembers) => {
-      return channelMembers.map((member) => {
-        if (member.id === incoming_id) {
-          member.status = newStatus;
+      return channelMembers.map((localMember) => {
+        if (localMember.id === member.id) {
+          localMember.status = newStatus;
         }
-        return member;
+        return localMember;
       });
     });
+  }
 
-    function handleAction(request: ChannelMembers) {
-      setConfirmation({
-        required: true,
-        title: 'testing?',
-        description: 'testing again',
-        request: request,
-        action: 'banned',
-      });
+  async function actionHandler(
+    request: ChannelMembers,
+    action: ChannelMemberRole | ChannelMemberStatus,
+    duration?: Date,
+  ) {
+    if (action in ChannelMemberRole) {
+      changeRole(request, action as ChannelMemberRole);
+    } else if (action in ChannelMemberStatus) {
+      changeStatus(request, action as ChannelMemberStatus, duration);
     }
+
+    setConfirmation({
+      required: true,
+      title: 'testing?',
+      description: 'testing again',
+      request: undefined,
+      action: action,
+    });
+  }
+
+  async function promptHandler(bool: boolean): Promise<any> {
+    console.log('promptHandler');
+    return (
+      <ConfirmationPrompt
+        open={bool}
+        onCloseHandler={() => {
+          setConfirmation(undefined);
+        }}
+        promptTitle='Yipee you opened it'
+        promptDescription='Blah blah blah'
+        actionHandler={() => {
+          // handleRequest(confirmation.request, confirmation.action);
+          setConfirmation(undefined);
+        }}
+      ></ConfirmationPrompt>
+    );
   }
 
   useEffect(() => {
@@ -96,12 +129,28 @@ export function ChannelMemberList() {
         >
           {channelMembers.map(
             (channelMember: ChannelMembers, index: number) => (
-              <ChannelMemberDisplay
-                key={index}
-                channelMember={channelMember}
-                changeRole={changeRole}
-                changeStatus={changeStatus}
-              ></ChannelMemberDisplay>
+              <>
+                <ChannelMemberDisplay
+                  key={index}
+                  channelMember={channelMember}
+                  handleAction={actionHandler}
+                  promptHandler={promptHandler}
+                ></ChannelMemberDisplay>
+                {confirmation && (
+                  <ConfirmationPrompt
+                    open={confirmation.required}
+                    onCloseHandler={() => {
+                      setConfirmation(undefined);
+                    }}
+                    promptTitle='Yipee you opened it (hardcoded bullshit)'
+                    promptDescription='Blah blah blah'
+                    actionHandler={() => {
+                      setConfirmation(undefined);
+                      // handleRequest(confirmation.request, confirmation.action);
+                    }}
+                  ></ConfirmationPrompt>
+                )}
+              </>
             ),
           )}
         </List>

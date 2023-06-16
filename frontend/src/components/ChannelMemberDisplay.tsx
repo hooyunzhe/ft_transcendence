@@ -18,35 +18,26 @@ import { useState } from 'react';
 
 interface ChannelMemberDisplayProps {
   channelMember: ChannelMembers;
-  changeRole: (...args: any) => Promise<void>;
-  changeStatus: (...args: any) => Promise<void>;
+  handleAction: (...args: any) => Promise<void>;
+  promptHandler: (...args: any) => Promise<void>;
 }
 
 export function ChannelMemberDisplay({
   channelMember,
-  changeRole,
-  changeStatus,
+  handleAction,
+  promptHandler,
 }: ChannelMemberDisplayProps) {
-  const [confirmation, setConfirmation] = useState<
-    | {
-        required: boolean;
-        title: string;
-        description: string;
-        request: ChannelMembers;
-        action: 'banned';
-      }
-    | undefined
-  >();
-
-  function handleAction(request: ChannelMembers) {
-    setConfirmation({
-      required: true,
-      title: 'testing?',
-      description: 'testing again',
-      request: request,
-      action: 'banned',
-    });
-  }
+  const [ifPromptOpen, setPromptOpen] = useState<boolean>(false);
+  // const [confirmation, setConfirmation] = useState<
+  //   | {
+  //       required: boolean;
+  //       title: string;
+  //       description: string;
+  //       request: ChannelMembers | undefined;
+  //       action: 'banned';
+  //     }
+  //   | undefined
+  // >();
 
   return (
     <>
@@ -60,28 +51,28 @@ export function ChannelMemberDisplay({
             'Channel Id: ' + channelMember.id + ' role: ' + channelMember.role
           }
         />
-        <IconButton>
+        <IconButton
+          onClick={() => {
+            ifPromptOpen === true ? setPromptOpen(false) : setPromptOpen(true);
+            console.log(ifPromptOpen);
+            promptHandler(ifPromptOpen);
+          }}
+        >
           <SportsMartialArtsIcon />
         </IconButton>
-        <ConfirmationPrompt
-          open={true}
-          onCloseHandler={() => {
-            setConfirmation(undefined);
-          }}
-          promptTitle='test'
-          promptDescription='test'
-          actionHandler={() => {
-            // handleRequest(confirmation.request, confirmation.action);
-            setConfirmation(undefined);
-          }}
-        ></ConfirmationPrompt>
+
+        {
+          
+        }
         <IconButton
-          onClick={() =>
-            changeRole(
-              channelMember.id,
-              channelMember.role === 'member' ? 'admin' : 'member',
-            )
-          }
+          onClick={() => {
+            // need to think on how to handle owner
+            if (channelMember.role === 'admin')
+              handleAction(channelMember, { role: 'member' });
+            else {
+              handleAction(channelMember, { role: 'admin' });
+            }
+          }}
         >
           {channelMember.role === 'member' ? (
             <AddModeratorIcon />
@@ -90,12 +81,13 @@ export function ChannelMemberDisplay({
           )}
         </IconButton>
         <IconButton
-          onClick={() =>
-            changeStatus(
-              channelMember.id,
-              channelMember.status === 'muted' ? 'default' : 'muted',
-            )
-          }
+          onClick={() => {
+            if (channelMember.status === 'muted') {
+              handleAction(channelMember, { status: 'default' });
+            } else {
+              handleAction(channelMember, { status: 'muted' });
+            }
+          }}
         >
           {channelMember.status === 'muted' ? (
             <CommentsDisabledIcon />
