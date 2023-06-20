@@ -2,10 +2,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useSession } from 'next-auth/react';
-import RunGame from '@/components/GameRenderEngine';
 import { ToggleButton } from '@mui/material';
 import ConfirmationPrompt from '@/components/ConfirmationPrompt';
 import { gameSocket } from '@/lib/socket';
+import GameRender from '@/components/GameRender';
 
 export default function GamePage() {
   // const [session, setSession] = useState(useSession());
@@ -95,10 +95,10 @@ export default function GamePage() {
     setRoomid('');
   };
 
-  useEffect(() => {
-    if (!gameSocket.connected) gameSocket.connect();
-    RunGame(gameSocket);
-  }, []);
+  // useEffect(() => {
+  //   if (!gameSocket.connected) gameSocket.connect();
+  //   RunGame(gameSocket);
+  // }, []);
 
   return (
     <div>
@@ -128,6 +128,7 @@ export default function GamePage() {
       >
         Reset
       </ToggleButton>
+      <div><GameRender gameSocket={gameSocket}></GameRender></div>
     </div>
   );
 }
