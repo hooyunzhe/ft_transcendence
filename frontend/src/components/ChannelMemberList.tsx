@@ -29,8 +29,9 @@ export function ChannelMemberList() {
         required: boolean;
         title: string;
         description: string;
-        request: ChannelMembers | undefined;
+        channelMember: ChannelMembers;
         action: ChannelMemberRole | ChannelMemberStatus;
+        duration: Date | undefined;
       }
     | undefined
   >();
@@ -42,6 +43,7 @@ export function ChannelMemberList() {
     callAPI('PATCH', 'channel_members/' + member.id, {
       role: newRole,
     });
+    console.log('newRole: ' + newRole);
     setChannelMembers((channelMembers) => {
       return channelMembers.map((localMember) => {
         if (localMember.id === member.id) {
@@ -71,42 +73,43 @@ export function ChannelMemberList() {
     });
   }
 
-  async function actionHandler(
-    request: ChannelMembers,
+  async function handleDisplayAction(
+    member: ChannelMembers,
     action: ChannelMemberRole | ChannelMemberStatus,
     duration?: Date,
   ) {
-    if (action in ChannelMemberRole) {
-      changeRole(request, action as ChannelMemberRole);
-    } else if (action in ChannelMemberStatus) {
-      changeStatus(request, action as ChannelMemberStatus, duration);
-    }
-
     setConfirmation({
       required: true,
       title: 'testing?',
       description: 'testing again',
-      request: undefined,
+      channelMember: member,
       action: action,
+      duration: duration,
     });
   }
 
-  async function promptHandler(bool: boolean): Promise<any> {
-    console.log('promptHandler');
-    return (
-      <ConfirmationPrompt
-        open={bool}
-        onCloseHandler={() => {
-          setConfirmation(undefined);
-        }}
-        promptTitle='Yipee you opened it'
-        promptDescription='Blah blah blah'
-        actionHandler={() => {
-          // handleRequest(confirmation.request, confirmation.action);
-          setConfirmation(undefined);
-        }}
-      ></ConfirmationPrompt>
-    );
+  function handleConfirmationAction() {
+    console.log('-- handle Confirmation Action --');
+    // The ugly syntax is needed to find string an in enum, might change later
+    if (!confirmation) {
+      return 'FATAL ERROR!!';
+    }
+    if (confirmation.action in ChannelMemberRole) {
+      console.log('channel member role shit');
+      changeRole(
+        confirmation.channelMember,
+        confirmation.action as ChannelMemberRole,
+      );
+    } else if (confirmation.action in ChannelMemberStatus) {
+      console.log('channel member status shit');
+
+      changeStatus(
+        confirmation.channelMember,
+        confirmation.action as ChannelMemberStatus,
+        confirmation.duration,
+      );
+    }
+    setConfirmation(undefined);
   }
 
   useEffect(() => {
@@ -122,39 +125,31 @@ export function ChannelMemberList() {
   //function to add a user to a channel
 
   return (
-    <>
-      <Grid>
-        <List
-          sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
-        >
-          {channelMembers.map(
-            (channelMember: ChannelMembers, index: number) => (
-              <>
-                <ChannelMemberDisplay
-                  key={index}
-                  channelMember={channelMember}
-                  handleAction={actionHandler}
-                  promptHandler={promptHandler}
-                ></ChannelMemberDisplay>
-                {confirmation && (
-                  <ConfirmationPrompt
-                    open={confirmation.required}
-                    onCloseHandler={() => {
-                      setConfirmation(undefined);
-                    }}
-                    promptTitle='Yipee you opened it (hardcoded bullshit)'
-                    promptDescription='Blah blah blah'
-                    actionHandler={() => {
-                      setConfirmation(undefined);
-                      // handleRequest(confirmation.request, confirmation.action);
-                    }}
-                  ></ConfirmationPrompt>
-                )}
-              </>
-            ),
-          )}
-        </List>
-      </Grid>
-    </>
+    <Grid>
+      <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+        {channelMembers.map((channelMember: ChannelMembers, index: number) => (
+          <>
+            <ChannelMemberDisplay
+              key={index}
+              channelMember={channelMember}
+              handleAction={handleDisplayAction}
+            />
+            {confirmation && (
+              <ConfirmationPrompt
+                open={confirmation.required}
+                onCloseHandler={() => {
+                  setConfirmation(undefined);
+                }}
+                promptTitle='Yipee you opened it (hardcoded bullshit)'
+                promptDescription='Blah blah blah'
+                handleAction={() => {
+                  handleConfirmationAction();
+                }}
+              />
+            )}
+          </>
+        ))}
+      </List>
+    </Grid>
   );
 }

@@ -2,15 +2,15 @@ import Channel from './Channel';
 import User from './User';
 
 export enum ChannelMemberRole {
-  Owner = 'owner',
-  Admin = 'admin',
-  Member = 'member',
+  OWNER = 'OWNER',
+  ADMIN = 'ADMIN',
+  MEMBER = 'MEMBER',
 }
 
 export enum ChannelMemberStatus {
-  Banned = 'banned',
-  Muted = 'muted',
-  Default = 'default',
+  BANNED = 'BANNED',
+  MUTED = 'MUTED',
+  DEFAULT = 'DEFAULT',
 }
 
 export default interface ChannelMembers {
