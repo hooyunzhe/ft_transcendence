@@ -20,10 +20,9 @@ interface DialogPromptProps {
   textInput: string;
   onChangeHandler: (input: string) => void;
   backButtonText: string;
-  backHandler: (...args: any) => Promise<void>;
+  backHandler: (...args: any) => void;
   actionButtonText: string;
-  actionHandler: (...args: any) => Promise<boolean>;
-  errorMessage: string;
+  handleAction: (...args: any) => Promise<string>;
 }
 
 export default function DialogPrompt({
@@ -37,13 +36,12 @@ export default function DialogPrompt({
   backButtonText,
   backHandler,
   actionButtonText,
-  actionHandler,
-  errorMessage,
+  handleAction,
 }: DialogPromptProps) {
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState('');
   const [emptyError, setEmptyError] = useState(false);
   const [actionError, setActionError] = useState(false);
+  const [actionErrorMessage, setActionErrorMessage] = useState('');
 
   return (
     <>
@@ -71,7 +69,7 @@ export default function DialogPrompt({
             fullWidth
             margin='dense'
             variant='standard'
-            id='input'
+            id='textInput'
             label={labelText}
             value={textInput}
             onChange={(e) => {
@@ -87,26 +85,24 @@ export default function DialogPrompt({
           <Button
             size='large'
             onClick={() => {
-              backHandler(input).then(() => {
-                if (backButtonText !== 'Back') {
-                  setInput('');
-                  setOpen(false);
-                }
-              });
+              backHandler();
+              if (backButtonText !== 'Back') {
+                setOpen(false);
+              }
             }}
           >
             {backButtonText}
           </Button>
           <Button
-            disabled={!input}
+            disabled={!textInput}
             onClick={() => {
-              setInput('');
-              actionHandler(input).then((result) => {
+              handleAction().then((errorMessage) => {
                 if (actionButtonText !== 'Next') {
-                  if (result) {
-                    setOpen(false);
-                  } else {
+                  if (errorMessage) {
                     setActionError(true);
+                    setActionErrorMessage(errorMessage);
+                  } else {
+                    setOpen(false);
                   }
                 }
               });
@@ -119,7 +115,7 @@ export default function DialogPrompt({
       <NotificationBar
         display={actionError}
         level={'error'}
-        message={errorMessage}
+        message={actionErrorMessage}
         onCloseHandler={() => {
           setActionError(false);
         }}

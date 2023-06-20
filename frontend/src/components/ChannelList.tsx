@@ -5,7 +5,7 @@ import { FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
 import { useEffect, useState } from 'react';
 import callAPI from '@/lib/callAPI';
 import DialogPrompt from './utils/DialogPrompt';
-import Channel from '@/types/Channel';
+import Channel from '@/types/ChannelTypes';
 
 export function ChannelList() {
   const [channels, setChannels] = useState<Channel[]>([]);

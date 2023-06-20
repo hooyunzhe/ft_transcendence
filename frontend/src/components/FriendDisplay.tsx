@@ -6,7 +6,7 @@ import {
   ListItemAvatar,
   ListItemText,
 } from '@mui/material';
-import Friend from '@/types/Friend';
+import { Friend, FriendAction } from '@/types/FriendTypes';
 import {
   BlockRounded,
   CancelRounded,
@@ -19,10 +19,7 @@ interface FriendDisplayProps {
   category: string;
   friend: Friend;
   status?: string;
-  handleAction: (
-    request: Friend,
-    action: 'accept' | 'reject' | 'remove' | 'block' | 'unblock' | 'delete',
-  ) => void;
+  handleAction: (request: Friend, action: FriendAction) => void;
 }
 
 export default function FriendDisplay({
@@ -47,17 +44,17 @@ export default function FriendDisplay({
         <>
           <IconButton
             onClick={() => {
-              handleAction(friend, 'block');
+              handleAction(friend, FriendAction.BLOCK);
             }}
           >
             <BlockRounded />
           </IconButton>
-          <IconButton>
-            <DeleteRounded
-              onClick={() => {
-                handleAction(friend, 'delete');
-              }}
-            />
+          <IconButton
+            onClick={() => {
+              handleAction(friend, FriendAction.UNFRIEND);
+            }}
+          >
+            <DeleteRounded />
           </IconButton>
         </>
       )}
@@ -65,14 +62,14 @@ export default function FriendDisplay({
         <>
           <IconButton
             onClick={() => {
-              handleAction(friend, 'accept');
+              handleAction(friend, FriendAction.ACCEPT);
             }}
           >
             <CheckCircleRounded />
           </IconButton>
           <IconButton
             onClick={() => {
-              handleAction(friend, 'reject');
+              handleAction(friend, FriendAction.REJECT);
             }}
           >
             <CancelRounded />
@@ -82,7 +79,7 @@ export default function FriendDisplay({
       {category === 'invited' && (
         <IconButton
           onClick={() => {
-            handleAction(friend, 'remove');
+            handleAction(friend, FriendAction.REMOVE);
           }}
         >
           <DeleteRounded />
@@ -91,7 +88,7 @@ export default function FriendDisplay({
       {category === 'blocked' && (
         <IconButton
           onClick={() => {
-            handleAction(friend, 'unblock');
+            handleAction(friend, FriendAction.UNBLOCK);
           }}
         >
           <RestoreRounded />

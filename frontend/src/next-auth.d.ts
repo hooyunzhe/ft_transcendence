@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import { JWT } from 'next-auth/jwt';
-import User from './User';
+import { User } from './types/UserTypes';
 
 declare module 'next-auth/jwt' {
   interface JWT {

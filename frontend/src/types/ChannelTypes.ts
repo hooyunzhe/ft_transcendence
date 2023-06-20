@@ -1,7 +1,7 @@
-import Message from './Message';
-import User from './User';
+import { Message } from './MessageTypes';
+import { User } from './UserTypes';
 
-export default interface Channel {
+export interface Channel {
   id: number;
   name: string;
   type: string;

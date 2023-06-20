@@ -1,5 +1,5 @@
 'use client';
-import Friend from '@/types/Friend';
+import { Friend, FriendAction } from '@/types/FriendTypes';
 import {
   ExpandLess,
   ExpandMore,
@@ -24,10 +24,7 @@ interface FriendDropdownProps {
   open: boolean;
   friends: Friend[];
   toggleDropdown: (category: string) => void;
-  handleAction: (
-    request: Friend,
-    action: 'accept' | 'reject' | 'remove' | 'block' | 'unblock' | 'delete',
-  ) => void;
+  handleAction: (request: Friend, action: FriendAction) => void;
   selectedFriend: number;
   setSelectedFriend: Dispatch<SetStateAction<number>>;
   friendsStatus: { [key: number]: string };
