@@ -7,15 +7,10 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { subscribe } from 'diagnostics_channel';
 
 import { Server, Socket } from 'socket.io';
 import { GameService } from './game.service';
 
-interface Coor {
-  x: number;
-  y: number;
-}
 @WebSocketGateway({
   cors: {
     origin: '*',

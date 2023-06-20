@@ -2,7 +2,7 @@
 import Ball from './ball';
 import React, { useState, useEffect, useRef } from 'react';
 import { Socket, io } from 'socket.io-client';
-import Gameload from './game';
+import Gameload from './GameRenderEngine';
 
 const Pong = () => {
   const [started, setStarted] = useState(false);

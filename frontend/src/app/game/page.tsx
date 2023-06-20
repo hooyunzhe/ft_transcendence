@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useSession } from 'next-auth/react';
-import RunGame from '@/components/game';
+import RunGame from '@/components/GameRenderEngine';
 import { ToggleButton } from '@mui/material';
 import ConfirmationPrompt from '@/components/ConfirmationPrompt';
 import { gameSocket } from '@/lib/socket';
