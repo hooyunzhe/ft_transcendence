@@ -16,8 +16,7 @@ import ChannelMembers, {
   ChannelMemberRole,
   ChannelMemberStatus,
 } from '@/types/ChannelMembers';
-import { Grid, List } from '@mui/material';
-import { Channel } from 'diagnostics_channel';
+import { List } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { ChannelMemberDisplay } from './ChannelMemberDisplay';
 import ConfirmationPrompt from './ConfirmationPrompt';
