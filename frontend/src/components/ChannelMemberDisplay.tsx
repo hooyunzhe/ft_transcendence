@@ -16,8 +16,6 @@ import {
   ListItemAvatar,
   ListItemText,
 } from '@mui/material';
-import ConfirmationPrompt from './ConfirmationPrompt';
-import { useState } from 'react';
 
 interface ChannelMemberDisplayProps {
   channelMember: ChannelMembers;
@@ -28,18 +26,6 @@ export function ChannelMemberDisplay({
   channelMember,
   handleAction,
 }: ChannelMemberDisplayProps) {
-  const [ifPromptOpen, setPromptOpen] = useState<boolean>(false);
-  const [confirmation, setConfirmation] = useState<
-    | {
-        required: boolean;
-        title: string;
-        description: string;
-        request: ChannelMembers | undefined;
-        action: 'banned';
-      }
-    | undefined
-  >();
-
   return (
     <>
       <ListItem>
@@ -53,11 +39,9 @@ export function ChannelMemberDisplay({
           }
         />
         <IconButton
-        // onClick={() => {
-        //   ifPromptOpen === true ? setPromptOpen(false) : setPromptOpen(true);
-        //   console.log(ifPromptOpen);
-        //   promptHandler(ifPromptOpen);
-        // }}
+          onClick={() => {
+            handleAction(channelMember, ChannelMemberStatus.BANNED);
+          }}
         >
           <SportsMartialArtsIcon />
         </IconButton>
