@@ -6,9 +6,9 @@ import callAPI from '@/lib/callAPI';
 import { friendsSocket } from '@/lib/socket';
 import { Friend, FriendStatus, FriendAction } from '@/types/FriendTypes';
 import { User } from '@/types/UserTypes';
-import ConfirmationPrompt from './utils/ConfirmationPrompt';
-import NotificationBar from './utils/NotificationBar';
-import DialogPrompt from './utils/DialogPrompt';
+import ConfirmationPrompt from '../utils/ConfirmationPrompt';
+import NotificationBar from '../utils/NotificationBar';
+import DialogPrompt from '../utils/DialogPrompt';
 
 export default function FriendList() {
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -117,15 +117,7 @@ export default function FriendList() {
     });
   }
 
-  function acceptOutgoingFriendRequest(invited_user: User): void {
-    changeFriend(invited_user, FriendStatus.Invited, FriendStatus.Friends);
-    displayNotification(
-      'success',
-      invited_user.username + ' accepted your friend request!',
-    );
-  }
-
-  function acceptIncomingFriendRequest(request: Friend): void {
+  function acceptFriendRequest(request: Friend): void {
     callFriendsAPI('PATCH', request.incoming_friend, FriendAction.ACCEPT);
     changeFriend(
       request.incoming_friend,
@@ -136,15 +128,7 @@ export default function FriendList() {
     displayNotification('success', 'Request accepted');
   }
 
-  function rejectOutgoingFriendRequest(invited_user: User): void {
-    deleteFriend(invited_user);
-    displayNotification(
-      'error',
-      invited_user.username + ' rejected your friend request!',
-    );
-  }
-
-  function rejectIncomingFriendRequest(request: Friend): void {
+  function rejectFriendRequest(request: Friend): void {
     callFriendsAPI('PATCH', request.incoming_friend, FriendAction.REJECT);
     deleteFriend(request.incoming_friend);
     friendsSocket.emit('rejectRequest', request);
@@ -222,17 +206,26 @@ export default function FriendList() {
     });
 
     friendsSocket.on('acceptRequest', (sender: User) => {
-      acceptOutgoingFriendRequest(sender);
+      changeFriend(sender, FriendStatus.Invited, FriendStatus.Friends);
+      displayNotification(
+        'success',
+        sender.username + ' accepted your friend request!',
+      );
     });
 
     friendsSocket.on('rejectRequest', (sender: User) => {
-      rejectOutgoingFriendRequest(sender);
+      deleteFriend(sender);
+      displayNotification(
+        'error',
+        sender.username + ' rejected your friend request!',
+      );
     });
 
     return () => {
       friendsSocket.off('newConnection');
       friendsSocket.off('newDisconnect');
       friendsSocket.off('newRequest');
+      friendsSocket.off('deleteRequest');
       friendsSocket.off('acceptRequest');
       friendsSocket.off('rejectRequest');
     };
@@ -290,9 +283,9 @@ export default function FriendList() {
   function handleAction(request: Friend, action: FriendAction): void {
     switch (action) {
       case FriendAction.ACCEPT:
-        return acceptIncomingFriendRequest(request);
+        return acceptFriendRequest(request);
       case FriendAction.REJECT:
-        return rejectIncomingFriendRequest(request);
+        return rejectFriendRequest(request);
       case FriendAction.REMOVE:
         return removeFriendRequest(request);
       case FriendAction.BLOCK: {
