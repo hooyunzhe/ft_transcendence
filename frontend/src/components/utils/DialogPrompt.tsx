@@ -97,13 +97,11 @@ export default function DialogPrompt({
             disabled={!textInput}
             onClick={() => {
               handleAction().then((errorMessage) => {
-                if (actionButtonText !== 'Next') {
-                  if (errorMessage) {
-                    setActionError(true);
-                    setActionErrorMessage(errorMessage);
-                  } else {
-                    setOpen(false);
-                  }
+                if (errorMessage) {
+                  setActionError(true);
+                  setActionErrorMessage(errorMessage);
+                } else if (actionButtonText !== 'Next') {
+                  setOpen(false);
                 }
               });
             }}

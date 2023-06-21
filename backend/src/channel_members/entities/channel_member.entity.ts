@@ -29,11 +29,13 @@ export class ChannelMember {
 
   @ManyToOne(() => Channel, (channel) => channel.channelMembers, {
     eager: true,
+    onDelete: 'CASCADE',
   })
   channel: Channel;
 
   @ManyToOne(() => User, (user) => user.channelMembers, {
     eager: true,
+    onDelete: 'CASCADE',
   })
   user: User;
 }

@@ -4,9 +4,8 @@ import { ChannelList } from '@/components/ChannelList';
 export default function Home() {
   return (
     <>
-      {/* <ChannelHeader></ChannelHeader>
-      <ChannelList></ChannelList> */}
-      <FriendList></FriendList>
+      <ChannelList></ChannelList>
+      {/* <FriendList></FriendList> */}
     </>
   );
 }
