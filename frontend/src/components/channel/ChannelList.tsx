@@ -17,6 +17,7 @@ import DialogPrompt from '../utils/DialogPrompt';
 
 export function ChannelList() {
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [joinedChannels, setJoinedChannels] = useState<Channel[]>([]);
   const [channelType, setChannelType] = useState<ChannelType>(
     ChannelType.PUBLIC,
   );
@@ -84,7 +85,15 @@ export function ChannelList() {
   useEffect(() => {
     async function getChannels() {
       const channelData = JSON.parse(await callAPI('GET', 'channels'));
-      setChannels(channelData);
+      const joinedChannelData = JSON.parse(
+        await callAPI('GET', 'users/1/channels'),
+      );
+      setChannels(
+        channelData.filter(
+          (channel: Channel) => !joinedChannelData.includes(channel),
+        ),
+      );
+      setJoinedChannels(joinedChannelData);
     }
     getChannels();
   }, []);
@@ -132,7 +141,7 @@ export function ChannelList() {
             channelType === ChannelType.PROTECTED ? 'Next' : 'Create'
           }
           backButtonText='Cancel'
-          backHandler={async () => {
+          backHandler={() => {
             setDisplayPasswordPrompt(false);
           }}
           handleAction={handlePromptAction}
@@ -165,8 +174,29 @@ export function ChannelList() {
           </FormControl>
         </DialogPrompt>
       )}
-      {channels.map((channel: Channel, index: number) => (
-        <ChannelDisplay key={index} {...channel}></ChannelDisplay>
+      <DialogPrompt
+        buttonText='Join channel'
+        dialogTitle='Search channels'
+        dialogDescription='Find a channel to join'
+        labelText='Channel name'
+        textInput={channelName}
+        onChangeHandler={(input) => {
+          setChannelName(input);
+        }}
+        backButtonText='Cancel'
+        backHandler={() => {}}
+        actionButtonText='Join'
+        handleAction={async () => {
+          console.log('handles action');
+          return 'handles action';
+        }}
+      >
+        {channels.map((channel: Channel, index: number) => (
+          <ChannelDisplay key={index} {...channel} />
+        ))}
+      </DialogPrompt>
+      {joinedChannels.map((channel: Channel, index: number) => (
+        <ChannelDisplay key={index} {...channel} />
       ))}
     </Stack>
   );
