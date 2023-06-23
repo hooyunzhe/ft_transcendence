@@ -26,7 +26,11 @@ export function ChannelList() {
   const [channelID, setChannelID] = useState(0);
   const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
 
-  function findChannelWithName(name: string) {
+  function resetDisplay() {
+    setDisplayPasswordPrompt(false);
+  }
+
+  function findChannelWithName(name: string): Channel | undefined {
     return channels.find((channel) => channel.name === name);
   }
 
@@ -58,18 +62,31 @@ export function ChannelList() {
     setChannelType(ChannelType.PUBLIC);
     setChannelName('');
     setChannelPass('');
+    resetDisplay();
     return '';
   }
 
-  async function joinChannel() {
+  async function joinChannel(): Promise<string> {
+    const channelToJoin = channels.find((channel) => channel.id === channelID);
+
+    if (!channelToJoin) {
+      return "Channel doesn't exist";
+    }
+
     await callAPI('POST', 'channel_members', {
       channel_id: channelID,
       user_id: 1,
     });
+    setJoinedChannels((joinedChannels) => [...joinedChannels, channelToJoin]);
+    setChannels((channels) =>
+      channels.filter((channel) => channel.id !== channelID),
+    );
     setChannelID(0);
+    setChannelName('');
+    return '';
   }
 
-  async function handlePromptAction(): Promise<string> {
+  async function handleCreateChannelAction(): Promise<string> {
     const foundChannel = findChannelWithName(channelName);
     if (foundChannel) {
       return 'Channel already exists';
@@ -82,15 +99,33 @@ export function ChannelList() {
     return '';
   }
 
+  async function handleJoinChannelAction(): Promise<string> {
+    const channelToJoin = channels.find((channel) => channel.id === channelID);
+
+    if (!channelToJoin) {
+      return "Channel doesn't exist";
+    }
+
+    if (channelToJoin.type === ChannelType.PROTECTED) {
+      setDisplayPasswordPrompt(true);
+    } else {
+      joinChannel();
+    }
+    return '';
+  }
+
   useEffect(() => {
-    async function getChannels() {
+    async function getChannels(): Promise<void> {
       const channelData = JSON.parse(await callAPI('GET', 'channels'));
       const joinedChannelData = JSON.parse(
         await callAPI('GET', 'users/1/channels'),
       );
       setChannels(
         channelData.filter(
-          (channel: Channel) => !joinedChannelData.includes(channel),
+          (channel: Channel) =>
+            !joinedChannelData.some(
+              (joinedChannel: Channel) => joinedChannel.id === channel.id,
+            ) && channel.type !== ChannelType.PRIVATE,
         ),
       );
       setJoinedChannels(joinedChannelData);
@@ -106,7 +141,7 @@ export function ChannelList() {
       justifyContent='center'
       spacing={1}
     >
-      <ChannelHeader></ChannelHeader>
+      <ChannelHeader />
       {displayPasswordPrompt ? (
         <DialogPrompt
           buttonText='Create channel'
@@ -118,14 +153,9 @@ export function ChannelList() {
             setChannelPass(input);
           }}
           backButtonText='Back'
-          backHandler={() => {
-            setDisplayPasswordPrompt(false);
-          }}
+          backHandler={resetDisplay}
           actionButtonText='Create'
-          handleAction={async () => {
-            setDisplayPasswordPrompt(false);
-            return createChannel();
-          }}
+          handleAction={createChannel}
         />
       ) : (
         <DialogPrompt
@@ -141,10 +171,8 @@ export function ChannelList() {
             channelType === ChannelType.PROTECTED ? 'Next' : 'Create'
           }
           backButtonText='Cancel'
-          backHandler={() => {
-            setDisplayPasswordPrompt(false);
-          }}
-          handleAction={handlePromptAction}
+          backHandler={resetDisplay}
+          handleAction={handleCreateChannelAction}
         >
           <FormControl>
             <FormLabel>Type</FormLabel>
@@ -174,29 +202,71 @@ export function ChannelList() {
           </FormControl>
         </DialogPrompt>
       )}
-      <DialogPrompt
-        buttonText='Join channel'
-        dialogTitle='Search channels'
-        dialogDescription='Find a channel to join'
-        labelText='Channel name'
-        textInput={channelName}
-        onChangeHandler={(input) => {
-          setChannelName(input);
-        }}
-        backButtonText='Cancel'
-        backHandler={() => {}}
-        actionButtonText='Join'
-        handleAction={async () => {
-          console.log('handles action');
-          return 'handles action';
-        }}
-      >
-        {channels.map((channel: Channel, index: number) => (
-          <ChannelDisplay key={index} {...channel} />
-        ))}
-      </DialogPrompt>
+      {displayPasswordPrompt ? (
+        <DialogPrompt
+          buttonText='Join channel'
+          dialogTitle='Enter channel password'
+          dialogDescription='Join channel using password'
+          labelText='Password'
+          textInput={channelPass}
+          onChangeHandler={(input) => {
+            setChannelPass(input);
+          }}
+          backButtonText='Back'
+          backHandler={resetDisplay}
+          actionButtonText='Join'
+          handleAction={joinChannel}
+        />
+      ) : (
+        <DialogPrompt
+          buttonText='Join channel'
+          dialogTitle='Search channels'
+          dialogDescription='Find a channel to join'
+          labelText='Channel name'
+          textInput={channelName}
+          onChangeHandler={(input) => {
+            setChannelID(0);
+            setChannelName(input);
+            setChannelType(ChannelType.PUBLIC);
+          }}
+          backButtonText='Cancel'
+          backHandler={resetDisplay}
+          actionButtonText={
+            channelType === ChannelType.PROTECTED ? 'Next' : 'Join'
+          }
+          handleAction={handleJoinChannelAction}
+        >
+          <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
+            {channels
+              .filter((channel) =>
+                channel.name
+                  .toLowerCase()
+                  .includes(channelName.trim().toLowerCase()),
+              )
+              .map((channel: Channel, index: number) => (
+                <ChannelDisplay
+                  key={index}
+                  {...channel}
+                  selected={channelID}
+                  selectCurrent={() => {
+                    setChannelID(channel.id);
+                    setChannelName(channel.name);
+                    setChannelType(channel.type);
+                  }}
+                />
+              ))}
+          </Stack>
+        </DialogPrompt>
+      )}
       {joinedChannels.map((channel: Channel, index: number) => (
-        <ChannelDisplay key={index} {...channel} />
+        <ChannelDisplay
+          key={index}
+          {...channel}
+          selected={channelID}
+          selectCurrent={() => {
+            setChannelID(channel.id);
+          }}
+        />
       ))}
     </Stack>
   );
