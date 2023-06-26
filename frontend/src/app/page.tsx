@@ -1,3 +1,13 @@
+import ChannelHeader from '@/components/ChannelHeader';
+import { ChannelList } from '@/components/ChannelList';
+import React, { useState } from 'react';
 export default function Home() {
-  return <h1>Cyberpong™</h1>;
+  return (
+    <>
+      <ChannelHeader></ChannelHeader>
+      {/* @ts-expect-error Server Component  */}
+
+      <ChannelList API={'channels'}></ChannelList>
+    </>
+  );
 }
