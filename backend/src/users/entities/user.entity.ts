@@ -1,14 +1,13 @@
-import { Achievement } from 'src/achievements/entities/achievement.entity';
 import { UserAchievement } from 'src/user_achievements/entities/user_achievement.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  ManyToMany,
   OneToMany,
 } from 'typeorm';
 import { ChannelMember } from 'src/channel_members/entities/channel_member.entity';
+import { Friend } from 'src/friends/entities/friend.entity';
 
 @Entity()
 export class User {
@@ -16,20 +15,23 @@ export class User {
   id: number;
 
   @Column()
-  intra_uid: string;
+  username: string;
 
   @Column()
-  username: string;
+  refresh_token: string;
 
   @CreateDateColumn()
   date_of_creation: Date;
-
-  @Column({ default: 'offline' })
-  status: string;
 
   @OneToMany(() => ChannelMember, (channelMember) => channelMember.user)
   channelMembers: ChannelMember[];
 
   @OneToMany(() => UserAchievement, (userAchievement) => userAchievement.user)
   userAchievements: UserAchievement[];
+
+  @OneToMany(() => Friend, (friend) => friend.outgoing_friend)
+  outgoingFriendships: Friend[];
+
+  @OneToMany(() => Friend, (friend) => friend.incoming_friend)
+  incomingFriendships: Friend[];
 }

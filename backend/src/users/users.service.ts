@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create_user.dto';
 import { UpdateUserDto } from './dto/update_user.dto';
 import { User } from './entities/user.entity';
@@ -14,12 +14,22 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<void> {
-    await this.usersRepository.save(createUserDto);
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    return await this.usersRepository.save(createUserDto);
   }
 
   async findAll(): Promise<User[]> {
     return await this.usersRepository.find();
+  }
+
+  async findByUsername(username: string): Promise<User | null> {
+    return await this.usersRepository.findOneBy({
+      username: ILike(username),
+    });
+  }
+
+  async findByToken(refresh_token: string): Promise<User | null> {
+    return await this.usersRepository.findOneBy({ refresh_token });
   }
 
   async findOne(id: number): Promise<User | null> {
@@ -31,6 +41,7 @@ export class UsersService {
       relations: {
         channelMembers: true,
       },
+      where: { id },
     });
 
     return currentUser.channelMembers.map(

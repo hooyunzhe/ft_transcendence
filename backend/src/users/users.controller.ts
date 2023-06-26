@@ -20,13 +20,25 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto): Promise<void> {
+  create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
   findAll(): Promise<User[]> {
     return this.usersService.findAll();
+  }
+
+  @Get('username/:username')
+  findByUsername(@Param('username') username: string): Promise<User | null> {
+    return this.usersService.findByUsername(username);
+  }
+
+  @Get('token/:refresh_token')
+  findByToken(
+    @Param('refresh_token') refresh_token: string,
+  ): Promise<User | null> {
+    return this.usersService.findByToken(refresh_token);
   }
 
   @Get(':id')
@@ -43,7 +55,7 @@ export class UsersController {
   findAchieved(@Param('id') id: number): Promise<Achievement[]> {
     return this.usersService.findAchieved(id);
   }
-  
+
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
