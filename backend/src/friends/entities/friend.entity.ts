@@ -1,41 +1,24 @@
-import { User } from 'src/users/entities/user.entity';
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  Unique,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum FriendStatus {
-  Friends = 'friends',
-  Invited = 'invited',
-  Pending = 'pending',
-  Blocked = 'blocked',
+  Friend = "friend",
+  Invited = "invited",
+  Pending = "pending",
+  Blocked = "blocked",
+  Accept = "accept",
+  Deny = "deny",
 }
 
-export enum FriendAction {
-  Block = 'block',
-  Unblock = 'unblock',
-  Accept = 'accept',
-  Reject = 'reject',
-}
-
-@Unique('friendship', ['outgoing_friend', 'incoming_friend'])
 @Entity()
 export class Friend {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.outgoingFriendships, {
-    eager: true,
-  })
-  outgoing_friend: User;
+  @Column()
+  user1_id: number;
 
-  @ManyToOne(() => User, (user) => user.incomingFriendships, {
-    eager: true,
-  })
-  incoming_friend: User;
+  @Column()
+  user2_id: number;
 
   @Column()
   status: FriendStatus;

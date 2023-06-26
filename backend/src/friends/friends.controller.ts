@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { FriendsService } from './friends.service';
 import { CreateFriendDto } from './dto/create-friend.dto';
-import { UpdateFriendDto } from './dto/update-friend.dto';
 import { Friend } from './entities/friend.entity';
 
 @Controller('friends')
@@ -20,17 +19,19 @@ export class FriendsController {
   constructor(private readonly friendsService: FriendsService) {}
 
   @Post()
-  async create(@Body() createFriendDto: CreateFriendDto): Promise<Friend[]> {
-    return await this.friendsService.create(createFriendDto);
+  async create(
+    @Body('user1_id', ParseIntPipe) user1_id: number,
+    @Body('user2_id', ParseIntPipe) user2_id: number,
+  ): Promise<void> {
+    await this.friendsService.create(user1_id, user2_id);
   }
 
   @Get('user')
   async findFriendships(
-    @Query('outgoing_id', ParseIntPipe) outgoing_id: number,
-    @Query('incoming_id', new DefaultValuePipe(0), ParseIntPipe)
-    incoming_id: number,
+    @Query('user1_id', ParseIntPipe) user1_id: number,
+    @Query('user2_id', new DefaultValuePipe(0), ParseIntPipe) user2_id: number,
   ): Promise<Friend[] | Friend | null> {
-    return this.friendsService.findFriendships(outgoing_id, incoming_id);
+    return this.friendsService.findFriendships(user1_id, user2_id);
   }
 
   @Get()
@@ -44,15 +45,15 @@ export class FriendsController {
   }
 
   @Patch()
-  async update(@Body() friendDto: UpdateFriendDto): Promise<void> {
+  async update(@Body() friendDto: CreateFriendDto): Promise<void> {
     await this.friendsService.update(friendDto);
   }
 
   @Delete()
   async remove(
-    @Body('outgoing_id', ParseIntPipe) outgoing_id: number,
-    @Body('incoming_id', ParseIntPipe) incoming_id: number,
+    @Body('user1_id', ParseIntPipe) user1_id: number,
+    @Body('user2_id', ParseIntPipe) user2_id: number,
   ): Promise<void> {
-    await this.friendsService.deleteRelationship(outgoing_id, incoming_id);
+    await this.friendsService.deleteRelationship(user1_id, user2_id);
   }
 }

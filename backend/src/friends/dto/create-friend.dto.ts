@@ -1,9 +1,7 @@
-import { IsNumber } from 'class-validator';
+import { FriendStatus } from "../entities/friend.entity";
 
 export class CreateFriendDto {
-  @IsNumber()
-  outgoing_id: number;
-
-  @IsNumber()
-  incoming_id: number;
+  user1_id: number;
+  user2_id: number;
+  status: FriendStatus;
 }
