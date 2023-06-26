@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChannelMember } from './entities/channel_member.entity';
 import { Channel } from 'src/channels/entities/channel.entity';
 import { User } from 'src/users/entities/user.entity';
+import { ChannelMembersGateway } from './channel_members.gateway';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ChannelMember, Channel, User])],
   controllers: [ChannelMembersController],
-  providers: [ChannelMembersService],
+  providers: [ChannelMembersService, ChannelMembersGateway],
 })
 export class ChannelMembersModule {}

@@ -1,4 +1,4 @@
-import Channel from './Channel';
+import Channel from './ChannelTypes';
 
 export default interface Message {
   id: number;
