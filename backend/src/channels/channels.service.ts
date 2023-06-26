@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Channel } from './entities/channel.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Message } from 'src/messages/entities/message.entity';
@@ -14,8 +14,8 @@ export class ChannelsService {
     private channelsRepository: Repository<Channel>,
   ) {}
 
-  async create(createChannelDto: CreateChannelDto): Promise<Channel | null> {
-    return await this.channelsRepository.save(createChannelDto);
+  async create(createChannelDto: CreateChannelDto): Promise<void> {
+    await this.channelsRepository.save(createChannelDto);
   }
 
   async findAll(): Promise<Channel[]> {
@@ -26,12 +26,8 @@ export class ChannelsService {
     return await this.channelsRepository.findOneBy({ id });
   }
 
-  async findOneByName(name: string): Promise<Channel | null> {
-    return await this.channelsRepository.findOneBy({ name: ILike(name) });
-  }
-
   async getMembers(id: number): Promise<User[]> {
-    const currentChannel = await this.channelsRepository.findOne({
+    let currentChannel = await this.channelsRepository.findOne({
       relations: { channelMembers: true },
       where: { id },
     });
@@ -42,7 +38,7 @@ export class ChannelsService {
   }
 
   async getMessages(id: number): Promise<Message[]> {
-    const currentChannel = await this.channelsRepository.findOne({
+    let currentChannel = await this.channelsRepository.findOne({
       relations: { messages: true },
       where: { id },
     });
