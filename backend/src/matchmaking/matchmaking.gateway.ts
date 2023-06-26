@@ -29,9 +29,9 @@ export class MatchmakingGateway
     }
     console.log('client with id: ', client.data.user_id, 'is finding match');
     console.log('client currently finding match: ', this.client_list.length);
-    if (this.client_list.length === 2) {
-      console.log('event: length == 2, match found');
-      await this.handleMatchMaking(this.client_list.splice(0, 2));
+    if (this.client_list.length === 1) {
+      console.log('event: length == 1, match found');
+      await this.handleMatchMaking(this.client_list.splice(0, 1));
     }
   }
   async handleDisconnect(client: Socket) {
@@ -39,7 +39,7 @@ export class MatchmakingGateway
   }
 
   async handleMatchMaking(clients: Socket[]) {
-    const uniquekey = clients[0].id + clients[1].id;
+    const uniquekey = clients[0].id;
     clients.forEach((client) => {
       client.emit('match', uniquekey);
     });

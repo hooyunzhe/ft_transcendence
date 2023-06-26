@@ -13,7 +13,7 @@ export default function GamePage() {
   const [loaded, setLoaded] = useState(false);
   const [searching, setsearching] = useState(false);
   const [matchFound, setMatchFound] = useState(false);
-  const [GameStarted, setGameStarted] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
   const [roomid, setRoomid] = useState('');
   // const gameSocket = io(
   //   `http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/gateway/game`,
@@ -122,13 +122,15 @@ export default function GamePage() {
         actionHandler={joinGame}
       ></ConfirmationPrompt>
       <ToggleButton
-        value={GameStarted}
+        value={gameStarted}
         onChange={resetGame}
-        disabled={!GameStarted}
+        disabled={!gameStarted}
       >
         Reset
       </ToggleButton>
-      <div><GameRender gameSocket={gameSocket}></GameRender></div>
+      <div>
+        <GameRender gameSocket={gameSocket} />
+      </div>
     </div>
   );
 }

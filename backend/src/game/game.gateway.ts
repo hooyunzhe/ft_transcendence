@@ -34,13 +34,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.roomid ??= '';
     console.log('user id :', client.data.user_id);
   }
-  async handleDisconnect(client: Socket) {
-    // Promise.all([
-    //   this.roomlist.delete(client.data.roomid),
-    //   (client.data.user_id ??= ''),
-    //   (client.data.roomid ??= ''),
-    // ]);
-  }
+  async handleDisconnect(client: Socket) {}
 
   @SubscribeMessage('start')
   start(@ConnectedSocket() client: Socket) {
@@ -66,13 +60,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const player_in_room = await this.server.in(roomid).fetchSockets();
     console.log('player in thisroom: ', roomid, ': ', player_in_room.length);
-    if (player_in_room.length === 2) {
+    if (player_in_room.length === 1) {
       player_in_room[0].data.player = 1;
-      player_in_room[1].data.player = 2;
       console.log('event: createroom: ', roomid);
       this.roomlist.set(roomid, new GameService(roomid, this.server));
       console.log('room size : ', this.roomlist.size);
-      // console.log(this.roomlist);
     }
   }
 

@@ -7,40 +7,46 @@ interface GameRenderProps {
   gameSocket: Socket;
 }
 
-export default function GameRender({gameSocket}: GameRenderProps) {
-
-    const score =  {
-      player1: 0,
-      player2: 0,
-    }
-    useEffect(() => { 
+export default function GameRender({ gameSocket }: GameRenderProps) {
+  const score = {
+    player1: 0,
+    player2: 0,
+  };
+  useEffect(() => {
     const config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    scale: {
-      mode: Phaser.Scale.FIT,
-      autoCenter: Phaser.Scale.CENTER_BOTH,
-    },
+      type: Phaser.AUTO,
+      width: 800,
+      height: 600,
+      physics: {
+        default: 'arcade',
+      },
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+      },
       scene: {
-        preload: () => preload,
-        create: () => create,
-        update: () => update
-    },}
+        preload: preload,
+        create: create,
+        update: update,
+      },
+    };
     const gameSession = new Phaser.Game(config);
+
     return () => {
       gameSession.destroy(true, true);
-    }
-  },[]);
+    };
+  }, []);
 
-  function preload(game: Phaser.Scene) {
+  function preload(this: Phaser.Scene) {
+    const game = this;
     game.load.multiatlas('ballsprite', '/ball/ballsprite.json', 'ball');
     game.load.image('red', '/ball/bubble.png');
     game.load.image('paddle1', '/ball/paddle1.png');
     game.load.image('paddle2', '/ball/paddle2.png');
   }
 
-  function create(game: Phaser.Scene) {
+  function create(this: Phaser.Scene) {
+    const game = this;
     const particles = game.add.particles(0, 0, 'red', {
       speed: 100,
       scale: { start: 0.1, end: 0 },
@@ -87,10 +93,10 @@ export default function GameRender({gameSocket}: GameRenderProps) {
         },
       );
 
-      return (() => {
+      return () => {
         gameSocket.off('game');
-      })
-    }, [gameSocket])
+      };
+    }, []);
   }
 
   const keyLoop = () => {
@@ -102,24 +108,24 @@ export default function GameRender({gameSocket}: GameRenderProps) {
     }
   };
 
-window.addEventListener(
-  'keyup',
-  function (e) {
-    keyState[e.key] = false;
-  },
-  true,
-);
+  window.addEventListener(
+    'keyup',
+    function (e) {
+      keyState[e.key] = false;
+    },
+    true,
+  );
 
-const keyState: { [key: string]: boolean } = {};
-window.addEventListener(
-  'keydown',
-  function (e) {
-    keyState[e.key] = true;
-  },
-  true,
-);
+  const keyState: { [key: string]: boolean } = {};
+  window.addEventListener(
+    'keydown',
+    function (e) {
+      keyState[e.key] = true;
+    },
+    true,
+  );
 
-  function update(game: Phaser.Scene) {
+  function update(this: Phaser.Scene) {
     keyLoop();
   }
 
