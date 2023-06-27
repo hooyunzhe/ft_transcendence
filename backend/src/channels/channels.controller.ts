@@ -19,7 +19,7 @@ export class ChannelsController {
   constructor(private readonly channelsService: ChannelsService) {}
 
   @Post()
-  create(@Body() createChannelDto: CreateChannelDto): Promise<Channel | null> {
+  create(@Body() createChannelDto: CreateChannelDto): Promise<Channel> {
     return this.channelsService.create(createChannelDto);
   }
 

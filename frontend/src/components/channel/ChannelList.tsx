@@ -38,6 +38,7 @@ export function ChannelList() {
       await callAPI('POST', 'channels', {
         name: channelName,
         type: channelType,
+        hash: channelPass ?? '',
       }),
     );
 
@@ -45,9 +46,6 @@ export function ChannelList() {
       await callAPI('POST', 'channel_members', {
         channel_id: newChannel.id,
         user_id: 1,
-      });
-
-      await callAPI('PATCH', 'channel_members/' + newChannel.id, {
         role: ChannelMemberRole.OWNER,
       });
 
@@ -58,17 +56,26 @@ export function ChannelList() {
     return '';
   }
 
-  async function joinChannel(channelID: number): Promise<string> {
+  async function joinChannel(
+    channelID: number,
+    channelPass?: string,
+  ): Promise<string> {
     const channelToJoin = channels.find((channel) => channel.id === channelID);
 
     if (!channelToJoin) {
       return "Channel doesn't exist";
     }
 
-    await callAPI('POST', 'channel_members', {
+    const joinedChannel = await callAPI('POST', 'channel_members', {
       channel_id: channelID,
       user_id: 1,
+      role: ChannelMemberRole.MEMBER,
+      pass: channelPass ?? '',
     });
+
+    if (!joinedChannel) {
+      return 'Incorrect password';
+    }
     setJoinedChannels((joinedChannels) => [...joinedChannels, channelToJoin]);
     setChannels((channels) =>
       channels.filter((channel) => channel.id !== channelID),

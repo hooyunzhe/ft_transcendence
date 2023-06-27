@@ -20,7 +20,7 @@ export class Channel {
   @Column({ default: ChannelType.Public })
   type: ChannelType;
 
-  @Column({ default: null })
+  @Column()
   hash: string;
 
   @OneToMany(() => ChannelMember, (channelMember) => channelMember.channel)

@@ -11,6 +11,6 @@ async function bootstrap() {
   });
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new TypeORMErrorFilter());
-  await app.listen(3000);
+  await app.listen(4242);
 }
 bootstrap();

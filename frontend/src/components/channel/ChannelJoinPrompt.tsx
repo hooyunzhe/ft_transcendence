@@ -60,9 +60,11 @@ export default function ChannelJoinPrompt({
       backHandler={resetDisplay}
       actionButtonText='Join'
       handleAction={async () => {
-        const res = joinChannel(selectedChannel?.id);
-        resetState();
-        resetDisplay();
+        const res = await joinChannel(selectedChannel?.id, channelPass);
+        if (!res) {
+          resetState();
+          resetDisplay();
+        }
         return res;
       }}
     />
