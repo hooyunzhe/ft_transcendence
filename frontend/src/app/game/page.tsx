@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { ToggleButton } from '@mui/material';
 import ConfirmationPrompt from '@/components/ConfirmationPrompt';
 import { gameSocket } from '@/lib/socket';
-import GameRender from '@/components/GameRender';
+import GameRender from '@/components/game/GameRender';
 
 export default function GamePage() {
   // const [session, setSession] = useState(useSession());
@@ -101,36 +101,36 @@ export default function GamePage() {
   // }, []);
 
   return (
-    <div>
-      <ToggleButton value={searching} onChange={findMatch} disabled={searching}>
-        Find Match
-      </ToggleButton>
-      <ToggleButton
-        value={searching}
-        onChange={startGame}
-        disabled={!searching}
-      >
-        Start
-      </ToggleButton>
-      <ConfirmationPrompt
-        open={matchFound}
-        onCloseHandler={() => {
-          setMatchFound(false);
-        }}
-        promptTitle={'Match Found!'}
-        promptDescription={'Accept this match?'}
-        actionHandler={joinGame}
-      ></ConfirmationPrompt>
-      <ToggleButton
-        value={gameStarted}
-        onChange={resetGame}
-        disabled={!gameStarted}
-      >
-        Reset
-      </ToggleButton>
+    // <div>
+    //   <ToggleButton value={searching} onChange={findMatch} disabled={searching}>
+    //     Find Match
+    //   </ToggleButton>
+    //   <ToggleButton
+    //     value={searching}
+    //     onChange={startGame}
+    //     disabled={!searching}
+    //   >
+    //     Start
+    //   </ToggleButton>
+    //   <ConfirmationPrompt
+    //     open={matchFound}
+    //     onCloseHandler={() => {
+    //       setMatchFound(false);
+    //     }}
+    //     promptTitle={'Match Found!'}
+    //     promptDescription={'Accept this match?'}
+    //     actionHandler={joinGame}
+    //   ></ConfirmationPrompt>
+    //   <ToggleButton
+    //     value={gameStarted}
+    //     onChange={resetGame}
+    //     disabled={!gameStarted}
+    //   >
+    //     Reset
+    //   </ToggleButton>
       <div>
         <GameRender gameSocket={gameSocket} />
       </div>
-    </div>
+    // </div>
   );
 }
