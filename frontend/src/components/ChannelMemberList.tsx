@@ -20,11 +20,7 @@ import ChannelMembers, {
 } from '@/types/ChannelMemberTypes';
 import { Friend } from '@/types/FriendTypes';
 import { Stack } from '@mui/material';
-import {
-  DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES,
-  useEffect,
-  useState,
-} from 'react';
+import { useEffect, useState } from 'react';
 import ChannelHeader from './ChannelHeader';
 import { ChannelMemberDisplay } from './ChannelMemberDisplay';
 import ConfirmationPrompt from './ConfirmationPrompt';
@@ -35,7 +31,7 @@ export function ChannelMemberList() {
   const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<Friend | undefined>();
-  const [dialogInput, setDialogInput] = useState('');
+  const [friendSearch, setFriendSearch] = useState('');
   const [confirmation, setConfirmation] = useState<
     | {
         required: boolean;
@@ -196,18 +192,20 @@ export function ChannelMemberList() {
     return '';
   }
 
-  function handleAddButtonAction() {
-    if (confirmation) {
-      const member = confirmation.channelMember;
+  async function handleAddButtonAction() {
+    console.log('HANDLE ADD BUTTON');
+    const derp = await callAPI('POST', 'channel_members', {
+      channel_id: 1,
+      user_id: selectedFriend?.incoming_friend.id,
+    });
+    console.log(derp);
+    const newChannelMember: ChannelMembers = JSON.parse(derp);
 
-      callAPI('ADD', 'channel_members/' + member.id);
-      setChannelMembers((channelMembers) => {
-        return channelMembers.filter(
-          (localMember) => localMember.id !== member.id,
-        );
-      });
-      setConfirmation(undefined);
-    }
+    setChannelMembers((channelMembers) => {
+      return [...channelMembers, newChannelMember];
+    });
+    setFriendSearch('');
+    setSelectedFriend(undefined);
   }
 
   //function to add a user to a channel
@@ -220,25 +218,25 @@ export function ChannelMemberList() {
       justifyContent='center'
       spacing={1}
     >
-      <ChannelHeader></ChannelHeader>
+      <ChannelHeader />
       <DialogPrompt
-        closeHandler={async () => {}}
+        // closeHandler={async () => {}}
         buttonText='Add members button'
         dialogTitle='Add members'
         dialogDescription='Add your friends to the channel'
-        labelText='username...'
+        labelText='username'
+        textInput={friendSearch}
         backButtonText='Cancel'
+        onChangeHandler={(input) => {
+          setSelectedFriend(undefined);
+          setFriendSearch(input);
+        }}
         backHandler={async () => {}}
         actionButtonText='Add'
-        actionHandler={async () => {
-          // 1. Search for the name if it exist
-          // 2. If it doesn't exist, prompt error
-          // 3. If it does exist, callAPI to add user into channel
-          // 4. And Emit changes to the channel member list
-          return true;
+        handleAction={async () => {
+          await handleAddButtonAction();
+          return 'handleAction error';
         }}
-        successMessage='You sucessfully added the nibba into the channel!'
-        errorMessage='Unable to add the fella, maybe you ugly'
       >
         <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
           {
@@ -255,6 +253,8 @@ export function ChannelMemberList() {
                   selected={selectedFriend?.incoming_friend.id ?? 0}
                   selectCurrent={() => {
                     console.log('setSelectedFriend clicked');
+                    // PLEASE FILTER ADDED FRIENDS ELSE YOU GONEZO
+                    setFriendSearch(friend.incoming_friend.username);
                     setSelectedFriend(friend);
                   }}
                   friend={friend}

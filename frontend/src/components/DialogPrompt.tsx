@@ -1,31 +1,28 @@
+'use client';
 import {
-  Alert,
-  AlertColor,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Snackbar,
   TextField,
 } from '@mui/material';
 import { ReactNode, useState } from 'react';
+import NotificationBar from './NotificationBar';
 
 interface DialogPromptProps {
   children?: ReactNode;
-  closeHandler?: (...args: any) => Promise<void>;
   buttonText: string;
   dialogTitle: string;
   dialogDescription: string;
   labelText: string;
   textInput: string;
+  onChangeHandler: (input: string) => void;
   backButtonText: string;
-  backHandler: (...args: any) => Promise<void>;
+  backHandler: (...args: any) => void;
   actionButtonText: string;
-  actionHandler: (...args: any) => Promise<boolean>;
-  successMessage: string;
-  errorMessage: string;
+  handleAction: (...args: any) => Promise<string>;
 }
 
 export default function DialogPrompt({
@@ -34,18 +31,17 @@ export default function DialogPrompt({
   dialogTitle,
   dialogDescription,
   labelText,
+  textInput,
+  onChangeHandler,
   backButtonText,
   backHandler,
   actionButtonText,
-  actionHandler,
-  successMessage,
-  errorMessage,
+  handleAction,
 }: DialogPromptProps) {
-  const [emptyError, setEmptyError] = useState(false);
   const [open, setOpen] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [alertLevel, setAlertLevel] = useState<AlertColor>();
-  const [input, setInput] = useState('');
+  const [emptyError, setEmptyError] = useState(false);
+  const [actionError, setActionError] = useState(false);
+  const [actionErrorMessage, setActionErrorMessage] = useState('');
 
   return (
     <>
@@ -73,49 +69,39 @@ export default function DialogPrompt({
             fullWidth
             margin='dense'
             variant='standard'
-            id='input'
+            id='textInput'
             label={labelText}
-            value={input}
+            value={textInput}
             onChange={(e) => {
               setEmptyError(!e.target.value);
-              setInput(e.target.value);
+              onChangeHandler(e.target.value);
             }}
             error={emptyError}
-            helperText={emptyError ? 'Channel name cannot be empty' : ''}
+            helperText={emptyError ? labelText + ' cannot be empty' : ''}
           ></TextField>
           {children}
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => {
-              // can be improved
-              backHandler(input).then(() => {
-                if (backButtonText === 'Back') {
-                  console.log('BACK BUTTON');
-                  return;
-                } else {
-                  setInput('');
-                  setOpen(false);
-                }
-              });
-            }}
             size='large'
+            onClick={() => {
+              backHandler();
+              if (backButtonText !== 'Back') {
+                setOpen(false);
+              }
+            }}
           >
             {backButtonText}
           </Button>
           <Button
-            disabled={!input}
+            disabled={!textInput}
             onClick={() => {
-              setInput('');
-              actionHandler(input).then((result) => {
-                if (actionButtonText === 'Create') {
-                  if (result) {
-                    setAlertLevel('success');
-                    setOpen(false);
-                  } else {
-                    setAlertLevel('error');
-                  }
-                  setSnackbarOpen(true);
+              handleAction().then((errorMessage) => {
+                if (errorMessage) {
+                  setActionError(true);
+                  setActionErrorMessage(errorMessage);
+                } else if (actionButtonText !== 'Next') {
+                  setOpen(false);
                 }
               });
             }}
@@ -124,25 +110,14 @@ export default function DialogPrompt({
           </Button>
         </DialogActions>
       </Dialog>
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={(event, reason) => {
-          if (reason !== 'clickaway') {
-            setSnackbarOpen(false);
-          }
+      <NotificationBar
+        display={actionError}
+        level={'error'}
+        message={actionErrorMessage}
+        onCloseHandler={() => {
+          setActionError(false);
         }}
-      >
-        <Alert
-          onClose={(event) => {
-            setSnackbarOpen(false);
-          }}
-          severity={alertLevel}
-          variant='filled'
-        >
-          {alertLevel === 'error' ? errorMessage : successMessage}
-        </Alert>
-      </Snackbar>
+      ></NotificationBar>
     </>
   );
 }

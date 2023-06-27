@@ -21,7 +21,7 @@ export class ChannelMembersController {
   create(
     @Body('channel_id', ParseIntPipe) channel_id: number,
     @Body('user_id', ParseIntPipe) user_id: number,
-  ): Promise<void> {
+  ): Promise<ChannelMember> {
     return this.channelMembersService.create(channel_id, user_id);
   }
 

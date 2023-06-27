@@ -19,7 +19,7 @@ export class ChannelMembersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(channel_id: number, user_id: number): Promise<void> {
+  async create(channel_id: number, user_id: number): Promise<ChannelMember> {
     let channel = await this.channelsRepository.findOneBy({ id: channel_id });
     let user = await this.usersRepository.findOneBy({ id: user_id });
 
@@ -27,7 +27,7 @@ export class ChannelMembersService {
       channel: channel,
       user: user,
     });
-    await this.channelMembersRepository.save(newChannelMember);
+   return await this.channelMembersRepository.save(newChannelMember);
   }
 
   async findAll(): Promise<ChannelMember[]> {
