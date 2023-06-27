@@ -34,6 +34,8 @@ import FriendDisplay from './FriendDisplay';
 export function ChannelMemberList() {
   const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [selectedFriend, setSelectedFriend] = useState<Friend | undefined>();
+  const [dialogInput, setDialogInput] = useState('');
   const [confirmation, setConfirmation] = useState<
     | {
         required: boolean;
@@ -58,7 +60,10 @@ export function ChannelMemberList() {
     getChannelMembers();
 
     async function getFriends() {
-      const friendsData = JSON.parse(await callAPI('GET', 'friends'));
+      // probably need to GET all user friend (HARDCODED FOR NOW)
+      const friendsData = JSON.parse(
+        await callAPI('GET', 'friends/user?outgoing_id=1'),
+      );
       setFriends(friendsData);
     }
     getFriends();
@@ -233,11 +238,11 @@ export function ChannelMemberList() {
           return true;
         }}
         successMessage='You sucessfully added the nibba into the channel!'
-        errorMessage='Unable you add the fella, maybe you ugly'
+        errorMessage='Unable to add the fella, maybe you ugly'
       >
         <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
           {
-            // friend diplay here
+            // friend display here
             friends
               .filter(
                 (friend) => friend.id,
@@ -245,7 +250,15 @@ export function ChannelMemberList() {
                 // .includes(channel.user.trim().toLowerCase()),
               )
               .map((friend: Friend, index: number) => (
-                <FriendDisplay key={index} friend={friend}></FriendDisplay>
+                <FriendDisplay
+                  key={index}
+                  selected={selectedFriend?.incoming_friend.id ?? 0}
+                  selectCurrent={() => {
+                    console.log('setSelectedFriend clicked');
+                    setSelectedFriend(friend);
+                  }}
+                  friend={friend}
+                ></FriendDisplay>
               ))
           }
         </Stack>

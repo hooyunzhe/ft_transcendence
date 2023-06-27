@@ -11,14 +11,21 @@ import { Friend } from '@/types/FriendTypes';
 
 interface FriendDisplayProps {
   friend: Friend;
+  selected: number;
+  selectCurrent: () => void;
   status?: string;
 }
 
-export default function FriendDisplay({ friend }: FriendDisplayProps) {
+export default function FriendDisplay({
+  selected,
+  selectCurrent,
+  friend,
+}: FriendDisplayProps) {
   return (
     <Paper elevation={2}>
       <ListItemButton
-      // selected={selected === id} onClick={selectCurrent}
+        selected={selected === friend.incoming_friend.id}
+        onClick={selectCurrent}
       >
         <ListItem
         // sx={{

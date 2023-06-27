@@ -19,6 +19,7 @@ interface DialogPromptProps {
   dialogTitle: string;
   dialogDescription: string;
   labelText: string;
+  textInput: string;
   backButtonText: string;
   backHandler: (...args: any) => Promise<void>;
   actionButtonText: string;
