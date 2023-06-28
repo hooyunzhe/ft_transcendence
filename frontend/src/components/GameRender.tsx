@@ -1,6 +1,6 @@
 'use client';
 import Phaser from 'phaser';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
 
 interface GameRenderProps {
@@ -12,6 +12,12 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
     player1: 0,
     player2: 0,
   };
+
+  const ball = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
+  const paddle1 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
+  const paddle2 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
+
+  const keyState: { [key: string]: boolean } = {};
   useEffect(() => {
     const config = {
       type: Phaser.AUTO,
@@ -30,6 +36,7 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
         update: update,
       },
     };
+
     const gameSession = new Phaser.Game(config);
 
     return () => {
@@ -37,6 +44,50 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
     };
   }, []);
 
+  useEffect(() => {
+    gameSocket.on(
+      'game',
+      (data: {
+        ball: { x: number; y: number };
+        paddle1: { x: number; y: number };
+        paddle2: { x: number; y: number };
+        score: { player1: number; player2: number };
+      }) => {
+        // GameCoordinateProps = ball;
+        if (ball.current) {
+          ball.current.x = data.ball.x;
+          ball.current.y = data.ball.y;
+        }
+        if (paddle1.current) paddle1.current.y = data.paddle1.y;
+        if (paddle2.current) paddle2.current.y = data.paddle2.y;
+        // score.player1 = data.score.player1;
+        // score.player2 = data.score.player2;
+      },
+    );
+
+    function setKeyStateFalse(event: KeyboardEvent) {
+      keyState[event.key] = false;
+    }
+
+    function setKeyStateTrue(event: KeyboardEvent) {
+      keyState[event.key] = true;
+    }
+    window.addEventListener('keyup', setKeyStateFalse, true);
+
+    window.addEventListener('keydown', setKeyStateTrue, true);
+    return () => {
+      gameSocket.off('game');
+      window.removeEventListener('keyup', setKeyStateFalse);
+      window.removeEventListener('keydown', setKeyStateTrue);
+    };
+  }, []);
+  // function PositionUpdate() {
+  //   if (!ball.current || !paddle1.current || !paddle2.current) return;
+  //   ball.current.x = coordinate.ball.x;
+  //   ball.current.y = coordinate.ball.y;
+  //   paddle1.current.y = coordinate.paddle1;
+  //   paddle2.current.y = coordinate.paddle2;
+  // }
   function preload(this: Phaser.Scene) {
     const game = this;
     game.load.multiatlas('ballsprite', '/ball/ballsprite.json', 'ball');
@@ -53,13 +104,14 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
       blendMode: 'ADD',
     });
 
-    const ball = game.physics.add.sprite(400, 300, 'ballsprite', '0.png');
+    ball.current = game.physics.add.sprite(400, 300, 'ballsprite', '0.png');
+    // if (!ball) return;
+    particles.startFollow(ball.current);
     const gameState = game.add.text(400, 50, '', { align: 'center' });
     gameState.setOrigin(0.5);
-    ball.setScale(1, 1);
-    const paddle1 = game.physics.add.sprite(15, 300, 'paddle2');
-    const paddle2 = game.physics.add.sprite(785, 300, 'paddle1');
-    particles.startFollow(ball);
+    paddle1.current = game.physics.add.sprite(15, 300, 'paddle1');
+    paddle2.current = game.physics.add.sprite(785, 300, 'paddle2');
+
     const frames = game.anims.generateFrameNames('ballsprite', {
       start: 0,
       end: 215,
@@ -74,29 +126,25 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
       repeat: -1,
     });
 
-    ball.anims.play('ballPulse', true);
-    useEffect(() => {
-      gameSocket.on(
-        'game',
-        (data: {
-          ball: { x: number; y: number };
-          paddle1: { x: number; y: number };
-          paddle2: { x: number; y: number };
-          score: { player1: number; player2: number };
-        }) => {
-          ball.x = data.ball.x;
-          ball.y = data.ball.y;
-          paddle1.y = data.paddle1.y;
-          paddle2.y = data.paddle2.y;
-          score.player1 = data.score.player1;
-          score.player2 = data.score.player2;
-        },
-      );
+    ball.current.anims.play('ballPulse', true);
 
-      return () => {
-        gameSocket.off('game');
-      };
-    }, []);
+    // useEffect(() => {
+    //   gameSocket.on(
+    //     'game',
+    //     (data: {
+    //       ball: { x: number; y: number };
+    //       paddle1: { x: number; y: number };
+    //       paddle2: { x: number; y: number };
+    //       score: { player1: number; player2: number };
+    //     }) => {
+
+    //   },
+    // );
+
+    //   return () => {
+    //     gameSocket.off('game');
+    //   };
+    // }, []);
   }
 
   const keyLoop = () => {
@@ -107,23 +155,6 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
       gameSocket.emit('Player', 's');
     }
   };
-
-  window.addEventListener(
-    'keyup',
-    function (e) {
-      keyState[e.key] = false;
-    },
-    true,
-  );
-
-  const keyState: { [key: string]: boolean } = {};
-  window.addEventListener(
-    'keydown',
-    function (e) {
-      keyState[e.key] = true;
-    },
-    true,
-  );
 
   function update(this: Phaser.Scene) {
     keyLoop();
