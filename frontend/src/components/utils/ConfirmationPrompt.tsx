@@ -12,7 +12,7 @@ interface ConfirmationPromptProps {
   onCloseHandler: () => void;
   promptTitle: string;
   promptDescription: string;
-  handleAction: (...args: any) => void;
+  handleAction: () => void;
 }
 
 export default function ConfirmationPrompt({
@@ -29,9 +29,7 @@ export default function ConfirmationPrompt({
         <DialogContentText>{promptDescription}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        {/* DOES NOTHING AND CLOSES I GUESS */}
         <Button onClick={onCloseHandler}>No</Button>
-        {/*  API STUFF HAPPENS HERE*/}
         <Button onClick={handleAction}>Yes</Button>
       </DialogActions>
     </Dialog>

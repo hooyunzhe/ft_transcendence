@@ -17,11 +17,18 @@
     "@types/node": "20.1.5",
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
+    "bufferutil": "^4.0.7",
     "eslint": "8.40.0",
     "eslint-config-next": "13.4.2",
     "next": "13.4.2",
+    "next-auth": "^4.22.1",
+    "phaser": "^3.60.0",
+    "phaser3spectorjs": "^0.0.8",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "typescript": "5.0.4"
+    "socket.io": "^4.6.1",
+    "socket.io-client": "^4.6.1",
+    "typescript": "5.0.4",
+    "utf-8-validate": "^6.0.3"
   }
 }

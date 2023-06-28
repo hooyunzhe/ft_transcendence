@@ -1,4 +1,4 @@
-export default interface User {
+export interface User {
   id: number;
   username: string;
   refresh_token: string;

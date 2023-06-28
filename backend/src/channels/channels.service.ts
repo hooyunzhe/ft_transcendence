@@ -3,6 +3,7 @@ import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { Channel } from './entities/channel.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Message } from 'src/messages/entities/message.entity';
@@ -14,8 +15,21 @@ export class ChannelsService {
     private channelsRepository: Repository<Channel>,
   ) {}
 
-  async create(createChannelDto: CreateChannelDto): Promise<Channel | null> {
-    return await this.channelsRepository.save(createChannelDto);
+  async authorize(channel_id: number, pass: string): Promise<boolean> {
+    const channel = await this.channelsRepository.findOne({
+      where: { id: channel_id },
+    });
+    return bcrypt.compare(pass, channel.hash);
+  }
+
+  async create(createChannelDto: CreateChannelDto): Promise<Channel> {
+    return await this.channelsRepository.save({
+      name: createChannelDto.name,
+      type: createChannelDto.type,
+      hash: createChannelDto.pass
+        ? await bcrypt.hash(createChannelDto.pass, 10)
+        : '',
+    });
   }
 
   async findAll(): Promise<Channel[]> {

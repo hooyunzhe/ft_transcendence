@@ -1,14 +1,8 @@
-import {
-  ChannelMemberRole,
-  ChannelMemberStatus,
-} from '../entities/channel_member.entity';
-import { Channel } from 'src/channels/entities/channel.entity';
-import { User } from 'src/users/entities/user.entity';
+import { ChannelMemberRole } from '../entities/channel_member.entity';
 
 export class CreateChannelMemberDto {
+  channel_id: number;
+  user_id: number;
   role: ChannelMemberRole;
-  status: ChannelMemberStatus;
-  muted_until: Date;
-  channel: Channel;
-  user: User;
+  pass: string;
 }

@@ -1,4 +1,4 @@
-import User from "./UserTypes";
+import { User } from './UserTypes';
 
 export enum FriendAction {
   ACCEPT = 'accept',

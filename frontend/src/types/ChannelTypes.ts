@@ -1,10 +1,17 @@
-import Message from './MessageTypes';
-import User from './UserTypes';
+import { Message } from './MessageTypes';
+import { User } from './UserTypes';
 
-export default interface Channel {
+export enum ChannelType {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
+  PROTECTED = 'protected',
+  DIRECT = 'direct',
+}
+
+export interface Channel {
   id: number;
   name: string;
-  type: string;
+  type: ChannelType;
   hash: string;
   channelMembers: User[];
   messages: Message[];

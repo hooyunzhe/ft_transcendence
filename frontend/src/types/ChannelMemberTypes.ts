@@ -1,7 +1,6 @@
 import Channel from './ChannelTypes';
 import User from './UserTypes';
 
-
 export enum ChannelMemberAction {
   ADMIN = 'ADMIN',
   UNADMIN = 'UNADMIN',
