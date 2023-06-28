@@ -7,7 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { ChannelMember } from 'src/channel_members/entities/channel_member.entity';
-import { Friend } from 'src/friends/entities/friend.entity';
+import { Friend } from 'src/friend/entities/friend.entity';
 
 @Entity()
 export class User {

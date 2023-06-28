@@ -7,7 +7,7 @@ import { ChannelMembersModule } from './channel_members/channel_members.module';
 import { MessagesModule } from './messages/messages.module';
 import { AchievementsModule } from './achievements/achievements.module';
 import { UserAchievementsModule } from './user_achievements/user_achievements.module';
-import { FriendsModule } from './friends/friends.module';
+import { FriendModule } from './friend/friend.module';
 import { GameModule } from './game/game.module';
 
 @Module({
@@ -20,8 +20,8 @@ import { GameModule } from './game/game.module';
     MessagesModule,
     AchievementsModule,
     UserAchievementsModule,
-    FriendsModule,
-    GameModule
+    FriendModule,
+    GameModule,
   ],
   controllers: [],
 })
