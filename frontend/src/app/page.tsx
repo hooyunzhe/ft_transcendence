@@ -1,4 +1,4 @@
-import { ChannelMemberList } from '@/components/ChannelMemberList';
+import { ChannelMemberList } from '@/components/channel-member/ChannelMemberList';
 export default function Home() {
   return (
     <>

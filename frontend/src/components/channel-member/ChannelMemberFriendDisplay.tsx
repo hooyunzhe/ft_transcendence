@@ -27,13 +27,7 @@ export default function FriendDisplay({
         selected={selected === friend.incoming_friend.id}
         onClick={selectCurrent}
       >
-        <ListItem
-        // sx={{
-        //   ...(category === 'friends' && {
-        //     opacity: status === 'online' ? '100%' : '20%',
-        //   }),
-        // }}
-        >
+        <ListItem>
           <ListItemAvatar>
             <Avatar alt=''></Avatar>
           </ListItemAvatar>

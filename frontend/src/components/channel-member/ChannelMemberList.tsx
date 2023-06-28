@@ -21,17 +21,14 @@ import ChannelMembers, {
 import { Friend } from '@/types/FriendTypes';
 import { Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
-import ChannelHeader from './ChannelHeader';
+import ChannelHeader from '../ChannelHeader';
 import { ChannelMemberDisplay } from './ChannelMemberDisplay';
-import ConfirmationPrompt from './ConfirmationPrompt';
-import DialogPrompt from './DialogPrompt';
-import FriendDisplay from './FriendDisplay';
+import ConfirmationPrompt from '../ConfirmationPrompt';
+import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 
 export function ChannelMemberList() {
   const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
-  const [selectedFriend, setSelectedFriend] = useState<Friend | undefined>();
-  const [friendSearch, setFriendSearch] = useState('');
   const [confirmation, setConfirmation] = useState<
     | {
         required: boolean;
@@ -140,6 +137,33 @@ export function ChannelMemberList() {
     });
   }
 
+  async function handleAddButtonAction(
+    friendSearch: string,
+    selectedFriend: Friend,
+  ): Promise<string> {
+    console.log('HANDLE ADD BUTTON');
+
+    const friendToJoin = friends.find(
+      (friend) => friend.incoming_friend.username === friendSearch,
+    );
+
+    if (!friendToJoin) {
+      return 'Invalid friend name!';
+    }
+
+    const derp = await callAPI('POST', 'channel_members', {
+      channel_id: 1,
+      user_id: selectedFriend?.incoming_friend.id,
+    });
+    console.log(derp);
+    const newChannelMember: ChannelMembers = JSON.parse(derp);
+
+    setChannelMembers((channelMembers) => {
+      return [...channelMembers, newChannelMember];
+    });
+    return '';
+  }
+
   function handleConfirmationAction(action: ChannelMemberAction) {
     if (!confirmation) {
       return 'handleConfirmationAction error!!';
@@ -192,24 +216,6 @@ export function ChannelMemberList() {
     return '';
   }
 
-  async function handleAddButtonAction() {
-    console.log('HANDLE ADD BUTTON');
-    const derp = await callAPI('POST', 'channel_members', {
-      channel_id: 1,
-      user_id: selectedFriend?.incoming_friend.id,
-    });
-    console.log(derp);
-    const newChannelMember: ChannelMembers = JSON.parse(derp);
-
-    setChannelMembers((channelMembers) => {
-      return [...channelMembers, newChannelMember];
-    });
-    setFriendSearch('');
-    setSelectedFriend(undefined);
-  }
-
-  //function to add a user to a channel
-
   return (
     <Stack
       width='100%'
@@ -219,50 +225,11 @@ export function ChannelMemberList() {
       spacing={1}
     >
       <ChannelHeader />
-      <DialogPrompt
-        // closeHandler={async () => {}}
-        buttonText='Add members button'
-        dialogTitle='Add members'
-        dialogDescription='Add your friends to the channel'
-        labelText='username'
-        textInput={friendSearch}
-        backButtonText='Cancel'
-        onChangeHandler={(input) => {
-          setSelectedFriend(undefined);
-          setFriendSearch(input);
-        }}
-        backHandler={async () => {}}
-        actionButtonText='Add'
-        handleAction={async () => {
-          await handleAddButtonAction();
-          return 'handleAction error';
-        }}
-      >
-        <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
-          {
-            // friend display here
-            friends
-              .filter(
-                (friend) => friend.id,
-                // channel.user.username.toLowerCase(),
-                // .includes(channel.user.trim().toLowerCase()),
-              )
-              .map((friend: Friend, index: number) => (
-                <FriendDisplay
-                  key={index}
-                  selected={selectedFriend?.incoming_friend.id ?? 0}
-                  selectCurrent={() => {
-                    console.log('setSelectedFriend clicked');
-                    // PLEASE FILTER ADDED FRIENDS ELSE YOU GONEZO
-                    setFriendSearch(friend.incoming_friend.username);
-                    setSelectedFriend(friend);
-                  }}
-                  friend={friend}
-                ></FriendDisplay>
-              ))
-          }
-        </Stack>
-      </DialogPrompt>
+      <ChannelMemberAddPrompt
+        handleAddButtonAction={handleAddButtonAction}
+        friends={friends}
+        channelMembers={channelMembers}
+      ></ChannelMemberAddPrompt>
       {channelMembers.map((channelMember: ChannelMembers, index: number) => (
         <ChannelMemberDisplay
           key={index}
