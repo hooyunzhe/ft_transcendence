@@ -1,4 +1,4 @@
-export function prettyPrintObject(obj: object): JSX.Element {
+export default function prettyPrintObject(obj: object): JSX.Element {
   return (
     <>
       {Array.isArray(obj) ? '[' : '{'}

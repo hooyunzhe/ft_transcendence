@@ -1,4 +1,13 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateFriendDto } from './create-friend.dto';
+import { IsEnum, IsNumber } from 'class-validator';
+import { FriendAction } from '../entities/friend.entity';
 
-export class UpdateFriendDto extends PartialType(CreateFriendDto) {}
+export class UpdateFriendDto {
+  @IsNumber()
+  outgoing_id: number;
+
+  @IsNumber()
+  incoming_id: number;
+
+  @IsEnum(FriendAction)
+  action: FriendAction;
+}

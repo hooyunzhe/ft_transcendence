@@ -1,27 +1,61 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { EntityNotFoundError, Repository } from 'typeorm';
+import { Friend, FriendStatus, FriendAction } from './entities/friend.entity';
 import { CreateFriendDto } from './dto/create-friend.dto';
-import { Friend, FriendStatus } from './entities/friend.entity';
+import { UpdateFriendDto } from './dto/update-friend.dto';
 
 @Injectable()
 export class FriendsService {
   constructor(
     @InjectRepository(Friend)
     private friendRepository: Repository<Friend>,
+
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
-  async create(user1_id: number, user2_id: number): Promise<void> {
-    const senderFriendDto = new CreateFriendDto();
-    senderFriendDto.user1_id = user1_id;
-    senderFriendDto.user2_id = user2_id;
-    senderFriendDto.status = FriendStatus.Invited;
+  async create(friendDto: CreateFriendDto): Promise<Friend[]> {
+    const [outgoingUser, incomingUser] = await Promise.all([
+      this.userRepository.findOneBy({
+        id: friendDto.outgoing_id,
+      }),
+      this.userRepository.findOneBy({
+        id: friendDto.incoming_id,
+      }),
+    ]);
 
-    const receiverFriendDto = new CreateFriendDto();
-    receiverFriendDto.user1_id = user2_id;
-    receiverFriendDto.user2_id = user1_id;
-    receiverFriendDto.status = FriendStatus.Pending;
-    await this.friendRepository.save([senderFriendDto, receiverFriendDto]);
+    if (!outgoingUser) {
+      throw new EntityNotFoundError(
+        Friend,
+        'outgoing_id: ' + friendDto.outgoing_id,
+      );
+    }
+
+    if (!incomingUser) {
+      throw new EntityNotFoundError(
+        Friend,
+        'incoming_id: ' + friendDto.incoming_id,
+      );
+    }
+
+    let newOutgoingFriendship = this.friendRepository.create({
+      outgoing_friend: outgoingUser,
+      incoming_friend: incomingUser,
+      status: FriendStatus.Invited,
+    });
+
+    let newIncomingFriendship = this.friendRepository.create({
+      outgoing_friend: incomingUser,
+      incoming_friend: outgoingUser,
+      status: FriendStatus.Pending,
+    });
+
+    return await this.friendRepository.save([
+      newOutgoingFriendship,
+      newIncomingFriendship,
+    ]);
   }
 
   async findAll() {
@@ -29,72 +63,112 @@ export class FriendsService {
   }
 
   async findOne(id: number): Promise<Friend | null> {
-    return await this.friendRepository.findOneBy({ id });
+    const found = await this.friendRepository.findOneBy({ id });
+
+    if (!found) {
+      throw new EntityNotFoundError(Friend, 'id: ' + id);
+    }
+    return found;
   }
 
   async findFriendships(
-    user1_id: number,
-    user2_id: number,
+    outgoing_id: number,
+    incoming_id: number,
   ): Promise<Friend[] | Friend | null> {
-    if (user2_id === 0) {
-      return this.findFriendsOfUser(user1_id);
+    if (incoming_id === 0) {
+      return this.findFriendsOfUser(outgoing_id);
     } else {
-      return this.findExactMatch(user1_id, user2_id);
+      return this.findExactMatch(outgoing_id, incoming_id);
     }
   }
 
-  async findFriendsOfUser(user1_id: number): Promise<Friend[] | null> {
-    return await this.friendRepository.findBy({ user1_id });
+  async findFriendsOfUser(outgoing_id: number): Promise<Friend[] | null> {
+    return await this.friendRepository.findBy({
+      outgoing_friend: { id: outgoing_id },
+    });
   }
 
   async findExactMatch(
-    user1_id: number,
-    user2_id: number,
+    outgoing_id: number,
+    incoming_id: number,
   ): Promise<Friend | null> {
-    return await this.friendRepository.findOneBy({ user1_id, user2_id });
+    const found = await this.friendRepository.findOneBy({
+      outgoing_friend: { id: outgoing_id },
+      incoming_friend: { id: incoming_id },
+    });
+
+    if (!found) {
+      throw new EntityNotFoundError(
+        Friend,
+        'outgoing_id: ' + outgoing_id + ', incoming_id: ' + incoming_id,
+      );
+    }
+    return found;
   }
 
-  async update(friendDto: CreateFriendDto) {
-    const friendhship = await this.findExactMatch(
-      friendDto.user1_id,
-      friendDto.user2_id,
+  async update(friendDto: UpdateFriendDto) {
+    const friendship = await this.findExactMatch(
+      friendDto.outgoing_id,
+      friendDto.incoming_id,
     );
-    if (friendhship.status === FriendStatus.Pending) {
+    if (friendship.status === FriendStatus.Pending) {
       this.updateFriendRequest(friendDto);
-    } else if (friendhship.status == FriendStatus.Friend) {
-      if (friendDto.status === FriendStatus.Blocked)
-        await this.friendRepository.update(friendhship.id, {
-          status: friendDto.status,
+    } else if (friendship.status === FriendStatus.Friends) {
+      if (friendDto.action === FriendAction.Block)
+        await this.friendRepository.update(friendship.id, {
+          status: FriendStatus.Blocked,
         });
+    } else if (friendship.status === FriendStatus.Blocked) {
+      if (friendDto.action === FriendAction.Unblock) {
+        await this.friendRepository.update(friendship.id, {
+          status: FriendStatus.Friends,
+        });
+      }
     }
   }
 
-  async updateFriendRequest(friendDto: CreateFriendDto) {
-    if (friendDto.status === FriendStatus.Accept) {
+  async updateFriendRequest(friendDto: UpdateFriendDto) {
+    if (friendDto.action === FriendAction.Accept) {
       Promise.all([
         this.friendRepository.update(
-          (await this.findExactMatch(friendDto.user1_id, friendDto.user2_id))
-            .id,
-          { status: FriendStatus.Friend },
+          {
+            outgoing_friend: { id: friendDto.outgoing_id },
+            incoming_friend: { id: friendDto.incoming_id },
+          },
+          { status: FriendStatus.Friends },
         ),
         this.friendRepository.update(
-          (await this.findExactMatch(friendDto.user2_id, friendDto.user1_id))
-            .id,
-          { status: FriendStatus.Friend },
+          {
+            outgoing_friend: { id: friendDto.incoming_id },
+            incoming_friend: { id: friendDto.outgoing_id },
+          },
+          { status: FriendStatus.Friends },
         ),
       ]);
-    } else if (friendDto.status === FriendStatus.Deny)
-      await this.deleteRelationship(friendDto.user1_id, friendDto.user2_id);
+    } else if (friendDto.action === FriendAction.Reject)
+      await this.deleteRelationship(
+        friendDto.outgoing_id,
+        friendDto.incoming_id,
+      );
   }
 
   async remove(id: number) {
     return await this.friendRepository.delete(id);
   }
 
-  async deleteRelationship(user1_id: number, user2_id: number): Promise<void> {
+  async deleteRelationship(
+    outgoing_id: number,
+    incoming_id: number,
+  ): Promise<void> {
     Promise.all([
-      this.remove((await this.findExactMatch(user1_id, user2_id)).id),
-      this.remove((await this.findExactMatch(user2_id, user1_id)).id),
+      this.friendRepository.delete({
+        outgoing_friend: { id: outgoing_id },
+        incoming_friend: { id: incoming_id },
+      }),
+      this.friendRepository.delete({
+        outgoing_friend: { id: incoming_id },
+        incoming_friend: { id: outgoing_id },
+      }),
     ]);
   }
 }

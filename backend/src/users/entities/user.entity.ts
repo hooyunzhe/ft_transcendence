@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { ChannelMember } from 'src/channel_members/entities/channel_member.entity';
+import { Friend } from 'src/friends/entities/friend.entity';
 
 @Entity()
 export class User {
@@ -22,12 +23,15 @@ export class User {
   @CreateDateColumn()
   date_of_creation: Date;
 
-  @Column({ default: 'offline' })
-  status: string;
-
   @OneToMany(() => ChannelMember, (channelMember) => channelMember.user)
   channelMembers: ChannelMember[];
 
   @OneToMany(() => UserAchievement, (userAchievement) => userAchievement.user)
   userAchievements: UserAchievement[];
+
+  @OneToMany(() => Friend, (friend) => friend.outgoing_friend)
+  outgoingFriendships: Friend[];
+
+  @OneToMany(() => Friend, (friend) => friend.incoming_friend)
+  incomingFriendships: Friend[];
 }

@@ -29,6 +29,11 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('username/:username')
+  findByUsername(@Param('username') username: string): Promise<User | null> {
+    return this.usersService.findByUsername(username);
+  }
+
   @Get('token/:refresh_token')
   findByToken(
     @Param('refresh_token') refresh_token: string,

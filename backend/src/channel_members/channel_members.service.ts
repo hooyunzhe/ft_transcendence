@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateChannelMemberDto } from './dto/create-channel_member.dto';
 import { UpdateChannelMemberDto } from './dto/update-channel_member.dto';
 import { ChannelMember } from './entities/channel_member.entity';
-import { Channel } from 'src/channels/entities/channel.entity';
-import { User } from 'src/users/entities/user.entity';
+import { ChannelsService } from 'src/channels/channels.service';
 
 @Injectable()
 export class ChannelMembersService {
@@ -13,22 +12,34 @@ export class ChannelMembersService {
     @InjectRepository(ChannelMember)
     private channelMembersRepository: Repository<ChannelMember>,
 
-    @InjectRepository(Channel)
-    private channelsRepository: Repository<Channel>,
-
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    @Inject(ChannelsService)
+    private readonly channelsService: ChannelsService,
   ) {}
 
-  async create(channel_id: number, user_id: number): Promise<void> {
-    let channel = await this.channelsRepository.findOneBy({ id: channel_id });
-    let user = await this.usersRepository.findOneBy({ id: user_id });
+  async create(
+    createChannelMemberDto: CreateChannelMemberDto,
+  ): Promise<ChannelMember | null> {
+    if (createChannelMemberDto.pass) {
+      const authorized = await this.channelsService.authorize(
+        createChannelMemberDto.channel_id,
+        createChannelMemberDto.pass,
+      );
 
-    let newChannelMember = this.channelMembersRepository.create({
-      channel: channel,
-      user: user,
+      if (!authorized) {
+        return null;
+      }
+    }
+
+    const newChannelMember = this.channelMembersRepository.create({
+      channel: {
+        id: createChannelMemberDto.channel_id,
+      },
+      user: {
+        id: createChannelMemberDto.user_id,
+      },
+      role: createChannelMemberDto.role,
     });
-    await this.channelMembersRepository.save(newChannelMember);
+    return await this.channelMembersRepository.save(newChannelMember);
   }
 
   async findAll(): Promise<ChannelMember[]> {

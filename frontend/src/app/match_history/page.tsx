@@ -1,13 +1,16 @@
-"use client";
+'use client';
 
-import {MatchHistoryComponent, MatchHistoryHeadComponent} from "../../components/match_history"
+import {
+  MatchHistoryComponent,
+  MatchHistoryHeadComponent,
+} from '../../components/game/match_history';
 // function Layout({rows}: LayoutProps)
 // {
 // //   return (
-    
+
 // };
 
- async function callAPIs(route: string) {
+async function callAPIs(route: string) {
   const domain = 'http://backend:3000/api/';
 
   console.log(domain + route);
@@ -22,9 +25,10 @@ import {MatchHistoryComponent, MatchHistoryHeadComponent} from "../../components
 }
 
 export default async function matchHistoryPage() {
-   const response = await callAPIs("match_history");
-		return(<MatchHistoryHeadComponent>
-			<MatchHistoryComponent rows={response} />
-		</MatchHistoryHeadComponent> )
+  const response = await callAPIs('match_history');
+  return (
+    <MatchHistoryHeadComponent>
+      <MatchHistoryComponent rows={response} />
+    </MatchHistoryHeadComponent>
+  );
 }
-

@@ -1,4 +1,4 @@
-export function signUp(username: string, refresh_token: string) {
+export default function signUp(username: string, refresh_token: string) {
   fetch('http://localhost:4242/api/users', {
     method: 'POST',
     headers: {

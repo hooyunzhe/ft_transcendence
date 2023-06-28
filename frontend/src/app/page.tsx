@@ -1,13 +1,10 @@
-import ChannelHeader from '@/components/ChannelHeader';
-import { ChannelList } from '@/components/ChannelList';
-import React, { useState } from 'react';
+import { ChannelList } from '@/components/channel/ChannelList';
+import FriendList from '@/components/friend/FriendList';
 export default function Home() {
   return (
     <>
-      <ChannelHeader></ChannelHeader>
-      {/* @ts-expect-error Server Component  */}
-
-      <ChannelList API={'channels'}></ChannelList>
+      <ChannelList></ChannelList>
+      {/* <FriendList></FriendList> */}
     </>
   );
 }
