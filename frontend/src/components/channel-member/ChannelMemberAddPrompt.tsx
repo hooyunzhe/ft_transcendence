@@ -2,7 +2,7 @@ import ChannelMembers from '@/types/ChannelMemberTypes';
 import { Friend } from '@/types/FriendTypes';
 import { Stack } from '@mui/system';
 import { useState } from 'react';
-import DialogPrompt from '../DialogPrompt';
+import DialogPrompt from '../utils/DialogPrompt';
 import FriendDisplay from './ChannelMemberFriendDisplay';
 
 interface ChannelMemberAddPromptProps {

@@ -21,10 +21,10 @@ import ChannelMembers, {
 import { Friend } from '@/types/FriendTypes';
 import { Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
-import ChannelHeader from '../ChannelHeader';
 import { ChannelMemberDisplay } from './ChannelMemberDisplay';
-import ConfirmationPrompt from '../ConfirmationPrompt';
+import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
+import ListHeader from '../utils/ListHeader';
 
 export function ChannelMemberList() {
   const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
@@ -224,7 +224,7 @@ export function ChannelMemberList() {
       justifyContent='center'
       spacing={1}
     >
-      <ChannelHeader />
+      <ListHeader title='My retarded channel list'></ListHeader>
       <ChannelMemberAddPrompt
         handleAddButtonAction={handleAddButtonAction}
         friends={friends}
