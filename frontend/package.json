@@ -16,6 +16,7 @@
     "@mui/material": "^5.13.1",
     "@pixi/react": "^7.1.0",
     "@types/node": "20.1.5",
+    "@types/pixi.js": "^5.0.0",
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
     "axios": "^1.4.0",
