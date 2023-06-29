@@ -12,7 +12,7 @@ import { ChannelMembersService } from './channel_members.service';
   cors: {
     origin: '*',
   },
-  namespace: 'gateway/channel_messages',
+  namespace: 'gateway/channel_members',
 })
 export class ChannelMembersGateway implements OnGatewayConnection {
   @WebSocketServer()

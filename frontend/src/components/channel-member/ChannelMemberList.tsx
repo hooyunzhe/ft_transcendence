@@ -12,7 +12,6 @@
 'use client';
 
 import callAPI from '@/lib/callAPI';
-import { channelMemberSocket } from '@/lib/ChannelMemberSocket';
 import ChannelMembers, {
   ChannelMemberAction,
   ChannelMemberRole,
@@ -25,6 +24,7 @@ import { ChannelMemberDisplay } from './ChannelMemberDisplay';
 import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
+import { channelMemberSocket } from '@/lib/socket';
 
 export function ChannelMemberList() {
   const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
@@ -46,6 +46,7 @@ export function ChannelMemberList() {
       const channelMembersData = JSON.parse(
         await callAPI('GET', 'channel_members'),
       );
+      console.log('channelMemberData: ', channelMembersData);
       setChannelMembers(channelMembersData);
 
       channelMemberSocket.emit('test', (data: ChannelMembers) => {});
@@ -57,6 +58,7 @@ export function ChannelMemberList() {
       const friendsData = JSON.parse(
         await callAPI('GET', 'friends/user?outgoing_id=1'),
       );
+      console.log('friendsData: ', friendsData);
       setFriends(friendsData);
     }
     getFriends();

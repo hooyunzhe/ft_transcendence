@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { UpdateChannelMemberDto } from './dto/update-channel_member.dto';
 import { ChannelMember } from './entities/channel_member.entity';
 import { ChannelsService } from 'src/channels/channels.service';
+import { CreateChannelMemberDto } from './dto/create-channel_member.dto';
 
 @Injectable()
 export class ChannelMembersService {

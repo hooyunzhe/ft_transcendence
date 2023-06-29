@@ -6,6 +6,11 @@ export const friendsSocket = io('http://localhost:4242/gateway/friends', {
 
 export const gameSocket = io('http://localhost:4242/gateway/game');
 
+export const channelMemberSocket = io('http://localhost:4242/gateway/channel_members', {
+  query: {
+    id: 1,
+  }});
+
 // friends_socket.on('newConnection', (data) => {
 //   console.log(data);
 // });
