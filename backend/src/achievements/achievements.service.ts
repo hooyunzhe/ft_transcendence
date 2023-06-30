@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateAchievementDto } from './dto/create-achievement.dto';
 import { Achievement } from './entities/achievement.entity';
 import { UserAchievement } from 'src/user_achievements/entities/user_achievement.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AchievementsService {

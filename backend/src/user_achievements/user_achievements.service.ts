@@ -5,8 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserAchievement } from './entities/user_achievement.entity';
 import { Repository } from 'typeorm';
 import { Achievement } from 'src/achievements/entities/achievement.entity';
-import { User } from 'src/users/entities/user.entity';
-import { CreateUserDto } from 'src/users/dto/create_user.dto';
+import { User } from 'src/user/entities/user.entity';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 @Injectable()
 export class UserAchievementsService {

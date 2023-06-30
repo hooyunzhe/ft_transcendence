@@ -1,6 +1,6 @@
 import { AchievementsModule } from 'src/achievements/achievements.module';
 import { Achievement } from 'src/achievements/entities/achievement.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/user/entities/user.entity';
 import {
   CreateDateColumn,
   Entity,

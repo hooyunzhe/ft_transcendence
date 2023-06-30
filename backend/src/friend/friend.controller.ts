@@ -9,10 +9,10 @@ import {
   Query,
   ValidationPipe,
 } from '@nestjs/common';
+import { Friend } from './entities/friend.entity';
 import { FriendService } from './friend.service';
 import { CreateFriendDto } from './dto/create-friend.dto';
 import { UpdateFriendDto } from './dto/update-friend.dto';
-import { Friend } from './entities/friend.entity';
 import {
   FriendGetQueryParams,
   FriendSearchType,

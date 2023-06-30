@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Channel } from './entities/channel.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/user/entities/user.entity';
 import { Message } from 'src/messages/entities/message.entity';
 
 @Injectable()

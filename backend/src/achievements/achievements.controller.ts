@@ -10,7 +10,7 @@ import {
 import { Achievement } from './entities/achievement.entity';
 import { AchievementsService } from './achievements.service';
 import { CreateAchievementDto } from './dto/create-achievement.dto';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Controller('achievements')
 export class AchievementsController {

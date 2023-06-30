@@ -1,4 +1,3 @@
-import { UserAchievement } from 'src/user_achievements/entities/user_achievement.entity';
 import {
   Entity,
   Column,
@@ -7,6 +6,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { ChannelMember } from 'src/channel_members/entities/channel_member.entity';
+import { UserAchievement } from 'src/user_achievements/entities/user_achievement.entity';
 import { Friend } from 'src/friend/entities/friend.entity';
 
 @Entity()
@@ -14,7 +14,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   username: string;
 
   @Column()

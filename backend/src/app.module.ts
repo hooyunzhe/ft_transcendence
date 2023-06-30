@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from './database.module';
-import { UsersModule } from './users/users.module';
+import { UserModule } from './user/user.module';
 import { MatchHistoryModule } from './match_history/match_history.module';
 import { ChannelsModule } from './channels/channels.module';
 import { ChannelMembersModule } from './channel_members/channel_members.module';
@@ -13,7 +13,7 @@ import { GameModule } from './game/game.module';
 @Module({
   imports: [
     DatabaseModule,
-    UsersModule,
+    UserModule,
     MatchHistoryModule,
     ChannelsModule,
     ChannelMembersModule,

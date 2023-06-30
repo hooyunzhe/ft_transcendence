@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityNotFoundError, Repository } from 'typeorm';
 import { Friend, FriendStatus, FriendAction } from './entities/friend.entity';
+import { UserService } from 'src/user/user.service';
 import { CreateFriendDto } from './dto/create-friend.dto';
 import { UpdateFriendDto } from './dto/update-friend.dto';
-import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class FriendService {
@@ -12,8 +12,8 @@ export class FriendService {
     @InjectRepository(Friend)
     private friendRepository: Repository<Friend>,
 
-    @Inject(UsersService)
-    private readonly usersService: UsersService,
+    @Inject(UserService)
+    private readonly usersService: UserService,
   ) {}
 
   async create(createFriendDto: CreateFriendDto): Promise<Friend[]> {

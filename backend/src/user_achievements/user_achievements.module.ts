@@ -3,7 +3,7 @@ import { UserAchievementsService } from './user_achievements.service';
 import { UserAchievementsController } from './user_achievements.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserAchievement } from './entities/user_achievement.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/user/entities/user.entity';
 import { Achievement } from 'src/achievements/entities/achievement.entity';
 
 @Module({

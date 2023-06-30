@@ -1,43 +1,43 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create_user.dto';
-import { UpdateUserDto } from './dto/update_user.dto';
 import { User } from './entities/user.entity';
-import { Channel } from 'src/channels/entities/channel.entity';
 import { Achievement } from 'src/achievements/entities/achievement.entity';
+import { Channel } from 'src/channels/entities/channel.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private userRepository: Repository<User>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    return await this.usersRepository.save(createUserDto);
+    return await this.userRepository.save(createUserDto);
   }
 
   async findAll(): Promise<User[]> {
-    return await this.usersRepository.find();
+    return await this.userRepository.find();
   }
 
   async findByUsername(username: string): Promise<User | null> {
-    return await this.usersRepository.findOneBy({
+    return await this.userRepository.findOneBy({
       username: ILike(username),
     });
   }
 
   async findByToken(refresh_token: string): Promise<User | null> {
-    return await this.usersRepository.findOneBy({ refresh_token });
+    return await this.userRepository.findOneBy({ refresh_token });
   }
 
   async findOne(id: number): Promise<User | null> {
-    return await this.usersRepository.findOneBy({ id });
+    return await this.userRepository.findOneBy({ id });
   }
 
   async getChannels(id: number): Promise<Channel[]> {
-    let currentUser = await this.usersRepository.findOne({
+    let currentUser = await this.userRepository.findOne({
       relations: {
         channelMembers: true,
       },
@@ -50,7 +50,7 @@ export class UsersService {
   }
 
   async findAchieved(id: number): Promise<Achievement[]> {
-    let currentUser = await this.usersRepository.findOne({
+    let currentUser = await this.userRepository.findOne({
       relations: {
         userAchievements: true,
       },
@@ -63,10 +63,10 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<void> {
-    await this.usersRepository.update(id, updateUserDto);
+    await this.userRepository.update(id, updateUserDto);
   }
 
   async remove(id: number): Promise<void> {
-    await this.usersRepository.delete(id);
+    await this.userRepository.delete(id);
   }
 }

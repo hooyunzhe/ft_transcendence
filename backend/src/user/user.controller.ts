@@ -9,51 +9,54 @@ import {
   Patch,
 } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create_user.dto';
-import { UpdateUserDto } from './dto/update_user.dto';
+import { UserService } from './user.service';
 import { Channel } from 'src/channels/entities/channel.entity';
 import { Achievement } from 'src/achievements/entities/achievement.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
-export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+export class UserController {
+  constructor(private readonly userService: UserService) {}
 
   @Post()
   create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.usersService.create(createUserDto);
+    return this.userService.create(createUserDto);
   }
 
+  // #Get()
+  // async find(@Param())
+
   @Get()
-  findAll(): Promise<User[]> {
-    return this.usersService.findAll();
+  async findAll(): Promise<User[]> {
+    return this.userService.findAll();
   }
 
   @Get('username/:username')
   findByUsername(@Param('username') username: string): Promise<User | null> {
-    return this.usersService.findByUsername(username);
+    return this.userService.findByUsername(username);
   }
 
   @Get('token/:refresh_token')
   findByToken(
     @Param('refresh_token') refresh_token: string,
   ): Promise<User | null> {
-    return this.usersService.findByToken(refresh_token);
+    return this.userService.findByToken(refresh_token);
   }
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
-    return this.usersService.findOne(id);
+    return this.userService.findOne(id);
   }
 
   @Get(':id/channels')
   getChannels(@Param('id', ParseIntPipe) id: number): Promise<Channel[]> {
-    return this.usersService.getChannels(id);
+    return this.userService.getChannels(id);
   }
 
   @Get(':id/achieved')
   findAchieved(@Param('id') id: number): Promise<Achievement[]> {
-    return this.usersService.findAchieved(id);
+    return this.userService.findAchieved(id);
   }
 
   @Patch(':id')
@@ -61,11 +64,11 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<void> {
-    return this.usersService.update(id, updateUserDto);
+    return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.usersService.remove(id);
+    return this.userService.remove(id);
   }
 }
