@@ -18,22 +18,73 @@ export class UserService {
     return await this.userRepository.save(createUserDto);
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+  async findAll(load_relations: boolean): Promise<User[]> {
+    if (load_relations) {
+      return await this.userRepository.find({
+        relations: {
+          channelMembers: true,
+          userAchievements: true,
+          outgoingFriendships: true,
+        },
+      });
+    } else {
+      return await this.userRepository.find();
+    }
   }
 
-  async findByUsername(username: string): Promise<User | null> {
-    return await this.userRepository.findOneBy({
-      username: ILike(username),
-    });
+  async findOne(id: number, load_relations: boolean): Promise<User | null> {
+    if (load_relations) {
+      return await this.userRepository.findOne({
+        where: { id },
+        relations: {
+          channelMembers: true,
+          userAchievements: true,
+          outgoingFriendships: true,
+        },
+      });
+    } else {
+      return await this.userRepository.findOneBy({ id });
+    }
   }
 
-  async findByToken(refresh_token: string): Promise<User | null> {
-    return await this.userRepository.findOneBy({ refresh_token });
+  async findByUsername(
+    username: string,
+    load_relations: boolean,
+  ): Promise<User | null> {
+    if (load_relations) {
+      return await this.userRepository.findOne({
+        where: { username: ILike(username) },
+        relations: {
+          channelMembers: true,
+          userAchievements: true,
+          outgoingFriendships: true,
+        },
+      });
+    } else {
+      return await this.userRepository.findOneBy({
+        username: ILike(username),
+      });
+    }
   }
 
-  async findOne(id: number): Promise<User | null> {
-    return await this.userRepository.findOneBy({ id });
+  async findByToken(
+    refresh_token: string,
+    load_relations: boolean,
+  ): Promise<User | null> {
+    if (load_relations) {
+      return await this.userRepository.findOne({
+        where: { refresh_token },
+        relations: {
+          channelMembers: true,
+          userAchievements: true,
+          outgoingFriendships: true,
+        },
+      });
+    } else {
+      return await this.userRepository.findOneBy({
+        refresh_token,
+      });
+    }
   }
 
   async getChannels(id: number): Promise<Channel[]> {

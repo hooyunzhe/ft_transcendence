@@ -7,7 +7,6 @@ import {
   Delete,
   ParseIntPipe,
   Query,
-  ValidationPipe,
 } from '@nestjs/common';
 import { Friend } from './entities/friend.entity';
 import { FriendService } from './friend.service';
@@ -24,16 +23,12 @@ export class FriendController {
 
   @Post()
   async create(@Body() createFriendDto: CreateFriendDto): Promise<Friend[]> {
-    return await this.friendService.create(createFriendDto);
+    return this.friendService.create(createFriendDto);
   }
 
   @Get()
   async find(
-    @Query(
-      new ValidationPipe({
-        forbidNonWhitelisted: true,
-      }),
-    )
+    @Query()
     queryParams: FriendGetQueryParams,
   ): Promise<Friend[] | Friend | null> {
     switch (queryParams.search_type) {

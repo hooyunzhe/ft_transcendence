@@ -1,5 +1,8 @@
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
+  IsBooleanString,
+  IsEmpty,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -43,6 +46,7 @@ export class UserGetQueryParams {
   @IsString()
   search_string: string;
 
-  // @IsOptional()
-  // @IsBoolean
+  @IsOptional()
+  @Transform(() => true)
+  load_relations: boolean;
 }

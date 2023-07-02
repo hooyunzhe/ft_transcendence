@@ -19,6 +19,7 @@ export class FriendService {
   async create(createFriendDto: CreateFriendDto): Promise<Friend[]> {
     const outgoingFound = await this.usersService.findOne(
       createFriendDto.outgoing_id,
+      false,
     );
 
     if (!outgoingFound) {
@@ -30,6 +31,7 @@ export class FriendService {
 
     const incomingFound = await this.usersService.findOne(
       createFriendDto.incoming_id,
+      false,
     );
 
     if (!incomingFound) {

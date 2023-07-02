@@ -15,10 +15,10 @@ export class FriendGetQueryParams {
 
   @ValidateIf(
     (params: FriendGetQueryParams) =>
-      params.search_type === FriendSearchType.ONE,
+      params.search_type !== FriendSearchType.ALL,
   )
   @Transform(({ obj, value }: { obj: FriendGetQueryParams; value: number }) =>
-    obj.search_type === FriendSearchType.ONE ? value : undefined,
+    obj.search_type !== FriendSearchType.ALL ? value : undefined,
   )
   @IsNumber()
   search_number: number;
