@@ -5,12 +5,12 @@ import {
   Body,
   Patch,
   Delete,
-  ParseIntPipe,
   Query,
 } from '@nestjs/common';
 import { Friend } from './entities/friend.entity';
 import { FriendService } from './friend.service';
 import { CreateFriendDto } from './dto/create-friend.dto';
+import { RemoveFriendDto } from './dto/remove-friend.dto';
 import { UpdateFriendDto } from './dto/update-friend.dto';
 import {
   FriendGetQueryParams,
@@ -22,8 +22,8 @@ export class FriendController {
   constructor(private readonly friendService: FriendService) {}
 
   @Post()
-  async create(@Body() createFriendDto: CreateFriendDto): Promise<Friend[]> {
-    return this.friendService.create(createFriendDto);
+  async create(@Body() friendDto: CreateFriendDto): Promise<Friend[]> {
+    return this.friendService.create(friendDto);
   }
 
   @Get()
@@ -48,14 +48,11 @@ export class FriendController {
 
   @Patch()
   async update(@Body() friendDto: UpdateFriendDto): Promise<void> {
-    await this.friendService.update(friendDto);
+    this.friendService.update(friendDto);
   }
 
   @Delete()
-  async remove(
-    @Body('outgoing_id', ParseIntPipe) outgoing_id: number,
-    @Body('incoming_id', ParseIntPipe) incoming_id: number,
-  ): Promise<void> {
-    await this.friendService.deleteRelationship(outgoing_id, incoming_id);
+  async remove(@Body() friendDto: RemoveFriendDto): Promise<void> {
+    this.friendService.remove(friendDto);
   }
 }
