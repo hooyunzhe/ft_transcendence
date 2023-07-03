@@ -3,8 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Param,
-  ParseIntPipe,
   Post,
   Patch,
   Query,
@@ -15,6 +13,7 @@ import { Channel } from 'src/channels/entities/channel.entity';
 import { Achievement } from 'src/achievements/entities/achievement.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { RemoveUserDto } from './dto/remove-user.dto';
 import { UserGetQueryParams, UserSearchType } from './params/get-query-params';
 
 @Controller('users')
@@ -22,15 +21,15 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.userService.create(createUserDto);
+  async create(@Body() userDto: CreateUserDto): Promise<User> {
+    return this.userService.create(userDto);
   }
 
   @Get()
   async find(
     @Query()
     queryParams: UserGetQueryParams,
-  ): Promise<User[] | User | null> {
+  ): Promise<Achievement[] | Channel[] | User[] | User | null> {
     queryParams.load_relations ??= false;
     switch (queryParams.search_type) {
       case UserSearchType.ALL:
@@ -50,29 +49,21 @@ export class UserController {
           queryParams.search_string,
           queryParams.load_relations,
         );
+      case UserSearchType.RELATION:
+        return this.userService.getRelations(
+          queryParams.search_number,
+          queryParams.search_relation,
+        );
     }
   }
 
-  @Get(':id/channels')
-  getChannels(@Param('id', ParseIntPipe) id: number): Promise<Channel[]> {
-    return this.userService.getChannels(id);
+  @Patch()
+  async update(@Body() userDto: UpdateUserDto): Promise<void> {
+    this.userService.update(userDto);
   }
 
-  @Get(':id/achieved')
-  findAchieved(@Param('id') id: number): Promise<Achievement[]> {
-    return this.userService.findAchieved(id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateUserDto: UpdateUserDto,
-  ): Promise<void> {
-    return this.userService.update(id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.userService.remove(id);
+  @Delete()
+  async remove(@Body() userDto: RemoveUserDto): Promise<void> {
+    this.userService.remove(userDto);
   }
 }

@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { EntityNotFoundError, ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Achievement } from 'src/achievements/entities/achievement.entity';
 import { Channel } from 'src/channels/entities/channel.entity';
+import { FriendStatus } from 'src/friend/entities/friend.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { RemoveUserDto } from './dto/remove-user.dto';
+import { UserRelation } from './params/get-query-params';
 
 @Injectable()
 export class UserService {
@@ -14,110 +17,119 @@ export class UserService {
     private userRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    return await this.userRepository.save(createUserDto);
+  getRelationsToLoad(loadRelations: boolean): {
+    channelMembers: boolean;
+    userAchievements: boolean;
+    outgoingFriendships: boolean;
+  } {
+    return {
+      channelMembers: loadRelations,
+      userAchievements: loadRelations,
+      outgoingFriendships: loadRelations,
+    };
   }
 
-  async findAll(load_relations: boolean): Promise<User[]> {
-    if (load_relations) {
-      return await this.userRepository.find({
-        relations: {
-          channelMembers: true,
-          userAchievements: true,
-          outgoingFriendships: true,
-        },
-      });
-    } else {
-      return await this.userRepository.find();
-    }
+  async create(userDto: CreateUserDto): Promise<User> {
+    return await this.userRepository.save(userDto);
   }
 
-  async findOne(id: number, load_relations: boolean): Promise<User | null> {
-    if (load_relations) {
-      return await this.userRepository.findOne({
-        where: { id },
-        relations: {
-          channelMembers: true,
-          userAchievements: true,
-          outgoingFriendships: true,
-        },
-      });
-    } else {
-      return await this.userRepository.findOneBy({ id });
+  async findAll(loadRelations: boolean): Promise<User[]> {
+    return await this.userRepository.find({
+      relations: this.getRelationsToLoad(loadRelations),
+    });
+  }
+
+  async findOne(id: number, loadRelations: boolean): Promise<User | null> {
+    const found = await this.userRepository.findOne({
+      relations: this.getRelationsToLoad(loadRelations),
+      where: { id },
+    });
+
+    if (!found) {
+      throw new EntityNotFoundError(User, 'id: ' + id);
     }
+    return found;
   }
 
   async findByUsername(
     username: string,
-    load_relations: boolean,
+    loadRelations: boolean,
   ): Promise<User | null> {
-    if (load_relations) {
-      return await this.userRepository.findOne({
-        where: { username: ILike(username) },
-        relations: {
-          channelMembers: true,
-          userAchievements: true,
-          outgoingFriendships: true,
-        },
-      });
-    } else {
-      return await this.userRepository.findOneBy({
-        username: ILike(username),
-      });
+    const found = await this.userRepository.findOne({
+      relations: this.getRelationsToLoad(loadRelations),
+      where: { username: ILike(username) },
+    });
+
+    if (!found) {
+      throw new EntityNotFoundError(User, 'username: ' + username);
     }
+    return found;
   }
 
   async findByToken(
     refresh_token: string,
-    load_relations: boolean,
+    loadRelations: boolean,
   ): Promise<User | null> {
-    if (load_relations) {
-      return await this.userRepository.findOne({
-        where: { refresh_token },
-        relations: {
-          channelMembers: true,
-          userAchievements: true,
-          outgoingFriendships: true,
-        },
-      });
-    } else {
-      return await this.userRepository.findOneBy({
-        refresh_token,
-      });
+    const found = await this.userRepository.findOne({
+      relations: this.getRelationsToLoad(loadRelations),
+      where: { refresh_token },
+    });
+
+    if (!found) {
+      throw new EntityNotFoundError(User, 'refresh_token: ' + refresh_token);
+    }
+    return found;
+  }
+
+  async getRelations(
+    id: number,
+    relation: UserRelation,
+  ): Promise<Achievement[] | Channel[] | User[]> {
+    switch (relation) {
+      case UserRelation.ACHIEVEMENTS:
+        return this.getAchievements(id);
+      case UserRelation.CHANNELS:
+        return this.getChannels(id);
+      case UserRelation.FRIENDS:
+        return this.getFriends(id);
     }
   }
 
-  async getChannels(id: number): Promise<Channel[]> {
-    let currentUser = await this.userRepository.findOne({
-      relations: {
-        channelMembers: true,
-      },
-      where: { id },
-    });
-
-    return currentUser.channelMembers.map(
-      (channelMember) => channelMember.channel,
-    );
-  }
-
-  async findAchieved(id: number): Promise<Achievement[]> {
-    let currentUser = await this.userRepository.findOne({
-      relations: {
-        userAchievements: true,
-      },
-      where: { id },
-    });
+  async getAchievements(id: number): Promise<Achievement[]> {
+    const currentUser = await this.findOne(id, true);
 
     return currentUser.userAchievements.map(
       (userAchievement) => userAchievement.achievement,
     );
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<void> {
-    await this.userRepository.update(id, updateUserDto);
+  async getChannels(id: number): Promise<Channel[]> {
+    const currentUser = await this.findOne(id, true);
+
+    return currentUser.channelMembers.map(
+      (channelMember) => channelMember.channel,
+    );
   }
 
-  async remove(id: number): Promise<void> {
-    await this.userRepository.delete(id);
+  async getFriends(id: number): Promise<User[]> {
+    const currentUser = await this.findOne(id, true);
+
+    return currentUser.outgoingFriendships
+      .filter(
+        (outgoingFriendship) =>
+          outgoingFriendship.status === FriendStatus.Friends,
+      )
+      .map((outgoingFriendship) => outgoingFriendship.incoming_friend);
+  }
+
+  async update(userDto: UpdateUserDto): Promise<void> {
+    await this.userRepository.update(userDto.id, {
+      ...(userDto.username && { username: userDto.username }),
+      ...(userDto.refresh_token && { refresh_token: userDto.refresh_token }),
+    });
+  }
+
+  async remove(userDto: RemoveUserDto): Promise<void> {
+    await this.userRepository.delete(userDto.id);
   }
 }

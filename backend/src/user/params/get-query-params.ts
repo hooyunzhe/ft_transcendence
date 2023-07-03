@@ -1,8 +1,5 @@
 import { Transform } from 'class-transformer';
 import {
-  IsBoolean,
-  IsBooleanString,
-  IsEmpty,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -16,6 +13,13 @@ export enum UserSearchType {
   ONE = 'ONE',
   NAME = 'NAME',
   TOKEN = 'TOKEN',
+  RELATION = 'RELATION',
+}
+
+export enum UserRelation {
+  ACHIEVEMENTS = 'ACHIEVEMENTS',
+  CHANNELS = 'CHANNELS',
+  FRIENDS = 'FRIENDS',
 }
 
 export class UserGetQueryParams {
@@ -24,10 +28,15 @@ export class UserGetQueryParams {
   search_type: UserSearchType;
 
   @ValidateIf(
-    (params: UserGetQueryParams) => params.search_type === UserSearchType.ONE,
+    (params: UserGetQueryParams) =>
+      params.search_type === UserSearchType.ONE ||
+      params.search_type === UserSearchType.RELATION,
   )
   @Transform(({ obj, value }: { obj: UserGetQueryParams; value: number }) =>
-    obj.search_type === UserSearchType.ONE ? value : undefined,
+    obj.search_type === UserSearchType.ONE ||
+    obj.search_type === UserSearchType.RELATION
+      ? value
+      : undefined,
   )
   @IsNumber()
   search_number: number;
@@ -45,6 +54,16 @@ export class UserGetQueryParams {
   )
   @IsString()
   search_string: string;
+
+  @ValidateIf(
+    (params: UserGetQueryParams) =>
+      params.search_type === UserSearchType.RELATION,
+  )
+  @Transform(({ obj, value }: { obj: UserGetQueryParams; value: number }) =>
+    obj.search_type === UserSearchType.RELATION ? value : undefined,
+  )
+  @IsEnum(UserRelation)
+  search_relation: UserRelation;
 
   @IsOptional()
   @Transform(() => true)
