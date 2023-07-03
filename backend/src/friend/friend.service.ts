@@ -45,13 +45,13 @@ export class FriendService {
     const newOutgoingFriendship = this.friendRepository.create({
       outgoing_friend: outgoingFound,
       incoming_friend: incomingFound,
-      status: FriendStatus.Invited,
+      status: FriendStatus.INVITED,
     });
 
     const newIncomingFriendship = this.friendRepository.create({
       outgoing_friend: incomingFound,
       incoming_friend: outgoingFound,
-      status: FriendStatus.Pending,
+      status: FriendStatus.PENDING,
     });
 
     return await this.friendRepository.save([
@@ -102,44 +102,44 @@ export class FriendService {
       friendDto.outgoing_id,
       friendDto.incoming_id,
     );
-    if (friendship.status === FriendStatus.Pending) {
+    if (friendship.status === FriendStatus.PENDING) {
       this.updateFriendRequest(friendDto);
     } else if (
-      friendship.status === FriendStatus.Friends &&
-      friendDto.action === FriendAction.Block
+      friendship.status === FriendStatus.FRIENDS &&
+      friendDto.action === FriendAction.BLOCK
     ) {
       await this.friendRepository.update(friendship.id, {
-        status: FriendStatus.Blocked,
+        status: FriendStatus.BLOCKED,
       });
     } else if (
-      friendship.status === FriendStatus.Blocked &&
-      friendDto.action === FriendAction.Unblock
+      friendship.status === FriendStatus.BLOCKED &&
+      friendDto.action === FriendAction.UNBLOCK
     ) {
       await this.friendRepository.update(friendship.id, {
-        status: FriendStatus.Friends,
+        status: FriendStatus.FRIENDS,
       });
     }
   }
 
   async updateFriendRequest(friendDto: UpdateFriendDto): Promise<void> {
-    if (friendDto.action === FriendAction.Accept) {
+    if (friendDto.action === FriendAction.ACCEPT) {
       await Promise.all([
         this.friendRepository.update(
           {
             outgoing_friend: { id: friendDto.outgoing_id },
             incoming_friend: { id: friendDto.incoming_id },
           },
-          { status: FriendStatus.Friends },
+          { status: FriendStatus.FRIENDS },
         ),
         this.friendRepository.update(
           {
             outgoing_friend: { id: friendDto.incoming_id },
             incoming_friend: { id: friendDto.outgoing_id },
           },
-          { status: FriendStatus.Friends },
+          { status: FriendStatus.FRIENDS },
         ),
       ]);
-    } else if (friendDto.action === FriendAction.Reject)
+    } else if (friendDto.action === FriendAction.REJECT)
       await this.remove(friendDto);
   }
 

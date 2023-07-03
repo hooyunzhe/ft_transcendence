@@ -8,17 +8,17 @@ import {
 } from 'typeorm';
 
 export enum FriendStatus {
-  Friends = 'friends',
-  Invited = 'invited',
-  Pending = 'pending',
-  Blocked = 'blocked',
+  FRIENDS = 'FRIENDS',
+  INVITED = 'INVITED',
+  PENDING = 'PENDING',
+  BLOCKED = 'BLOCKED',
 }
 
 export enum FriendAction {
-  Block = 'block',
-  Unblock = 'unblock',
-  Accept = 'accept',
-  Reject = 'reject',
+  BLOCK = 'BLOCK',
+  UNBLOCK = 'UNBLOCK',
+  ACCEPT = 'ACCEPT',
+  REJECT = 'REJECT',
 }
 
 @Unique('friendship', ['outgoing_friend', 'incoming_friend'])

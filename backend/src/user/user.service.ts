@@ -117,7 +117,7 @@ export class UserService {
     return currentUser.outgoingFriendships
       .filter(
         (outgoingFriendship) =>
-          outgoingFriendship.status === FriendStatus.Friends,
+          outgoingFriendship.status === FriendStatus.FRIENDS,
       )
       .map((outgoingFriendship) => outgoingFriendship.incoming_friend);
   }
