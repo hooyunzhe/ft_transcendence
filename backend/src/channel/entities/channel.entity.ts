@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ChannelMember } from 'src/channel_members/entities/channel_member.entity';
-import { Message } from 'src/messages/entities/message.entity';
+import { Message } from 'src/message/entities/message.entity';
 
 export enum ChannelType {
   PUBLIC = 'PUBLIC',

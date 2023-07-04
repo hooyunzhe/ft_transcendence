@@ -1,4 +1,3 @@
-import { Channel } from 'src/channel/entities/channel.entity';
 import {
   Column,
   CreateDateColumn,
@@ -6,18 +5,18 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Channel } from 'src/channel/entities/channel.entity';
+import { User } from 'src/user/entities/user.entity';
 
 export enum MessageType {
-  Text = 'text',
+  TEXT = 'TEXT',
+  INVITE = 'INVITE',
 }
 
 @Entity()
 export class Message {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column()
-  sender_id: number;
 
   @Column()
   content: string;
@@ -33,4 +32,10 @@ export class Message {
     onDelete: 'CASCADE',
   })
   channel: Channel;
+
+  @ManyToOne(() => User, (user) => user.messages, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
+  user: User;
 }

@@ -19,11 +19,13 @@ export class UserService {
 
   getRelationsToLoad(loadRelations: boolean): {
     channelMembers: boolean;
+    messages: boolean;
     userAchievements: boolean;
     outgoingFriendships: boolean;
   } {
     return {
       channelMembers: loadRelations,
+      messages: loadRelations,
       userAchievements: loadRelations,
       outgoingFriendships: loadRelations,
     };

@@ -17,8 +17,9 @@ export enum UserSearchType {
 }
 
 export enum UserRelation {
-  ACHIEVEMENTS = 'ACHIEVEMENTS',
   CHANNELS = 'CHANNELS',
+  MESSAGES = 'MESSAGES',
+  ACHIEVEMENTS = 'ACHIEVEMENTS',
   FRIENDS = 'FRIENDS',
 }
 

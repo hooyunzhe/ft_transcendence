@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Channel } from './entities/channel.entity';
 import { ChannelService } from './channel.service';
-import { Message } from 'src/messages/entities/message.entity';
+import { Message } from 'src/message/entities/message.entity';
 import { User } from 'src/user/entities/user.entity';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
@@ -55,11 +55,11 @@ export class ChannelController {
 
   @Patch()
   async update(@Body() channelDto: UpdateChannelDto): Promise<void> {
-    return this.channelService.update(channelDto);
+    this.channelService.update(channelDto);
   }
 
   @Delete()
   async remove(@Body() channelDto: RemoveChannelDto): Promise<void> {
-    return this.channelService.remove(channelDto);
+    this.channelService.remove(channelDto);
   }
 }
