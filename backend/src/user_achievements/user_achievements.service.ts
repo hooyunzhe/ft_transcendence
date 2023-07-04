@@ -4,7 +4,7 @@ import { UpdateUserAchievementDto } from './dto/update-user_achievement.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserAchievement } from './entities/user_achievement.entity';
 import { Repository } from 'typeorm';
-import { Achievement } from 'src/achievements/entities/achievement.entity';
+import { Achievement } from 'src/achievement/entities/achievement.entity';
 import { User } from 'src/user/entities/user.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 

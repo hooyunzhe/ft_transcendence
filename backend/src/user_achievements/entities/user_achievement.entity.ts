@@ -1,5 +1,5 @@
-import { AchievementsModule } from 'src/achievements/achievements.module';
-import { Achievement } from 'src/achievements/entities/achievement.entity';
+import { AchievementModule } from 'src/achievement/achievement.module';
+import { Achievement } from 'src/achievement/entities/achievement.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   CreateDateColumn,
@@ -18,11 +18,13 @@ export class UserAchievement {
 
   @ManyToOne(() => User, (user) => user.userAchievements, {
     eager: true,
+    onDelete: 'CASCADE',
   })
   user: User;
 
   @ManyToOne(() => Achievement, (achievement) => achievement.userAchievements, {
     eager: true,
+    onDelete: 'CASCADE',
   })
   achievement: Achievement;
 }
