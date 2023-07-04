@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateChannelMemberDto } from './dto/create-channel_member.dto';
 import { UpdateChannelMemberDto } from './dto/update-channel_member.dto';
 import { ChannelMember } from './entities/channel_member.entity';
-import { ChannelsService } from 'src/channels/channels.service';
+import { ChannelService } from 'src/channel/channel.service';
 
 @Injectable()
 export class ChannelMembersService {
@@ -12,15 +12,15 @@ export class ChannelMembersService {
     @InjectRepository(ChannelMember)
     private channelMembersRepository: Repository<ChannelMember>,
 
-    @Inject(ChannelsService)
-    private readonly channelsService: ChannelsService,
+    @Inject(ChannelService)
+    private readonly channelService: ChannelService,
   ) {}
 
   async create(
     createChannelMemberDto: CreateChannelMemberDto,
   ): Promise<ChannelMember | null> {
     if (createChannelMemberDto.pass) {
-      const authorized = await this.channelsService.authorize(
+      const authorized = await this.channelService.authorize(
         createChannelMemberDto.channel_id,
         createChannelMemberDto.pass,
       );

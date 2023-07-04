@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
-import { Channel } from 'src/channels/entities/channel.entity';
+import { Channel } from 'src/channel/entities/channel.entity';
 import { Achievement } from 'src/achievements/entities/achievement.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';

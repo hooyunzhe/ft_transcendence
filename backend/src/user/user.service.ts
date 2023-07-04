@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityNotFoundError, ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Achievement } from 'src/achievements/entities/achievement.entity';
-import { Channel } from 'src/channels/entities/channel.entity';
+import { Channel } from 'src/channel/entities/channel.entity';
 import { FriendStatus } from 'src/friend/entities/friend.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';

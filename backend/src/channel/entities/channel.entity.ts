@@ -3,10 +3,10 @@ import { ChannelMember } from 'src/channel_members/entities/channel_member.entit
 import { Message } from 'src/messages/entities/message.entity';
 
 export enum ChannelType {
-  Public = 'public',
-  Private = 'private',
-  Protected = 'protected',
-  Direct = 'direct',
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+  PROTECTED = 'PROTECTED',
+  DIRECT = 'DIRECT',
 }
 
 @Entity()
@@ -14,10 +14,10 @@ export class Channel {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
-  @Column({ default: ChannelType.Public })
+  @Column({ default: ChannelType.PUBLIC })
   type: ChannelType;
 
   @Column()

@@ -1,4 +1,4 @@
-import { Channel } from 'src/channels/entities/channel.entity';
+import { Channel } from 'src/channel/entities/channel.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 

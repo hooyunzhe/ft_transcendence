@@ -1,4 +1,4 @@
-import { Channel } from 'src/channels/entities/channel.entity';
+import { Channel } from 'src/channel/entities/channel.entity';
 import {
   Column,
   CreateDateColumn,
@@ -30,6 +30,7 @@ export class Message {
 
   @ManyToOne(() => Channel, (channel) => channel.messages, {
     eager: true,
+    onDelete: 'CASCADE',
   })
   channel: Channel;
 }

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from './database.module';
 import { UserModule } from './user/user.module';
 import { MatchHistoryModule } from './match_history/match_history.module';
-import { ChannelsModule } from './channels/channels.module';
+import { ChannelModule } from './channel/channel.module';
 import { ChannelMembersModule } from './channel_members/channel_members.module';
 import { MessagesModule } from './messages/messages.module';
 import { AchievementsModule } from './achievements/achievements.module';
@@ -15,7 +15,7 @@ import { GameModule } from './game/game.module';
     DatabaseModule,
     UserModule,
     MatchHistoryModule,
-    ChannelsModule,
+    ChannelModule,
     ChannelMembersModule,
     MessagesModule,
     AchievementsModule,
