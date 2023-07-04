@@ -1,5 +1,5 @@
 import {
-  MessageBody,
+  ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
@@ -8,6 +8,8 @@ import {
 } from '@nestjs/websockets';
 
 import { Server, Socket } from 'socket.io';
+import { MatchmakingService } from './matchmaking.service';
+import { GameServer } from 'src/libs/GameServer';
 
 @WebSocketGateway({
   cors: {
@@ -18,8 +20,13 @@ import { Server, Socket } from 'socket.io';
 export class MatchmakingGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
+  private matchmakingService: MatchmakingService
+  constructor() {
+    this.matchmakingService = new MatchmakingService();
+  }
+
   @WebSocketServer()
-  server: Server;
+  server: Server
 
   private client_list: Socket[] = [];
   async handleConnection(client: Socket) {
@@ -34,14 +41,21 @@ export class MatchmakingGateway
       await this.handleMatchMaking(this.client_list.splice(0, 1));
     }
   }
-  async handleDisconnect(client: Socket) {
-    this.client_list = this.client_list.filter((user) => user !== client);
-  }
 
-  async handleMatchMaking(clients: Socket[]) {
+  @SubscribeMessage('check')
+  async checkGameStatus(@ConnectedSocket() client: Socket,){
+    const players = await this.server.fetchSockets();
+    console.log("matchmaking totalconnection:", players.length);
+  }
+  
+  handleMatchMaking(clients: Socket[]) {
     const uniquekey = clients[0].id;
     clients.forEach((client) => {
       client.emit('match', uniquekey);
     });
+  }
+
+  async handleDisconnect(client: Socket) {
+    this.client_list = this.client_list.filter((user) => user !== client);
   }
 }

@@ -6,3 +6,11 @@ export const gameSocket = io(
     autoConnect: false,
   },
 );
+
+
+export const matchSocket = io(
+  `http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/gateway/matchmaking`,
+  {
+    autoConnect: false,
+  },
+);

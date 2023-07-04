@@ -19,7 +19,7 @@ import { GameService } from './game.service';
 })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server: Server
 
   private roomlist = new Map<string, GameService>();
 
@@ -58,6 +58,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
     }
 
+
     const player_in_room = await this.server.in(roomid).fetchSockets();
     console.log('player in thisroom: ', roomid, ': ', player_in_room.length);
     if (player_in_room.length === 1) {
@@ -68,6 +69,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  @SubscribeMessage('check')
+  async checkGameStatus(@ConnectedSocket() client: Socket,){
+    const players = await this.server.fetchSockets();
+    console.log("game server totalconnection:", players.length);
+  }
+  
   @SubscribeMessage('reset')
   reset(@ConnectedSocket() client: Socket) {
     console.log('HEHAHSUHDJSJKHASA');

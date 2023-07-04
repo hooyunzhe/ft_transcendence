@@ -2,10 +2,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useSession } from 'next-auth/react';
-import { ToggleButton } from '@mui/material';
+import { Button, ToggleButton } from '@mui/material';
 import ConfirmationPrompt from '@/components/ConfirmationPrompt';
-import { gameSocket } from '@/lib/socket';
-import GameRender from '@/components/GameRender';
+import { gameSocket, matchSocket } from '@/lib/socket';
 
 export default function GamePage() {
   // const [session, setSession] = useState(useSession());
@@ -15,27 +14,9 @@ export default function GamePage() {
   const [matchFound, setMatchFound] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [roomid, setRoomid] = useState('');
-  // const gameSocket = io(
-  //   `http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/gateway/game`,
-  //   {
-  //     query: {
-  //       user_id: session?.user?.id,
-  //     },
-  //     autoConnect: false,
-  //   },
-  // );
-  // const socketRef = useRef();
-  // socketRef.current = gameSocket;
-  const matchSocket = io(
-    `http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/gateway/matchmaking`,
-    {
-      query: {
-        user_id: session?.user?.id,
-      },
-      autoConnect: false,
-    },
-  );
 
+  const socketRef = useRef();
+ 
   useEffect(() => {
     matchSocket.on('connect', () => {
       matchSocket.sendBuffer = [];
@@ -46,7 +27,7 @@ export default function GamePage() {
       matchSocket.sendBuffer = [];
       setRoomid(data);
       setMatchFound(true);
-      matchSocket.disconnect();
+      // matchSocket.disconnect();
     });
 
     gameSocket.on('connect', () => {
@@ -70,6 +51,10 @@ export default function GamePage() {
     matchSocket.connect();
   };
 
+
+  const CheckStatus = () => {
+    matchSocket.emit('check');
+  }
   // console.log(session);
   // // session.data?.user;
 
@@ -95,16 +80,13 @@ export default function GamePage() {
     setRoomid('');
   };
 
-  // useEffect(() => {
-  //   if (!gameSocket.connected) gameSocket.connect();
-  //   RunGame(gameSocket);
-  // }, []);
 
   return (
     <div>
       <ToggleButton value={searching} onChange={findMatch} disabled={searching}>
         Find Match
       </ToggleButton>
+      <Button onClick={CheckStatus}>Check Status </Button>
       <ToggleButton
         value={searching}
         onChange={startGame}
@@ -128,9 +110,6 @@ export default function GamePage() {
       >
         Reset
       </ToggleButton>
-      <div>
-        <GameRender gameSocket={gameSocket} />
-      </div>
-    </div>
+    // </div>
   );
 }
