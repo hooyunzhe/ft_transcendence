@@ -6,22 +6,38 @@ import DialogPrompt from '../utils/DialogPrompt';
 import FriendDisplay from './ChannelMemberFriendDisplay';
 
 interface ChannelMemberAddPromptProps {
-  handleAddButtonAction: (...args: any) => Promise<string>;
+  AddUser: (...args: any) => Promise<string>;
   friends: Friend[];
   channelMembers: ChannelMembers[];
 }
 
 export function ChannelMemberAddPrompt({
-  handleAddButtonAction,
+  AddUser,
   friends,
   channelMembers,
 }: ChannelMemberAddPromptProps) {
   const [selectedFriend, setSelectedFriend] = useState<Friend | undefined>();
   const [friendSearch, setFriendSearch] = useState('');
 
+  function handleAddMemberAction() {
+
+    console.log('HANDLE ADD BUTTON');
+    if (!selectedFriend)
+      return 'friend is undefined';
+    const friendToJoin = friends.find(
+      (friend) => friend.id === selectedFriend.id
+    );
+    // console.log(friendToJoin);
+
+
+    if (!friendToJoin) {
+      return 'Invalid friend name!';
+    }
+    return AddUser(selectedFriend.incoming_friend.id);
+  }
+
   return (
     <DialogPrompt
-      // closeHandler={async () => {}}
       buttonText='Add members button'
       dialogTitle='Add members'
       dialogDescription='Add your friends to the channel'
@@ -32,10 +48,10 @@ export function ChannelMemberAddPrompt({
         setFriendSearch(input);
         setSelectedFriend(undefined);
       }}
-      backHandler={async () => {}}
+      backHandler={async () => { }}
       actionButtonText='Add'
       handleAction={async () => {
-        const response = handleAddButtonAction(friendSearch, selectedFriend);
+        const response = await handleAddMemberAction();
 
         if (!response) {
           setFriendSearch('');
@@ -48,7 +64,9 @@ export function ChannelMemberAddPrompt({
         {friends
           .filter((friend) =>
             channelMembers.every((member) => {
-              return member.id !== friend.incoming_friend.id;
+              {
+                return member.user.id !== friend.incoming_friend.id
+              };
             }),
           )
           .map((friend: Friend, index: number) => (
@@ -56,7 +74,7 @@ export function ChannelMemberAddPrompt({
               key={index}
               selected={selectedFriend?.incoming_friend.id ?? 0}
               selectCurrent={() => {
-                console.log('setSelectedFriend clicked');
+                // console.log('setSelectedFriend clicked');
                 setFriendSearch(friend.incoming_friend.username);
                 setSelectedFriend(friend);
               }}

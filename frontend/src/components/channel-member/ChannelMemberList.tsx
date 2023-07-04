@@ -31,13 +31,13 @@ export function ChannelMemberList() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [confirmation, setConfirmation] = useState<
     | {
-        required: boolean;
-        title: string;
-        description: string;
-        channelMember: ChannelMembers;
-        action: ChannelMemberAction;
-        duration: Date | undefined;
-      }
+      required: boolean;
+      title: string;
+      description: string;
+      channelMember: ChannelMembers;
+      action: ChannelMemberAction;
+      duration: Date | undefined;
+    }
     | undefined
   >();
 
@@ -46,10 +46,9 @@ export function ChannelMemberList() {
       const channelMembersData = JSON.parse(
         await callAPI('GET', 'channel_members'),
       );
-      console.log('channelMemberData: ', channelMembersData);
+      // console.log('channelMemberData: ', channelMembersData);
       setChannelMembers(channelMembersData);
 
-      channelMemberSocket.emit('test', (data: ChannelMembers) => {});
     }
     getChannelMembers();
 
@@ -58,30 +57,50 @@ export function ChannelMemberList() {
       const friendsData = JSON.parse(
         await callAPI('GET', 'friends/user?outgoing_id=1'),
       );
-      console.log('friendsData: ', friendsData);
+      // console.log('friendsData: ', friendsData);
       setFriends(friendsData);
     }
     getFriends();
 
     // my socket shit are here
-    channelMemberSocket.on('test', (data: ChannelMembers) => {
-      console.log('--Signal-- received from server!');
-      console.log('channel id: ' + data.id);
-      console.log(`You are connected with id ${channelMemberSocket.id}`);
-      setChannelMembers((channelMembersData) => [...channelMembersData, data]);
+    channelMemberSocket.on('addUser', (data: ChannelMembers) => {
+      console.log('ADD USER IN LOCAL CALLED');
+      AddUser(data.user.id);
     });
   }, []);
+
+
+  function kickMember(member: ChannelMembers) {
+    setChannelMembers((channelMembers) => {
+      return channelMembers.filter(
+        (localMember) => localMember.id !== member.id,
+      );
+    });
+  }
+
+  function changeMemberRole(member: ChannelMembers, newRole: ChannelMemberRole) {
+    setChannelMembers((channelMembers) => {
+      return channelMembers.map((localMember) => {
+        if (localMember.id === member.id) {
+          localMember.role = newRole;
+        }
+        return localMember;
+      });
+    });
+  }
+
+  function addMember(member: ChannelMembers) {
+    setChannelMembers((channelMembers) => {
+      return [...channelMembers, member];
+    });
+  }
 
   async function kickUser() {
     if (confirmation) {
       const member = confirmation.channelMember;
 
       callAPI('DELETE', 'channel_members/' + member.id);
-      setChannelMembers((channelMembers) => {
-        return channelMembers.filter(
-          (localMember) => localMember.id !== member.id,
-        );
-      });
+      kickMember(member);
       setConfirmation(undefined);
     }
   }
@@ -92,15 +111,8 @@ export function ChannelMemberList() {
       callAPI('PATCH', 'channel_members/' + member.id, {
         role: newRole,
       });
-      console.log('newRole: ' + newRole);
-      setChannelMembers((channelMembers) => {
-        return channelMembers.map((localMember) => {
-          if (localMember.id === member.id) {
-            localMember.role = newRole;
-          }
-          return localMember;
-        });
-      });
+      // console.log('newRole: ' + newRole);
+      changeMemberRole(member, newRole);
       setConfirmation(undefined);
     }
   }
@@ -108,7 +120,7 @@ export function ChannelMemberList() {
   async function changeStatus(newStatus: ChannelMemberStatus, duration?: Date) {
     if (confirmation) {
       const member = confirmation.channelMember;
-      console.log(newStatus);
+      // console.log(newStatus);
       callAPI('PATCH', 'channel_members/' + member.id, {
         status: newStatus,
       });
@@ -139,30 +151,16 @@ export function ChannelMemberList() {
     });
   }
 
-  async function handleAddButtonAction(
-    friendSearch: string,
-    selectedFriend: Friend,
-  ): Promise<string> {
-    console.log('HANDLE ADD BUTTON');
-
-    const friendToJoin = friends.find(
-      (friend) => friend.incoming_friend.username === friendSearch,
-    );
-
-    if (!friendToJoin) {
-      return 'Invalid friend name!';
-    }
+  async function AddUser(user_ID: number): Promise<string> {
+    console.log('Add User Function');
 
     const derp = await callAPI('POST', 'channel_members', {
       channel_id: 1,
-      user_id: selectedFriend?.incoming_friend.id,
+      user_id: user_ID,
     });
-    console.log(derp);
     const newChannelMember: ChannelMembers = JSON.parse(derp);
-
-    setChannelMembers((channelMembers) => {
-      return [...channelMembers, newChannelMember];
-    });
+    addMember(newChannelMember);
+    channelMemberSocket.emit('addUser', newChannelMember);
     return '';
   }
 
@@ -173,8 +171,6 @@ export function ChannelMemberList() {
     switch (action) {
       case ChannelMemberAction.CHOWN: {
         changeRole(ChannelMemberRole.OWNER);
-        //set confirmation
-        // changeRole(ChannelMemberRole.ADMIN);
         return;
       }
       case ChannelMemberAction.KICK:
@@ -228,7 +224,7 @@ export function ChannelMemberList() {
     >
       <ListHeader title='My retarded channel list'></ListHeader>
       <ChannelMemberAddPrompt
-        handleAddButtonAction={handleAddButtonAction}
+        AddUser={AddUser}
         friends={friends}
         channelMembers={channelMembers}
       ></ChannelMemberAddPrompt>
@@ -248,7 +244,6 @@ export function ChannelMemberList() {
           promptTitle={displayActionText()}
           promptDescription='Are you bloody sure?'
           handleAction={() => {
-            console.log('hi');
             handleConfirmationAction(confirmation.action);
           }}
         />

@@ -1,5 +1,5 @@
-import Channel from './ChannelTypes';
-import User from './UserTypes';
+import { Channel } from './ChannelTypes';
+import { User } from './UserTypes';
 
 export enum ChannelMemberAction {
   ADMIN = 'ADMIN',
@@ -7,10 +7,10 @@ export enum ChannelMemberAction {
   BAN = 'BAN',
   UNBAN = 'UNBAN',
   MUTE = 'MUTE',
-  UNMUTE ='UNMUTE',
+  UNMUTE = 'UNMUTE',
   CHOWN = 'CHOWN',
   KICK = 'KICK',
- }
+}
 
 export enum ChannelMemberRole {
   OWNER = 'OWNER',
