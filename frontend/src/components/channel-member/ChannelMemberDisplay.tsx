@@ -37,7 +37,7 @@ export function ChannelMemberDisplay({
         <ListItemText
           primary={channelMember.user.username}
           secondary={
-            'Channel Id: ' + channelMember.id + ' role: ' + channelMember.role
+            'User Id: ' + channelMember.user.id + ' role: ' + channelMember.role
           }
         />
         {handleAction && (

@@ -1,16 +1,17 @@
 import { Channel } from 'src/channels/entities/channel.entity';
 import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 export enum ChannelMemberRole {
-  Owner = 'owner',
-  Admin = 'admin',
-  Member = 'member',
+  OWNER = 'OWNER',
+  ADMIN = 'ADMIN',
+  MEMBER = 'MEMBER',
 }
 
 export enum ChannelMemberStatus {
-  Banned = 'banned',
-  Muted = 'muted',
+  BANNED = 'BANNED',
+  MUTED = 'MUTED',
+  DEFAULT = 'DEFAULT',
 }
 
 @Entity()
@@ -18,7 +19,7 @@ export class ChannelMember {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: ChannelMemberRole.Member })
+  @Column({ default: ChannelMemberRole.MEMBER })
   role: ChannelMemberRole;
 
   @Column({ default: null })

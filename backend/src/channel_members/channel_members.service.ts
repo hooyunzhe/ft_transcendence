@@ -5,6 +5,7 @@ import { UpdateChannelMemberDto } from './dto/update-channel_member.dto';
 import { ChannelMember } from './entities/channel_member.entity';
 import { ChannelsService } from 'src/channels/channels.service';
 import { CreateChannelMemberDto } from './dto/create-channel_member.dto';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ChannelMembersService {
@@ -14,6 +15,9 @@ export class ChannelMembersService {
 
     @Inject(ChannelsService)
     private readonly channelsService: ChannelsService,
+
+    @Inject(UsersService)
+    private readonly usersService: UsersService
   ) {}
 
   async create(
@@ -30,13 +34,21 @@ export class ChannelMembersService {
       }
     }
 
+    const channelFound = await this.channelsService.findOne(createChannelMemberDto.channel_id);
+
+    if (!channelFound) {
+      return null;
+    }
+
+    const userFound = await this.usersService.findOne(createChannelMemberDto.user_id);
+
+    if (!userFound) {
+      return null;
+    }
+
     const newChannelMember = this.channelMembersRepository.create({
-      channel: {
-        id: createChannelMemberDto.channel_id,
-      },
-      user: {
-        id: createChannelMemberDto.user_id,
-      },
+      channel: channelFound,
+      user: userFound,
       role: createChannelMemberDto.role,
     });
     return await this.channelMembersRepository.save(newChannelMember);
