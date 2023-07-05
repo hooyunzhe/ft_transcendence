@@ -9,6 +9,7 @@ import { ChannelMember } from 'src/channel_members/entities/channel_member.entit
 import { Message } from 'src/message/entities/message.entity';
 import { UserAchievement } from 'src/user_achievements/entities/user_achievement.entity';
 import { Friend } from 'src/friend/entities/friend.entity';
+import { Match } from 'src/match/entities/match.entity';
 
 @Entity()
 export class User {
@@ -38,4 +39,10 @@ export class User {
 
   @OneToMany(() => Friend, (friend) => friend.incoming_friend)
   incomingFriendships: Friend[];
+
+  @OneToMany(() => Match, (match) => match.player_one)
+  matchesAsPlayerOne: Match[];
+
+  @OneToMany(() => Match, (match) => match.player_two)
+  matchesAsPlayerTwo: Match[];
 }

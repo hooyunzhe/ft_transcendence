@@ -1,4 +1,3 @@
-import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   Entity,
@@ -6,6 +5,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
 
 export enum FriendStatus {
   FRIENDS = 'FRIENDS',
@@ -29,11 +29,13 @@ export class Friend {
 
   @ManyToOne(() => User, (user) => user.outgoingFriendships, {
     eager: true,
+    onDelete: 'CASCADE',
   })
   outgoing_friend: User;
 
   @ManyToOne(() => User, (user) => user.incomingFriendships, {
     eager: true,
+    onDelete: 'CASCADE',
   })
   incoming_friend: User;
 
