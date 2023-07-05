@@ -107,6 +107,7 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
       gameSocket.emit('Player', 's');
     }
   };
+  const keyState: { [key: string]: boolean } = {};
 
   window.addEventListener(
     'keyup',
@@ -116,7 +117,6 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
     true,
   );
 
-  const keyState: { [key: string]: boolean } = {};
   window.addEventListener(
     'keydown',
     function (e) {

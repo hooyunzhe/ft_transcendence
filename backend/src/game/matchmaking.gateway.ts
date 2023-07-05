@@ -9,7 +9,6 @@ import {
 
 import { Server, Socket } from 'socket.io';
 import { MatchmakingService } from './matchmaking.service';
-import { GameServer } from 'src/libs/GameServer';
 
 @WebSocketGateway({
   cors: {
@@ -20,13 +19,13 @@ import { GameServer } from 'src/libs/GameServer';
 export class MatchmakingGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
-  private matchmakingService: MatchmakingService
+  private matchmakingService: MatchmakingService;
   constructor() {
     this.matchmakingService = new MatchmakingService();
   }
 
   @WebSocketServer()
-  server: Server
+  server: Server;
 
   private client_list: Socket[] = [];
   async handleConnection(client: Socket) {
@@ -43,11 +42,11 @@ export class MatchmakingGateway
   }
 
   @SubscribeMessage('check')
-  async checkGameStatus(@ConnectedSocket() client: Socket,){
+  async checkGameStatus(@ConnectedSocket() client: Socket) {
     const players = await this.server.fetchSockets();
-    console.log("matchmaking totalconnection:", players.length);
+    console.log('matchmaking totalconnection:', players.length);
   }
-  
+
   handleMatchMaking(clients: Socket[]) {
     const uniquekey = clients[0].id;
     clients.forEach((client) => {
