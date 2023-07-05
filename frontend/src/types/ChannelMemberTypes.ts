@@ -1,6 +1,5 @@
-import { Channel } from "./ChannelTypes";
-import { User } from "./UserTypes";
-
+import { Channel } from './ChannelTypes';
+import { User } from './UserTypes';
 
 export enum ChannelMemberAction {
   ADMIN = 'ADMIN',

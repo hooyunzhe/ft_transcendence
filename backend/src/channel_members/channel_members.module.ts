@@ -12,4 +12,4 @@ import { UsersModule } from 'src/users/users.module';
   controllers: [ChannelMembersController],
   providers: [ChannelMembersService, ChannelMembersGateway],
 })
-export class ChannelMembersModule {}
+export class ChannelMembersModule { }

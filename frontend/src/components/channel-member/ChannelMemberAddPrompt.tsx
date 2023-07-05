@@ -7,6 +7,7 @@ import FriendDisplay from './ChannelMemberFriendDisplay';
 
 interface ChannelMemberAddPromptProps {
   addUser: (...args: any) => Promise<string>;
+  AddUser: (...args: any) => Promise<string>;
   friends: Friend[];
   channelMembers: ChannelMembers[];
 }
@@ -46,7 +47,7 @@ export function ChannelMemberAddPrompt({
         setFriendSearch(input);
         setSelectedFriend(undefined);
       }}
-      backHandler={async () => {}}
+      backHandler={async () => { }}
       actionButtonText='Add'
       handleAction={async () => {
         const response = await handleAddMemberAction();
@@ -71,7 +72,7 @@ export function ChannelMemberAddPrompt({
               key={index}
               selected={selectedFriend?.incoming_friend.id ?? 0}
               selectCurrent={() => {
-                console.log('setSelectedFriend clicked');
+                // console.log('setSelectedFriend clicked');
                 setFriendSearch(friend.incoming_friend.username);
                 setSelectedFriend(friend);
               }}

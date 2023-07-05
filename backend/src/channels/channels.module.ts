@@ -3,6 +3,7 @@ import { ChannelsService } from './channels.service';
 import { ChannelsController } from './channels.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Channel } from './entities/channel.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Channel])],
@@ -10,4 +11,4 @@ import { Channel } from './entities/channel.entity';
   providers: [ChannelsService],
   exports: [ChannelsService],
 })
-export class ChannelsModule {}
+export class ChannelsModule { }

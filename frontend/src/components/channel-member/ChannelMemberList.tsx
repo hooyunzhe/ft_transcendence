@@ -31,13 +31,13 @@ export function ChannelMemberList() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [confirmation, setConfirmation] = useState<
     | {
-        required: boolean;
-        title: string;
-        description: string;
-        channelMember: ChannelMembers;
-        action: ChannelMemberAction;
-        duration: Date | undefined;
-      }
+      required: boolean;
+      title: string;
+      description: string;
+      channelMember: ChannelMembers;
+      action: ChannelMemberAction;
+      duration: Date | undefined;
+    }
     | undefined
   >();
 

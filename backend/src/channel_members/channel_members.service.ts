@@ -18,7 +18,7 @@ export class ChannelMembersService {
 
     @Inject(UsersService)
     private readonly usersService: UsersService
-  ) {}
+  ) { }
 
   async create(
     createChannelMemberDto: CreateChannelMemberDto,
