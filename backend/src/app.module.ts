@@ -9,7 +9,7 @@ import { AchievementsModule } from './achievements/achievements.module';
 import { UserAchievementsModule } from './user_achievements/user_achievements.module';
 import { FriendsModule } from './friends/friends.module';
 import { GameModule } from './game/game.module';
-import { MatchmakingModule } from './matchmaking/matchmaking.module';
+// import { MatchmakingModule } from './matchmaking/matchmaking.module';
 
 @Module({
   imports: [
@@ -23,7 +23,7 @@ import { MatchmakingModule } from './matchmaking/matchmaking.module';
     UserAchievementsModule,
     FriendsModule,
     GameModule,
-    MatchmakingModule,
+    // MatchmakingModule,
   ],
   controllers: [],
 })

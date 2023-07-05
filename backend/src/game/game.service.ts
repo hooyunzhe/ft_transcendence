@@ -161,7 +161,7 @@ export class GameService {
   gameUpdate() {
     this.intervalID = setInterval(() => {
       this.gameRefresh();
-    }, 50);
+    }, 16);
   }
   gameHandleVictory(player: number) {
     if (player === 1) this.score.player1++;

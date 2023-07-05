@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useSession } from 'next-auth/react';
-import { ToggleButton } from '@mui/material';
+import { Button, ToggleButton } from '@mui/material';
 import ConfirmationPrompt from '@/components/ConfirmationPrompt';
 import { gameSocket } from '@/lib/socket';
 import GameRender from '@/components/GameRender';
@@ -13,42 +13,24 @@ export default function GamePage() {
   const [loaded, setLoaded] = useState(false);
   const [searching, setsearching] = useState(false);
   const [matchFound, setMatchFound] = useState(false);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [roomid, setRoomid] = useState('');
-  // const gameSocket = io(
-  //   `http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/gateway/game`,
-  //   {
-  //     query: {
-  //       user_id: session?.user?.id,
-  //     },
-  //     autoConnect: false,
-  //   },
-  // );
-  // const socketRef = useRef();
-  // socketRef.current = gameSocket;
-  const matchSocket = io(
-    `http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/gateway/matchmaking`,
-    {
-      query: {
-        user_id: session?.user?.id,
-      },
-      autoConnect: false,
-    },
-  );
+  const [gameReady, setGameReady] = useState(false);
+  // const [roomid, setRoomid] = useState('');
+
+  const socketRef = useRef();
 
   useEffect(() => {
-    matchSocket.on('connect', () => {
-      matchSocket.sendBuffer = [];
-      setsearching(true);
-    });
-
-    matchSocket.on('match', (data: string) => {
-      matchSocket.sendBuffer = [];
-      setRoomid(data);
+    // matchSocket.on('match', (data: string) => {
+    //   matchSocket.sendBuffer = [];
+    //   setRoomid(data);
+    //   setMatchFound(true);
+    //   // matchSocket.disconnect();
+    // });
+    gameSocket.on('match', () => {
       setMatchFound(true);
-      matchSocket.disconnect();
-    });
-
+    }),
+      gameSocket.on('disc', () => {
+        gameSocket.disconnect();
+      });
     gameSocket.on('connect', () => {
       gameSocket.sendBuffer = [];
       gameSocket.emit('init', session?.user?.id);
@@ -56,80 +38,90 @@ export default function GamePage() {
     gameSocket.on('disconnect', () => {
       gameSocket.sendBuffer = [];
       console.log('game socket disconnected');
+      setsearching(false);
+      setMatchFound(false);
+      setGameReady(false);
     });
-
     return () => {
-      matchSocket.off('connect');
-      matchSocket.off('match');
       gameSocket.off('connect');
       gameSocket.off('disconnect');
+      gameSocket.off('match');
+      gameSocket.off('disc');
     };
   }, []);
 
   const findMatch = () => {
-    matchSocket.connect();
+    gameSocket.connect();
+    setsearching(true);
   };
 
+  // const CheckStatus = () => {
+  //   matchSocket.emit('check');
+  // };
   // console.log(session);
   // // session.data?.user;
 
   const startGame = () => {
-    if (gameSocket.disconnected) gameSocket.connect();
-    console.log('Starting game');
-    console.log(gameSocket.connected);
-    gameSocket.emit('start');
-    setGameStarted(true);
+    // if (gameSocket.disconnected) gameSocket.connect();
+    // console.log('Starting game');
+    // console.log(gameSocket.connected);
+    gameSocket.emit('ready');
+    setGameReady(!gameReady);
   };
 
-  const joinGame = () => {
-    console.log('Joinin game', roomid);
-    gameSocket.connect();
-    gameSocket.emit('join', roomid);
-    setMatchFound(false);
+  // const joinGame = () => {
+  //   console.log('Joinin game');
+  //   gameSocket.emit('join');
+  //   setMatchFound(false);
+  // };
+
+  // const rejectGame = () => {
+  //   gameSocket.emit('reject');
+  //   setMatchFound(false);
+  // };
+
+  const disconnectGame = () => {
+    gameSocket.disconnect();
+    setsearching(false);
   };
 
   const resetGame = () => {
     gameSocket.emit('reset');
-    setGameStarted(false);
+    setGameReady(false);
     gameSocket.disconnect();
-    setRoomid('');
+    // setRoomid('');
   };
-
-  // useEffect(() => {
-  //   if (!gameSocket.connected) gameSocket.connect();
-  //   RunGame(gameSocket);
-  // }, []);
 
   return (
     <div>
       <ToggleButton value={searching} onChange={findMatch} disabled={searching}>
         Find Match
       </ToggleButton>
+      {/* <Button onClick={CheckStatus}>Check Status </Button> */}
       <ToggleButton
-        value={searching}
+        value={matchFound}
         onChange={startGame}
-        disabled={!searching}
+        disabled={!matchFound}
       >
-        Start
+        {gameReady ? 'Unready' : 'Ready'}
       </ToggleButton>
-      <ConfirmationPrompt
+      {/* <ConfirmationPrompt
         open={matchFound}
-        onCloseHandler={() => {
-          setMatchFound(false);
-        }}
+        onCloseHandler={rejectGame}
         promptTitle={'Match Found!'}
         promptDescription={'Accept this match?'}
         actionHandler={joinGame}
-      ></ConfirmationPrompt>
+      ></ConfirmationPrompt> */}
       <ToggleButton
-        value={gameStarted}
+        value={gameReady}
         onChange={resetGame}
-        disabled={!gameStarted}
+        disabled={!gameReady}
       >
         Reset
       </ToggleButton>
+      <Button onClick={disconnectGame}>Disconnect</Button>
       <div>
-        <GameRender gameSocket={gameSocket} />
+        <GameRender gameSocket={gameSocket}></GameRender>
       </div>
     </div>
   );
