@@ -1,20 +1,21 @@
-import { AchievementModule } from 'src/achievement/achievement.module';
-import { Achievement } from 'src/achievement/entities/achievement.entity';
-import { User } from 'src/user/entities/user.entity';
 import {
   CreateDateColumn,
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { Achievement } from 'src/achievement/entities/achievement.entity';
 
+@Unique('user-achievement', ['user', 'achievement'])
 @Entity()
 export class UserAchievement {
   @PrimaryGeneratedColumn()
   id: number;
 
   @CreateDateColumn()
-  creationDate: Date;
+  date_of_creation: Date;
 
   @ManyToOne(() => User, (user) => user.userAchievements, {
     eager: true,

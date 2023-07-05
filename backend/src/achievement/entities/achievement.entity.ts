@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { UserAchievement } from 'src/user_achievements/entities/user_achievement.entity';
+import { UserAchievement } from 'src/user-achievement/entities/user-achievement.entity';
 
 @Entity()
 export class Achievement {

@@ -6,7 +6,7 @@ import { ChannelModule } from './channel/channel.module';
 import { ChannelMembersModule } from './channel_members/channel_members.module';
 import { MessageModule } from './message/message.module';
 import { AchievementModule } from './achievement/achievement.module';
-import { UserAchievementsModule } from './user_achievements/user_achievements.module';
+import { UserAchievementModule } from './user-achievement/user-achievement.module';
 import { FriendModule } from './friend/friend.module';
 import { GameModule } from './game/game.module';
 
@@ -19,7 +19,7 @@ import { GameModule } from './game/game.module';
     ChannelMembersModule,
     MessageModule,
     AchievementModule,
-    UserAchievementsModule,
+    UserAchievementModule,
     FriendModule,
     GameModule,
   ],

@@ -74,8 +74,10 @@ export class FriendService {
   }
 
   async findFriendsOfUser(outgoing_id: number): Promise<Friend[] | null> {
+    const outgoingFound = await this.usersService.findOne(outgoing_id, false);
+
     return await this.friendRepository.findBy({
-      outgoing_friend: { id: outgoing_id },
+      outgoing_friend: { id: outgoingFound.id },
     });
   }
 
@@ -83,9 +85,11 @@ export class FriendService {
     outgoing_id: number,
     incoming_id: number,
   ): Promise<Friend | null> {
+    const outgoingFound = await this.usersService.findOne(outgoing_id, false);
+    const incomingFound = await this.usersService.findOne(incoming_id, false);
     const found = await this.friendRepository.findOneBy({
-      outgoing_friend: { id: outgoing_id },
-      incoming_friend: { id: incoming_id },
+      outgoing_friend: { id: outgoingFound.id },
+      incoming_friend: { id: incomingFound.id },
     });
 
     if (!found) {
