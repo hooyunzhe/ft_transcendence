@@ -69,9 +69,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const players = await this.fetchPlayer(client.data.roomid);
     if (players.length != 2) return;
     client.data.ready = !client.data.ready;
-    console.log('within start: ', client.data.roomid);
-    // if (players.re)
-    // this.roomlist.get(client.data.roomid).gameStart();
+    console.log(
+      'client uid: ',
+      client.data.id,
+      'ready for the match: ',
+      client.data.ready,
+    );
+    if (players.every((player) => player.data.ready)) {
+      console.log('Game is starting in room :', client.data.roomid);
+      this.roomlist.get(client.data.roomid).gameStart();
+    }
   }
 
   @SubscribeMessage('join')
