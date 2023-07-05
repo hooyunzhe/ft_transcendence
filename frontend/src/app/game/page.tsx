@@ -65,7 +65,7 @@ export default function GamePage() {
     // console.log('Starting game');
     // console.log(gameSocket.connected);
     gameSocket.emit('ready');
-    setGameReady(true);
+    setGameReady(!gameReady);
   };
 
   // const joinGame = () => {
