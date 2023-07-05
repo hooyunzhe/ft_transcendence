@@ -41,6 +41,7 @@ export function ChannelMemberList() {
     | undefined
   >();
 
+
   useEffect(() => {
     async function getFriends() {
       // probably need to GET all user friend (HARDCODED FOR NOW)

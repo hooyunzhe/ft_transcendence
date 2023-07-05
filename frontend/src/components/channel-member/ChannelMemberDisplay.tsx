@@ -24,6 +24,10 @@ interface ChannelMemberDisplayProps {
   handleAction?: (...args: any) => Promise<void>;
 }
 
+// * TEMPORARY BULLSHIT * //
+const currentUserRole = ChannelMemberRole.OWNER;
+
+
 export function ChannelMemberDisplay({
   channelMember,
   handleAction,
@@ -40,7 +44,7 @@ export function ChannelMemberDisplay({
             'User Id: ' + channelMember.user.id + ' role: ' + channelMember.role
           }
         />
-        {handleAction && (
+        {handleAction && (channelMember.role !== ChannelMemberRole.OWNER) &&((currentUserRole === ChannelMemberRole.OWNER || currentUserRole === ChannelMemberRole.ADMIN) ? (
           <>
             <IconButton
               onClick={() => {
@@ -49,7 +53,6 @@ export function ChannelMemberDisplay({
             >
               <GavelRoundedIcon />
             </IconButton>
-
             <IconButton
               onClick={() => {
                 handleAction(channelMember, ChannelMemberAction.KICK);
@@ -57,24 +60,24 @@ export function ChannelMemberDisplay({
             >
               <SportsMartialArtsIcon />
             </IconButton>
-
-            <IconButton
-              onClick={() => {
-                console.log('printing admin button click');
-                // need to think on how to handle owner
-                if (channelMember.role === ChannelMemberRole.MEMBER) {
-                  handleAction(channelMember, ChannelMemberAction.ADMIN);
-                } else {
-                  handleAction(channelMember, ChannelMemberAction.UNADMIN);
-                }
-              }}
-            >
-              {channelMember.role === ChannelMemberRole.MEMBER ? (
-                <AddModeratorIcon />
-              ) : (
-                <RemoveModeratorIcon />
-              )}
-            </IconButton>
+            {
+              (currentUserRole === ChannelMemberRole.OWNER) && (
+              <IconButton
+                onClick={() => {
+                  // need to think on how to handle owner
+                  if (channelMember.role === ChannelMemberRole.MEMBER) {
+                    handleAction(channelMember, ChannelMemberAction.ADMIN);
+                  } else {
+                    handleAction(channelMember, ChannelMemberAction.UNADMIN);
+                  }
+                }}
+              >
+                {channelMember.role === ChannelMemberRole.MEMBER ? (
+                  <AddModeratorIcon />
+                ) : (
+                  <RemoveModeratorIcon />
+                )}
+              </IconButton>)}
             <IconButton
               onClick={() => {
                 console.log('printing muted button click');
@@ -92,7 +95,7 @@ export function ChannelMemberDisplay({
                 <CommentIcon />
               )}
             </IconButton>
-          </>
+          </>) : <></>
         )}
       </ListItem>
     </Paper>
