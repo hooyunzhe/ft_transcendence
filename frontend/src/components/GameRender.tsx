@@ -92,18 +92,22 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
     const game = this;
     game.load.multiatlas('ballsprite', '/ball/ballsprite.json', 'ball');
     game.load.image('red', '/ball/bubble.png');
+    game.load.image('test', '/ball/test2.png');
     game.load.image('paddle1', '/ball/paddle1.png');
     game.load.image('paddle2', '/ball/paddle2.png');
   }
 
   function create(this: Phaser.Scene) {
     const game = this;
-    const particles = game.add.particles(0, 0, 'red', {
-      speed: 100,
-      scale: { start: 0.1, end: 0 },
-      blendMode: 'ADD',
+    const particles = game.add.particles(0, 0, 'test', {
+      speed: { min: -100, max: 100 },   
+      scale: { start: 0.1, end: 0 },  
+      lifespan: 2000,   
+      blendMode: 'ADD', 
+    
+      followOffset: { x: 0, y: 0 },  
+      rotate: { min: -180, max: 180 }
     });
-
     ball.current = game.physics.add.sprite(400, 300, 'ballsprite', '0.png');
     // if (!ball) return;
     particles.startFollow(ball.current);
@@ -111,9 +115,8 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
     gameState.setOrigin(0.5);
     paddle1.current = game.physics.add.sprite(15, 300, 'paddle1');
     paddle2.current = game.physics.add.sprite(785, 300, 'paddle2');
-    const paddlebloom1 = paddle1.current.postFX.addBloom(0xffffff, 1, 1, 1.5, 3);
-    const paddlebloom2 = paddle2.current.postFX.addBloom(0xffffff, 1, 1, 1.5, 3);
-    paddlebloom1.setActive(false);
+    
+    
     // const paddle1 = game.add.graphics();
     // const paddle1 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
     // const paddle2 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
@@ -121,21 +124,25 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
     game.physics.add.collider(ball.current, paddle1.current, handleCollision1);
     game.physics.add.collider(ball.current, paddle2.current, handleCollision2);
     function handleCollision1() {
-      paddlebloom1.setActive(true);
+      if(!paddle1.current) return
+      const paddlebloom1 = paddle1.current.postFX.addBloom(0xffffff, 0.5, 0.5, 1, 3);
         // const effect = paddle1.current.postFX.addDisplacement('red', paddle1.current.x + paddle1.current.width / 2, ball.current.y)
         game.time.addEvent({
-          delay: 50,
+          delay: 150,
           callback: () => {
-            paddlebloom1.setActive(false);
+            paddle1.current?.postFX.remove(paddlebloom1);
+            paddlebloom1.destroy();
           }});
     }
     function handleCollision2() {
-      paddlebloom2.setActive(true);
+      if(!paddle2.current) return
+      const paddlebloom2 = paddle2.current.postFX.addBloom(0xffffff, 0.5, 0.5, 1, 3);
         // const effect = paddle1.current.postFX.addDisplacement('red', paddle1.current.x + paddle1.current.width / 2, ball.current.y)
         game.time.addEvent({
-          delay: 50,
+          delay: 150,
           callback: () => {
-            paddlebloom2.setActive(false);
+            paddle2.current?.postFX.remove(paddlebloom2);
+            paddlebloom2.destroy();
           }});
     }
  
