@@ -9,8 +9,10 @@ import {
 } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
-import { Channel } from 'src/channel/entities/channel.entity';
 import { Achievement } from 'src/achievement/entities/achievement.entity';
+import { Channel } from 'src/channel/entities/channel.entity';
+import { Match } from 'src/match/entities/match.entity';
+import { Message } from 'src/message/entities/message.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RemoveUserDto } from './dto/remove-user.dto';
@@ -29,7 +31,9 @@ export class UserController {
   async find(
     @Query()
     queryParams: UserGetQueryParams,
-  ): Promise<Achievement[] | Channel[] | User[] | User | null> {
+  ): Promise<
+    Achievement[] | Channel[] | Match[] | Message[] | User[] | User | null
+  > {
     queryParams.load_relations ??= false;
     switch (queryParams.search_type) {
       case UserSearchType.ALL:

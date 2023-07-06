@@ -9,6 +9,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RemoveUserDto } from './dto/remove-user.dto';
 import { UserRelation } from './params/get-query-params';
+import { Message } from 'src/message/entities/message.entity';
+import { Match } from 'src/match/entities/match.entity';
 
 @Injectable()
 export class UserService {
@@ -22,12 +24,16 @@ export class UserService {
     messages: boolean;
     userAchievements: boolean;
     outgoingFriendships: boolean;
+    matchesAsPlayerOne: boolean;
+    matchesAsPlayerTwo: boolean;
   } {
     return {
       channelMembers: loadRelations,
       messages: loadRelations,
       userAchievements: loadRelations,
       outgoingFriendships: loadRelations,
+      matchesAsPlayerOne: loadRelations,
+      matchesAsPlayerTwo: loadRelations,
     };
   }
 
@@ -86,23 +92,19 @@ export class UserService {
   async getRelations(
     id: number,
     relation: UserRelation,
-  ): Promise<Achievement[] | Channel[] | User[]> {
+  ): Promise<Channel[] | Message[] | Achievement[] | User[] | Match[]> {
     switch (relation) {
-      case UserRelation.ACHIEVEMENTS:
-        return this.getAchievements(id);
       case UserRelation.CHANNELS:
         return this.getChannels(id);
+      case UserRelation.MESSAGES:
+        return this.getMessages(id);
+      case UserRelation.ACHIEVEMENTS:
+        return this.getAchievements(id);
       case UserRelation.FRIENDS:
         return this.getFriends(id);
+      case UserRelation.MATCHES:
+        return this.getMatches(id);
     }
-  }
-
-  async getAchievements(id: number): Promise<Achievement[]> {
-    const currentUser = await this.findOne(id, true);
-
-    return currentUser.userAchievements.map(
-      (userAchievement) => userAchievement.achievement,
-    );
   }
 
   async getChannels(id: number): Promise<Channel[]> {
@@ -110,6 +112,20 @@ export class UserService {
 
     return currentUser.channelMembers.map(
       (channelMember) => channelMember.channel,
+    );
+  }
+
+  async getMessages(id: number): Promise<Message[]> {
+    const currentUser = await this.findOne(id, true);
+
+    return currentUser.messages;
+  }
+
+  async getAchievements(id: number): Promise<Achievement[]> {
+    const currentUser = await this.findOne(id, true);
+
+    return currentUser.userAchievements.map(
+      (userAchievement) => userAchievement.achievement,
     );
   }
 
@@ -122,6 +138,15 @@ export class UserService {
           outgoingFriendship.status === FriendStatus.FRIENDS,
       )
       .map((outgoingFriendship) => outgoingFriendship.incoming_friend);
+  }
+
+  async getMatches(id: number): Promise<Match[]> {
+    const currentUser = await this.findOne(id, true);
+
+    return [
+      ...currentUser.matchesAsPlayerOne,
+      ...currentUser.matchesAsPlayerTwo,
+    ];
   }
 
   async update(userDto: UpdateUserDto): Promise<void> {

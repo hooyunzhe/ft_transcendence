@@ -21,6 +21,7 @@ export enum UserRelation {
   MESSAGES = 'MESSAGES',
   ACHIEVEMENTS = 'ACHIEVEMENTS',
   FRIENDS = 'FRIENDS',
+  MATCHES = 'MATCHES',
 }
 
 export class UserGetQueryParams {
