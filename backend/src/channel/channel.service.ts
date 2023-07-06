@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityNotFoundError, ILike, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { Channel } from './entities/channel.entity';
+import { Channel, ChannelType } from './entities/channel.entity';
 import { Message } from 'src/message/entities/message.entity';
 import { User } from 'src/user/entities/user.entity';
 import { CreateChannelDto } from './dto/create-channel.dto';
@@ -29,16 +29,20 @@ export class ChannelService {
 
   async authorize(id: number, pass: string): Promise<boolean> {
     const channel = await this.findOne(id, false);
-    return bcrypt.compare(pass, channel.hash);
+
+    if (channel.type === ChannelType.PROTECTED) {
+      return bcrypt.compare(pass, channel.hash);
+    }
+    return true;
   }
 
   async create(createChannelDto: CreateChannelDto): Promise<Channel> {
     return await this.channelsRepository.save({
       name: createChannelDto.name,
       type: createChannelDto.type,
-      hash: createChannelDto.pass
-        ? await bcrypt.hash(createChannelDto.pass, 10)
-        : '',
+      ...(createChannelDto.type === ChannelType.PROTECTED && {
+        hash: await bcrypt.hash(createChannelDto.pass, 10),
+      }),
     });
   }
 

@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 import { ChannelType } from '../entities/channel.entity';
 
 export class CreateChannelDto {
@@ -10,6 +10,7 @@ export class CreateChannelDto {
   @IsEnum(ChannelType)
   type: ChannelType;
 
+  @ValidateIf((dto: CreateChannelDto) => dto.type === ChannelType.PROTECTED)
   @IsNotEmpty()
   @IsString()
   pass: string;

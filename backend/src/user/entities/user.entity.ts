@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { ChannelMember } from 'src/channel_members/entities/channel_member.entity';
+import { ChannelMember } from 'src/channel-member/entities/channel-member.entity';
 import { Message } from 'src/message/entities/message.entity';
 import { UserAchievement } from 'src/user-achievement/entities/user-achievement.entity';
 import { Friend } from 'src/friend/entities/friend.entity';

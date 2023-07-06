@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { ChannelMember } from 'src/channel_members/entities/channel_member.entity';
+import { ChannelMember } from 'src/channel-member/entities/channel-member.entity';
 import { Message } from 'src/message/entities/message.entity';
 
 export enum ChannelType {
@@ -20,7 +20,7 @@ export class Channel {
   @Column({ default: ChannelType.PUBLIC })
   type: ChannelType;
 
-  @Column()
+  @Column({ default: null })
   hash: string;
 
   @OneToMany(() => ChannelMember, (channelMember) => channelMember.channel)

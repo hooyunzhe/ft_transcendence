@@ -3,7 +3,7 @@ import { DatabaseModule } from './database.module';
 import { UserModule } from './user/user.module';
 import { MatchModule } from './match/match.module';
 import { ChannelModule } from './channel/channel.module';
-import { ChannelMembersModule } from './channel_members/channel_members.module';
+import { ChannelMemberModule } from './channel-member/channel-member.module';
 import { MessageModule } from './message/message.module';
 import { AchievementModule } from './achievement/achievement.module';
 import { UserAchievementModule } from './user-achievement/user-achievement.module';
@@ -16,7 +16,7 @@ import { GameModule } from './game/game.module';
     UserModule,
     MatchModule,
     ChannelModule,
-    ChannelMembersModule,
+    ChannelMemberModule,
     MessageModule,
     AchievementModule,
     UserAchievementModule,
