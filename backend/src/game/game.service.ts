@@ -83,10 +83,10 @@ export class GameService {
   }
 
   gameStart() {
-    const heading = Math.random() * Math.PI * 2;
+    // const heading = Math.random() * Math.PI * 2;
     this.direction = {
-      x: Math.cos(heading),
-      y: Math.sin(heading),
+      x: 1,
+      y: 0,
     };
     this.gameUpdate();
   }

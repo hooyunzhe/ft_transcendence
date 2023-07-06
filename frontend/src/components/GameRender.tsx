@@ -1,5 +1,5 @@
 'use client';
-import Phaser from 'phaser';
+import Phaser, { Game } from 'phaser';
 import { useEffect, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
 
@@ -111,7 +111,34 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
     gameState.setOrigin(0.5);
     paddle1.current = game.physics.add.sprite(15, 300, 'paddle1');
     paddle2.current = game.physics.add.sprite(785, 300, 'paddle2');
-
+    const paddlebloom1 = paddle1.current.postFX.addBloom(0xffffff, 1, 1, 1.5, 3);
+    const paddlebloom2 = paddle2.current.postFX.addBloom(0xffffff, 1, 1, 1.5, 3);
+    paddlebloom1.setActive(false);
+    // const paddle1 = game.add.graphics();
+    // const paddle1 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
+    // const paddle2 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
+  
+    game.physics.add.collider(ball.current, paddle1.current, handleCollision1);
+    game.physics.add.collider(ball.current, paddle2.current, handleCollision2);
+    function handleCollision1() {
+      paddlebloom1.setActive(true);
+        // const effect = paddle1.current.postFX.addDisplacement('red', paddle1.current.x + paddle1.current.width / 2, ball.current.y)
+        game.time.addEvent({
+          delay: 50,
+          callback: () => {
+            paddlebloom1.setActive(false);
+          }});
+    }
+    function handleCollision2() {
+      paddlebloom2.setActive(true);
+        // const effect = paddle1.current.postFX.addDisplacement('red', paddle1.current.x + paddle1.current.width / 2, ball.current.y)
+        game.time.addEvent({
+          delay: 50,
+          callback: () => {
+            paddlebloom2.setActive(false);
+          }});
+    }
+ 
     const frames = game.anims.generateFrameNames('ballsprite', {
       start: 0,
       end: 215,
@@ -160,5 +187,6 @@ export default function GameRender({ gameSocket }: GameRenderProps) {
     keyLoop();
   }
 
+ 
   return null;
 }
