@@ -7,7 +7,6 @@ import FriendDisplay from './ChannelMemberFriendDisplay';
 
 interface ChannelMemberAddPromptProps {
   addUser: (...args: any) => Promise<string>;
-  AddUser: (...args: any) => Promise<string>;
   friends: Friend[];
   channelMembers: ChannelMembers[];
 }

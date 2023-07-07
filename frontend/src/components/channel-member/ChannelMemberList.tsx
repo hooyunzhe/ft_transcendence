@@ -46,7 +46,7 @@ export function ChannelMemberList() {
     async function getFriends() {
       // probably need to GET all user friend (HARDCODED FOR NOW)
       const friendsData = JSON.parse(
-        await callAPI('GET', 'friends/user?outgoing_id=1'),
+        await callAPI('GET', 'friends?search_type=USER&search_number=1'),
       );
       setFriends(friendsData);
     }
@@ -54,7 +54,7 @@ export function ChannelMemberList() {
 
     async function getChannelMembers() {
       const channelMembersData = JSON.parse(
-        await callAPI('GET', 'channel_members'),
+        await callAPI('GET', 'channel-members?search_type=ALL'),
       );
       setChannelMembers(channelMembersData);
     }
