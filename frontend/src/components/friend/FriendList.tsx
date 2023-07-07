@@ -68,7 +68,7 @@ export default function FriendList() {
     current_status: FriendStatus,
     new_status: FriendStatus,
   ): void {
-    setFriends((friends) =>
+    setFriends((friends: Friend[]) =>
       friends.map((friend) => {
         if (
           friend.incoming_friend.id === incoming_friend.id &&
@@ -82,7 +82,7 @@ export default function FriendList() {
   }
 
   function deleteFriend(incoming_friend: User): void {
-    setFriends((friends) =>
+    setFriends((friends: Friend[]) =>
       friends.filter(
         (friend) => friend.incoming_friend.id !== incoming_friend.id,
       ),
@@ -94,7 +94,10 @@ export default function FriendList() {
       'getStatus',
       { user_ids: user_ids },
       (data: { [key: number]: string }) => {
-        setFriendsStatus((friendsStatus) => ({ ...friendsStatus, ...data }));
+        setFriendsStatus((friendsStatus: { [key: number]: string }) => ({
+          ...friendsStatus,
+          ...data,
+        }));
       },
     );
   }
@@ -103,7 +106,7 @@ export default function FriendList() {
     user_id: number,
     new_status: 'online' | 'offline',
   ): void {
-    setFriendsStatus((friendsStatus) => ({
+    setFriendsStatus((friendsStatus: { [key: number]: string }) => ({
       ...friendsStatus,
       [user_id]: new_status,
     }));
@@ -121,8 +124,8 @@ export default function FriendList() {
     callFriendsAPI('PATCH', request.incoming_friend, FriendAction.ACCEPT);
     changeFriend(
       request.incoming_friend,
-      FriendStatus.Pending,
-      FriendStatus.Friends,
+      FriendStatus.PENDING,
+      FriendStatus.FRIENDS,
     );
     friendsSocket.emit('acceptRequest', request);
     displayNotification('success', 'Request accepted');
@@ -146,8 +149,8 @@ export default function FriendList() {
     callFriendsAPI('PATCH', friendship.incoming_friend, FriendAction.BLOCK);
     changeFriend(
       friendship.incoming_friend,
-      FriendStatus.Friends,
-      FriendStatus.Blocked,
+      FriendStatus.FRIENDS,
+      FriendStatus.BLOCKED,
     );
     displayNotification(
       'warning',
@@ -159,8 +162,8 @@ export default function FriendList() {
     callFriendsAPI('PATCH', friendship.incoming_friend, FriendAction.UNBLOCK);
     changeFriend(
       friendship.incoming_friend,
-      FriendStatus.Blocked,
-      FriendStatus.Friends,
+      FriendStatus.BLOCKED,
+      FriendStatus.FRIENDS,
     );
     displayNotification(
       'warning',
@@ -196,7 +199,7 @@ export default function FriendList() {
     });
 
     friendsSocket.on('newRequest', (request: Friend) => {
-      setFriends((friends) => [...friends, request]);
+      setFriends((friends: Friend[]) => [...friends, request]);
       addStatus([request.incoming_friend.id]);
       displayNotification('info', 'New friend request!');
     });
@@ -206,7 +209,7 @@ export default function FriendList() {
     });
 
     friendsSocket.on('acceptRequest', (sender: User) => {
-      changeFriend(sender, FriendStatus.Invited, FriendStatus.Friends);
+      changeFriend(sender, FriendStatus.INVITED, FriendStatus.FRIENDS);
       displayNotification(
         'success',
         sender.username + ' accepted your friend request!',
@@ -238,24 +241,24 @@ export default function FriendList() {
       }
       const new_friend = JSON.parse(data);
       const friendship = friends.find(
-        (friend) => friend.incoming_friend.id === new_friend.id,
+        (friend: Friend) => friend.incoming_friend.id === new_friend.id,
       );
 
       switch (friendship?.status) {
-        case FriendStatus.Friends:
+        case FriendStatus.FRIENDS:
           return 'User is already a friend';
-        case FriendStatus.Pending:
+        case FriendStatus.PENDING:
           return 'User already invited you';
-        case FriendStatus.Invited:
+        case FriendStatus.INVITED:
           return 'User already invited';
-        case FriendStatus.Blocked:
+        case FriendStatus.BLOCKED:
           return 'User already blocked';
         default: {
           const new_requests = JSON.parse(
             await callFriendsAPI('POST', new_friend),
           );
 
-          setFriends((friends) => [...friends, new_requests[0]]);
+          setFriends((friends: Friend[]) => [...friends, new_requests[0]]);
           friendsSocket.emit('newRequest', new_requests[1]);
           addStatus([new_friend.id]);
           displayNotification('success', 'Request sent');
@@ -320,7 +323,7 @@ export default function FriendList() {
   }
 
   function toggleDropdown(category: string): void {
-    setDropdownOpen((dropdownOpen) => ({
+    setDropdownOpen((dropdownOpen: { [key: string]: boolean }) => ({
       ...dropdownOpen,
       [category]: !dropdownOpen[category],
     }));
@@ -353,7 +356,9 @@ export default function FriendList() {
           key={index}
           category={category}
           open={dropdownOpen[category]}
-          friends={friends.filter((friend) => friend.status === category)}
+          friends={friends.filter(
+            (friend: Friend) => friend.status === category,
+          )}
           toggleDropdown={toggleDropdown}
           handleAction={handleAction}
           selectedFriend={selectedFriend}

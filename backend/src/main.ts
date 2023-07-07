@@ -9,7 +9,16 @@ async function bootstrap() {
   app.enableCors({
     origin: '*',
   });
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
   app.useGlobalFilters(new TypeORMErrorFilter());
   await app.listen(4242);
 }
