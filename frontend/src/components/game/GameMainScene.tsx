@@ -37,6 +37,7 @@ export default class GameMainScene extends Phaser.Scene {
 
   create() {
     const game = this;
+
     const particles = game.add.particles(0, 0, 'test', {
       speed: { min: -100, max: 100 },
       scale: { start: 0.01, end: 0 },
