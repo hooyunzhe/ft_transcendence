@@ -31,7 +31,7 @@ export class MatchService {
       matchDto.winner_id !== playerOneFound.id &&
       matchDto.winner_id !== playerTwoFound.id
     ) {
-      throw new EntityNotFoundError(User, 'winner_id: ' + matchDto.winner_id);
+      throw new EntityNotFoundError(User, 'winner_id = ' + matchDto.winner_id);
     }
 
     return await this.matchRepository.save({
@@ -51,7 +51,7 @@ export class MatchService {
     const found = await this.matchRepository.findOneBy({ id });
 
     if (!found) {
-      throw new EntityNotFoundError(Match, 'id: ' + id);
+      throw new EntityNotFoundError(Match, 'id = ' + id);
     }
     return found;
   }

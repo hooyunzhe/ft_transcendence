@@ -6,6 +6,7 @@ import { UserService } from 'src/user/user.service';
 import { CreateFriendDto } from './dto/create-friend.dto';
 import { UpdateFriendDto } from './dto/update-friend.dto';
 import { RemoveFriendDto } from './dto/remove-friend.dto';
+import { EntityAlreadyExistsError } from 'src/app.error';
 
 @Injectable()
 export class FriendService {
@@ -22,23 +23,22 @@ export class FriendService {
       friendDto.outgoing_id,
       false,
     );
-
-    if (!outgoingFound) {
-      throw new EntityNotFoundError(
-        Friend,
-        'outgoing_id: ' + friendDto.outgoing_id,
-      );
-    }
-
     const incomingFound = await this.usersService.findOne(
       friendDto.incoming_id,
       false,
     );
 
-    if (!incomingFound) {
-      throw new EntityNotFoundError(
-        Friend,
-        'incoming_id: ' + friendDto.incoming_id,
+    const friendshipExists = await this.friendRepository.findOneBy({
+      outgoing_friend: { id: outgoingFound.id },
+      incoming_friend: { id: incomingFound.id },
+    });
+    if (friendshipExists) {
+      throw new EntityAlreadyExistsError(
+        'Friend',
+        'outgoing_id = ' +
+          outgoingFound.id +
+          ' & incoming_id = ' +
+          incomingFound.id,
       );
     }
 
@@ -47,7 +47,6 @@ export class FriendService {
       incoming_friend: incomingFound,
       status: FriendStatus.INVITED,
     });
-
     const newIncomingFriendship = this.friendRepository.create({
       outgoing_friend: incomingFound,
       incoming_friend: outgoingFound,
@@ -68,7 +67,7 @@ export class FriendService {
     const found = await this.friendRepository.findOneBy({ id });
 
     if (!found) {
-      throw new EntityNotFoundError(Friend, 'id: ' + id);
+      throw new EntityNotFoundError(Friend, 'id = ' + id);
     }
     return found;
   }
@@ -95,7 +94,7 @@ export class FriendService {
     if (!found) {
       throw new EntityNotFoundError(
         Friend,
-        'outgoing_id: ' + outgoing_id + ', incoming_id: ' + incoming_id,
+        'outgoing_id = ' + outgoing_id + ' & incoming_id = ' + incoming_id,
       );
     }
     return found;

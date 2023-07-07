@@ -6,6 +6,7 @@ import { UserService } from 'src/user/user.service';
 import { AchievementService } from 'src/achievement/achievement.service';
 import { CreateUserAchievementDto } from './dto/create-user-achievement.dto';
 import { RemoveUserAchievementDto } from './dto/remove-user-achievement.dto';
+import { EntityAlreadyExistsError } from 'src/app.error';
 
 @Injectable()
 export class UserAchievementService {
@@ -32,11 +33,24 @@ export class UserAchievementService {
       false,
     );
 
+    const userHasAchievement = await this.userAchievementRepository.findOneBy({
+      user: { id: userFound.id },
+      achievement: { id: achievementFound.id },
+    });
+    if (userHasAchievement) {
+      throw new EntityAlreadyExistsError(
+        'UserAchievement',
+        'user_id = ' +
+          userFound.id +
+          ' & achievement_id = ' +
+          achievementFound.id,
+      );
+    }
+
     const newUserAchievement = this.userAchievementRepository.create({
       user: userFound,
       achievement: achievementFound,
     });
-
     return await this.userAchievementRepository.save(newUserAchievement);
   }
 
@@ -48,7 +62,7 @@ export class UserAchievementService {
     const found = await this.userAchievementRepository.findOneBy({ id });
 
     if (!found) {
-      throw new EntityNotFoundError(UserAchievement, 'id: ' + id);
+      throw new EntityNotFoundError(UserAchievement, 'id = ' + id);
     }
     return found;
   }
@@ -91,7 +105,7 @@ export class UserAchievementService {
     if (!found) {
       throw new EntityNotFoundError(
         UserAchievement,
-        'user_id: ' + user_id + ', achievement_id: ' + achievement_id,
+        'user_id = ' + user_id + ' & achievement_id = ' + achievement_id,
       );
     }
     return found;

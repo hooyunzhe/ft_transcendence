@@ -11,6 +11,7 @@ import { RemoveUserDto } from './dto/remove-user.dto';
 import { UserRelation } from './params/get-query-params';
 import { Message } from 'src/message/entities/message.entity';
 import { Match } from 'src/match/entities/match.entity';
+import { EntityAlreadyExistsError } from 'src/app.error';
 
 @Injectable()
 export class UserService {
@@ -38,6 +39,16 @@ export class UserService {
   }
 
   async create(userDto: CreateUserDto): Promise<User> {
+    const userExists = await this.userRepository.findOneBy({
+      username: userDto.username,
+    });
+
+    if (userExists) {
+      throw new EntityAlreadyExistsError(
+        'User',
+        'username = ' + userDto.username,
+      );
+    }
     return await this.userRepository.save(userDto);
   }
 
@@ -54,7 +65,7 @@ export class UserService {
     });
 
     if (!found) {
-      throw new EntityNotFoundError(User, 'id: ' + id);
+      throw new EntityNotFoundError(User, 'id = ' + id);
     }
     return found;
   }
@@ -69,7 +80,7 @@ export class UserService {
     });
 
     if (!found) {
-      throw new EntityNotFoundError(User, 'username: ' + username);
+      throw new EntityNotFoundError(User, 'username = ' + username);
     }
     return found;
   }
@@ -84,7 +95,7 @@ export class UserService {
     });
 
     if (!found) {
-      throw new EntityNotFoundError(User, 'refresh_token: ' + refresh_token);
+      throw new EntityNotFoundError(User, 'refresh_token = ' + refresh_token);
     }
     return found;
   }

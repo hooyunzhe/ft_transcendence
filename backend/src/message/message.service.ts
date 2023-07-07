@@ -46,7 +46,7 @@ export class MessageService {
     const found = await this.messageRepository.findOneBy({ id });
 
     if (!found) {
-      throw new EntityNotFoundError(Message, 'id: ' + id);
+      throw new EntityNotFoundError(Message, 'id = ' + id);
     }
     return found;
   }

@@ -10,6 +10,7 @@ import { UserService } from 'src/user/user.service';
 import { CreateChannelMemberDto } from './dto/create-channel-member.dto';
 import { UpdateChannelMemberDto } from './dto/update-channel-member.dto';
 import { RemoveChannelMemberDto } from './dto/remove-channel-member.dto';
+import { EntityAlreadyExistsError } from 'src/app.error';
 
 @Injectable()
 export class ChannelMemberService {
@@ -45,6 +46,18 @@ export class ChannelMemberService {
       false,
     );
 
+    const userInChannel = await this.channelMemberRepository.findOneBy({
+      channel: { id: channelFound.id },
+      user: { id: userFound.id },
+    });
+
+    if (userInChannel) {
+      throw new EntityAlreadyExistsError(
+        'ChannelMember',
+        'channel_id = ' + channelFound.id + ' & user_id = ' + userFound.id,
+      );
+    }
+
     const newChannelMember = this.channelMemberRepository.create({
       channel: channelFound,
       user: userFound,
@@ -61,7 +74,7 @@ export class ChannelMemberService {
     const found = await this.channelMemberRepository.findOneBy({ id });
 
     if (!found) {
-      throw new EntityNotFoundError(ChannelMember, 'id: ' + id);
+      throw new EntityNotFoundError(ChannelMember, 'id = ' + id);
     }
     return found;
   }
@@ -97,7 +110,7 @@ export class ChannelMemberService {
     if (!found) {
       throw new EntityNotFoundError(
         ChannelMember,
-        'channel_id: ' + channel_id + ', user_id: ' + user_id,
+        'channel_id = ' + channel_id + ' & user_id = ' + user_id,
       );
     }
     return found;

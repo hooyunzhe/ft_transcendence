@@ -7,6 +7,7 @@ import { CreateAchievementDto } from './dto/create-achievement.dto';
 import { UpdateAchievementDto } from './dto/update-achievement.dto';
 import { RemoveAchievementDto } from './dto/remove-achievement.dto';
 import { AchievementRelation } from './params/get-query-params';
+import { EntityAlreadyExistsError } from 'src/app.error';
 
 @Injectable()
 export class AchievementService {
@@ -20,6 +21,17 @@ export class AchievementService {
   }
 
   async create(achievementDto: CreateAchievementDto): Promise<Achievement> {
+    const achievementExists = await this.achievementRepository.findOneBy({
+      name: achievementDto.name,
+    });
+
+    if (achievementExists) {
+      throw new EntityAlreadyExistsError(
+        'Achievement',
+        'name = ' + achievementDto.name,
+      );
+    }
+
     return await this.achievementRepository.save(achievementDto);
   }
 
@@ -39,7 +51,7 @@ export class AchievementService {
     });
 
     if (!found) {
-      throw new EntityNotFoundError(Achievement, 'id: ' + id);
+      throw new EntityNotFoundError(Achievement, 'id = ' + id);
     }
     return found;
   }
@@ -54,7 +66,7 @@ export class AchievementService {
     });
 
     if (!found) {
-      throw new EntityNotFoundError(Achievement, 'name: ' + name);
+      throw new EntityNotFoundError(Achievement, 'name = ' + name);
     }
     return found;
   }

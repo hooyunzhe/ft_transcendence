@@ -9,6 +9,7 @@ import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
 import { RemoveChannelDto } from './dto/remove-channel.dto';
 import { ChannelRelation } from './params/get-query-params';
+import { EntityAlreadyExistsError } from 'src/app.error';
 
 @Injectable()
 export class ChannelService {
@@ -36,12 +37,23 @@ export class ChannelService {
     return true;
   }
 
-  async create(createChannelDto: CreateChannelDto): Promise<Channel> {
+  async create(channelDto: CreateChannelDto): Promise<Channel> {
+    const channelExists = await this.channelsRepository.findOneBy({
+      name: channelDto.name,
+    });
+
+    if (channelExists) {
+      throw new EntityAlreadyExistsError(
+        'Channel',
+        'name = ' + channelDto.name,
+      );
+    }
+
     return await this.channelsRepository.save({
-      name: createChannelDto.name,
-      type: createChannelDto.type,
-      ...(createChannelDto.type === ChannelType.PROTECTED && {
-        hash: await bcrypt.hash(createChannelDto.pass, 10),
+      name: channelDto.name,
+      type: channelDto.type,
+      ...(channelDto.type === ChannelType.PROTECTED && {
+        hash: await bcrypt.hash(channelDto.pass, 10),
       }),
     });
   }
@@ -59,7 +71,7 @@ export class ChannelService {
     });
 
     if (!found) {
-      throw new EntityNotFoundError(Channel, 'id: ' + id);
+      throw new EntityNotFoundError(Channel, 'id = ' + id);
     }
     return found;
   }
@@ -74,7 +86,7 @@ export class ChannelService {
     });
 
     if (!found) {
-      throw new EntityNotFoundError(Channel, 'name: ' + name);
+      throw new EntityNotFoundError(Channel, 'name = ' + name);
     }
     return found;
   }
