@@ -1,18 +1,30 @@
 import { Channel } from './ChannelTypes';
 import { User } from './UserTypes';
 
+export enum ChannelMemberAction {
+  ADMIN = 'ADMIN',
+  UNADMIN = 'UNADMIN',
+  BAN = 'BAN',
+  UNBAN = 'UNBAN',
+  MUTE = 'MUTE',
+  UNMUTE = 'UNMUTE',
+  CHOWN = 'CHOWN',
+  KICK = 'KICK',
+}
+
 export enum ChannelMemberRole {
-  OWNER = 'owner',
-  ADMIN = 'admin',
-  MEMBER = 'member',
+  OWNER = 'OWNER',
+  ADMIN = 'ADMIN',
+  MEMBER = 'MEMBER',
 }
 
 export enum ChannelMemberStatus {
-  BANNED = 'banned',
-  MUTED = 'muted',
+  BANNED = 'BANNED',
+  MUTED = 'MUTED',
+  DEFAULT = 'DEFAULT',
 }
 
-export interface ChannelMember {
+export interface ChannelMembers {
   id: number;
   role: ChannelMemberRole;
   status: ChannelMemberStatus;
