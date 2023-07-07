@@ -23,7 +23,6 @@ export function ChannelMemberAddPrompt({
     if (selectedFriend === undefined) {
       return "Friend doesn't exist";
     }
-
     const friendToJoin = friends.find(
       (friend) => friend.id === selectedFriend.id,
     );
@@ -71,7 +70,6 @@ export function ChannelMemberAddPrompt({
               key={index}
               selected={selectedFriend?.incoming_friend.id ?? 0}
               selectCurrent={() => {
-                // console.log('setSelectedFriend clicked');
                 setFriendSearch(friend.incoming_friend.username);
                 setSelectedFriend(friend);
               }}

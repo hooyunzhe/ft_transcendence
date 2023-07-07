@@ -18,10 +18,11 @@ import {
   ListItemText,
   Paper,
 } from '@mui/material';
+import ChannelMemberMenu from './ChannelMemberMenu';
 
 interface ChannelMemberDisplayProps {
   channelMember: ChannelMembers;
-  handleAction?: (...args: any) => Promise<void>;
+  handleAction: (...args: any) => Promise<void>;
 }
 
 // * TEMPORARY BULLSHIT * //
@@ -44,7 +45,14 @@ export function ChannelMemberDisplay({
             'User Id: ' + channelMember.user.id + ' role: ' + channelMember.role
           }
         />
-        {handleAction && (channelMember.role !== ChannelMemberRole.OWNER) &&((currentUserRole === ChannelMemberRole.OWNER || currentUserRole === ChannelMemberRole.ADMIN) ? (
+        <ChannelMemberMenu
+        channelMember={channelMember}
+         handleAction={handleAction}
+        />
+        {/* {handleAction && (channelMember.role !== ChannelMemberRole.OWNER)
+        && ((currentUserRole === ChannelMemberRole.OWNER
+          || currentUserRole === ChannelMemberRole.ADMIN)
+          ? (
           <>
             <IconButton
               onClick={() => {
@@ -96,7 +104,7 @@ export function ChannelMemberDisplay({
               )}
             </IconButton>
           </>) : <></>
-        )}
+        )} */}
       </ListItem>
     </Paper>
   );

@@ -25,6 +25,8 @@ import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
 import { channelMemberSocket } from '@/lib/socket';
+import PositionedMenu from './ChannelMemberMenu';
+import ChannelMemberMenu from './ChannelMemberMenu';
 
 export function ChannelMemberList() {
   const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
@@ -118,10 +120,10 @@ export function ChannelMemberList() {
   // * Async functions for each actions * //
 
   async function addUser(userID: number): Promise<string> {
-    const add = await callAPI('POST', 'channel_members', {
+    const add = await callAPI('POST', 'channel-members', {
       channel_id: 1,
       user_id: userID,
-      role: 'member',
+      role: ChannelMemberRole.MEMBER,
     });
     const newChannelMember: ChannelMembers = JSON.parse(add);
     addChannelMember(newChannelMember);
@@ -132,7 +134,7 @@ export function ChannelMemberList() {
   async function kickUser() {
     if (confirmation) {
       const member = confirmation.channelMember;
-      callAPI('DELETE', 'channel_members/' + member.id);
+      callAPI('DELETE', 'channel-members', { id: member.id});
       kickChannelMember(member.id);
       channelMemberSocket.emit('kickUser', member);
       setConfirmation(undefined);
@@ -142,7 +144,8 @@ export function ChannelMemberList() {
   async function changeRole(newRole: ChannelMemberRole) {
     if (confirmation) {
       const member = confirmation.channelMember;
-      callAPI('PATCH', 'channel_members/' + member.id, {
+      callAPI('PATCH', 'channel-members/', {
+        id: member.id,
         role: newRole,
       });
       changeChannelMemberRole(member.id, newRole);
@@ -154,12 +157,12 @@ export function ChannelMemberList() {
   async function changeStatus(newStatus: ChannelMemberStatus, duration?: Date) {
     if (confirmation) {
       const member = confirmation.channelMember;
-      callAPI('PATCH', 'channel_members/' + member.id, {
+      callAPI('PATCH', 'channel-members', {
+        id: member.id,
         status: newStatus,
+        muted_until: new Date().toISOString()
       });
-      console.log(member.status);
       changeChannelMemberStatus(member.id, newStatus);
-      console.log(member.status);
       channelMemberSocket.emit('changeStatus', member);
       setConfirmation(undefined);
     }
@@ -247,11 +250,13 @@ export function ChannelMemberList() {
         channelMembers={channelMembers}
       ></ChannelMemberAddPrompt>
       {channelMembers.map((channelMember: ChannelMembers, index: number) => (
-        <ChannelMemberDisplay
-          key={index}
-          channelMember={channelMember}
-          handleAction={handleDisplayAction}
-        />
+        <>
+          <ChannelMemberDisplay
+            key={index}
+            channelMember={channelMember}
+            handleAction={handleDisplayAction}
+          />
+        </>
       ))}
       {confirmation && (
         <ConfirmationPrompt
