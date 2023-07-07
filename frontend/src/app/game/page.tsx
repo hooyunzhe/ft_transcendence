@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { Button, ToggleButton } from '@mui/material';
 import ConfirmationPrompt from '@/components/ConfirmationPrompt';
 import { gameSocket } from '@/lib/socket';
-import GameRender from '@/components/GameRender';
+import GameRender from '@/components/game/GameRender';
 
 export default function GamePage() {
   // const [session, setSession] = useState(useSession());
@@ -15,7 +15,7 @@ export default function GamePage() {
   const [matchFound, setMatchFound] = useState(false);
   const [gameReady, setGameReady] = useState(false);
   // const [roomid, setRoomid] = useState('');
-
+  const test = useRef(gameReady);
   const socketRef = useRef();
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export default function GamePage() {
     // console.log('Starting game');
     // console.log(gameSocket.connected);
     gameSocket.emit('ready');
-    setGameReady(!gameReady);
+    test.current = !test.current;
   };
 
   // const joinGame = () => {
@@ -103,7 +103,7 @@ export default function GamePage() {
         onChange={startGame}
         disabled={!matchFound}
       >
-        {gameReady ? 'Unready' : 'Ready'}
+        {test.current ? 'Unready' : 'Ready'}
       </ToggleButton>
       {/* <ConfirmationPrompt
         open={matchFound}
@@ -113,15 +113,15 @@ export default function GamePage() {
         actionHandler={joinGame}
       ></ConfirmationPrompt> */}
       <ToggleButton
-        value={gameReady}
+        value={test.current}
         onChange={resetGame}
-        disabled={!gameReady}
+        disabled={!test.current}
       >
         Reset
       </ToggleButton>
       <Button onClick={disconnectGame}>Disconnect</Button>
       <div>
-        <GameRender gameSocket={gameSocket}></GameRender>
+        <GameRender gameSocket={gameSocket} gameReady={test}></GameRender>
       </div>
     </div>
   );
