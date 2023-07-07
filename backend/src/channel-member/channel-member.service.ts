@@ -31,6 +31,7 @@ export class ChannelMemberService {
     const authorized = await this.channelService.authorize(
       channelMemberDto.channel_id,
       channelMemberDto.pass ?? '',
+      channelMemberDto.hash ?? '',
     );
 
     if (!authorized) {

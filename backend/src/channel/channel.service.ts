@@ -28,11 +28,13 @@ export class ChannelService {
     };
   }
 
-  async authorize(id: number, pass: string): Promise<boolean> {
+  async authorize(id: number, pass: string, hash: string): Promise<boolean> {
     const channel = await this.findOne(id, false);
 
     if (channel.type === ChannelType.PROTECTED) {
-      return bcrypt.compare(pass, channel.hash);
+      return (
+        (await bcrypt.compare(pass, channel.hash)) || hash === channel.hash
+      );
     }
     return true;
   }
