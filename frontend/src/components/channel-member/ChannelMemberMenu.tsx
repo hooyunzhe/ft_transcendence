@@ -125,8 +125,7 @@ export default function ChannelMemberMenu({
               >
                 <>
                   <ListItemIcon>
-                    {channelMember.role === ChannelMemberRole.MEMBER ||
-                    currentUserRole === ChannelMemberRole.OWNER ? (
+                    {channelMember.role === ChannelMemberRole.MEMBER ? (
                       <AddModeratorIcon />
                     ) : (
                       <RemoveModeratorIcon />

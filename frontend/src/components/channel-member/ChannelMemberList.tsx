@@ -25,6 +25,7 @@ import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
 import { channelMemberSocket } from '@/lib/socket';
+import ChannelMemberListHeaderSettings from './ChannelMemberListHeaderSettings';
 
 export function ChannelMemberList() {
   const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
@@ -40,6 +41,8 @@ export function ChannelMemberList() {
       }
     | undefined
   >();
+
+  const tempBanned = ChannelMemberStatus.BANNED;
 
   useEffect(() => {
     async function getFriends() {
@@ -271,7 +274,9 @@ export function ChannelMemberList() {
       justifyContent='center'
       spacing={1}
     >
-      <ListHeader title='My retarded channel member list'></ListHeader>
+      <ListHeader title='My retarded channel member list'>
+        <ChannelMemberListHeaderSettings></ChannelMemberListHeaderSettings>
+      </ListHeader>
       <ChannelMemberAddPrompt
         addUser={addUser}
         friends={friends}
