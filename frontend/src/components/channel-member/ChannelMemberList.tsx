@@ -25,24 +25,21 @@ import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
 import { channelMemberSocket } from '@/lib/socket';
-import PositionedMenu from './ChannelMemberMenu';
-import ChannelMemberMenu from './ChannelMemberMenu';
 
 export function ChannelMemberList() {
   const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [confirmation, setConfirmation] = useState<
     | {
-      required: boolean;
-      title: string;
-      description: string;
-      channelMember: ChannelMembers;
-      action: ChannelMemberAction;
-      duration: Date | undefined;
-    }
+        required: boolean;
+        title: string;
+        description: string;
+        channelMember: ChannelMembers;
+        action: ChannelMemberAction;
+        duration: Date | undefined;
+      }
     | undefined
   >();
-
 
   useEffect(() => {
     async function getFriends() {
@@ -91,11 +88,16 @@ export function ChannelMemberList() {
 
   function kickChannelMember(member_id: number) {
     setChannelMembers((channelMembers) => {
-      return channelMembers.filter((localMember) => localMember.id !== member_id);
+      return channelMembers.filter(
+        (localMember) => localMember.id !== member_id,
+      );
     });
   }
 
-  function changeChannelMemberRole(member_id : number, newRole: ChannelMemberRole){
+  function changeChannelMemberRole(
+    member_id: number,
+    newRole: ChannelMemberRole,
+  ) {
     setChannelMembers((channelMembers) => {
       return channelMembers.map((localMember) => {
         if (localMember.id === member_id) {
@@ -106,7 +108,10 @@ export function ChannelMemberList() {
     });
   }
 
-  function changeChannelMemberStatus(member_id : number, newStatus: ChannelMemberStatus){
+  function changeChannelMemberStatus(
+    member_id: number,
+    newStatus: ChannelMemberStatus,
+  ) {
     setChannelMembers((channelMembers) => {
       return channelMembers.map((localMember) => {
         if (localMember.id === member_id) {
@@ -134,7 +139,7 @@ export function ChannelMemberList() {
   async function kickUser() {
     if (confirmation) {
       const member = confirmation.channelMember;
-      callAPI('DELETE', 'channel-members', { id: member.id});
+      callAPI('DELETE', 'channel-members', { id: member.id });
       kickChannelMember(member.id);
       channelMemberSocket.emit('kickUser', member);
       setConfirmation(undefined);
@@ -160,11 +165,36 @@ export function ChannelMemberList() {
       callAPI('PATCH', 'channel-members', {
         id: member.id,
         status: newStatus,
-        muted_until: new Date().toISOString()
+        muted_until: new Date().toISOString(),
       });
       changeChannelMemberStatus(member.id, newStatus);
       channelMemberSocket.emit('changeStatus', member);
       setConfirmation(undefined);
+    }
+  }
+
+  async function changeOwnership(newRole: ChannelMemberRole) {
+    if (confirmation) {
+      console.log('---CHANGE OWNERSHIP---\n');
+      const member = confirmation.channelMember;
+
+      const currentOwner = await channelMembers.find((owner) => {
+        if (owner.role === ChannelMemberRole.OWNER) {
+          return owner.id;
+        }
+        return undefined;
+      });
+      if (currentOwner === undefined) {
+        console.log('Current owner undefined\n');
+        return undefined;
+      }
+      changeRole(ChannelMemberRole.OWNER);
+      callAPI('PATCH', 'channel-members', {
+        id: currentOwner.id,
+        role: ChannelMemberRole.ADMIN,
+      });
+      changeChannelMemberRole(currentOwner.id, ChannelMemberRole.ADMIN);
+      channelMemberSocket.emit('changeStatus', currentOwner.id);
     }
   }
 
@@ -190,10 +220,8 @@ export function ChannelMemberList() {
       return 'handleConfirmationAction error!!';
     }
     switch (action) {
-      case ChannelMemberAction.CHOWN: {
-        changeRole(ChannelMemberRole.OWNER);
-        return;
-      }
+      case ChannelMemberAction.CHOWN:
+        return changeOwnership(ChannelMemberRole.OWNER);
       case ChannelMemberAction.KICK:
         return kickUser();
       case ChannelMemberAction.ADMIN:
