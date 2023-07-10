@@ -51,6 +51,8 @@ export class GameService {
   server: Server;
   intervalID: NodeJS.Timer;
 
+  refreshMilisec: number = 16;
+
   constructor(roomid: string, server: Server) {
     this.windowSize = {
       x: 800,
@@ -152,6 +154,11 @@ export class GameService {
         x: this.Ball.x,
         y: this.Ball.y,
       },
+      balldirection : {
+        x: this.Ball.velocityX / (this.refreshMilisec / 1000),
+        y: this.Ball.velocityY / (this.refreshMilisec / 1000),
+      },
+      timestamp : Date.now(),
       paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
       paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
       score: this.score,

@@ -28,11 +28,11 @@ export default class GameMainScene extends Phaser.Scene {
   private keyState: { [key: string]: boolean } = {};
   preload() {
     const game = this;
-    game.load.multiatlas('ballsprite', '/ball/ballsprite.json', 'ball');
-    game.load.image('red', '/ball/bubble.png');
-    game.load.image('test', '/ball/test3.png');
-    game.load.image('paddle1', '/ball/paddle1.png');
-    game.load.image('paddle2', '/ball/paddle2.png');
+    game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'ball');
+    game.load.image('red', '/assets/bubble.png');
+    game.load.image('test', '/assets/test3.png');
+    game.load.image('paddle1', '/assets/paddle1.png');
+    game.load.image('paddle2', '/assets/paddle2.png');
   }
 
   create() {
