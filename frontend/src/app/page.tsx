@@ -1,13 +1,60 @@
-import { ChannelMemberList } from '@/components/channel-member/ChannelMemberList';
-import { ChannelList } from '@/components/channel/ChannelList';
-import FriendList from '@/components/friend/FriendList';
-export default function Home() {
-  return (
-    <>
-      <ChannelMemberList></ChannelMemberList>
+'use client';
+import { useEffect, useState } from 'react';
+import { Session } from 'next-auth';
+import { getSession } from 'next-auth/react';
+import { Box } from '@mui/material';
+import { useUser, useUserActions } from '@/lib/stores/useUserStore';
+import Login from '@/components/user/Login';
+import FirstTimeSetup from '@/components/user/FirstTimeSetup';
+import Cyberpong from '@/components/Cyberpong';
 
-      {/* <ChannelList></ChannelList>
-      <FriendList></FriendList> */}
-    </>
+export default function Home() {
+  const [session, setSession] = useState<Session | null | undefined>();
+  const user = useUser();
+  const { setUser } = useUserActions();
+
+  useEffect(() => {
+    async function getData() {
+      const currentSession = await getSession();
+
+      setSession(currentSession);
+      if (currentSession) {
+        fetch(
+          `http://localhost:4242/api/users?search_type=TOKEN&search_string=${currentSession.refresh_token}`,
+          {
+            cache: 'no-store',
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          },
+        )
+          .then((res) => (res.ok ? res.json() : null))
+          .then((currentUser) => {
+            // if (currentUser) {
+            setUser(currentUser);
+            // }
+          });
+      }
+    }
+    getData();
+  }, []);
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+        minHeight: '100vh',
+      }}
+    >
+      {session === null && <Login />}
+      {session &&
+        (user === null ? (
+          <FirstTimeSetup refresh_token={session.refresh_token} />
+        ) : (
+          <Cyberpong />
+        ))}
+    </Box>
   );
 }

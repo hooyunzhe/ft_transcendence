@@ -3,6 +3,9 @@ import { User } from '@/types/UserTypes';
 
 interface UserStore {
   user: User;
+  actions: {
+    setUser: (user: User) => void;
+  };
 }
 
 const useUserStore = create<UserStore>()((set) => ({
@@ -12,8 +15,10 @@ const useUserStore = create<UserStore>()((set) => ({
     refresh_token: '',
     date_of_creation: new Date(),
   },
-  setUser: (user: User) => set({ user }),
+  actions: {
+    setUser: (user: User) => set({ user }),
+  },
 }));
 
-export default useUserStore;
-// for testing lol
+export const useUser = () => useUserStore((state) => state.user);
+export const useUserActions = () => useUserStore((state) => state.actions);
