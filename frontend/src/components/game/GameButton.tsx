@@ -35,11 +35,5 @@ export class Button {
         }, timeout);
       });
     this.text = scene.add.text(x, y, label).setOrigin(0.5).setPadding(10);
-    // .setInteractive({ useHandCursor: true })
-    // .on('pointerover', () => this.text.setStyle({ fill: '#f39c12' }))
-    // .on('pointerout', () => this.text.setStyle({ fill: '#FFF' }));
-    // // .on('pointerdown', () => callback())
-    // .on('pointerover', () => button.setStyle({ fill: '#f39c12' }))
-    // .on('pointerout', () => button.setStyle({ fill: '#FFF' }));
   }
 }

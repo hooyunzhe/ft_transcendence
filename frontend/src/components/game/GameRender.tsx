@@ -4,6 +4,7 @@ import { MutableRefObject, useEffect, useRef, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import GameMainScene from './GameMainScene';
 import GameReadyScene from './GameReadyScene';
+import GameMatchFoundScene from './GameMatchFoundScene';
 
 interface GameRenderProps {
   gameSocket: Socket;
@@ -33,7 +34,11 @@ export default function GameRender({ gameSocket, gameReady }: GameRenderProps) {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
       },
-      scene: [new GameReadyScene(gameReady), mainGame],
+      scene: [
+        new GameMatchFoundScene(),
+        new GameReadyScene(gameReady),
+        mainGame,
+      ],
     };
 
     const gameSession = new Phaser.Game(config);
