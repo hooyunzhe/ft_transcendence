@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import ChannelMemberMenu from './ChannelMemberMenu';
 
-const TempRole = ChannelMemberRole.MEMBER;
+const TempRole = ChannelMemberRole.OWNER;
 
 interface ChannelMemberDisplayProps {
   channelMember: ChannelMembers;

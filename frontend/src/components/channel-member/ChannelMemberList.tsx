@@ -25,7 +25,8 @@ import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
 import { channelMemberSocket } from '@/lib/socket';
-import ChannelMemberListHeaderSettings from './ChannelMemberListHeaderSettings';
+import ChannelMemberListHeaderSettings from './ChannelMemberSettings';
+import ChannelMemberSettings from './ChannelMemberSettings';
 
 export function ChannelMemberList() {
   const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
@@ -234,7 +235,7 @@ export function ChannelMemberList() {
       case ChannelMemberAction.BAN:
         return changeStatus(ChannelMemberStatus.BANNED);
       case ChannelMemberAction.UNBAN:
-        return changeStatus(ChannelMemberStatus.DEFAULT);
+        return kickUser();
       case ChannelMemberAction.MUTE:
         return changeStatus(ChannelMemberStatus.MUTED);
       case ChannelMemberAction.UNMUTE:
@@ -275,7 +276,10 @@ export function ChannelMemberList() {
       spacing={1}
     >
       <ListHeader title='My retarded channel member list'>
-        <ChannelMemberListHeaderSettings></ChannelMemberListHeaderSettings>
+        <ChannelMemberSettings
+          channelMember={channelMembers}
+          handleDisplayAction={handleDisplayAction}
+        />
       </ListHeader>
       <ChannelMemberAddPrompt
         addUser={addUser}
