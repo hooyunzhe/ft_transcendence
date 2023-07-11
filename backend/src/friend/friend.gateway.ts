@@ -1,7 +1,5 @@
 import {
   MessageBody,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -16,33 +14,9 @@ import { FriendEmitBodyParams } from './params/emit-body-params';
   },
   namespace: 'gateway/friends',
 })
-export class FriendGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class FriendGateway {
   @WebSocketServer()
   server: Server;
-
-  async handleConnection(client: Socket) {
-    client.data.user_id ??= Number(client.handshake.query['id']);
-    client.join(String(client.data.user_id));
-    client.broadcast.emit('newConnection', client.data.user_id);
-  }
-
-  handleDisconnect(client: Socket) {
-    client.broadcast.emit('newDisconnect', client.data.user_id);
-  }
-
-  @SubscribeMessage('getStatus')
-  async getStatus(@MessageBody() user_ids: number[]) {
-    const connectedSockets = await this.server.fetchSockets();
-    const onlineUsers = connectedSockets.map((socket) => socket.data.user_id);
-    const statusDictionary: { [key: number]: string } = {};
-
-    user_ids.forEach((user_id) => {
-      statusDictionary[user_id] = onlineUsers.includes(user_id)
-        ? 'online'
-        : 'offline';
-    });
-    return statusDictionary;
-  }
 
   getIDs(friendship: Friend): string[] {
     return [
