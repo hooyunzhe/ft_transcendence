@@ -9,9 +9,14 @@ import { User } from '@/types/UserTypes';
 import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import NotificationBar from '../utils/NotificationBar';
 import DialogPrompt from '../utils/DialogPrompt';
+import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
+import { useUser } from '@/lib/stores/useUserStore';
 
 export default function FriendList() {
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const currentUser = useUser();
+  const friends = useFriends();
+  const { setFriends, addFriend, changeFriend, deleteFriend } =
+    useFriendActions();
   const [friendsStatus, setFriendsStatus] = useState<{
     [key: number]: string;
   }>({});
@@ -44,55 +49,22 @@ export default function FriendList() {
     | undefined
   >();
 
-  const current_user: User = {
-    id: 4,
-    username: 'Test',
-    refresh_token: 'test_token',
-    date_of_creation: new Date(),
-  };
-
   async function callFriendsAPI(
     method: string,
     incoming_friend: User,
     action?: FriendAction,
   ): Promise<string> {
     return callAPI(method, 'friends', {
-      outgoing_id: current_user.id,
+      outgoing_id: currentUser.id,
       incoming_id: incoming_friend.id,
       ...(action && { action: action }),
     });
   }
 
-  function changeFriend(
-    incoming_friend: User,
-    current_status: FriendStatus,
-    new_status: FriendStatus,
-  ): void {
-    setFriends((friends: Friend[]) =>
-      friends.map((friend) => {
-        if (
-          friend.incoming_friend.id === incoming_friend.id &&
-          friend.status === current_status
-        ) {
-          friend.status = new_status;
-        }
-        return friend;
-      }),
-    );
-  }
-
-  function deleteFriend(incoming_friend: User): void {
-    setFriends((friends: Friend[]) =>
-      friends.filter(
-        (friend) => friend.incoming_friend.id !== incoming_friend.id,
-      ),
-    );
-  }
-
   function addStatus(user_ids: number[]): void {
     friendsSocket.emit(
       'getStatus',
-      { user_ids: user_ids },
+      user_ids,
       (data: { [key: number]: string }) => {
         setFriendsStatus((friendsStatus: { [key: number]: string }) => ({
           ...friendsStatus,
@@ -123,7 +95,7 @@ export default function FriendList() {
   function acceptFriendRequest(request: Friend): void {
     callFriendsAPI('PATCH', request.incoming_friend, FriendAction.ACCEPT);
     changeFriend(
-      request.incoming_friend,
+      request.incoming_friend.id,
       FriendStatus.PENDING,
       FriendStatus.FRIENDS,
     );
@@ -133,14 +105,14 @@ export default function FriendList() {
 
   function rejectFriendRequest(request: Friend): void {
     callFriendsAPI('PATCH', request.incoming_friend, FriendAction.REJECT);
-    deleteFriend(request.incoming_friend);
+    deleteFriend(request.incoming_friend.id);
     friendsSocket.emit('rejectRequest', request);
     displayNotification('error', 'Request rejected');
   }
 
   function removeFriendRequest(request: Friend): void {
     callFriendsAPI('DELETE', request.incoming_friend);
-    deleteFriend(request.incoming_friend);
+    deleteFriend(request.incoming_friend.id);
     friendsSocket.emit('deleteRequest', request);
     displayNotification('error', 'Request removed');
   }
@@ -148,7 +120,7 @@ export default function FriendList() {
   function blockFriend(friendship: Friend): void {
     callFriendsAPI('PATCH', friendship.incoming_friend, FriendAction.BLOCK);
     changeFriend(
-      friendship.incoming_friend,
+      friendship.incoming_friend.id,
       FriendStatus.FRIENDS,
       FriendStatus.BLOCKED,
     );
@@ -161,7 +133,7 @@ export default function FriendList() {
   function unblockFriend(friendship: Friend): void {
     callFriendsAPI('PATCH', friendship.incoming_friend, FriendAction.UNBLOCK);
     changeFriend(
-      friendship.incoming_friend,
+      friendship.incoming_friend.id,
       FriendStatus.BLOCKED,
       FriendStatus.FRIENDS,
     );
@@ -173,7 +145,7 @@ export default function FriendList() {
 
   function removeFriend(friendship: Friend): void {
     callFriendsAPI('DELETE', friendship.incoming_friend, FriendAction.REMOVE);
-    deleteFriend(friendship.incoming_friend);
+    deleteFriend(friendship.incoming_friend.id);
     displayNotification(
       'error',
       'Unfriended ' + friendship.incoming_friend.username,
@@ -183,7 +155,10 @@ export default function FriendList() {
   useEffect(() => {
     async function getFriends(): Promise<void> {
       const data = JSON.parse(
-        await callAPI('GET', 'friends/user?outgoing_id=4'),
+        await callAPI(
+          'GET',
+          `friends?search_type=USER&search_number=${currentUser.id}`,
+        ),
       );
       setFriends(data);
       addStatus(data.map((friend: Friend) => friend.incoming_friend.id));
@@ -199,17 +174,17 @@ export default function FriendList() {
     });
 
     friendsSocket.on('newRequest', (request: Friend) => {
-      setFriends((friends: Friend[]) => [...friends, request]);
+      addFriend(request);
       addStatus([request.incoming_friend.id]);
       displayNotification('info', 'New friend request!');
     });
 
     friendsSocket.on('deleteRequest', (sender: User) => {
-      deleteFriend(sender);
+      deleteFriend(sender.id);
     });
 
     friendsSocket.on('acceptRequest', (sender: User) => {
-      changeFriend(sender, FriendStatus.INVITED, FriendStatus.FRIENDS);
+      changeFriend(sender.id, FriendStatus.INVITED, FriendStatus.FRIENDS);
       displayNotification(
         'success',
         sender.username + ' accepted your friend request!',
@@ -217,7 +192,7 @@ export default function FriendList() {
     });
 
     friendsSocket.on('rejectRequest', (sender: User) => {
-      deleteFriend(sender);
+      deleteFriend(sender.id);
       displayNotification(
         'error',
         sender.username + ' rejected your friend request!',
@@ -234,12 +209,21 @@ export default function FriendList() {
     };
   }, []);
 
-  async function addFriend(): Promise<string> {
-    return callAPI('GET', 'users/username/' + username).then(async (data) => {
-      if (!data.length) {
+  async function sendFriendRequest(): Promise<string> {
+    return fetch(
+      'http://localhost:4242/api/users?search_type=NAME&search_string=' +
+        username,
+      {
+        cache: 'no-store',
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      },
+    ).then(async (res) => {
+      if (!res.ok) {
         return 'User not found';
       }
-      const new_friend = JSON.parse(data);
+
+      const new_friend = await res.json();
       const friendship = friends.find(
         (friend: Friend) => friend.incoming_friend.id === new_friend.id,
       );
@@ -258,7 +242,7 @@ export default function FriendList() {
             await callFriendsAPI('POST', new_friend),
           );
 
-          setFriends((friends: Friend[]) => [...friends, new_requests[0]]);
+          addFriend(new_requests[0]);
           friendsSocket.emit('newRequest', new_requests[1]);
           addStatus([new_friend.id]);
           displayNotification('success', 'Request sent');
@@ -349,7 +333,7 @@ export default function FriendList() {
         backButtonText='Cancel'
         backHandler={() => {}}
         actionButtonText='Send'
-        handleAction={addFriend}
+        handleAction={sendFriendRequest}
       />
       {categories.map((category, index) => (
         <FriendDropdown
@@ -357,7 +341,7 @@ export default function FriendList() {
           category={category}
           open={dropdownOpen[category]}
           friends={friends.filter(
-            (friend: Friend) => friend.status === category,
+            (friend: Friend) => friend.status === category.toUpperCase(),
           )}
           toggleDropdown={toggleDropdown}
           handleAction={handleAction}
