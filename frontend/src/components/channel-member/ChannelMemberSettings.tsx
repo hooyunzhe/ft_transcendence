@@ -2,63 +2,31 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
+import EditIcon from '@mui/icons-material/Edit';
+import BrushIcon from '@mui/icons-material/Brush';
 
-import {
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  MenuList,
-  Paper,
-  Stack,
-} from '@mui/material';
-import DialogPrompt from '../utils/DialogPrompt';
+import { IconButton, ListItemIcon, MenuList, Paper } from '@mui/material';
 import { useState } from 'react';
-import { ChannelMemberDisplay } from './ChannelMemberDisplay';
-import ChannelMembers, {
-  ChannelMemberStatus,
-} from '@/types/ChannelMemberTypes';
+import ChannelMembers from '@/types/ChannelMemberTypes';
+import { ChannelMemberUnbanPrompt } from './ChannelMemberUnbanPrompt';
 
 interface ChannelMemberSettingsProps {
   channelMember: ChannelMembers[];
-  // handleAction: (...args: any) => Promise<void>;
-  handleDisplayAction: (...args: any) => Promise<void>;
+  handleAction: (...args: any) => Promise<void>;
 }
 
 export default function ChannelMemberSettings({
   channelMember,
-  // handleAction,
-  handleDisplayAction,
+  handleAction,
 }: ChannelMemberSettingsProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const [selectedMember, setSelectedMember] = useState<
-    ChannelMembers | undefined
-  >();
-  const [memberSearch, setMemberSearch] = useState('');
-
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
   };
-
-  console.log('--PRINTING CHANNEL MEMBER---');
-  console.log(channelMember);
-
-  async function handleUnbanMemberAction(): Promise<string> {
-    if (selectedMember === undefined) {
-      return "Banned user doesn't exist";
-    }
-    const UserToUnban = channelMember.find(
-      (member) => member.id === selectedMember.id,
-    );
-
-    if (!UserToUnban) {
-      return 'Invalid friend name!';
-    }
-    return addUser(UserToUnban.id);
-  }
 
   return (
     <div>
@@ -88,61 +56,20 @@ export default function ChannelMemberSettings({
       >
         <Paper sx={{ width: 320, maxWidth: '100%' }}>
           <MenuList>
-            <MenuItem
-              onClick={() => (
-                <DialogPrompt
-                  buttonText='Unban'
-                  dialogTitle='Add members'
-                  dialogDescription='Add your friends to the channel'
-                  labelText='username'
-                  textInput={memberSearch}
-                  backButtonText='Cancel'
-                  onChangeHandler={(input) => {
-                    setMemberSearch(input);
-                    setSelectedMember(undefined);
-                  }}
-                  backHandler={async () => {}}
-                  actionButtonText='Unban'
-                  handleAction={async () => {
-                    const response = await handleAddMemberAction();
-
-                    console.log('response: ' + response);
-                    if (!response) {
-                      setMemberSearch('');
-                      setSelectedMember(undefined);
-                    }
-                    return response;
-                  }}
-                >
-                  <Stack
-                    maxHeight={200}
-                    overflow='auto'
-                    spacing={1}
-                    sx={{ p: 1 }}
-                  >
-                    {channelMember
-                      .filter((friend) =>
-                        channelMember.every((member) => {
-                          return member.status === ChannelMemberStatus.BANNED;
-                        }),
-                      )
-                      .map((channelMember: ChannelMembers, index: number) => (
-                        <>
-                          <ChannelMemberDisplay
-                            key={index}
-                            channelMember={channelMember}
-                            handleAction={handleDisplayAction}
-                          />
-                        </>
-                      ))}
-                  </Stack>
-                </DialogPrompt>
-              )}
-            >
+            <MenuItem>
               <ListItemIcon>
                 <SentimentVeryDissatisfiedIcon />
               </ListItemIcon>
-              <ListItemText>Channel Ban List</ListItemText>
+              <ChannelMemberUnbanPrompt
+                channelMembers={channelMember}
+                handleAction={handleAction}
+              ></ChannelMemberUnbanPrompt>
+            </MenuItem>
+            <MenuItem>
+              <EditIcon></EditIcon> Change server Name
+            </MenuItem>
+            <MenuItem>
+              <BrushIcon></BrushIcon>Change server Type
             </MenuItem>
           </MenuList>
         </Paper>

@@ -1,4 +1,5 @@
 import ChannelMembers, {
+  ChannelMemberAction,
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
 import { useState } from 'react';
@@ -6,40 +7,30 @@ import DialogPrompt from '../utils/DialogPrompt';
 import BanListDisplay from './ChannelMemberBanListDisplay';
 import { Stack } from '@mui/material';
 
-interface ChannelMemberAddPromptProps {
-  kickUser: (...args: any) => Promise<string>;
+interface ChannelMemberUnbanPromptProps {
   channelMembers: ChannelMembers[];
+  handleAction: (...args: any) => Promise<void>;
 }
 
-export function ChannelMemberAddPrompt({
-  kickUser,
+export function ChannelMemberUnbanPrompt({
   channelMembers,
-}: ChannelMemberAddPromptProps) {
+  handleAction,
+}: ChannelMemberUnbanPromptProps) {
   const [selectedMember, setSelectedMember] = useState<
     ChannelMembers | undefined
   >();
   const [memberSearch, setMemberSearch] = useState('');
-
-  async function handleUnbanMemberAction(): Promise<string> {
-    if (selectedMember === undefined) {
-      return "Banned user doesn't exist";
-    }
-    const UserToUnban = channelMembers.find(
-      (member) => member.id === selectedMember.id,
-    );
-
-    if (!UserToUnban) {
-      return 'Invalid friend name!';
-    }
-    return kickUser(UserToUnban.id);
-  }
-  // ** !! PROBABLY NEED A CONFIRMATION PROMPT IN THIS ** !! //
+  const [altOpen, setAltOpen] = useState(false);
 
   return (
     <DialogPrompt
-      buttonText='Add members button'
-      dialogTitle='Add members'
-      dialogDescription='Add your friends to the channel'
+      altOpen={altOpen}
+      resetAltOpen={() => {
+        setAltOpen(false);
+      }}
+      buttonText='Unban User'
+      dialogTitle='Ban list'
+      dialogDescription='Please unban the users you desire'
       labelText='username'
       textInput={memberSearch}
       backButtonText='Cancel'
@@ -48,16 +39,11 @@ export function ChannelMemberAddPrompt({
         setSelectedMember(undefined);
       }}
       backHandler={async () => {}}
-      actionButtonText='Add'
+      actionButtonText='Unban'
       handleAction={async () => {
-        const response = await handleUnbanMemberAction();
-
-        console.log('response: ' + response);
-        if (!response) {
-          setMemberSearch('');
-          setSelectedMember(undefined);
-        }
-        return response;
+        handleAction(selectedMember, ChannelMemberAction.UNBAN);
+        setMemberSearch('');
+        return '';
       }}
     >
       <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>

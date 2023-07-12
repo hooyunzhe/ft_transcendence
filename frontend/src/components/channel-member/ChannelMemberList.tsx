@@ -25,7 +25,6 @@ import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
 import { channelMemberSocket } from '@/lib/socket';
-import ChannelMemberListHeaderSettings from './ChannelMemberSettings';
 import ChannelMemberSettings from './ChannelMemberSettings';
 
 export function ChannelMemberList() {
@@ -140,14 +139,16 @@ export function ChannelMemberList() {
     return '';
   }
 
-  async function kickUser() {
+  async function kickUser(): Promise<string> {
     if (confirmation) {
       const member = confirmation.channelMember;
+      console.log(member.id);
       callAPI('DELETE', 'channel-members', { id: member.id });
       kickChannelMember(member.id);
       channelMemberSocket.emit('kickUser', member);
       setConfirmation(undefined);
     }
+    return '';
   }
 
   async function changeRole(newRole: ChannelMemberRole) {
@@ -278,7 +279,7 @@ export function ChannelMemberList() {
       <ListHeader title='My retarded channel member list'>
         <ChannelMemberSettings
           channelMember={channelMembers}
-          handleDisplayAction={handleDisplayAction}
+          handleAction={handleDisplayAction}
         />
       </ListHeader>
       <ChannelMemberAddPrompt

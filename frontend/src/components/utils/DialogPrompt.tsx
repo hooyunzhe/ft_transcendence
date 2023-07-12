@@ -12,6 +12,8 @@ import { ReactNode, useState } from 'react';
 import NotificationBar from './NotificationBar';
 
 interface DialogPromptProps {
+  altOpen?: boolean;
+  resetAltOpen?: () => void;
   children?: ReactNode;
   buttonText: string;
   dialogTitle: string;
@@ -26,6 +28,8 @@ interface DialogPromptProps {
 }
 
 export default function DialogPrompt({
+  altOpen,
+  resetAltOpen,
   children,
   buttonText,
   dialogTitle,
@@ -54,9 +58,10 @@ export default function DialogPrompt({
         {buttonText}
       </Button>
       <Dialog
-        open={open}
+        open={open || (altOpen ?? false)}
         onClose={() => {
           setOpen(false);
+          resetAltOpen && resetAltOpen();
         }}
         maxWidth='xs'
         fullWidth
@@ -88,6 +93,7 @@ export default function DialogPrompt({
               backHandler();
               if (backButtonText !== 'Back') {
                 setOpen(false);
+                resetAltOpen && resetAltOpen();
               }
             }}
           >
@@ -102,6 +108,7 @@ export default function DialogPrompt({
                   setActionErrorMessage(errorMessage);
                 } else if (actionButtonText !== 'Next') {
                   setOpen(false);
+                  resetAltOpen && resetAltOpen();
                 }
               });
             }}
