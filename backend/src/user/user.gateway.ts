@@ -23,7 +23,9 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  async handleConnection() {}
+  handleConnection(client: Socket) {
+    client.emit('socketConnected');
+  }
 
   handleDisconnect(client: Socket) {
     client.broadcast.emit('newDisconnect', client.data.user_id);
@@ -52,7 +54,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
         ? 'online'
         : 'offline';
     });
-    console.log(statusDictionary);
     return statusDictionary;
   }
 }
