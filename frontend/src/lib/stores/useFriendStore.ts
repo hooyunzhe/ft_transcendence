@@ -1,8 +1,10 @@
-import { Friend, FriendStatus } from '@/types/FriendTypes';
 import { create } from 'zustand';
+import { Friend, FriendStatus } from '@/types/FriendTypes';
 
 interface FriendStore {
-  friends: Friend[];
+  data: {
+    friends: Friend[];
+  };
   actions: {
     setFriends: (friends: Friend[]) => void;
     addFriend: (friend: Friend) => void;
@@ -16,33 +18,39 @@ interface FriendStore {
 }
 
 const useFriendStore = create<FriendStore>()((set) => ({
-  friends: [],
+  data: { friends: [] },
   actions: {
-    setFriends: (friends) => set({ friends }),
+    setFriends: (friends) => set({ data: { friends } }),
     addFriend: (friend) =>
-      set((state) => ({
-        friends: [...state.friends, friend],
+      set(({ data }) => ({
+        data: {
+          friends: [...data.friends, friend],
+        },
       })),
     changeFriend: (incoming_id, current_status, new_status) =>
-      set((state) => ({
-        friends: state.friends.map((friend) => {
-          if (
-            friend.incoming_friend.id === incoming_id &&
-            friend.status === current_status
-          ) {
-            friend.status = new_status;
-          }
-          return friend;
-        }),
+      set(({ data }) => ({
+        data: {
+          friends: data.friends.map((friend) => {
+            if (
+              friend.incoming_friend.id === incoming_id &&
+              friend.status === current_status
+            ) {
+              friend.status = new_status;
+            }
+            return friend;
+          }),
+        },
       })),
     deleteFriend: (incoming_id) =>
-      set((state) => ({
-        friends: state.friends.filter(
-          (friend) => friend.incoming_friend.id !== incoming_id,
-        ),
+      set(({ data }) => ({
+        data: {
+          friends: data.friends.filter(
+            (friend) => friend.incoming_friend.id !== incoming_id,
+          ),
+        },
       })),
   },
 }));
 
-export const useFriends = () => useFriendStore((state) => state.friends);
+export const useFriends = () => useFriendStore((state) => state.data.friends);
 export const useFriendActions = () => useFriendStore((state) => state.actions);
