@@ -1,6 +1,13 @@
 'use client';
 import Phaser, { Game } from 'phaser';
-import { MutableRefObject, useEffect, useRef, useState } from 'react';
+import {
+  Dispatch,
+  MutableRefObject,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Socket } from 'socket.io-client';
 import GameMainScene from './GameMainScene';
 import GameReadyScene from './GameReadyScene';
@@ -8,10 +15,13 @@ import GameMatchFoundScene from './GameMatchFoundScene';
 
 interface GameRenderProps {
   gameSocket: Socket;
-  gameReady: MutableRefObject<boolean>;
+  setGameReady: Dispatch<SetStateAction<boolean>>;
 }
 
-export default function GameRender({ gameSocket, gameReady }: GameRenderProps) {
+export default function GameRender({
+  gameSocket,
+  setGameReady,
+}: GameRenderProps) {
   const score = {
     player1: 0,
     player2: 0,
@@ -36,7 +46,7 @@ export default function GameRender({ gameSocket, gameReady }: GameRenderProps) {
       },
       scene: [
         new GameMatchFoundScene(),
-        new GameReadyScene(gameReady),
+        new GameReadyScene(gameSocket),
         mainGame,
       ],
     };

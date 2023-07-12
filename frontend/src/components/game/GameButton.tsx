@@ -10,10 +10,12 @@ export class Button {
     ready: string,
     unready: string,
     timeout: number,
+    callback1: () => void,
+    callback2: () => void,
   ) {
     this.buttonClickable = true;
     this.button = scene.add
-      .image(x, y, ready)
+      .image(x, y, unready)
       .setOrigin(0.5)
       .setScale(0.1)
       .setInteractive({ useHandCursor: true })
@@ -24,10 +26,10 @@ export class Button {
           this.buttonClickable = false;
           if (this.button.texture.key === ready) {
             this.button.setTexture(unready);
-            this.text.setText('Ready');
+            callback2();
           } else {
             this.button.setTexture(ready);
-            this.text.setText('Unready');
+            callback1();
           }
         }
         setTimeout(() => {

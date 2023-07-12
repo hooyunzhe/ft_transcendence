@@ -19,16 +19,17 @@ export default class GameMainScene extends Phaser.Scene {
     this.ball = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
     this.paddle1 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
     this.paddle2 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
+    this.keyState = {};
   }
   // const score = {
   //   player1: 0,
   //   player2: 0,
   // };
 
-  private keyState: { [key: string]: boolean } = {};
+  private keyState: { [key: string]: boolean };
   preload() {
     const game = this;
-    game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'ball');
+    game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
     game.load.image('red', '/assets/bubble.png');
     game.load.image('test', '/assets/test3.png');
     game.load.image('paddle1', '/assets/paddle1.png');
@@ -132,6 +133,8 @@ export default class GameMainScene extends Phaser.Scene {
     });
 
     this.ball.current.anims.play('ballPulse', true);
+
+    //   // useEffect(() => {
     this.Socket.on(
       'game',
       (data: {
@@ -158,7 +161,7 @@ export default class GameMainScene extends Phaser.Scene {
   update() {
     this.keyLoop();
   }
-  private keyLoop = () => {
+  keyLoop = () => {
     if (this.keyState['w']) {
       this.Socket.emit('Player', 'w');
     }

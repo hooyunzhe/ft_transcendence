@@ -76,6 +76,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.ready,
     );
     if (players.every((player) => player.data.ready)) {
+      players.forEach((player) => player.emit('start'));
       console.log('Game is starting in room :', client.data.roomid);
       this.roomlist.get(client.data.roomid).gameStart();
     }

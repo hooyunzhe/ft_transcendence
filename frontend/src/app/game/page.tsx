@@ -15,7 +15,6 @@ export default function GamePage() {
   const [matchFound, setMatchFound] = useState(false);
   const [gameReady, setGameReady] = useState(false);
   // const [roomid, setRoomid] = useState('');
-  const test = useRef(gameReady);
   const socketRef = useRef();
 
   useEffect(() => {
@@ -66,7 +65,6 @@ export default function GamePage() {
     // console.log('Starting game');
     // console.log(gameSocket.connected);
     gameSocket.emit('ready');
-    test.current = !test.current;
   };
 
   // const joinGame = () => {
@@ -103,7 +101,7 @@ export default function GamePage() {
         onChange={startGame}
         disabled={!matchFound}
       >
-        {test.current ? 'Unready' : 'Ready'}
+        {gameReady ? 'Unready' : 'Ready'}
       </ToggleButton>
       {/* <ConfirmationPrompt
         open={matchFound}
@@ -113,16 +111,21 @@ export default function GamePage() {
         actionHandler={joinGame}
       ></ConfirmationPrompt> */}
       <ToggleButton
-        value={test.current}
+        value={gameReady}
         onChange={resetGame}
-        disabled={!test.current}
+        disabled={!gameReady}
       >
         Reset
       </ToggleButton>
       <Button onClick={disconnectGame}>Disconnect</Button>
-      <div>
-        <GameRender gameSocket={gameSocket} gameReady={test}></GameRender>
-      </div>
+      {matchFound && (
+        <div>
+          <GameRender
+            gameSocket={gameSocket}
+            setGameReady={setGameReady}
+          ></GameRender>
+        </div>
+      )}
     </div>
   );
 }
