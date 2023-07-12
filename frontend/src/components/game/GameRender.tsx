@@ -9,9 +9,9 @@ import {
   useState,
 } from 'react';
 import { Socket } from 'socket.io-client';
-import GameMainScene from './GameMainScene';
-import GameReadyScene from './GameReadyScene';
-import GameMatchFoundScene from './GameMatchFoundScene';
+import GameMainScene from './scenes/GameMainScene';
+import GameReadyScene from './scenes/GameReadyScene';
+import GameMatchFoundScene from './scenes/GameMatchFoundScene';
 
 interface GameRenderProps {
   gameSocket: Socket;

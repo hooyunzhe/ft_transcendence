@@ -1,6 +1,7 @@
 import { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { Button } from './GameButton';
+import { Button } from '../class/GameButton';
 import { Socket } from 'socket.io-client';
+import { SkillNodes } from '../class/SkillNodes';
 
 export default class GameReadyScene extends Phaser.Scene {
   private Socket: Socket;
@@ -14,6 +15,10 @@ export default class GameReadyScene extends Phaser.Scene {
   preload() {
     this.load.image('greenbutton', '/assets/ready_button_green.png');
     this.load.image('redbutton', '/assets/ready_button_red.png');
+    this.load.svg('skillframe', '/assets/skillframe.svg', {
+      width: Number(this.game.config.width) * 0.1,
+      height: Number(this.game.config.height) * 0.1,
+    });
   }
 
   create() {
@@ -38,6 +43,14 @@ export default class GameReadyScene extends Phaser.Scene {
       emitUnready,
     );
 
+    const skillNodes1 = new SkillNodes(
+      100,
+      100,
+      'skillframe',
+      'template_skill',
+      'do this and that',
+      this,
+    );
     const createCountdown = () => {
       let start = 5;
       const text = this.add
