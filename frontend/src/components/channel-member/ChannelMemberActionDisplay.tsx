@@ -10,19 +10,19 @@ import {
   ListItemText,
   Paper,
 } from '@mui/material';
-import ChannelMemberMenu from './ChannelMemberMenu';
+import ChannelMemberActionMenu from './ChannelMemberActionMenu';
 
 const TempRole = ChannelMemberRole.OWNER;
 
-interface ChannelMemberDisplayProps {
+interface ChannelMemberActionDisplayProps {
   channelMember: ChannelMembers;
   handleAction: (...args: any) => Promise<void>;
 }
 
-export function ChannelMemberDisplay({
+export function ChannelMemberActionDisplay({
   channelMember,
   handleAction,
-}: ChannelMemberDisplayProps) {
+}: ChannelMemberActionDisplayProps) {
   return (
     <Paper elevation={2}>
       {channelMember.status !== ChannelMemberStatus.BANNED ? (
@@ -40,7 +40,7 @@ export function ChannelMemberDisplay({
             }
           />
           {channelMember.role !== ChannelMemberRole.OWNER ? (
-            <ChannelMemberMenu
+            <ChannelMemberActionMenu
               channelMember={channelMember}
               currentUserRole={TempRole}
               handleAction={handleAction}

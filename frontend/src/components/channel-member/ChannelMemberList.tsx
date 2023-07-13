@@ -20,16 +20,18 @@ import ChannelMembers, {
 import { Friend } from '@/types/FriendTypes';
 import { Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { ChannelMemberDisplay } from './ChannelMemberDisplay';
+import { ChannelMemberActionDisplay } from './ChannelMemberActionDisplay';
 import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
 import { channelMemberSocket } from '@/lib/socket';
 import ChannelMemberSettings from './ChannelMemberSettings';
+import { Channel, ChannelType } from '@/types/ChannelTypes';
 
 export function ChannelMemberList() {
   const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [channels, setChannels] = useState<Channel[]>([]);
   const [confirmation, setConfirmation] = useState<
     | {
         required: boolean;
@@ -43,6 +45,11 @@ export function ChannelMemberList() {
   >();
 
   const tempBanned = ChannelMemberStatus.BANNED;
+  const tempChannel = {
+    name: 'your_name',
+    type: ChannelType.PUBLIC,
+    pass: 1234,
+  };
 
   useEffect(() => {
     async function getFriends() {
@@ -81,6 +88,14 @@ export function ChannelMemberList() {
   }, []);
 
   // * Helper Function for update locals * //
+
+  function changeLocalChannelName(channelName: string) {
+    setChannelName(())
+    // steps
+    // 1. call api
+    // 2. change local
+    // 3. emit
+  }
 
   function addChannelMember(newChannelMember: ChannelMembers) {
     setChannelMembers((channelMembersData) => [
@@ -126,6 +141,22 @@ export function ChannelMemberList() {
   }
 
   // * Async functions for each actions * //
+
+  async function changeChannelName(
+    channelID: number,
+    newName: string,
+  ): Promise<string> {
+    const namePatch = await callAPI('PATCH', 'channels', {
+      id: channelID,
+      name: newName,
+    });
+
+    changeLocalChannelName();
+    const newChannelMember: ChannelMembers = JSON.parse(namePatch);
+
+    channelMemberSocket.emit('addUser', newChannelMember);
+    return '';
+  }
 
   async function addUser(userID: number): Promise<string> {
     const add = await callAPI('POST', 'channel-members', {
@@ -289,7 +320,7 @@ export function ChannelMemberList() {
       ></ChannelMemberAddPrompt>
       {channelMembers.map((channelMember: ChannelMembers, index: number) => (
         <>
-          <ChannelMemberDisplay
+          <ChannelMemberActionDisplay
             key={index}
             channelMember={channelMember}
             handleAction={handleDisplayAction}

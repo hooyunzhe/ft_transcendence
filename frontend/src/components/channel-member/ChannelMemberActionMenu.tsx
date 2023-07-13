@@ -22,7 +22,7 @@ import SportsMartialArtsIcon from '@mui/icons-material/SportsMartialArts';
 import GavelRoundedIcon from '@mui/icons-material/GavelRounded';
 import FortIcon from '@mui/icons-material/Fort';
 
-interface ChannelMemberMenuProps {
+interface ChannelMemberActionMenuProps {
   channelMember: ChannelMembers;
   currentUserRole: ChannelMemberRole;
   handleAction: (...args: any) => Promise<void>;
@@ -32,7 +32,7 @@ export default function ChannelMemberMenu({
   channelMember,
   currentUserRole,
   handleAction,
-}: ChannelMemberMenuProps) {
+}: ChannelMemberActionMenuProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {

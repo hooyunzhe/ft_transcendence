@@ -2,10 +2,10 @@ import { Message } from './MessageTypes';
 import { User } from './UserTypes';
 
 export enum ChannelType {
-  PUBLIC = 'public',
-  PRIVATE = 'private',
-  PROTECTED = 'protected',
-  DIRECT = 'direct',
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+  PROTECTED = 'PROTECTED',
+  DIRECT = 'DIRECT',
 }
 
 export interface Channel {
