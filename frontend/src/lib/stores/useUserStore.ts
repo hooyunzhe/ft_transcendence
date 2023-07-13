@@ -3,26 +3,36 @@ import { User } from '@/types/UserTypes';
 
 interface UserStore {
   data: {
-    user: User;
+    currentUser: User;
+    userStatus: { [user_id: number]: string };
   };
   actions: {
-    setUser: (user: User) => void;
+    setCurrentUser: (currentUser: User) => void;
+    setUserStatus: (userStatus: { [user_id: number]: string }) => void;
   };
 }
 
 const useUserStore = create<UserStore>()((set) => ({
   data: {
-    user: {
+    currentUser: {
       id: 0,
       username: '',
       refresh_token: '',
       date_of_creation: new Date(),
     },
+    userStatus: {},
   },
   actions: {
-    setUser: (user: User) => set({ data: { user } }),
+    setCurrentUser: (currentUser) =>
+      set(({ data }) => ({
+        data: { currentUser: currentUser, userStatus: data.userStatus },
+      })),
+    setUserStatus: (userStatus) =>
+      set(({ data }) => ({
+        data: { currentUser: data.currentUser, userStatus: userStatus },
+      })),
   },
 }));
 
-export const useUser = () => useUserStore((state) => state.data.user);
+export const useUser = () => useUserStore((state) => state.data.currentUser);
 export const useUserActions = () => useUserStore((state) => state.actions);
