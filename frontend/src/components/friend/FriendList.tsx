@@ -5,8 +5,6 @@ import FriendDropdown from './FriendDropdown';
 import callAPI from '@/lib/callAPI';
 import { Friend, FriendStatus, FriendAction } from '@/types/FriendTypes';
 import { User } from '@/types/UserTypes';
-import ConfirmationPrompt from '../utils/ConfirmationPrompt';
-import DialogPrompt from '../utils/DialogPrompt';
 import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
 import {
   useCurrentUser,
@@ -16,6 +14,7 @@ import {
 import { useFriendSocket, useUserSocket } from '@/lib/stores/useSocketStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import FriendAddPrompt from './FriendAddPrompt';
 
 export default function FriendList() {
   const currentUser = useCurrentUser();
@@ -49,6 +48,15 @@ export default function FriendList() {
       incoming_id: incoming_friend.id,
       ...(action && { action: action }),
     });
+  }
+
+  async function sendFriendRequest(user: User): Promise<void> {
+    const newRequests = JSON.parse(await callFriendsAPI('POST', user));
+
+    addFriend(newRequests[0]);
+    friendSocket.emit('newRequest', newRequests[1]);
+    addUserStatus(userSocket, [user.id]);
+    displayNotification('success', 'Request sent');
   }
 
   function acceptFriendRequest(request: Friend): void {
@@ -111,75 +119,6 @@ export default function FriendList() {
     );
   }
 
-  useEffect(() => {
-    async function getFriends(): Promise<void> {
-      const data = JSON.parse(
-        await callAPI(
-          'GET',
-          `friends?search_type=USER&search_number=${currentUser.id}`,
-        ),
-      );
-      setFriends(data);
-    }
-    getFriends();
-
-    return () => {
-      friendSocket.off('newRequest');
-      friendSocket.off('acceptRequest');
-      friendSocket.off('rejectRequest');
-    };
-  }, []);
-
-  useEffect(() => {
-    addUserStatus(
-      userSocket,
-      friends.map((friend: Friend) => friend.incoming_friend.id),
-    );
-  }, [friends.length]);
-
-  async function sendFriendRequest(): Promise<string> {
-    return fetch(
-      'http://localhost:4242/api/users?search_type=NAME&search_string=' +
-        username,
-      {
-        cache: 'no-store',
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      },
-    ).then(async (res) => {
-      if (!res.ok) {
-        return 'User not found';
-      }
-
-      const new_friend = await res.json();
-      const friendship = friends.find(
-        (friend: Friend) => friend.incoming_friend.id === new_friend.id,
-      );
-
-      switch (friendship?.status) {
-        case FriendStatus.FRIENDS:
-          return 'User is already a friend';
-        case FriendStatus.PENDING:
-          return 'User already invited you';
-        case FriendStatus.INVITED:
-          return 'User already invited';
-        case FriendStatus.BLOCKED:
-          return 'User already blocked';
-        default: {
-          const new_requests = JSON.parse(
-            await callFriendsAPI('POST', new_friend),
-          );
-
-          addFriend(new_requests[0]);
-          friendSocket.emit('newRequest', new_requests[1]);
-          addUserStatus(userSocket, [new_friend.id]);
-          displayNotification('success', 'Request sent');
-          return '';
-        }
-      }
-    });
-  }
-
   function handleAction(request: Friend, action: FriendAction): void {
     switch (action) {
       case FriendAction.ACCEPT:
@@ -226,6 +165,32 @@ export default function FriendList() {
     }));
   }
 
+  useEffect(() => {
+    async function getFriends(): Promise<void> {
+      const data = JSON.parse(
+        await callAPI(
+          'GET',
+          `friends?search_type=USER&search_number=${currentUser.id}`,
+        ),
+      );
+      setFriends(data);
+    }
+    getFriends();
+
+    return () => {
+      friendSocket.off('newRequest');
+      friendSocket.off('acceptRequest');
+      friendSocket.off('rejectRequest');
+    };
+  }, []);
+
+  useEffect(() => {
+    addUserStatus(
+      userSocket,
+      friends.map((friend: Friend) => friend.incoming_friend.id),
+    );
+  }, [friends.length]);
+
   const categories = ['friends', 'pending', 'invited', 'blocked'];
 
   return (
@@ -236,18 +201,7 @@ export default function FriendList() {
       justifyContent='center'
       spacing={1}
     >
-      <DialogPrompt
-        buttonText='Add Friend'
-        dialogTitle='Send friend request'
-        dialogDescription='Add friends by their username'
-        labelText='Username'
-        textInput={username}
-        onChangeHandler={(input) => setUsername(input)}
-        backButtonText='Cancel'
-        backHandler={() => {}}
-        actionButtonText='Send'
-        handleAction={sendFriendRequest}
-      />
+      <FriendAddPrompt sendFriendRequest={sendFriendRequest} />
       {categories.map((category, index) => (
         <FriendDropdown
           key={index}
