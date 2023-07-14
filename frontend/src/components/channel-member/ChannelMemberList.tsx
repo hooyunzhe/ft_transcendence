@@ -45,10 +45,11 @@ export function ChannelMemberList() {
   >();
 
   const tempBanned = ChannelMemberStatus.BANNED;
-  const tempChannel = {
+  const tempChannel: Channel = {
+    id: 1,
     name: 'your_name',
     type: ChannelType.PUBLIC,
-    pass: 1234,
+    pass: '',
   };
 
   useEffect(() => {
@@ -89,12 +90,8 @@ export function ChannelMemberList() {
 
   // * Helper Function for update locals * //
 
-  function changeLocalChannelName(channelName: string) {
-    setChannelName(())
-    // steps
-    // 1. call api
-    // 2. change local
-    // 3. emit
+  function updateChannelArray(newChannelName: Channel) {
+    setChannels((channelData) => [...channelData, newChannelName]);
   }
 
   function addChannelMember(newChannelMember: ChannelMembers) {
@@ -142,20 +139,29 @@ export function ChannelMemberList() {
 
   // * Async functions for each actions * //
 
-  async function changeChannelName(
+  async function changeChannelType(
     channelID: number,
-    newName: string,
-  ): Promise<string> {
+    newType: ChannelType,
+    newPass?: string,
+  ) {
+    const typePatch = await callAPI('PATCH', 'channels', {
+      id: channelID,
+      type: newType,
+      pass: newPass,
+    });
+    const newChannel: Channel = JSON.parse(typePatch);
+    updateChannelArray(newChannel);
+    channelMemberSocket.emit('changeChannelType', newChannel);
+  }
+
+  async function changeChannelName(channelID: number, newName: string) {
     const namePatch = await callAPI('PATCH', 'channels', {
       id: channelID,
       name: newName,
     });
-
-    changeLocalChannelName();
-    const newChannelMember: ChannelMembers = JSON.parse(namePatch);
-
-    channelMemberSocket.emit('addUser', newChannelMember);
-    return '';
+    const newChannel: Channel = JSON.parse(namePatch);
+    updateChannelArray(newChannel);
+    channelMemberSocket.emit('changeChannelName', newChannel);
   }
 
   async function addUser(userID: number): Promise<string> {
@@ -241,6 +247,7 @@ export function ChannelMemberList() {
     action: ChannelMemberAction,
     duration?: Date,
   ) {
+    // * Probably gotta change the testing thingy * //
     setConfirmation({
       required: true,
       title: 'testing?',
@@ -310,7 +317,10 @@ export function ChannelMemberList() {
       <ListHeader title='My retarded channel member list'>
         <ChannelMemberSettings
           channelMember={channelMembers}
+          channel={tempChannel}
           handleAction={handleDisplayAction}
+          handleNameChange={changeChannelName}
+          handleTypeChange={changeChannelType}
         />
       </ListHeader>
       <ChannelMemberAddPrompt

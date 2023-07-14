@@ -12,6 +12,7 @@ import { ReactNode, useState } from 'react';
 import NotificationBar from './NotificationBar';
 
 interface DialogPromptProps {
+  disableText?: boolean;
   altOpen?: boolean;
   resetAltOpen?: () => void;
   children?: ReactNode;
@@ -28,6 +29,7 @@ interface DialogPromptProps {
 }
 
 export default function DialogPrompt({
+  disableText,
   altOpen,
   resetAltOpen,
   children,
@@ -70,6 +72,7 @@ export default function DialogPrompt({
         <DialogContent>
           <DialogContentText>{dialogDescription}</DialogContentText>
           <TextField
+            disabled={disableText}
             autoFocus
             fullWidth
             margin='dense'
@@ -81,8 +84,10 @@ export default function DialogPrompt({
               setEmptyError(!e.target.value);
               onChangeHandler(e.target.value);
             }}
-            error={emptyError}
-            helperText={emptyError ? labelText + ' cannot be empty' : ''}
+            error={disableText ? false : emptyError}
+            helperText={
+              !disableText && emptyError ? labelText + ' cannot be empty' : ''
+            }
           ></TextField>
           {children}
         </DialogContent>
@@ -100,7 +105,7 @@ export default function DialogPrompt({
             {backButtonText}
           </Button>
           <Button
-            disabled={!textInput}
+            disabled={disableText ? false : !textInput}
             onClick={() => {
               handleAction().then((errorMessage) => {
                 if (errorMessage) {
