@@ -14,6 +14,7 @@ import {
   useUserStatus,
 } from '@/lib/stores/useUserStore';
 import { useFriendSocket, useUserSocket } from '@/lib/stores/useSocketStore';
+import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 export default function FriendList() {
@@ -25,6 +26,7 @@ export default function FriendList() {
   const { addUserStatus } = useUserActions();
   const userSocket = useUserSocket();
   const friendSocket = useFriendSocket();
+  const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
   const [username, setUsername] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState<{
@@ -36,16 +38,6 @@ export default function FriendList() {
     blocked: false,
   });
   const [selectedFriend, setSelectedFriend] = useState(0);
-  const [confirmation, setConfirmation] = useState<
-    | {
-        required: boolean;
-        title: string;
-        description: string;
-        friendship: Friend;
-        handleAction: (friendship: Friend) => void;
-      }
-    | undefined
-  >();
 
   async function callFriendsAPI(
     method: string,
@@ -188,21 +180,6 @@ export default function FriendList() {
     });
   }
 
-  function displayConfirmation(
-    titleAction: string,
-    description: string,
-    friendship: Friend,
-    handleAction: (friendship: Friend) => void,
-  ): void {
-    setConfirmation({
-      required: true,
-      title: titleAction + friendship.incoming_friend.username + '?',
-      description: description,
-      friendship: friendship,
-      handleAction: handleAction,
-    });
-  }
-
   function handleAction(request: Friend, action: FriendAction): void {
     switch (action) {
       case FriendAction.ACCEPT:
@@ -286,20 +263,6 @@ export default function FriendList() {
           friendsStatus={userStatus}
         />
       ))}
-      {confirmation && (
-        <ConfirmationPrompt
-          open={confirmation.required}
-          onCloseHandler={() => {
-            setConfirmation(undefined);
-          }}
-          promptTitle={confirmation.title}
-          promptDescription={confirmation.description}
-          handleAction={() => {
-            confirmation.handleAction(confirmation.friendship);
-            setConfirmation(undefined);
-          }}
-        />
-      )}
     </Stack>
   );
 }
