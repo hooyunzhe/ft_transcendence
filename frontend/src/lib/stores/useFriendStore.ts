@@ -16,8 +16,7 @@ interface FriendStore {
       newStatus: FriendStatus,
     ) => void;
     deleteFriend: (incomingID: number) => void;
-    setupFriendSocket: (friendSocket: Socket, userID: number) => void;
-    resetFriendSocket: (friendSocket: Socket) => void;
+    setupFriendSocketEvents: (friendSocket: Socket, userID: number) => void;
   };
 }
 
@@ -60,7 +59,7 @@ function deleteFriend(set: StoreSetter, incomingID: number): void {
   }));
 }
 
-function setupFriendSocket(
+function setupFriendSocketEvents(
   set: StoreSetter,
   friendSocket: Socket,
   userID: number,
@@ -80,14 +79,6 @@ function setupFriendSocket(
   );
 }
 
-function resetFriendSocket(friendSocket: Socket) {
-  friendSocket.removeAllListeners('socketConnected');
-  friendSocket.removeAllListeners('newRequest');
-  friendSocket.removeAllListeners('deleteRequest');
-  friendSocket.removeAllListeners('acceptRequest');
-  friendSocket.removeAllListeners('rejectRequest');
-}
-
 const useFriendStore = create<FriendStore>()((set) => ({
   data: { friends: [] },
   actions: {
@@ -96,9 +87,8 @@ const useFriendStore = create<FriendStore>()((set) => ({
     changeFriend: (incomingID, currentStatus, newStatus) =>
       changeFriend(set, incomingID, currentStatus, newStatus),
     deleteFriend: (incomingID) => deleteFriend(set, incomingID),
-    setupFriendSocket: (friendSocket, userID) =>
-      setupFriendSocket(set, friendSocket, userID),
-    resetFriendSocket: resetFriendSocket,
+    setupFriendSocketEvents: (friendSocket, userID) =>
+      setupFriendSocketEvents(set, friendSocket, userID),
   },
 }));
 

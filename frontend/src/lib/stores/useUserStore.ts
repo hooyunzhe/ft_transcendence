@@ -13,8 +13,7 @@ interface UserStore {
     setCurrentUser: (currentUser: User) => void;
     addUserStatus: (userSocket: Socket, userIDs: number[]) => void;
     changeUserStatus: (userID: number, newStatus: UserStatus) => void;
-    setupUserSocket: (userSocket: Socket, userID: number) => void;
-    resetUserSocket: (userSocket: Socket) => void;
+    setupUserSocketEvents: (userSocket: Socket, userID: number) => void;
   };
 }
 
@@ -47,7 +46,7 @@ function changeUserStatus(
   setUserStatus(set, { [userID]: newStatus });
 }
 
-function setupUserSocket(
+function setupUserSocketEvents(
   set: StoreSetter,
   userSocket: Socket,
   userID: number,
@@ -61,12 +60,6 @@ function setupUserSocket(
   userSocket.on('newDisconnect', (userID: number) =>
     changeUserStatus(set, userID, UserStatus.OFFLINE),
   );
-}
-
-function resetUserSocket(userSocket: Socket) {
-  userSocket.removeAllListeners('socketConnected');
-  userSocket.removeAllListeners('newConnection');
-  userSocket.removeAllListeners('newDisconnect');
 }
 
 const useUserStore = create<UserStore>()((set) => ({
@@ -88,9 +81,8 @@ const useUserStore = create<UserStore>()((set) => ({
       addUserStatus(set, userSocket, userIDs),
     changeUserStatus: (userID, newStatus) =>
       changeUserStatus(set, userID, newStatus),
-    setupUserSocket: (userSocket, userID) =>
-      setupUserSocket(set, userSocket, userID),
-    resetUserSocket: resetUserSocket,
+    setupUserSocketEvents: (userSocket, userID) =>
+      setupUserSocketEvents(set, userSocket, userID),
   },
 }));
 

@@ -1,12 +1,11 @@
 'use client';
-import { AlertColor, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
 import FriendDropdown from './FriendDropdown';
 import callAPI from '@/lib/callAPI';
 import { Friend, FriendStatus, FriendAction } from '@/types/FriendTypes';
 import { User } from '@/types/UserTypes';
 import ConfirmationPrompt from '../utils/ConfirmationPrompt';
-import NotificationBar from '../utils/NotificationBar';
 import DialogPrompt from '../utils/DialogPrompt';
 import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
 import {
@@ -15,6 +14,7 @@ import {
   useUserStatus,
 } from '@/lib/stores/useUserStore';
 import { useFriendSocket, useUserSocket } from '@/lib/stores/useSocketStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 export default function FriendList() {
   const currentUser = useCurrentUser();
@@ -25,6 +25,7 @@ export default function FriendList() {
   const { addUserStatus } = useUserActions();
   const userSocket = useUserSocket();
   const friendSocket = useFriendSocket();
+  const { displayNotification } = useNotificationActions();
   const [username, setUsername] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState<{
     [key: string]: boolean;
@@ -45,14 +46,6 @@ export default function FriendList() {
       }
     | undefined
   >();
-  const [notification, setNotification] = useState<
-    | {
-        display: boolean;
-        level: AlertColor;
-        message: string;
-      }
-    | undefined
-  >();
 
   async function callFriendsAPI(
     method: string,
@@ -63,14 +56,6 @@ export default function FriendList() {
       outgoing_id: currentUser.id,
       incoming_id: incoming_friend.id,
       ...(action && { action: action }),
-    });
-  }
-
-  function displayNotification(level: AlertColor, message: string): void {
-    setNotification({
-      display: true,
-      level: level,
-      message: message,
     });
   }
 
@@ -143,30 +128,8 @@ export default function FriendList() {
         ),
       );
       setFriends(data);
-      addUserStatus(
-        userSocket,
-        data.map((friend: Friend) => friend.incoming_friend.id),
-      );
     }
     getFriends();
-
-    friendSocket.on('newRequest', (request: Friend) => {
-      displayNotification('info', 'New friend request!');
-    });
-
-    friendSocket.on('acceptRequest', (sender: User) => {
-      displayNotification(
-        'success',
-        sender.username + ' accepted your friend request!',
-      );
-    });
-
-    friendSocket.on('rejectRequest', (sender: User) => {
-      displayNotification(
-        'error',
-        sender.username + ' rejected your friend request!',
-      );
-    });
 
     return () => {
       friendSocket.off('newRequest');
@@ -334,16 +297,6 @@ export default function FriendList() {
           handleAction={() => {
             confirmation.handleAction(confirmation.friendship);
             setConfirmation(undefined);
-          }}
-        />
-      )}
-      {notification && (
-        <NotificationBar
-          display={notification.display}
-          level={notification.level}
-          message={notification.message}
-          onCloseHandler={() => {
-            setNotification(undefined);
           }}
         />
       )}
