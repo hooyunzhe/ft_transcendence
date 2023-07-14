@@ -24,7 +24,7 @@ export enum ChannelMemberStatus {
   DEFAULT = 'DEFAULT',
 }
 
-export default interface ChannelMembers {
+export interface ChannelMembers {
   id: number;
   role: ChannelMemberRole;
   status: ChannelMemberStatus;

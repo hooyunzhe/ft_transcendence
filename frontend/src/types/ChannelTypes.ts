@@ -13,6 +13,7 @@ export interface Channel {
   name: string;
   type: ChannelType;
   hash: string;
+  pass: string;
   channelMembers: User[];
   messages: Message[];
 }

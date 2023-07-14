@@ -6,7 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import BrushIcon from '@mui/icons-material/Brush';
 import { IconButton, ListItemIcon, MenuList, Paper } from '@mui/material';
 import { useState } from 'react';
-import ChannelMembers from '@/types/ChannelMemberTypes';
+import { ChannelMembers } from '@/types/ChannelMemberTypes';
 import { ChannelMemberUnbanPrompt } from './ChannelMemberUnbanPrompt';
 import ChannelNameChangePrompt from './ChannelNameChangePrompt';
 import ChannelTypeChangePrompt from './ChannelTypeChangePrompt';

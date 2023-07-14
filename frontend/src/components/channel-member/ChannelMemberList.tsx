@@ -12,7 +12,8 @@
 'use client';
 
 import callAPI from '@/lib/callAPI';
-import ChannelMembers, {
+import {
+  ChannelMembers,
   ChannelMemberAction,
   ChannelMemberRole,
   ChannelMemberStatus,
@@ -50,6 +51,7 @@ export function ChannelMemberList() {
     name: 'your_name',
     type: ChannelType.PUBLIC,
     pass: '',
+    hash: '',
   };
 
   useEffect(() => {

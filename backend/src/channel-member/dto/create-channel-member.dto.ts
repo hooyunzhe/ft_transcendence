@@ -23,4 +23,8 @@ export class CreateChannelMemberDto {
   @IsOptional()
   @IsString()
   pass: string;
+
+  @IsOptional()
+  @IsString()
+  hash: string;
 }

@@ -1,19 +1,19 @@
 import { User } from './UserTypes';
 
 export enum FriendAction {
-  ACCEPT = 'accept',
-  REJECT = 'reject',
-  REMOVE = 'remove',
-  BLOCK = 'block',
-  UNBLOCK = 'unblock',
-  UNFRIEND = 'unfriend',
+  ACCEPT = 'ACCEPT',
+  REJECT = 'REJECT',
+  REMOVE = 'REMOVE',
+  BLOCK = 'BLOCK',
+  UNBLOCK = 'UNBLOCK',
+  UNFRIEND = 'UNFRIEND',
 }
 
 export enum FriendStatus {
-  Friends = 'friends',
-  Invited = 'invited',
-  Pending = 'pending',
-  Blocked = 'blocked',
+  FRIENDS = 'FRIENDS',
+  INVITED = 'INVITED',
+  PENDING = 'PENDING',
+  BLOCKED = 'BLOCKED',
 }
 
 export interface Friend {

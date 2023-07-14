@@ -1,4 +1,4 @@
-import ChannelMembers from '@/types/ChannelMemberTypes';
+import { ChannelMembers } from '@/types/ChannelMemberTypes';
 import { Friend } from '@/types/FriendTypes';
 import { Stack } from '@mui/system';
 import { useState } from 'react';
