@@ -3,15 +3,15 @@ import { useEffect, useState } from 'react';
 import { Session } from 'next-auth';
 import { getSession } from 'next-auth/react';
 import { Box } from '@mui/material';
-import { useUser, useUserActions } from '@/lib/stores/useUserStore';
+import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import Login from '@/components/user/Login';
 import FirstTimeSetup from '@/components/user/FirstTimeSetup';
 import Cyberpong from '@/components/Cyberpong';
 
 export default function Home() {
   const [session, setSession] = useState<Session | null | undefined>();
-  const user = useUser();
-  const { setUser } = useUserActions();
+  const user = useCurrentUser();
+  const { setCurrentUser } = useUserActions();
 
   useEffect(() => {
     async function getData() {
@@ -30,7 +30,7 @@ export default function Home() {
           .then((res) => (res.ok ? res.json() : null))
           .then((currentUser) => {
             // if (currentUser) {
-            setUser(currentUser);
+            setCurrentUser(currentUser);
             // }
           });
       }

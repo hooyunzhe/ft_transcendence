@@ -3,23 +3,28 @@ import { AlertColor, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
 import FriendDropdown from './FriendDropdown';
 import callAPI from '@/lib/callAPI';
-import { friendsSocket } from '@/lib/socket';
 import { Friend, FriendStatus, FriendAction } from '@/types/FriendTypes';
 import { User } from '@/types/UserTypes';
 import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import NotificationBar from '../utils/NotificationBar';
 import DialogPrompt from '../utils/DialogPrompt';
 import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
-import { useUser } from '@/lib/stores/useUserStore';
+import {
+  useCurrentUser,
+  useUserActions,
+  useUserStatus,
+} from '@/lib/stores/useUserStore';
+import { useFriendSocket, useUserSocket } from '@/lib/stores/useSocketStore';
 
 export default function FriendList() {
-  const currentUser = useUser();
+  const currentUser = useCurrentUser();
   const friends = useFriends();
   const { setFriends, addFriend, changeFriend, deleteFriend } =
     useFriendActions();
-  const [friendsStatus, setFriendsStatus] = useState<{
-    [key: number]: string;
-  }>({});
+  const userStatus = useUserStatus();
+  const { addUserStatus } = useUserActions();
+  const userSocket = useUserSocket();
+  const friendSocket = useFriendSocket();
   const [username, setUsername] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState<{
     [key: string]: boolean;
@@ -61,29 +66,6 @@ export default function FriendList() {
     });
   }
 
-  function addStatus(user_ids: number[]): void {
-    friendsSocket.emit(
-      'getStatus',
-      user_ids,
-      (data: { [key: number]: string }) => {
-        setFriendsStatus((friendsStatus: { [key: number]: string }) => ({
-          ...friendsStatus,
-          ...data,
-        }));
-      },
-    );
-  }
-
-  function changeStatus(
-    user_id: number,
-    new_status: 'online' | 'offline',
-  ): void {
-    setFriendsStatus((friendsStatus: { [key: number]: string }) => ({
-      ...friendsStatus,
-      [user_id]: new_status,
-    }));
-  }
-
   function displayNotification(level: AlertColor, message: string): void {
     setNotification({
       display: true,
@@ -99,21 +81,21 @@ export default function FriendList() {
       FriendStatus.PENDING,
       FriendStatus.FRIENDS,
     );
-    friendsSocket.emit('acceptRequest', request);
+    friendSocket.emit('acceptRequest', request);
     displayNotification('success', 'Request accepted');
   }
 
   function rejectFriendRequest(request: Friend): void {
     callFriendsAPI('PATCH', request.incoming_friend, FriendAction.REJECT);
     deleteFriend(request.incoming_friend.id);
-    friendsSocket.emit('rejectRequest', request);
+    friendSocket.emit('rejectRequest', request);
     displayNotification('error', 'Request rejected');
   }
 
   function removeFriendRequest(request: Friend): void {
     callFriendsAPI('DELETE', request.incoming_friend);
     deleteFriend(request.incoming_friend.id);
-    friendsSocket.emit('deleteRequest', request);
+    friendSocket.emit('deleteRequest', request);
     displayNotification('error', 'Request removed');
   }
 
@@ -161,38 +143,25 @@ export default function FriendList() {
         ),
       );
       setFriends(data);
-      addStatus(data.map((friend: Friend) => friend.incoming_friend.id));
+      addUserStatus(
+        userSocket,
+        data.map((friend: Friend) => friend.incoming_friend.id),
+      );
     }
     getFriends();
 
-    friendsSocket.on('newConnection', (user_id: number) => {
-      changeStatus(user_id, 'online');
-    });
-
-    friendsSocket.on('newDisconnect', (user_id: number) => {
-      changeStatus(user_id, 'offline');
-    });
-
-    friendsSocket.on('newRequest', (request: Friend) => {
-      addFriend(request);
-      addStatus([request.incoming_friend.id]);
+    friendSocket.on('newRequest', (request: Friend) => {
       displayNotification('info', 'New friend request!');
     });
 
-    friendsSocket.on('deleteRequest', (sender: User) => {
-      deleteFriend(sender.id);
-    });
-
-    friendsSocket.on('acceptRequest', (sender: User) => {
-      changeFriend(sender.id, FriendStatus.INVITED, FriendStatus.FRIENDS);
+    friendSocket.on('acceptRequest', (sender: User) => {
       displayNotification(
         'success',
         sender.username + ' accepted your friend request!',
       );
     });
 
-    friendsSocket.on('rejectRequest', (sender: User) => {
-      deleteFriend(sender.id);
+    friendSocket.on('rejectRequest', (sender: User) => {
       displayNotification(
         'error',
         sender.username + ' rejected your friend request!',
@@ -200,14 +169,18 @@ export default function FriendList() {
     });
 
     return () => {
-      friendsSocket.off('newConnection');
-      friendsSocket.off('newDisconnect');
-      friendsSocket.off('newRequest');
-      friendsSocket.off('deleteRequest');
-      friendsSocket.off('acceptRequest');
-      friendsSocket.off('rejectRequest');
+      friendSocket.off('newRequest');
+      friendSocket.off('acceptRequest');
+      friendSocket.off('rejectRequest');
     };
   }, []);
+
+  useEffect(() => {
+    addUserStatus(
+      userSocket,
+      friends.map((friend: Friend) => friend.incoming_friend.id),
+    );
+  }, [friends.length]);
 
   async function sendFriendRequest(): Promise<string> {
     return fetch(
@@ -243,8 +216,8 @@ export default function FriendList() {
           );
 
           addFriend(new_requests[0]);
-          friendsSocket.emit('newRequest', new_requests[1]);
-          addStatus([new_friend.id]);
+          friendSocket.emit('newRequest', new_requests[1]);
+          addUserStatus(userSocket, [new_friend.id]);
           displayNotification('success', 'Request sent');
           return '';
         }
@@ -347,7 +320,7 @@ export default function FriendList() {
           handleAction={handleAction}
           selectedFriend={selectedFriend}
           setSelectedFriend={setSelectedFriend}
-          friendsStatus={friendsStatus}
+          friendsStatus={userStatus}
         />
       ))}
       {confirmation && (

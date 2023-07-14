@@ -12,6 +12,7 @@ import {
   GetStatusEmitBodyParams,
   InitConnectionEmitBodyParams,
 } from './params/emit-body-params';
+import { UserStatus } from './entities/user.entity';
 
 @WebSocketGateway({
   cors: {
@@ -51,8 +52,8 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     getStatusEmitBodyParams.user_ids.forEach((user_id) => {
       statusDictionary[user_id] = onlineUsers.includes(user_id)
-        ? 'online'
-        : 'offline';
+        ? UserStatus.ONLINE
+        : UserStatus.OFFLINE;
     });
     return statusDictionary;
   }

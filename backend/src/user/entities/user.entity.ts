@@ -11,6 +11,12 @@ import { UserAchievement } from 'src/user-achievement/entities/user-achievement.
 import { Friend } from 'src/friend/entities/friend.entity';
 import { Match } from 'src/match/entities/match.entity';
 
+export enum UserStatus {
+  OFFLINE = 'OFFLINE',
+  ONLINE = 'ONLINE',
+  IN_GAME = 'IN_GAME',
+}
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
