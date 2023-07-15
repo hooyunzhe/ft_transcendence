@@ -4,7 +4,6 @@ export default async function callAPI(
   messageBody?: any,
 ): Promise<string> {
   const domain = 'http://localhost:4242/api/';
-
   return fetch(domain + route, {
     cache: 'no-store',
     method: method,
