@@ -38,4 +38,9 @@ export class SkillNodes {
       .setVisible(false)
       .setAlpha(0.7);
   }
+
+  getSize()
+  {
+    return ({x: this.skillNodes.width, y:this.skillNodes.height})
+  }
 }
