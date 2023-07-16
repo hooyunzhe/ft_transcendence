@@ -22,13 +22,13 @@ export class SkillNodes {
       .on('pointerout', () => {
         this.title.setVisible(false);
         this.description.setVisible(false);
-      });
+      }).setDepth(0);
 
     this.title = scene.add
       .text(x, y, title, { fontFamily: 'Impact', fontSize: '24px' })
       .setBackgroundColor('#AAA')
       .setVisible(false)
-      .setAlpha(0.7);
+      .setAlpha(0.7).setDepth(1);
     this.description = scene.add
       .text(x, y + this.title.height, description, {
         fontFamily: 'Century Gothic',
@@ -36,7 +36,7 @@ export class SkillNodes {
       })
       .setBackgroundColor('#AAA')
       .setVisible(false)
-      .setAlpha(0.7);
+      .setAlpha(0.7).setDepth(1);
   }
 
   getSize()
