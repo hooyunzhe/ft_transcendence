@@ -23,15 +23,17 @@ export class SkillTree {
   }
 
   findGrid(index: number){
-    const x = index / 2;
-    const y = index % 2;
-    const prevHeight = index - 1 >= 0 ? this.skilltreeNode[index - 1].getSize().y : 1;
+
     const prevWidth = index - 1 >= 0 ? this.skilltreeNode[index - 1].getSize().x : 1;
-    return ({x: x * prevHeight * this.startingpoint.x, y: y * prevWidth * this.startingpoint.y})
+    const prevHeight = index - 1 >= 0 ? this.skilltreeNode[index - 1].getSize().y : 1;
+    const x = Math.floor(index % 2) * prevWidth;
+    const y = Math.floor(index / 2) * prevHeight;
+    return ({x: x + this.startingpoint.x, y: y + this.startingpoint.y})
   }
   createTree() {
     this.iconlist.forEach((map, index) => {
       const coordinate = this.findGrid(index);
+      console.log("x: ", coordinate.x, "| y: ", coordinate.y, "index: ", index);
         this.skilltreeNode.push(new SkillNodes(coordinate.x, coordinate.y , map.skillframe, map.skills[0], map.skills[1], this.scene))
     })
   }
