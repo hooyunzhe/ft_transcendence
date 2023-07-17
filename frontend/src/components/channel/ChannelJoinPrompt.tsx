@@ -3,16 +3,18 @@ import DialogPrompt from '../utils/DialogPrompt';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { Stack } from '@mui/material';
 import { ChannelDisplay } from './ChannelDisplay';
+import {
+  useChannelActions,
+  useChannels,
+  useJoinedChannels,
+} from '@/lib/stores/useChannelStore';
+import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import callAPI from '@/lib/callAPI';
 
-interface ChannelJoinPromptProps {
-  channels: Channel[];
-  joinChannel: (...args: any) => Promise<string>;
-}
-
-export default function ChannelJoinPrompt({
-  channels,
-  joinChannel,
-}: ChannelJoinPromptProps) {
+export default function ChannelJoinPrompt() {
+  const channels = useChannels();
+  const joinedChannels = useJoinedChannels();
+  const { addJoinedChannel } = useChannelActions();
   const [channelSearch, setChannelSearch] = useState('');
   const [selectedChannel, setSelectedChannel] = useState<Channel | undefined>();
   const [channelPass, setChannelPass] = useState('');
@@ -28,6 +30,25 @@ export default function ChannelJoinPrompt({
     setChannelPass('');
   }
 
+  async function joinChannel(): Promise<string> {
+    if (selectedChannel) {
+      const joinedChannel = await callAPI('POST', 'channel-members', {
+        channel_id: selectedChannel.id,
+        user_id: 1,
+        role: ChannelMemberRole.MEMBER,
+        pass: channelPass ?? '',
+      });
+
+      if (!joinedChannel) {
+        return 'Incorrect password';
+      }
+      addJoinedChannel(selectedChannel.id);
+      return '';
+    } else {
+      return 'FATAL ERROR: FAILED TO JOINED DUE TO MISSING SELECTED CHANNEL';
+    }
+  }
+
   async function handleJoinChannelAction(): Promise<string> {
     const channelToJoin = channels.find(
       (channel) => channel.id === selectedChannel?.id,
@@ -40,7 +61,7 @@ export default function ChannelJoinPrompt({
     if (channelToJoin.type === ChannelType.PROTECTED) {
       setDisplayPasswordPrompt(true);
     } else {
-      joinChannel(selectedChannel?.id);
+      joinChannel();
       resetState();
     }
     return '';
@@ -60,7 +81,7 @@ export default function ChannelJoinPrompt({
       backHandler={resetDisplay}
       actionButtonText='Join'
       handleAction={async () => {
-        const res = await joinChannel(selectedChannel?.id, channelPass);
+        const res = await joinChannel();
         if (!res) {
           resetState();
           resetDisplay();
@@ -88,10 +109,12 @@ export default function ChannelJoinPrompt({
     >
       <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
         {channels
-          .filter((channel) =>
-            channel.name
-              .toLowerCase()
-              .includes(channelSearch.trim().toLowerCase()),
+          .filter(
+            (channel) =>
+              !joinedChannels[channel.id] &&
+              channel.name
+                .toLowerCase()
+                .includes(channelSearch.trim().toLowerCase()),
           )
           .map((channel: Channel, index: number) => (
             <ChannelDisplay

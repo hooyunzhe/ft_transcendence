@@ -7,19 +7,17 @@ import {
   RadioGroup,
 } from '@mui/material';
 import DialogPrompt from '../utils/DialogPrompt';
-import { ChannelType } from '@/types/ChannelTypes';
+import { Channel, ChannelType } from '@/types/ChannelTypes';
+import callAPI from '@/lib/callAPI';
+import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import {
+  useChannelActions,
+  useChannelChecks,
+} from '@/lib/stores/useChannelStore';
 
-interface ChannelCreatePromptProps {
-  checkChannelExists: (name: string) => boolean;
-  checkChannelJoined: (name: string) => boolean;
-  createChannel: (...args: any) => Promise<string>;
-}
-
-export default function ChannelCreatePrompt({
-  checkChannelExists,
-  checkChannelJoined,
-  createChannel,
-}: ChannelCreatePromptProps) {
+export default function ChannelCreatePrompt() {
+  const { addChannel, addJoinedChannel } = useChannelActions();
+  const { checkChannelExists, checkChannelJoined } = useChannelChecks();
   const [channelName, setChannelName] = useState('');
   const [channelType, setChannelType] = useState<ChannelType>(
     ChannelType.PUBLIC,
@@ -37,6 +35,36 @@ export default function ChannelCreatePrompt({
     setChannelPass('');
   }
 
+  async function createChannel(): Promise<string> {
+    const newChannel: Channel = JSON.parse(
+      await callAPI('POST', 'channels', {
+        name: channelName,
+        type: channelType,
+        hash: channelPass ?? '',
+      }),
+    );
+
+    if (newChannel) {
+      addChannel(newChannel);
+      if (
+        JSON.parse(
+          await callAPI('POST', 'channel-members', {
+            channel_id: newChannel.id,
+            user_id: 1,
+            role: ChannelMemberRole.OWNER,
+          }),
+        )
+      ) {
+        addJoinedChannel(newChannel.id);
+        return '';
+      } else {
+        return 'FATAL ERROR: FAILED TO ADD MEMBER TO NEW CHANNEL IN BACKEND';
+      }
+    } else {
+      return 'FATAL ERROR: FAILED TO CREATE NEW CHANNEL IN BACKEND';
+    }
+  }
+
   async function handleCreateChannelAction(): Promise<string> {
     if (checkChannelExists(channelName)) {
       return 'Channel already exists';
@@ -47,7 +75,7 @@ export default function ChannelCreatePrompt({
     if (channelType === ChannelType.PROTECTED) {
       setDisplayPasswordPrompt(true);
     } else {
-      createChannel(channelName, channelType);
+      createChannel();
       resetState();
     }
     return '';
@@ -67,7 +95,7 @@ export default function ChannelCreatePrompt({
       backHandler={resetDisplay}
       actionButtonText='Create'
       handleAction={async () => {
-        const res = createChannel(channelName, channelType, channelPass);
+        const res = createChannel();
         resetState();
         resetDisplay();
         return res;
