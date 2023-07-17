@@ -1,23 +1,26 @@
 import { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { Button } from '../class/GameButton';
 import { Socket } from 'socket.io-client';
-import { SkillNodes } from '../class/SkillNodes';
+import { SkillNodes, classType } from '../class/SkillNodes';
 import { SkillTree } from '../class/SkillTree';
 import SkillSelection from '../class/SkillSelection';
 import GameSkillSelection from '../class/SkillSelection';
 
+interface classSkill {
+  Str: Array<Array<boolean>>;
+  Agi: Array<Array<boolean>>;
+  Int: Array<Array<boolean>>;
+}
+
 export default class GameReadyScene extends Phaser.Scene {
   private Socket: Socket;
   private Ready: Boolean;
-  private setSkillState: Dispatch<SetStateAction<boolean[]>>;
-  constructor(
-    gameSocket: Socket,
-    setSkillState: Dispatch<SetStateAction<boolean[]>>,
-  ) {
+  private skillState: classSkill;
+  constructor(gameSocket: Socket) {
     super({ key: 'GameReadyScene' });
     this.Socket = gameSocket;
     this.Ready = false;
-    this.setSkillState = setSkillState;
+    this.skillState = { Str: [], Agi: [], Int: [] };
   }
 
   preload() {
@@ -79,12 +82,52 @@ export default class GameReadyScene extends Phaser.Scene {
     //   this,
     //   { x: 300, y: 100 },
     // );
-    const SkilSelection = new GameSkillSelection(
+    const setSkillState = (
+      classType: classType,
+      level: number,
+      index: number,
+      action: boolean,
+    ) => {
+      switch (action) {
+        case true: {
+          if (level - 1 >= 0) {
+            console.log(this.skillState[classType][level - 1], index);
+            if (
+              this.skillState[classType][level - 1].some(
+                (value) => value === false,
+              )
+            )
+              break;
+          }
+          this.skillState[classType][level][index] = action;
+          break;
+        }
+        default:
+          if (level + 1 <= this.skillState[classType].length - 1) {
+            console.log(this.skillState[classType][level + 1], index);
+            if (
+              this.skillState[classType][level + 1].some(
+                (value) => value === true,
+              )
+            )
+              break;
+          }
+          this.skillState[classType][level][index] = action;
+          break;
+      }
+      return this.skillState[classType][level][index];
+    };
+
+    const SkillSelection = new GameSkillSelection(
       Number(this.game.config.width),
       Number(this.game.config.height),
       this,
       'skillframe',
+      setSkillState,
     );
+
+    this.skillState = SkillSelection.getSkillState();
+    SkillSelection.printTreeState();
     const createCountdown = () => {
       let start = 5;
       const text = this.add
@@ -98,7 +141,8 @@ export default class GameReadyScene extends Phaser.Scene {
           },
         )
         .setAlpha(0.5)
-        .setOrigin(0.5);
+        .setOrigin(0.5)
+        .setDepth(3);
       const inter = setInterval(() => {
         start--;
         text.setText(String(start));
