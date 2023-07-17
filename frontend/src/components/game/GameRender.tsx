@@ -16,11 +16,13 @@ import GameMatchFoundScene from './scenes/GameMatchFoundScene';
 interface GameRenderProps {
   gameSocket: Socket;
   setGameReady: Dispatch<SetStateAction<boolean>>;
+  setSkillState: Dispatch<SetStateAction<boolean[]>>;
 }
 
 export default function GameRender({
   gameSocket,
   setGameReady,
+  setSkillState,
 }: GameRenderProps) {
   const score = {
     player1: 0,

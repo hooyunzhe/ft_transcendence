@@ -3,14 +3,21 @@ import { Button } from '../class/GameButton';
 import { Socket } from 'socket.io-client';
 import { SkillNodes } from '../class/SkillNodes';
 import { SkillTree } from '../class/SkillTree';
+import SkillSelection from '../class/SkillSelection';
+import GameSkillSelection from '../class/SkillSelection';
 
 export default class GameReadyScene extends Phaser.Scene {
   private Socket: Socket;
   private Ready: Boolean;
-  constructor(gameSocket: Socket) {
+  private setSkillState: Dispatch<SetStateAction<boolean[]>>;
+  constructor(
+    gameSocket: Socket,
+    setSkillState: Dispatch<SetStateAction<boolean[]>>,
+  ) {
     super({ key: 'GameReadyScene' });
     this.Socket = gameSocket;
     this.Ready = false;
+    this.setSkillState = setSkillState;
   }
 
   preload() {
@@ -34,7 +41,7 @@ export default class GameReadyScene extends Phaser.Scene {
     };
     const readybutton1 = new Button(
       Number(this.game.config.width) / 2,
-      Number(this.game.config.height) * 0.8,
+      Number(this.game.config.height) * 0.9,
       'Ready',
       this,
       'greenbutton',
@@ -52,8 +59,32 @@ export default class GameReadyScene extends Phaser.Scene {
     //   'do this and that',
     //   this,
     // );
-    const skillTree1 = new SkillTree([{skillframe: 'skillframe', skills: ['SKILL1', 'DO 1']}, {skillframe: 'skillframe', skills: ['SKILL2', 'DO 2']}, {skillframe: 'skillframe', skills: ['SKILL3', 'DO 3']}, {skillframe: 'skillframe', skills: ['SKILL4', 'DO 4']}], this, {x: 100, y: 100})
-    const skillTree2 = new SkillTree([{skillframe: 'skillframe', skills: ['SKILL1', 'DO 1']}, {skillframe: 'skillframe', skills: ['SKILL2', 'DO 2']}, {skillframe: 'skillframe', skills: ['SKILL3', 'DO 3']}, {skillframe: 'skillframe', skills: ['SKILL4', 'DO 4']}], this, {x: 300, y: 100})
+    // const skillTree1 = new SkillTree(
+    //   [
+    //     { skillframe: 'skillframe', skills: ['SKILL1', 'DO 1'] },
+    //     { skillframe: 'skillframe', skills: ['SKILL2', 'DO 2'] },
+    //     { skillframe: 'skillframe', skills: ['SKILL3', 'DO 3'] },
+    //     { skillframe: 'skillframe', skills: ['SKILL4', 'DO 4'] },
+    //   ],
+    //   this,
+    //   { x: 100, y: 100 },
+    // );
+    // const skillTree2 = new SkillTree(
+    //   [
+    //     { skillframe: 'skillframe', skills: ['SKILL1', 'DO 1'] },
+    //     { skillframe: 'skillframe', skills: ['SKILL2', 'DO 2'] },
+    //     { skillframe: 'skillframe', skills: ['SKILL3', 'DO 3'] },
+    //     { skillframe: 'skillframe', skills: ['SKILL4', 'DO 4'] },
+    //   ],
+    //   this,
+    //   { x: 300, y: 100 },
+    // );
+    const SkilSelection = new GameSkillSelection(
+      Number(this.game.config.width),
+      Number(this.game.config.height),
+      this,
+      'skillframe',
+    );
     const createCountdown = () => {
       let start = 5;
       const text = this.add

@@ -12,7 +12,7 @@ export class SkillNodes {
   ) {
     this.skillNodes = scene.add
       .image(x, y, icon)
-      .setOrigin(0.5)
+      // .setOrigin(0.5)
       .setTintFill(255, 255, 255, 255)
       .setInteractive({ useHandCursor: true })
       .on('pointerover', () => {
@@ -22,13 +22,15 @@ export class SkillNodes {
       .on('pointerout', () => {
         this.title.setVisible(false);
         this.description.setVisible(false);
-      }).setDepth(0);
+      })
+      .setDepth(0);
 
     this.title = scene.add
       .text(x, y, title, { fontFamily: 'Impact', fontSize: '24px' })
       .setBackgroundColor('#AAA')
       .setVisible(false)
-      .setAlpha(0.7).setDepth(1);
+      .setAlpha(0.7)
+      .setDepth(1);
     this.description = scene.add
       .text(x, y + this.title.height, description, {
         fontFamily: 'Century Gothic',
@@ -36,11 +38,11 @@ export class SkillNodes {
       })
       .setBackgroundColor('#AAA')
       .setVisible(false)
-      .setAlpha(0.7).setDepth(1);
+      .setAlpha(0.7)
+      .setDepth(1);
   }
 
-  getSize()
-  {
-    return ({x: this.skillNodes.width, y:this.skillNodes.height})
+  getSize() {
+    return { x: this.skillNodes.width, y: this.skillNodes.height };
   }
 }

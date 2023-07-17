@@ -1,40 +1,82 @@
 import { SkillNodes } from './SkillNodes';
 
-interface coordinate{
-  x: number,
-  y: number,
+interface coordinate {
+  x: number;
+  y: number;
 }
+
+interface Skill {
+  frame: string;
+  name: string;
+  description: string;
+}
+
 export class SkillTree {
-  private iconlist: Array<{skillframe: string, skills: Array<string>}>;
+  private skillList: Array<Array<Skill>>;
   private skilltreeNode: Array<SkillNodes>;
   private scene: Phaser.Scene;
-  private startingpoint: coordinate;;
+  private startingpoint: coordinate;
+  private size: coordinate;
   constructor(
-    iconlist: Array<{skillframe: string, skills: Array<string>}>,
+    skillList: Array<Array<Skill>>,
     scene: Phaser.Scene,
-    startingpoint : coordinate
+    startingpoint: coordinate,
+    size: coordinate,
   ) {
     // this.skilltreedata = skilltreedata;
-    this.iconlist = iconlist;
+    this.skillList = skillList;
     this.skilltreeNode = [];
     this.scene = scene;
     this.startingpoint = startingpoint;
+    this.size = size;
     this.createTree();
   }
 
-  findGrid(index: number){
+  getPosition(structure: number, levelIndex: number, index: number) {
+    if (index + 1 === structure && structure != 3) index += 1;
+    const x = Math.floor(index % 3) * this.size.x;
+    const y = levelIndex * this.size.y;
 
-    const prevWidth = index - 1 >= 0 ? this.skilltreeNode[index - 1].getSize().x : 1;
-    const prevHeight = index - 1 >= 0 ? this.skilltreeNode[index - 1].getSize().y : 1;
-    const x = Math.floor(index % 2) * prevWidth;
-    const y = Math.floor(index / 2) * prevHeight;
-    return ({x: x + this.startingpoint.x, y: y + this.startingpoint.y})
+    // switch (structure) {
+    //   case 1:
+
+    //     break;
+
+    //   default:
+    //     break;
+    // }
+
+    return { x: x + this.startingpoint.x, y: y + this.startingpoint.y };
   }
   createTree() {
-    this.iconlist.forEach((map, index) => {
-      const coordinate = this.findGrid(index);
-      console.log("x: ", coordinate.x, "| y: ", coordinate.y, "index: ", index);
-        this.skilltreeNode.push(new SkillNodes(coordinate.x, coordinate.y , map.skillframe, map.skills[0], map.skills[1], this.scene))
-    })
+    this.skillList.forEach((level, levelIndex) => {
+      const structure = level.length;
+      level.forEach((skill, index) => {
+        const coordinate = this.getPosition(structure, levelIndex, index);
+        this.skilltreeNode.push(
+          new SkillNodes(
+            coordinate.x,
+            coordinate.y,
+            skill.frame,
+            skill.name,
+            skill.description,
+            this.scene,
+          ),
+        );
+      });
+    });
   }
+
+  //   console.log('x: ', coordinate.x, '| y: ', coordinate.y, 'index: ', index);
+  //   this.skilltreeNode.push(
+  //     new SkillNodes(
+  //       coordinate.x,
+  //       coordinate.y,
+  //       map.skillframe,
+  //       map.skills[0],
+  //       map.skills[1],
+  //       this.scene,
+  //     ),
+  //   );
+  // });
 }

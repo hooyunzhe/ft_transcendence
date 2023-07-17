@@ -10,7 +10,7 @@ import GameRender from '@/components/game/GameRender';
 export default function GamePage() {
   // const [session, setSession] = useState(useSession());
   const { data: session } = useSession();
-  const [loaded, setLoaded] = useState(false);
+  const [skillState, setSkillState] = useState<boolean[]>([]);
   const [searching, setsearching] = useState(false);
   const [matchFound, setMatchFound] = useState(false);
   const [gameReady, setGameReady] = useState(false);
@@ -123,6 +123,7 @@ export default function GamePage() {
           <GameRender
             gameSocket={gameSocket}
             setGameReady={setGameReady}
+            setSkillState={setSkillState}
           ></GameRender>
         </div>
       )}
