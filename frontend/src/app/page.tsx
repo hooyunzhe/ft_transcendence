@@ -52,7 +52,7 @@ export default function Home() {
       {session && user === null && (
         <FirstTimeSetup refresh_token={session.refresh_token} />
       )}
-      {session && user && user.id && <Cyberpong />}
+      {session && user && user.id !== 0 && <Cyberpong />}
     </Box>
   );
 }

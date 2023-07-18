@@ -3,7 +3,11 @@ import { ChannelMemberList } from '@/components/channel-member/ChannelMemberList
 import { ChannelList } from '@/components/channel/ChannelList';
 import FriendList from '@/components/friend/FriendList';
 import { useFriendActions } from '@/lib/stores/useFriendStore';
-import { useFriendSocket, useUserSocket } from '@/lib/stores/useSocketStore';
+import {
+  useFriendSocket,
+  useSocketActions,
+  useUserSocket,
+} from '@/lib/stores/useSocketStore';
 import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import { useEffect } from 'react';
 import ConfirmationPrompt from './utils/ConfirmationPrompt';
@@ -21,6 +25,7 @@ export default function Cyberpong() {
   const currentUser = useCurrentUser();
   const userSocket = useUserSocket();
   const friendSocket = useFriendSocket();
+  const { initSockets, resetSockets } = useSocketActions();
   const { setupUserSocketEvents } = useUserActions();
   const { setupFriendSocketEvents } = useFriendActions();
   const confirmation = useConfirmation();
@@ -30,17 +35,25 @@ export default function Cyberpong() {
     useNotificationActions();
 
   useEffect(() => {
-    setupUserSocketEvents(userSocket, currentUser.id);
-    setupFriendSocketEvents(friendSocket, currentUser.id);
-    setupNotificationSocketEvents(friendSocket);
-    userSocket.connect();
-    friendSocket.connect();
+    initSockets(currentUser.id);
 
     return () => {
-      userSocket.removeAllListeners();
-      friendSocket.removeAllListeners();
+      resetSockets();
     };
   }, []);
+
+  useEffect(() => {
+    if (userSocket) {
+      setupUserSocketEvents(userSocket);
+    }
+  }, [userSocket]);
+
+  useEffect(() => {
+    if (friendSocket) {
+      setupFriendSocketEvents(friendSocket);
+      setupNotificationSocketEvents(friendSocket);
+    }
+  }, [friendSocket]);
 
   return (
     <>

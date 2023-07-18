@@ -17,48 +17,55 @@ import {
   Stack,
 } from '@mui/material';
 import FriendDisplay from './FriendDisplay';
-import { Dispatch, SetStateAction } from 'react';
+import { useState } from 'react';
+import { UserStatus } from '@/types/UserTypes';
+import {
+  useFriendActions,
+  useFriends,
+  useSelectedFriendID,
+} from '@/lib/stores/useFriendStore';
+import { useUserStatus } from '@/lib/stores/useUserStore';
 
 interface FriendDropdownProps {
   category: string;
-  open: boolean;
-  friends: Friend[];
-  toggleDropdown: (category: string) => void;
   handleAction: (request: Friend, action: FriendAction) => void;
-  selectedFriend: number;
-  setSelectedFriend: Dispatch<SetStateAction<number>>;
-  friendsStatus: { [key: number]: string };
 }
 
 export default function FriendDropdown({
   category,
-  open,
-  friends,
-  toggleDropdown,
   handleAction,
-  selectedFriend,
-  setSelectedFriend,
-  friendsStatus,
 }: FriendDropdownProps) {
-  if (category === 'friends') {
-    const onlineFriends = friends.filter(
-      (friend) => friendsStatus[friend.incoming_friend.id] === 'online',
-    );
-    const offlineFriends = friends.filter(
-      (friend) => friendsStatus[friend.incoming_friend.id] === 'offline',
-    );
+  const friends = useFriends();
+  const selectedFriendID = useSelectedFriendID();
+  const { setSelectedFriendID } = useFriendActions();
+  const userStatus = useUserStatus();
+  const [open, setOpen] = useState(category === 'blocked' ? false : true);
+  const sortOrder = {
+    [UserStatus.IN_GAME]: 0,
+    [UserStatus.ONLINE]: 1,
+    [UserStatus.OFFLINE]: 2,
+  };
 
-    friends = [onlineFriends, offlineFriends].flat();
+  function toggleOpen(): void {
+    setOpen(!open);
+  }
+
+  function sortFriends(a: Friend, b: Friend): number {
+    if (category === 'friends') {
+      const userStatusA = userStatus[a.incoming_friend.id];
+      const userStatusB = userStatus[b.incoming_friend.id];
+
+      if (userStatusA !== userStatusB) {
+        return sortOrder[userStatusA] - sortOrder[userStatusB];
+      }
+    }
+    return a.incoming_friend.username.localeCompare(b.incoming_friend.username);
   }
 
   return (
     <>
       <Paper elevation={2}>
-        <ListItemButton
-          onClick={() => {
-            toggleDropdown(category);
-          }}
-        >
+        <ListItemButton onClick={toggleOpen}>
           <ListItemIcon>
             {category === 'friends' && <PeopleRounded />}
             {category === 'pending' && <MoveToInboxRounded />}
@@ -79,31 +86,34 @@ export default function FriendDropdown({
           justifyContent='center'
           spacing={1}
         >
-          {friends.map((friend: Friend, index: number) =>
-            category === 'friends' ? (
-              <Paper key={index} elevation={2}>
-                <ListItemButton
-                  selected={selectedFriend === friend.id}
-                  onClick={() => setSelectedFriend(friend.id)}
-                >
+          {friends
+            .filter((friend) => friend.status === category.toUpperCase())
+            .sort(sortFriends)
+            .map((friend, index) =>
+              category === 'friends' ? (
+                <Paper key={index} elevation={2}>
+                  <ListItemButton
+                    selected={selectedFriendID === friend.id}
+                    onClick={() => setSelectedFriendID(friend.id)}
+                  >
+                    <FriendDisplay
+                      category={category}
+                      friend={friend}
+                      status={userStatus[friend.incoming_friend.id]}
+                      handleAction={handleAction}
+                    ></FriendDisplay>
+                  </ListItemButton>
+                </Paper>
+              ) : (
+                <Paper key={index} elevation={2} sx={{ p: '8px 16px' }}>
                   <FriendDisplay
                     category={category}
                     friend={friend}
-                    status={friendsStatus[friend.incoming_friend.id]}
                     handleAction={handleAction}
                   ></FriendDisplay>
-                </ListItemButton>
-              </Paper>
-            ) : (
-              <Paper key={index} elevation={2} sx={{ p: '8px 16px' }}>
-                <FriendDisplay
-                  category={category}
-                  friend={friend}
-                  handleAction={handleAction}
-                ></FriendDisplay>
-              </Paper>
-            ),
-          )}
+                </Paper>
+              ),
+            )}
         </Stack>
       </Collapse>
     </>

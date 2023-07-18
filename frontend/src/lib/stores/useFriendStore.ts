@@ -2,13 +2,15 @@ import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
 import { Friend, FriendStatus } from '@/types/FriendTypes';
 import { User } from '@/types/UserTypes';
+import callAPI from '../callAPI';
 
 interface FriendStore {
   data: {
     friends: Friend[];
+    selectedFriendID: number;
   };
   actions: {
-    setFriends: (friends: Friend[]) => void;
+    getFriendData: (userID: number) => void;
     addFriend: (friend: Friend) => void;
     changeFriend: (
       incomingID: number,
@@ -16,7 +18,8 @@ interface FriendStore {
       newStatus: FriendStatus,
     ) => void;
     deleteFriend: (incomingID: number) => void;
-    setupFriendSocketEvents: (friendSocket: Socket, userID: number) => void;
+    setSelectedFriendID: (friendID: number) => void;
+    setupFriendSocketEvents: (friendSocket: Socket) => void;
   };
 }
 
@@ -24,8 +27,23 @@ type StoreSetter = (
   helper: (state: FriendStore) => Partial<FriendStore>,
 ) => void;
 
+async function getFriendData(set: StoreSetter, userID: number): Promise<void> {
+  const friendData = JSON.parse(
+    await callAPI('GET', `friends?search_type=USER&search_number=${userID}`),
+  );
+
+  set(({ data }) => ({
+    data: {
+      ...data,
+      friends: friendData,
+    },
+  }));
+}
+
 function addFriend(set: StoreSetter, friend: Friend): void {
-  set(({ data }) => ({ data: { friends: [...data.friends, friend] } }));
+  set(({ data }) => ({
+    data: { ...data, friends: [...data.friends, friend] },
+  }));
 }
 
 function changeFriend(
@@ -36,6 +54,7 @@ function changeFriend(
 ): void {
   set(({ data }) => ({
     data: {
+      ...data,
       friends: data.friends.map((friend) => {
         if (
           friend.incoming_friend.id === incomingID &&
@@ -52,6 +71,7 @@ function changeFriend(
 function deleteFriend(set: StoreSetter, incomingID: number): void {
   set(({ data }) => ({
     data: {
+      ...data,
       friends: data.friends.filter(
         (friend) => friend.incoming_friend.id !== incomingID,
       ),
@@ -59,14 +79,16 @@ function deleteFriend(set: StoreSetter, incomingID: number): void {
   }));
 }
 
-function setupFriendSocketEvents(
-  set: StoreSetter,
-  friendSocket: Socket,
-  userID: number,
-): void {
-  friendSocket.on('socketConnected', () =>
-    friendSocket.emit('initConnection', userID),
-  );
+function setSelectedFriendID(set: StoreSetter, friendID: number): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      selectedFriendID: friendID,
+    },
+  }));
+}
+
+function setupFriendSocketEvents(set: StoreSetter, friendSocket: Socket): void {
   friendSocket.on('newRequest', (request: Friend) => addFriend(set, request));
   friendSocket.on('deleteRequest', (sender: User) =>
     deleteFriend(set, sender.id),
@@ -80,17 +102,20 @@ function setupFriendSocketEvents(
 }
 
 const useFriendStore = create<FriendStore>()((set) => ({
-  data: { friends: [] },
+  data: { friends: [], selectedFriendID: 0 },
   actions: {
-    setFriends: (friends) => set({ data: { friends } }),
+    getFriendData: (userID) => getFriendData(set, userID),
     addFriend: (friend) => addFriend(set, friend),
     changeFriend: (incomingID, currentStatus, newStatus) =>
       changeFriend(set, incomingID, currentStatus, newStatus),
     deleteFriend: (incomingID) => deleteFriend(set, incomingID),
-    setupFriendSocketEvents: (friendSocket, userID) =>
-      setupFriendSocketEvents(set, friendSocket, userID),
+    setSelectedFriendID: (friendID) => setSelectedFriendID(set, friendID),
+    setupFriendSocketEvents: (friendSocket) =>
+      setupFriendSocketEvents(set, friendSocket),
   },
 }));
 
 export const useFriends = () => useFriendStore((state) => state.data.friends);
+export const useSelectedFriendID = () =>
+  useFriendStore((state) => state.data.selectedFriendID);
 export const useFriendActions = () => useFriendStore((state) => state.actions);

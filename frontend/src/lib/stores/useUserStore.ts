@@ -13,7 +13,7 @@ interface UserStore {
     setCurrentUser: (currentUser: User) => void;
     addUserStatus: (userSocket: Socket, userIDs: number[]) => void;
     changeUserStatus: (userID: number, newStatus: UserStatus) => void;
-    setupUserSocketEvents: (userSocket: Socket, userID: number) => void;
+    setupUserSocketEvents: (userSocket: Socket) => void;
   };
 }
 
@@ -33,9 +33,13 @@ function addUserStatus(
   userSocket: Socket,
   userIDs: number[],
 ): void {
-  userSocket.emit('getStatus', userIDs, (newStatus: UserStatusDictionary) => {
-    setUserStatus(set, newStatus);
-  });
+  userSocket.emit(
+    'getStatus',
+    { user_ids: userIDs },
+    (newStatus: UserStatusDictionary) => {
+      setUserStatus(set, newStatus);
+    },
+  );
 }
 
 function changeUserStatus(
@@ -46,14 +50,7 @@ function changeUserStatus(
   setUserStatus(set, { [userID]: newStatus });
 }
 
-function setupUserSocketEvents(
-  set: StoreSetter,
-  userSocket: Socket,
-  userID: number,
-): void {
-  userSocket.on('socketConnected', () =>
-    userSocket.emit('initConnection', userID),
-  );
+function setupUserSocketEvents(set: StoreSetter, userSocket: Socket): void {
   userSocket.on('newConnection', (userID: number) =>
     changeUserStatus(set, userID, UserStatus.ONLINE),
   );
@@ -81,8 +78,8 @@ const useUserStore = create<UserStore>()((set) => ({
       addUserStatus(set, userSocket, userIDs),
     changeUserStatus: (userID, newStatus) =>
       changeUserStatus(set, userID, newStatus),
-    setupUserSocketEvents: (userSocket, userID) =>
-      setupUserSocketEvents(set, userSocket, userID),
+    setupUserSocketEvents: (userSocket) =>
+      setupUserSocketEvents(set, userSocket),
   },
 }));
 

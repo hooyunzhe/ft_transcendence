@@ -3,20 +3,48 @@ import { Socket, io } from 'socket.io-client';
 
 interface SocketStore {
   data: {
-    userSocket: Socket;
-    friendSocket: Socket;
+    userSocket: Socket | null;
+    friendSocket: Socket | null;
   };
-  // actions: {};
+  actions: {
+    initSockets: (userID: number) => void;
+    resetSockets: () => void;
+  };
 }
 
-const useSocketStore = create<SocketStore>()((set) => ({
+type StoreSetter = (partialState: Partial<SocketStore>) => void;
+type StoreGetter = () => SocketStore;
+
+function initSockets(set: StoreSetter, userID: number): void {
+  const userSocket = io('http://localhost:4242/gateway/users');
+  const friendSocket = io('http://localhost:4242/gateway/friends');
+
+  userSocket.emit('initConnection', { user_id: userID });
+  friendSocket.emit('initConnection', { user_id: userID });
+  set({ data: { userSocket: userSocket, friendSocket: friendSocket } });
+}
+
+function resetSockets(set: StoreSetter, get: StoreGetter): void {
+  const sockets = get().data;
+
+  sockets.userSocket?.disconnect();
+  sockets.friendSocket?.disconnect();
+  set({
+    data: {
+      userSocket: null,
+      friendSocket: null,
+    },
+  });
+}
+
+const useSocketStore = create<SocketStore>()((set, get) => ({
   data: {
-    userSocket: io('http://localhost:4242/gateway/users', {
-      autoConnect: false,
-    }),
-    friendSocket: io('http://localhost:4242/gateway/friends', {
-      autoConnect: false,
-    }),
+    userSocket: null,
+    friendSocket: null,
+  },
+  actions: {
+    initSockets: (userID) => initSockets(set, userID),
+    resetSockets: () => resetSockets(set, get),
   },
 }));
 
@@ -24,3 +52,4 @@ export const useUserSocket = () =>
   useSocketStore((state) => state.data.userSocket);
 export const useFriendSocket = () =>
   useSocketStore((state) => state.data.friendSocket);
+export const useSocketActions = () => useSocketStore((state) => state.actions);

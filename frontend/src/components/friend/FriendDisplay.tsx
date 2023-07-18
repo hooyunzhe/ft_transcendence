@@ -14,6 +14,7 @@ import {
   DeleteRounded,
   RestoreRounded,
 } from '@mui/icons-material';
+import { UserStatus } from '@/types/UserTypes';
 
 interface FriendDisplayProps {
   category: string;
@@ -32,7 +33,7 @@ export default function FriendDisplay({
     <ListItem
       sx={{
         ...(category === 'friends' && {
-          opacity: status === 'online' ? '100%' : '20%',
+          opacity: status === UserStatus.ONLINE ? '100%' : '20%',
         }),
       }}
     >

@@ -15,11 +15,12 @@ import { useFriendSocket, useUserSocket } from '@/lib/stores/useSocketStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import FriendAddPrompt from './FriendAddPrompt';
+import { Socket } from 'socket.io-client';
 
 export default function FriendList() {
   const currentUser = useCurrentUser();
   const friends = useFriends();
-  const { setFriends, addFriend, changeFriend, deleteFriend } =
+  const { getFriendData, addFriend, changeFriend, deleteFriend } =
     useFriendActions();
   const userStatus = useUserStatus();
   const { addUserStatus } = useUserActions();
@@ -27,16 +28,6 @@ export default function FriendList() {
   const friendSocket = useFriendSocket();
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
-  const [username, setUsername] = useState('');
-  const [dropdownOpen, setDropdownOpen] = useState<{
-    [key: string]: boolean;
-  }>({
-    pending: true,
-    invited: true,
-    friends: true,
-    blocked: false,
-  });
-  const [selectedFriend, setSelectedFriend] = useState(0);
 
   async function callFriendsAPI(
     method: string,
@@ -50,12 +41,26 @@ export default function FriendList() {
     });
   }
 
+  function emitToSocket(socket: Socket | null, message: string, data: any) {
+    if (socket) {
+      if (socket.connected) {
+        socket.emit(message, data);
+      } else {
+        console.log('Failed to emit as socket is disconnected');
+      }
+    } else {
+      console.log('Failed to emit as socket is not initialized');
+    }
+  }
+
   async function sendFriendRequest(user: User): Promise<void> {
     const newRequests = JSON.parse(await callFriendsAPI('POST', user));
 
     addFriend(newRequests[0]);
-    friendSocket.emit('newRequest', newRequests[1]);
-    addUserStatus(userSocket, [user.id]);
+    emitToSocket(friendSocket, 'newRequest', {
+      outgoing_request: newRequests[0],
+      incoming_request: newRequests[1],
+    });
     displayNotification('success', 'Request sent');
   }
 
@@ -66,21 +71,21 @@ export default function FriendList() {
       FriendStatus.PENDING,
       FriendStatus.FRIENDS,
     );
-    friendSocket.emit('acceptRequest', request);
+    emitToSocket(friendSocket, 'acceptRequest', { friendship: request });
     displayNotification('success', 'Request accepted');
   }
 
   function rejectFriendRequest(request: Friend): void {
     callFriendsAPI('PATCH', request.incoming_friend, FriendAction.REJECT);
     deleteFriend(request.incoming_friend.id);
-    friendSocket.emit('rejectRequest', request);
+    emitToSocket(friendSocket, 'rejectRequest', { friendship: request });
     displayNotification('error', 'Request rejected');
   }
 
   function removeFriendRequest(request: Friend): void {
     callFriendsAPI('DELETE', request.incoming_friend);
     deleteFriend(request.incoming_friend.id);
-    friendSocket.emit('deleteRequest', request);
+    emitToSocket(friendSocket, 'deleteRequest', { friendship: request });
     displayNotification('error', 'Request removed');
   }
 
@@ -111,7 +116,7 @@ export default function FriendList() {
   }
 
   function removeFriend(friendship: Friend): void {
-    callFriendsAPI('DELETE', friendship.incoming_friend, FriendAction.REMOVE);
+    callFriendsAPI('DELETE', friendship.incoming_friend);
     deleteFriend(friendship.incoming_friend.id);
     displayNotification(
       'error',
@@ -158,37 +163,17 @@ export default function FriendList() {
     }
   }
 
-  function toggleDropdown(category: string): void {
-    setDropdownOpen((dropdownOpen: { [key: string]: boolean }) => ({
-      ...dropdownOpen,
-      [category]: !dropdownOpen[category],
-    }));
-  }
-
   useEffect(() => {
-    async function getFriends(): Promise<void> {
-      const data = JSON.parse(
-        await callAPI(
-          'GET',
-          `friends?search_type=USER&search_number=${currentUser.id}`,
-        ),
-      );
-      setFriends(data);
-    }
-    getFriends();
-
-    return () => {
-      friendSocket.off('newRequest');
-      friendSocket.off('acceptRequest');
-      friendSocket.off('rejectRequest');
-    };
+    getFriendData(currentUser.id);
   }, []);
 
   useEffect(() => {
-    addUserStatus(
-      userSocket,
-      friends.map((friend: Friend) => friend.incoming_friend.id),
-    );
+    if (userSocket) {
+      addUserStatus(
+        userSocket,
+        friends.map((friend: Friend) => friend.incoming_friend.id),
+      );
+    }
   }, [friends.length]);
 
   const categories = ['friends', 'pending', 'invited', 'blocked'];
@@ -206,15 +191,7 @@ export default function FriendList() {
         <FriendDropdown
           key={index}
           category={category}
-          open={dropdownOpen[category]}
-          friends={friends.filter(
-            (friend: Friend) => friend.status === category.toUpperCase(),
-          )}
-          toggleDropdown={toggleDropdown}
           handleAction={handleAction}
-          selectedFriend={selectedFriend}
-          setSelectedFriend={setSelectedFriend}
-          friendsStatus={userStatus}
         />
       ))}
     </Stack>
