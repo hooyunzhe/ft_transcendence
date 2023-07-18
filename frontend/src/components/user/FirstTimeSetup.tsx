@@ -9,7 +9,7 @@ interface FirstTimeSetupProps {
 }
 
 export default function FirstTimeSetup({ refresh_token }: FirstTimeSetupProps) {
-  const { setUser } = useUserActions();
+  const { setCurrentUser } = useUserActions();
   const [username, setUsername] = useState('');
 
   return (
@@ -21,7 +21,9 @@ export default function FirstTimeSetup({ refresh_token }: FirstTimeSetupProps) {
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
-          signUp(username, refresh_token).then((newUser) => setUser(newUser));
+          signUp(username, refresh_token).then((newUser) =>
+            setCurrentUser(newUser),
+          );
         }
       }}
     ></TextField>

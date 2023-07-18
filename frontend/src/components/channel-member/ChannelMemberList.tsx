@@ -1,19 +1,8 @@
-//Modifying channel members
-// 1, change roles (owner, admin, member)
-// 2. mute and unmute ( maybe for how long see how )
-// 3. ban and unban ( same, how long see how ) duration be needed
-// 4. remove member from channel.
-
-// steps
-// 1. call api
-// 2. change local
-// 3. emit
-
 'use client';
 
 import callAPI from '@/lib/callAPI';
-import { channelMemberSocket } from '@/lib/ChannelMemberSocket';
-import ChannelMembers, {
+import {
+  ChannelMembers,
   ChannelMemberAction,
   ChannelMemberRole,
   ChannelMemberStatus,
@@ -21,199 +10,261 @@ import ChannelMembers, {
 import { Friend } from '@/types/FriendTypes';
 import { Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { ChannelMemberDisplay } from './ChannelMemberDisplay';
-import ConfirmationPrompt from '../utils/ConfirmationPrompt';
+import { ChannelMemberActionDisplay } from './ChannelMemberActionDisplay';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
+import ChannelMemberSettings from './ChannelMemberSettings';
+import { Channel, ChannelType } from '@/types/ChannelTypes';
+import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
+import {
+  useChannelMemberActions,
+  useChannelMembers,
+} from '@/lib/stores/useChannelMemberStore';
+import {
+  useChannelActions,
+  useChannels,
+  useSelectedChannelHash,
+  useSelectedChannelID,
+} from '@/lib/stores/useChannelStore';
 
 export function ChannelMemberList() {
-  const [channelMembers, setChannelMembers] = useState<ChannelMembers[]>([]);
+  const channelMembers = useChannelMembers();
+  const {
+    getChannelMemberData,
+    addChannelMember,
+    kickChannelMember,
+    changeChannelMemberRole,
+    changeChannelMemberStatus,
+  } = useChannelMemberActions();
+  const { getChannelData } = useChannelActions();
+  const channel = useChannels();
+  const selectedChannelID = useSelectedChannelID();
+  const selectedChannelHash = useSelectedChannelHash();
   const [friends, setFriends] = useState<Friend[]>([]);
-  const [confirmation, setConfirmation] = useState<
-    | {
-        required: boolean;
-        title: string;
-        description: string;
-        channelMember: ChannelMembers;
-        action: ChannelMemberAction;
-        duration: Date | undefined;
-      }
-    | undefined
-  >();
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const { displayConfirmation } = useConfirmationActions();
 
   useEffect(() => {
-    async function getChannelMembers() {
-      const channelMembersData = JSON.parse(
-        await callAPI('GET', 'channel_members'),
-      );
-      setChannelMembers(channelMembersData);
-
-      channelMemberSocket.emit('test', (data: ChannelMembers) => {});
-    }
-    getChannelMembers();
-
     async function getFriends() {
       // probably need to GET all user friend (HARDCODED FOR NOW)
       const friendsData = JSON.parse(
-        await callAPI('GET', 'friends/user?outgoing_id=1'),
+        await callAPI('GET', 'friends?search_type=USER&search_number=1'),
       );
       setFriends(friendsData);
     }
     getFriends();
+    getChannelMemberData();
 
-    // my socket shit are here
-    channelMemberSocket.on('test', (data: ChannelMembers) => {
-      console.log('--Signal-- received from server!');
-      console.log('channel id: ' + data.id);
-      console.log(`You are connected with id ${channelMemberSocket.id}`);
-      setChannelMembers((channelMembersData) => [...channelMembersData, data]);
-    });
+    // getChannelMembers();
+
+    // * My listening sockets * //
+    // channelMemberSocket.on('addUser', (data: ChannelMembers) => {
+    //   addChannelMember(data);
+    // });
+
+    // channelMemberSocket.on('kickUser', (data: ChannelMembers) => {
+    //   kickChannelMember(data.id);
+    // });
+
+    // channelMemberSocket.on('changeRole', (data: ChannelMembers) => {
+    //   changeChannelMemberRole(data.id, data.role);
+    // });
+
+    // channelMemberSocket.on('changeStatus', (data: ChannelMembers) => {
+    //   changeChannelMemberStatus(data.id, data.status);
+    // });
   }, []);
 
-  async function kickUser() {
-    if (confirmation) {
-      const member = confirmation.channelMember;
+  // * Helper Function for update locals * //
 
-      callAPI('DELETE', 'channel_members/' + member.id);
-      setChannelMembers((channelMembers) => {
-        return channelMembers.filter(
-          (localMember) => localMember.id !== member.id,
-        );
-      });
-      setConfirmation(undefined);
-    }
+  function updateChannelArray(newChannelName: Channel) {
+    setChannels((channelData) => [...channelData, newChannelName]);
   }
 
-  async function changeRole(newRole: ChannelMemberRole) {
-    if (confirmation) {
-      const member = confirmation.channelMember;
-      callAPI('PATCH', 'channel_members/' + member.id, {
-        role: newRole,
-      });
-      console.log('newRole: ' + newRole);
-      setChannelMembers((channelMembers) => {
-        return channelMembers.map((localMember) => {
-          if (localMember.id === member.id) {
-            localMember.role = newRole;
-          }
-          return localMember;
-        });
-      });
-      setConfirmation(undefined);
-    }
+  // * Async functions for each actions * //
+
+  async function changeChannelType(
+    channelID: number,
+    newType: ChannelType,
+    newPass?: string,
+  ) {
+    const typePatch = await callAPI('PATCH', 'channels', {
+      id: channelID,
+      type: newType,
+      pass: newPass,
+    });
+    const newChannel: Channel = JSON.parse(typePatch);
+    updateChannelArray(newChannel);
+    // channelMemberSocket.emit('changeChannelType', newChannel);
   }
 
-  async function changeStatus(newStatus: ChannelMemberStatus, duration?: Date) {
-    if (confirmation) {
-      const member = confirmation.channelMember;
-      console.log(newStatus);
-      callAPI('PATCH', 'channel_members/' + member.id, {
-        status: newStatus,
-      });
-      setChannelMembers((channelMembers) => {
-        return channelMembers.map((localMember) => {
-          if (localMember.id === member.id) {
-            localMember.status = newStatus;
-          }
-          return localMember;
-        });
-      });
-      setConfirmation(undefined);
-    }
+  async function changeChannelName(channelID: number, newName: string) {
+    const namePatch = await callAPI('PATCH', 'channels', {
+      id: channelID,
+      name: newName,
+    });
+    const newChannel: Channel = JSON.parse(namePatch);
+    updateChannelArray(newChannel);
+    // channelMemberSocket.emit('changeChannelName', newChannel);
   }
+
+  //* ignore the above * //
+
+  async function addUser(userID: number, useHash?: string): Promise<string> {
+    const add = await callAPI('POST', 'channel-members', {
+      channel_id: selectedChannelID,
+      user_id: userID,
+      role: ChannelMemberRole.MEMBER,
+      hash: useHash,
+    });
+    const newChannelMember: ChannelMembers = JSON.parse(add);
+    console.log('NEWCHANNELMEMBER ADD \n: ', newChannelMember);
+    addChannelMember(newChannelMember);
+    // channelMemberSocket.emit('addUser', newChannelMember);
+    return '';
+  }
+
+  async function kickUser(memberID: number): Promise<string> {
+    callAPI('DELETE', 'channel-members', { id: memberID });
+    kickChannelMember(memberID);
+    // channelMemberSocket.emit('kickUser', member);
+    return '';
+  }
+
+  async function changeToAdmin(memberID: number) {
+    callAPI('PATCH', 'channel-members/', {
+      id: memberID,
+      role: ChannelMemberRole.ADMIN,
+    });
+    changeChannelMemberRole(memberID, ChannelMemberRole.ADMIN);
+    // channelMemberSocket.emit('changeRole', member);
+  }
+
+  async function changeToMember(memberID: number) {
+    callAPI('PATCH', 'channel-members/', {
+      id: memberID,
+      role: ChannelMemberRole.MEMBER,
+    });
+    changeChannelMemberRole(memberID, ChannelMemberRole.MEMBER);
+    // channelMemberSocket.emit('changeRole', member);
+  }
+
+  async function unmuteMember(memberID: number) {
+    callAPI('PATCH', 'channel-members', {
+      id: memberID,
+      status: ChannelMemberStatus.DEFAULT,
+      muted_until: new Date().toISOString(),
+    });
+    changeChannelMemberStatus(memberID, ChannelMemberStatus.DEFAULT);
+    // channelMemberSocket.emit('changeStatus', member);
+  }
+
+  async function muteMember(memberID: number, duration?: Date) {
+    callAPI('PATCH', 'channel-members', {
+      id: memberID,
+      status: ChannelMemberStatus.MUTED,
+      muted_until: new Date().toISOString(),
+    });
+    changeChannelMemberStatus(memberID, ChannelMemberStatus.MUTED);
+    // channelMemberSocket.emit('changeStatus', member);
+  }
+
+  async function banMember(memberID: number) {
+    callAPI('PATCH', 'channel-members', {
+      id: memberID,
+      status: ChannelMemberStatus.BANNED,
+      muted_until: new Date().toISOString(),
+    });
+    changeChannelMemberStatus(memberID, ChannelMemberStatus.BANNED);
+    // channelMemberSocket.emit('changeStatus', member);
+  }
+
+  async function changeOwnership(memberID: number) {
+    const currentOwner = channelMembers.find((owner) => {
+      if (owner.role === ChannelMemberRole.OWNER) {
+        return owner.id;
+      }
+      return undefined;
+    });
+    if (currentOwner === undefined) {
+      console.log('Current owner undefined\n');
+      return undefined;
+    }
+    changeChannelMemberStatus(memberID, ChannelMemberStatus.BANNED);
+    callAPI('PATCH', 'channel-members', {
+      id: currentOwner.id,
+      role: ChannelMemberRole.ADMIN,
+    });
+    changeChannelMemberRole(currentOwner.id, ChannelMemberRole.ADMIN);
+    // channelMemberSocket.emit('changeStatus', currentOwner.id);
+  }
+
+  // * Action handlers that are passed into components * //
 
   async function handleDisplayAction(
     member: ChannelMembers,
     action: ChannelMemberAction,
     duration?: Date,
   ) {
-    setConfirmation({
-      required: true,
-      title: 'testing?',
-      description: 'testing again',
-      channelMember: member,
-      action: action,
-      duration: duration,
-    });
-  }
-
-  async function handleAddButtonAction(
-    friendSearch: string,
-    selectedFriend: Friend,
-  ): Promise<string> {
-    console.log('HANDLE ADD BUTTON');
-
-    const friendToJoin = friends.find(
-      (friend) => friend.incoming_friend.username === friendSearch,
-    );
-
-    if (!friendToJoin) {
-      return 'Invalid friend name!';
-    }
-
-    const derp = await callAPI('POST', 'channel_members', {
-      channel_id: 1,
-      user_id: selectedFriend?.incoming_friend.id,
-    });
-    console.log(derp);
-    const newChannelMember: ChannelMembers = JSON.parse(derp);
-
-    setChannelMembers((channelMembers) => {
-      return [...channelMembers, newChannelMember];
-    });
-    return '';
-  }
-
-  function handleConfirmationAction(action: ChannelMemberAction) {
-    if (!confirmation) {
-      return 'handleConfirmationAction error!!';
-    }
+    // * Probably gotta change the testing thingy * //
     switch (action) {
-      case ChannelMemberAction.CHOWN: {
-        changeRole(ChannelMemberRole.OWNER);
-        //set confirmation
-        // changeRole(ChannelMemberRole.ADMIN);
-        return;
-      }
+      case ChannelMemberAction.CHOWN:
+        return displayConfirmation(
+          'Change Ownership to ' + member.user.username + '?',
+          'You are transfering the ownership of this server.',
+          member.id,
+          changeOwnership,
+        );
       case ChannelMemberAction.KICK:
-        return kickUser();
+        return displayConfirmation(
+          'Kick user ' + member.user.username + '?',
+          'You are booting the user from the channel.',
+          member.id,
+          kickUser,
+        );
       case ChannelMemberAction.ADMIN:
-        return changeRole(ChannelMemberRole.ADMIN);
+        return displayConfirmation(
+          'Make ' + member.user.username + ' an admin?',
+          'You are making this user admin.',
+          member.id,
+          changeToAdmin,
+        );
       case ChannelMemberAction.UNADMIN:
-        return changeRole(ChannelMemberRole.MEMBER);
+        return displayConfirmation(
+          'Remove admin privileges from ' + member.user.username + '?',
+          'You are removing admin from this user.',
+          member.id,
+          changeToMember,
+        );
       case ChannelMemberAction.BAN:
-        return changeStatus(ChannelMemberStatus.BANNED);
+        return displayConfirmation(
+          'Ban ' + member.user.username + '?',
+          'You are banning this user from this channel.',
+          member.id,
+          banMember,
+        );
       case ChannelMemberAction.UNBAN:
-        return changeStatus(ChannelMemberStatus.DEFAULT);
+        return displayConfirmation(
+          'Unban ' + member.user.username + '?',
+          'You are unbanning this user from this channel.',
+          member.id,
+          kickUser,
+        );
       case ChannelMemberAction.MUTE:
-        return changeStatus(ChannelMemberStatus.MUTED);
+        return displayConfirmation(
+          'Mute ' + member.user.username + '?',
+          'You are muting this user from chatting.',
+          member.id,
+          muteMember,
+        );
       case ChannelMemberAction.UNMUTE:
-        return changeStatus(ChannelMemberStatus.DEFAULT);
+        return displayConfirmation(
+          'Unmute ' + member.user.username + '?',
+          'You are muting this user from chatting.',
+          member.id,
+          unmuteMember,
+        );
     }
-  }
-
-  function displayActionText(): string {
-    if (!confirmation) {
-      return 'displayActionText error';
-    }
-    if (confirmation.action === ChannelMemberAction.ADMIN) {
-      return 'You are making this user admin.';
-    } else if (confirmation.action === ChannelMemberAction.UNADMIN) {
-      return 'You are removing admin from this user.';
-    } else if (confirmation.action === ChannelMemberAction.UNMUTE) {
-      return 'You are unmuting this user.';
-    } else if (confirmation.action === ChannelMemberAction.MUTE) {
-      return 'You are muting this user.';
-    } else if (confirmation.action === ChannelMemberAction.BAN) {
-      return 'You are banning this user.';
-    } else if (confirmation.action === ChannelMemberAction.UNBAN) {
-      return 'You are unbanning this user.';
-    } else if (confirmation.action === ChannelMemberAction.CHOWN) {
-      return 'You are transfering the ownership of this server.';
-    } else if (confirmation.action === ChannelMemberAction.KICK) {
-      return 'You are booting the user from the channel.';
-    }
-    return '';
   }
 
   return (
@@ -224,33 +275,30 @@ export function ChannelMemberList() {
       justifyContent='center'
       spacing={1}
     >
-      <ListHeader title='My retarded channel list'></ListHeader>
+      <ListHeader title='My retarded channel member list'>
+        {/* <ChannelMemberSettings
+          channelMember={channelMembers}
+          selectedchannelID={selectedChannelID}
+          handleAction={handleDisplayAction}
+          handleNameChange={changeChannelName}
+          handleTypeChange={changeChannelType}
+        /> */}
+      </ListHeader>
       <ChannelMemberAddPrompt
-        handleAddButtonAction={handleAddButtonAction}
+        addUser={addUser}
         friends={friends}
         channelMembers={channelMembers}
+        channelHash={selectedChannelHash}
       ></ChannelMemberAddPrompt>
-      {channelMembers.map((channelMember: ChannelMembers, index: number) => (
-        <ChannelMemberDisplay
-          key={index}
-          channelMember={channelMember}
-          handleAction={handleDisplayAction}
-        />
-      ))}
-      {confirmation && (
-        <ConfirmationPrompt
-          open={confirmation.required}
-          onCloseHandler={() => {
-            setConfirmation(undefined);
-          }}
-          promptTitle={displayActionText()}
-          promptDescription='Are you bloody sure?'
-          handleAction={() => {
-            console.log('hi');
-            handleConfirmationAction(confirmation.action);
-          }}
-        />
-      )}
+      {channelMembers
+        .filter((members) => members.channel.id === selectedChannelID)
+        .map((channelMember: ChannelMembers, index: number) => (
+          <ChannelMemberActionDisplay
+            key={index}
+            channelMember={channelMember}
+            handleAction={handleDisplayAction}
+          />
+        ))}
     </Stack>
   );
 }

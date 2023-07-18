@@ -44,9 +44,9 @@ export default function Cyberpong() {
 
   return (
     <>
-      {/* <ChannelMemberList></ChannelMemberList> */}
-      {/* <ChannelList></ChannelList> */}
-      <FriendList></FriendList>
+      <ChannelList></ChannelList>
+      <ChannelMemberList></ChannelMemberList>
+      {/* <FriendList></FriendList> */}
       {/* <h1>Cyberpong™</h1> */}
       <ConfirmationPrompt
         open={confirmation.required}

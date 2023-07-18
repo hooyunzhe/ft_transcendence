@@ -6,6 +6,8 @@ interface ChannelStore {
   data: {
     channels: Channel[];
     joinedChannels: boolean[];
+    selectedChannelID: number; 
+    selectedChannelHash: string; 
   };
   actions: {
     getChannelData: (userID: number) => void;
@@ -14,6 +16,8 @@ interface ChannelStore {
     changeChannelName: (channelID: number, newName: string) => void;
     changeChannelType: (channelID: number, newType: ChannelType) => void;
     deleteChannel: (channelID: number) => void;
+    setSelectedChannelID: (channelID: number) => void;
+    setSelectedChannelHash: (channelHash: string) => void;
   };
   checks: {
     checkChannelExists: (channelName: string) => boolean;
@@ -28,7 +32,7 @@ type StoreSetter = (
 type StoreGetter = () => ChannelStore;
 
 async function getChannelData(set: StoreSetter, userID: number): Promise<void> {
-  const channelData = JSON.parse(await callAPI('GET', 'channels'));
+  const channelData = JSON.parse(await callAPI('GET', 'channels?search_type=ALL'));
   const joinedChannelData = JSON.parse(
     await callAPI(
       'GET',
@@ -40,8 +44,9 @@ async function getChannelData(set: StoreSetter, userID: number): Promise<void> {
   joinedChannelData.forEach((joinedChannel: Channel) => {
     joinedChannelLookup[joinedChannel.id] = true;
   });
-  set(() => ({
+    set(({data}) => ({
     data: {
+      ...data,
       channels: channelData,
       joinedChannels: joinedChannelLookup,
     },
@@ -106,6 +111,23 @@ function deleteChannel(set: StoreSetter, channelID: number): void {
   }));
 }
 
+function setSelectedChannelID(set: StoreSetter, channelID: number): void {
+  set(({ data }) => ({data:
+    {
+    ...data,
+    selectedChannelID: channelID, 
+  },
+}));
+}
+
+function setSelectedChannelHash(set: StoreSetter, channelHash: string): void {
+  set(({ data }) => ({data:
+    {
+    ...data,
+    selectedChannelHash: channelHash, 
+  },
+}));
+}
 function checkChannelExists(get: StoreGetter, channelName: string): boolean {
   return get().data.channels.some((channel) => channel.name === channelName);
 }
@@ -125,6 +147,8 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
   data: {
     channels: [],
     joinedChannels: [],
+    selectedChannelID: 0,
+    selectedChannelHash: '',
   },
   actions: {
     getChannelData: (userID) => getChannelData(set, userID),
@@ -135,6 +159,8 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     changeChannelType: (channelID, newType) =>
       changeChannelType(set, channelID, newType),
     deleteChannel: (channelID) => deleteChannel(set, channelID),
+    setSelectedChannelID: (channelID) =>  setSelectedChannelID(set, channelID),
+    setSelectedChannelHash: (channelHash) =>  setSelectedChannelHash(set, channelHash),
   },
   checks: {
     checkChannelExists: (channelName) => checkChannelExists(get, channelName),
@@ -146,6 +172,10 @@ export const useChannels = () =>
   useChannelStore((state) => state.data.channels);
 export const useJoinedChannels = () =>
   useChannelStore((state) => state.data.joinedChannels);
+export const useSelectedChannelID = () =>
+  useChannelStore((state) => state.data.selectedChannelID);
+export const useSelectedChannelHash = () =>
+  useChannelStore((state) => state.data.selectedChannelHash);
 export const useChannelActions = () =>
   useChannelStore((state) => state.actions);
 export const useChannelChecks = () => useChannelStore((state) => state.checks);

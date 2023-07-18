@@ -44,7 +44,7 @@ export default function Home() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        flexDirection: 'column',
+        flexDirection: 'row',
         minHeight: '100vh',
       }}
     >

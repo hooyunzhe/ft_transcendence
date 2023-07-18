@@ -10,6 +10,7 @@ import {
   useChannelActions,
   useChannels,
   useJoinedChannels,
+  useSelectedChannelID,
 } from '@/lib/stores/useChannelStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 
@@ -18,7 +19,8 @@ export function ChannelList() {
   const channels = useChannels();
   const joinedChannels = useJoinedChannels();
   const { getChannelData } = useChannelActions();
-  const [selectedChannel, setSelectedChannel] = useState<Channel | undefined>();
+  const selectedChannelID = useSelectedChannelID();
+  const { setSelectedChannelID, setSelectedChannelHash } = useChannelActions();
 
   useEffect(() => {
     getChannelData(currentUser.id);
@@ -37,13 +39,16 @@ export function ChannelList() {
       <ChannelJoinPrompt />
       {channels
         .filter((channel) => joinedChannels[channel.id])
-        .map((channel: Channel, index: number) => (
+        .map((channel, index) => (
           <ChannelDisplay
             key={index}
             {...channel}
-            selected={selectedChannel?.id ?? 0}
+            selected={selectedChannelID}
             selectCurrent={() => {
-              setSelectedChannel(channel);
+              setSelectedChannelID(
+                selectedChannelID === channel.id ? 0 : channel.id,
+              );
+              setSelectedChannelHash(channel.hash);
             }}
           />
         ))}
