@@ -179,13 +179,7 @@ export default function FriendList() {
   const categories = ['friends', 'pending', 'invited', 'blocked'];
 
   return (
-    <Stack
-      width='100%'
-      maxWidth={360}
-      direction='column'
-      justifyContent='center'
-      spacing={1}
-    >
+    <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
       <FriendAddPrompt sendFriendRequest={sendFriendRequest} />
       {categories.map((category, index) => (
         <FriendDropdown

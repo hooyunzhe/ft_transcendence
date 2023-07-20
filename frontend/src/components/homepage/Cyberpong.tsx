@@ -1,7 +1,5 @@
 'use client';
 import { ChannelMemberList } from '@/components/channel-member/ChannelMemberList';
-import { ChannelList } from '@/components/channel/ChannelList';
-import FriendList from '@/components/friend/FriendList';
 import { useFriendActions } from '@/lib/stores/useFriendStore';
 import {
   useFriendSocket,
@@ -10,8 +8,8 @@ import {
 } from '@/lib/stores/useSocketStore';
 import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import { useEffect } from 'react';
-import ConfirmationPrompt from './utils/ConfirmationPrompt';
-import NotificationBar from './utils/NotificationBar';
+import ConfirmationPrompt from '../utils/ConfirmationPrompt';
+import NotificationBar from '../utils/NotificationBar';
 import {
   useConfirmation,
   useConfirmationActions,
@@ -20,6 +18,9 @@ import {
   useNotification,
   useNotificationActions,
 } from '@/lib/stores/useNotificationStore';
+import SocialDrawer from './SocialDrawer';
+import { Box } from '@mui/material';
+import Image from 'next/image';
 
 export default function Cyberpong() {
   const currentUser = useCurrentUser();
@@ -56,11 +57,27 @@ export default function Cyberpong() {
   }, [friendSocket]);
 
   return (
-    <>
-      <ChannelList></ChannelList>
-      <ChannelMemberList></ChannelMemberList>
-      {/* <FriendList></FriendList> */}
-      {/* <h1>Cyberpong™</h1> */}
+    <Box
+      sx={{
+        flexGrow: 1,
+        alignSelf: 'stretch',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        margin: '5px',
+        borderRadius: '10px',
+        background: '#4CC9F0',
+      }}
+    >
+      <SocialDrawer />
+      <Image
+        src='/ball/paddle1.png'
+        width={12}
+        height={110}
+        alt='Paddle 1'
+      ></Image>
+      {/* <ChannelMemberList></ChannelMemberList> */}
       <ConfirmationPrompt
         open={confirmation.required}
         onCloseHandler={resetConfirmation}
@@ -77,6 +94,6 @@ export default function Cyberpong() {
         message={notification.message}
         onCloseHandler={resetNotification}
       />
-    </>
+    </Box>
   );
 }
