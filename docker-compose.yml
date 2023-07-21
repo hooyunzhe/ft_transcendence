@@ -1,20 +1,22 @@
 version: '3'
 
 services:
-    nestjs:
-      container_name: backend
-      build: ./backend
-      image: backend-nestjs
-      depends_on:
-        - postgres
-      restart: on-failure
-      volumes:
-        - ./backend:/ft_transcendence-nestjs
+    # running this in dev doesn't work with bcrypt
+    # due to different OS architecture
+    # nestjs:
+    #   container_name: backend
+    #   build: ./backend
+    #   image: backend-nestjs
+    #   depends_on:
+    #     - postgres
+    #   restart: on-failure
+    #   volumes:
+    #     - ./backend:/ft_transcendence-nestjs
       # expose:
       #   - "3000"
       # for dev
-      ports:
-        - "4242:3000"
+      # ports:
+      #   - "4242:3000"
     postgres:
         container_name: database
         image: postgres:15-alpine
@@ -23,8 +25,11 @@ services:
           - POSTGRES_DB=${POSTGRES_DB}
           - POSTGRES_USER=${POSTGRES_USER}
           - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-        expose:
-          - "5432"
+        # expose:
+        #   - "5432"
+        # for dev
+        ports:
+          - "5432:5432"
     # running this in dev might cause performance issues
     # nextjs:
     #   container_name: frontend
