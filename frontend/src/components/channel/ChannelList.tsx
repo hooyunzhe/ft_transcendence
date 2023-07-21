@@ -78,13 +78,7 @@ export function ChannelList() {
   }
 
   return (
-    <Stack
-      width='100%'
-      maxWidth={360}
-      direction='column'
-      justifyContent='center'
-      spacing={1}
-    >
+    <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
       {selectedChannel ? (
         <ListHeader title={selectedChannel.name}>
           <ChannelSettings
