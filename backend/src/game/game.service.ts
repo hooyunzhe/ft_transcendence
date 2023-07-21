@@ -5,7 +5,11 @@ interface Coor {
   x: number;
   y: number;
 }
-
+interface classSkill {
+  Str: Array<Array<boolean>>;
+  Agi: Array<Array<boolean>>;
+  Int: Array<Array<boolean>>;
+}
 class RectObj {
   constructor(x: number, y: number, width: number, height: number) {
     this.x = x;
@@ -39,6 +43,13 @@ class RectObj {
   velocityY: number;
 }
 
+class playerSkill {
+  private classSkill: classSkill;
+  private passiveSkill: ;
+  constructor(classSkill: classSkill) {
+    this.classSkill = classSkill;
+  }
+}
 export class GameService {
   windowSize: Coor;
   direction: Coor;
@@ -154,11 +165,11 @@ export class GameService {
         x: this.Ball.x,
         y: this.Ball.y,
       },
-      balldirection : {
+      balldirection: {
         x: this.Ball.velocityX / (this.refreshMilisec / 1000),
         y: this.Ball.velocityY / (this.refreshMilisec / 1000),
       },
-      timestamp : Date.now(),
+      timestamp: Date.now(),
       paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
       paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
       score: this.score,
