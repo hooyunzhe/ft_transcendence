@@ -3,7 +3,7 @@ import { Box, Button, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { signUp } from '@/lib/signUp';
+import signUp from '@/lib/signUp';
 
 export default function Login() {
   const { data: session } = useSession();

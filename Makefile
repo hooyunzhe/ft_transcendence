@@ -13,6 +13,13 @@ CLEAN_VOLUMES	= --volumes
 all:
 	$(COMPOSE) $(UP) $(DETACHED) $(BUILD_IMAGES)
 
+dev:
+	$(COMPOSE) $(UP) $(DETACHED) $(BUILD_IMAGES)
+	yarn --cwd backend start:dev
+
+clear:
+	$(COMPOSE) $(DOWN) $(CLEAN_VOLUMES)
+
 clean:
 	$(COMPOSE) $(DOWN) $(CLEAN_IMAGES) $(CLEAN_ORPHANS)
 
