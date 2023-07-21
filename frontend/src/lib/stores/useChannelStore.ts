@@ -1,13 +1,13 @@
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import callAPI from '../callAPI';
 import { create } from 'zustand';
+import { Socket } from 'socket.io-client';
 
 interface ChannelStore {
   data: {
     channels: Channel[];
     joinedChannels: boolean[];
-    selectedChannelID: number; 
-    selectedChannelHash: string; 
+    selectedChannel: Channel | undefined;
   };
   actions: {
     getChannelData: (userID: number) => void;
@@ -16,8 +16,8 @@ interface ChannelStore {
     changeChannelName: (channelID: number, newName: string) => void;
     changeChannelType: (channelID: number, newType: ChannelType) => void;
     deleteChannel: (channelID: number) => void;
-    setSelectedChannelID: (channelID: number) => void;
-    setSelectedChannelHash: (channelHash: string) => void;
+    setSelectedChannel: (channel: Channel | undefined) => void;
+    setupChannelSocketEvents: (channelSocket : Socket, channelID : number) => void;
   };
   checks: {
     checkChannelExists: (channelName: string) => boolean;
@@ -111,23 +111,15 @@ function deleteChannel(set: StoreSetter, channelID: number): void {
   }));
 }
 
-function setSelectedChannelID(set: StoreSetter, channelID: number): void {
-  set(({ data }) => ({data:
-    {
-    ...data,
-    selectedChannelID: channelID, 
-  },
-}));
+function setSelectedChannel(set: StoreSetter, channel: Channel | undefined): void {
+    set(({ data }) => ({data:
+      {
+      ...data,
+      selectedChannel: channel, 
+    },
+  }));
 }
 
-function setSelectedChannelHash(set: StoreSetter, channelHash: string): void {
-  set(({ data }) => ({data:
-    {
-    ...data,
-    selectedChannelHash: channelHash, 
-  },
-}));
-}
 function checkChannelExists(get: StoreGetter, channelName: string): boolean {
   return get().data.channels.some((channel) => channel.name === channelName);
 }
@@ -143,12 +135,34 @@ function checkChannelJoined(get: StoreGetter, channelName: string): boolean {
   return false;
 }
 
+function setupChannelSocketEvents(
+  set: StoreSetter,
+  channelSocket: Socket,
+  channelID: number,
+): void {
+  channelSocket.on('socketConnected', () =>
+    channelSocket.emit('initConnection', channelID),
+  );
+  // channelSocket.on('newUser', (request: ChannelMembers) => addChannelMember(set, request));
+  // channelSocket.on('kickUser', (request: ChannelMembers) => kickChannelMember(set, request.id));
+  // channelSocket.on('changeRole', (request: ChannelMembers, newRole: ChannelMemberRole) => 
+  //   changeChannelMemberRole(set, request.id, newRole));
+  // channelSocket.on('changeStatus', (request: ChannelMembers, newStatus: ChannelMemberStatus) =>
+  //   changeChannelMemberStatus(set, request.id, newStatus));
+}
+
 const useChannelStore = create<ChannelStore>()((set, get) => ({
   data: {
     channels: [],
     joinedChannels: [],
-    selectedChannelID: 0,
-    selectedChannelHash: '',
+    selectedChannel: {
+        id: 0,
+        name: '',
+        type: ChannelType.PUBLIC,
+        hash: '',
+        channelMembers: [],
+        messages: [],
+    }
   },
   actions: {
     getChannelData: (userID) => getChannelData(set, userID),
@@ -159,8 +173,9 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     changeChannelType: (channelID, newType) =>
       changeChannelType(set, channelID, newType),
     deleteChannel: (channelID) => deleteChannel(set, channelID),
-    setSelectedChannelID: (channelID) =>  setSelectedChannelID(set, channelID),
-    setSelectedChannelHash: (channelHash) =>  setSelectedChannelHash(set, channelHash),
+    setSelectedChannel: (channel) =>  setSelectedChannel(set, channel),
+    setupChannelSocketEvents: ( channelSocket, channelID) =>
+      setupChannelSocketEvents(set, channelSocket, channelID),
   },
   checks: {
     checkChannelExists: (channelName) => checkChannelExists(get, channelName),
@@ -172,10 +187,8 @@ export const useChannels = () =>
   useChannelStore((state) => state.data.channels);
 export const useJoinedChannels = () =>
   useChannelStore((state) => state.data.joinedChannels);
-export const useSelectedChannelID = () =>
-  useChannelStore((state) => state.data.selectedChannelID);
-export const useSelectedChannelHash = () =>
-  useChannelStore((state) => state.data.selectedChannelHash);
+export const useSelectedChannel = () =>
+  useChannelStore((state) => state.data.selectedChannel);
 export const useChannelActions = () =>
   useChannelStore((state) => state.actions);
 export const useChannelChecks = () => useChannelStore((state) => state.checks);

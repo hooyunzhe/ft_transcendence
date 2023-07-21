@@ -13,19 +13,13 @@ import { useEffect, useState } from 'react';
 import { ChannelMemberActionDisplay } from './ChannelMemberActionDisplay';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
-import ChannelMemberSettings from './ChannelMemberSettings';
-import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import {
   useChannelMemberActions,
   useChannelMembers,
 } from '@/lib/stores/useChannelMemberStore';
-import {
-  useChannelActions,
-  useChannels,
-  useSelectedChannelHash,
-  useSelectedChannelID,
-} from '@/lib/stores/useChannelStore';
+import { useSelectedChannel } from '@/lib/stores/useChannelStore';
+import { useChannelMemberSocket } from '@/lib/stores/useSocketStore';
 
 export function ChannelMemberList() {
   const channelMembers = useChannelMembers();
@@ -36,12 +30,9 @@ export function ChannelMemberList() {
     changeChannelMemberRole,
     changeChannelMemberStatus,
   } = useChannelMemberActions();
-  const { getChannelData } = useChannelActions();
-  const channel = useChannels();
-  const selectedChannelID = useSelectedChannelID();
-  const selectedChannelHash = useSelectedChannelHash();
+  const channelMemberSocket = useChannelMemberSocket();
+  const selectedChannel = useSelectedChannel();
   const [friends, setFriends] = useState<Friend[]>([]);
-  const [channels, setChannels] = useState<Channel[]>([]);
   const { displayConfirmation } = useConfirmationActions();
 
   useEffect(() => {
@@ -56,63 +47,15 @@ export function ChannelMemberList() {
     getChannelMemberData();
 
     // getChannelMembers();
-
-    // * My listening sockets * //
-    // channelMemberSocket.on('addUser', (data: ChannelMembers) => {
-    //   addChannelMember(data);
-    // });
-
-    // channelMemberSocket.on('kickUser', (data: ChannelMembers) => {
-    //   kickChannelMember(data.id);
-    // });
-
-    // channelMemberSocket.on('changeRole', (data: ChannelMembers) => {
-    //   changeChannelMemberRole(data.id, data.role);
-    // });
-
-    // channelMemberSocket.on('changeStatus', (data: ChannelMembers) => {
-    //   changeChannelMemberStatus(data.id, data.status);
-    // });
   }, []);
 
   // * Helper Function for update locals * //
-
-  function updateChannelArray(newChannelName: Channel) {
-    setChannels((channelData) => [...channelData, newChannelName]);
-  }
-
-  // * Async functions for each actions * //
-
-  async function changeChannelType(
-    channelID: number,
-    newType: ChannelType,
-    newPass?: string,
-  ) {
-    const typePatch = await callAPI('PATCH', 'channels', {
-      id: channelID,
-      type: newType,
-      pass: newPass,
-    });
-    const newChannel: Channel = JSON.parse(typePatch);
-    updateChannelArray(newChannel);
-    // channelMemberSocket.emit('changeChannelType', newChannel);
-  }
-
-  async function changeChannelName(channelID: number, newName: string) {
-    const namePatch = await callAPI('PATCH', 'channels', {
-      id: channelID,
-      name: newName,
-    });
-    const newChannel: Channel = JSON.parse(namePatch);
-    updateChannelArray(newChannel);
-    // channelMemberSocket.emit('changeChannelName', newChannel);
-  }
 
   //* ignore the above * //
 
   async function addUser(userID: number, useHash?: string): Promise<string> {
     const add = await callAPI('POST', 'channel-members', {
-      channel_id: selectedChannelID,
+      channel_id: selectedChannel?.id,
       user_id: userID,
       role: ChannelMemberRole.MEMBER,
       hash: useHash,
@@ -120,14 +63,14 @@ export function ChannelMemberList() {
     const newChannelMember: ChannelMembers = JSON.parse(add);
     console.log('NEWCHANNELMEMBER ADD \n: ', newChannelMember);
     addChannelMember(newChannelMember);
-    // channelMemberSocket.emit('addUser', newChannelMember);
+    channelMemberSocket.emit('addUser', newChannelMember);
     return '';
   }
 
   async function kickUser(memberID: number): Promise<string> {
     callAPI('DELETE', 'channel-members', { id: memberID });
     kickChannelMember(memberID);
-    // channelMemberSocket.emit('kickUser', member);
+    channelMemberSocket.emit('kickUser', memberID);
     return '';
   }
 
@@ -137,7 +80,7 @@ export function ChannelMemberList() {
       role: ChannelMemberRole.ADMIN,
     });
     changeChannelMemberRole(memberID, ChannelMemberRole.ADMIN);
-    // channelMemberSocket.emit('changeRole', member);
+    channelMemberSocket.emit('changeRole', memberID);
   }
 
   async function changeToMember(memberID: number) {
@@ -146,7 +89,7 @@ export function ChannelMemberList() {
       role: ChannelMemberRole.MEMBER,
     });
     changeChannelMemberRole(memberID, ChannelMemberRole.MEMBER);
-    // channelMemberSocket.emit('changeRole', member);
+    channelMemberSocket.emit('changeRole', memberID);
   }
 
   async function unmuteMember(memberID: number) {
@@ -156,7 +99,7 @@ export function ChannelMemberList() {
       muted_until: new Date().toISOString(),
     });
     changeChannelMemberStatus(memberID, ChannelMemberStatus.DEFAULT);
-    // channelMemberSocket.emit('changeStatus', member);
+    channelMemberSocket.emit('changeStatus', memberID);
   }
 
   async function muteMember(memberID: number, duration?: Date) {
@@ -166,7 +109,7 @@ export function ChannelMemberList() {
       muted_until: new Date().toISOString(),
     });
     changeChannelMemberStatus(memberID, ChannelMemberStatus.MUTED);
-    // channelMemberSocket.emit('changeStatus', member);
+    channelMemberSocket.emit('changeStatus', memberID);
   }
 
   async function banMember(memberID: number) {
@@ -176,7 +119,7 @@ export function ChannelMemberList() {
       muted_until: new Date().toISOString(),
     });
     changeChannelMemberStatus(memberID, ChannelMemberStatus.BANNED);
-    // channelMemberSocket.emit('changeStatus', member);
+    channelMemberSocket.emit('changeStatus', memberID);
   }
 
   async function changeOwnership(memberID: number) {
@@ -196,7 +139,7 @@ export function ChannelMemberList() {
       role: ChannelMemberRole.ADMIN,
     });
     changeChannelMemberRole(currentOwner.id, ChannelMemberRole.ADMIN);
-    // channelMemberSocket.emit('changeStatus', currentOwner.id);
+    channelMemberSocket.emit('changeStatus', currentOwner.id);
   }
 
   // * Action handlers that are passed into components * //
@@ -267,7 +210,7 @@ export function ChannelMemberList() {
     }
   }
 
-  return (
+  return selectedChannel ? (
     <Stack
       width='100%'
       maxWidth={360}
@@ -275,23 +218,15 @@ export function ChannelMemberList() {
       justifyContent='center'
       spacing={1}
     >
-      <ListHeader title='My retarded channel member list'>
-        {/* <ChannelMemberSettings
-          channelMember={channelMembers}
-          selectedchannelID={selectedChannelID}
-          handleAction={handleDisplayAction}
-          handleNameChange={changeChannelName}
-          handleTypeChange={changeChannelType}
-        /> */}
-      </ListHeader>
+      <ListHeader title='My retarded channel member list'></ListHeader>
       <ChannelMemberAddPrompt
         addUser={addUser}
         friends={friends}
         channelMembers={channelMembers}
-        channelHash={selectedChannelHash}
+        channelHash={selectedChannel.hash}
       ></ChannelMemberAddPrompt>
       {channelMembers
-        .filter((members) => members.channel.id === selectedChannelID)
+        .filter((members) => members.channel.id === selectedChannel.id)
         .map((channelMember: ChannelMembers, index: number) => (
           <ChannelMemberActionDisplay
             key={index}
@@ -300,5 +235,5 @@ export function ChannelMemberList() {
           />
         ))}
     </Stack>
-  );
+  ) : null;
 }

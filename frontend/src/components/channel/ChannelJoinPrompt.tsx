@@ -120,7 +120,7 @@ export default function ChannelJoinPrompt() {
             <ChannelDisplay
               key={index}
               {...channel}
-              selected={selectedChannel?.id ?? 0}
+              selected={selectedChannel?.id === channel.id ?? false}
               selectCurrent={() => {
                 setChannelSearch(channel.name);
                 setSelectedChannel(channel);

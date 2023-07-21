@@ -4,7 +4,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 
 interface ListHeaderProps {
   title: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export default function ListHeader({ title, children }: ListHeaderProps) {

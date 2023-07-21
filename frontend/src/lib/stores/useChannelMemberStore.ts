@@ -1,6 +1,7 @@
 import { ChannelMemberRole, ChannelMemberStatus, ChannelMembers } from "@/types/ChannelMemberTypes";
 import { create } from "zustand";
 import callAPI from "../callAPI";
+import { Socket } from "socket.io-client";
 
 interface ChannelMemberStore {
   data: {
@@ -12,7 +13,7 @@ interface ChannelMemberStore {
     kickChannelMember : (memberID: number) => void;
     changeChannelMemberRole: (memberID: number, newRole: ChannelMemberRole) => void;
     changeChannelMemberStatus: (memberID: number, newStatus: ChannelMemberStatus) => void;
-
+    setupChannelMemberSocketEvents: (channelMemberSocket: Socket, memberID: number) => void;
   }
 }
 
@@ -25,7 +26,6 @@ async function getChannelMemberData(set: StoreSetter) {
   const channelMembersData = JSON.parse(
     await callAPI('GET', 'channel-members?search_type=ALL'),
   );
-  console.log('uhhh \n',channelMembersData);
   set(() => ({data : { channelMembers:  channelMembersData}}));
 }
 
@@ -78,6 +78,22 @@ function changeChannelMemberStatus(
   }));
 }
 
+function setupChannelMemberSocketEvents(
+  set: StoreSetter,
+  channelMemberSocket: Socket,
+  memberID: number,
+): void {
+  channelMemberSocket.on('socketConnected', () =>
+    channelMemberSocket.emit('initConnection', memberID),
+  );
+  channelMemberSocket.on('newUser', (request: ChannelMembers) => addChannelMember(set, request));
+  channelMemberSocket.on('kickUser', (request: ChannelMembers) => kickChannelMember(set, request.id));
+  channelMemberSocket.on('changeRole', (request: ChannelMembers, newRole: ChannelMemberRole) => 
+    changeChannelMemberRole(set, request.id, newRole));
+  channelMemberSocket.on('changeStatus', (request: ChannelMembers, newStatus: ChannelMemberStatus) =>
+    changeChannelMemberStatus(set, request.id, newStatus));
+}
+
 
 const useChannelMemberStore = create<ChannelMemberStore>()((set) => ({
   data: { channelMembers: []},
@@ -87,6 +103,7 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set) => ({
     kickChannelMember: (memberID) => kickChannelMember(set, memberID),
     changeChannelMemberRole: (memberID, newRole) => changeChannelMemberRole(set, memberID, newRole),
     changeChannelMemberStatus: (memberID, newStatus) => changeChannelMemberStatus(set, memberID, newStatus),
+    setupChannelMemberSocketEvents: (channelMemberSocket, memberID) => setupChannelMemberSocketEvents(set, channelMemberSocket, memberID),
 
   },   
 }));

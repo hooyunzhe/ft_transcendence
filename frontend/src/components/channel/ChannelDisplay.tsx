@@ -17,7 +17,7 @@ export interface ChannelDisplayProps {
   id: number;
   name: string;
   type: ChannelType;
-  selected: number;
+  selected: boolean;
   selectCurrent: () => void;
 }
 
@@ -30,7 +30,7 @@ export function ChannelDisplay({
 }: ChannelDisplayProps) {
   return (
     <Paper elevation={2}>
-      <ListItemButton selected={selected === id} onClick={selectCurrent}>
+      <ListItemButton selected={selected} onClick={selectCurrent}>
         <ListItem>
           <ListItemAvatar>
             <Avatar alt=''></Avatar>
