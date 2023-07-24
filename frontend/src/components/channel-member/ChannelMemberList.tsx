@@ -1,5 +1,4 @@
 'use client';
-
 import callAPI from '@/lib/callAPI';
 import {
   ChannelMembers,
@@ -7,9 +6,7 @@ import {
   ChannelMemberRole,
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
-import { Friend } from '@/types/FriendTypes';
 import { Stack } from '@mui/material';
-import { useEffect, useState } from 'react';
 import { ChannelMemberActionDisplay } from './ChannelMemberActionDisplay';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
@@ -24,7 +21,6 @@ import { useChannelMemberSocket } from '@/lib/stores/useSocketStore';
 export function ChannelMemberList() {
   const channelMembers = useChannelMembers();
   const {
-    getChannelMemberData,
     addChannelMember,
     kickChannelMember,
     changeChannelMemberRole,
@@ -32,22 +28,7 @@ export function ChannelMemberList() {
   } = useChannelMemberActions();
   const channelMemberSocket = useChannelMemberSocket();
   const selectedChannel = useSelectedChannel();
-  const [friends, setFriends] = useState<Friend[]>([]);
   const { displayConfirmation } = useConfirmationActions();
-
-  useEffect(() => {
-    async function getFriends() {
-      // probably need to GET all user friend (HARDCODED FOR NOW)
-      const friendsData = JSON.parse(
-        await callAPI('GET', 'friends?search_type=USER&search_number=1'),
-      );
-      setFriends(friendsData);
-    }
-    getFriends();
-    getChannelMemberData();
-
-    // getChannelMembers();
-  }, []);
 
   // * Helper Function for update locals * //
 
@@ -221,8 +202,6 @@ export function ChannelMemberList() {
       <ListHeader title='My retarded channel member list'></ListHeader>
       <ChannelMemberAddPrompt
         addUser={addUser}
-        friends={friends}
-        channelMembers={channelMembers}
         channelHash={selectedChannel.hash}
       ></ChannelMemberAddPrompt>
       {channelMembers

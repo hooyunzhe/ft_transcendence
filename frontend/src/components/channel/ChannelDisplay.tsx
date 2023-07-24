@@ -1,3 +1,4 @@
+'use client';
 import { ChannelType } from '@/types/ChannelTypes';
 import {
   AccountCircleRounded,
@@ -12,6 +13,7 @@ import {
   ListItemText,
   Paper,
 } from '@mui/material';
+import ChannelSettings from './ChannelSettings';
 
 export interface ChannelDisplayProps {
   id: number;
@@ -19,6 +21,7 @@ export interface ChannelDisplayProps {
   type: ChannelType;
   selected: boolean;
   selectCurrent: () => void;
+  isOwner: boolean;
 }
 
 export function ChannelDisplay({
@@ -27,6 +30,7 @@ export function ChannelDisplay({
   type,
   selected,
   selectCurrent,
+  isOwner,
 }: ChannelDisplayProps) {
   return (
     <Paper elevation={2}>
@@ -39,6 +43,7 @@ export function ChannelDisplay({
           {type === ChannelType.PUBLIC && <AccountCircleRounded />}
           {type === ChannelType.PRIVATE && <AdminPanelSettingsRounded />}
           {type === ChannelType.PROTECTED && <LockPersonRounded />}
+          {isOwner && <ChannelSettings channelID={id} channelType={type} />}
         </ListItem>
       </ListItemButton>
     </Paper>

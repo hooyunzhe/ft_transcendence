@@ -1,3 +1,4 @@
+'use client';
 import { useState } from 'react';
 import DialogPrompt from '../utils/DialogPrompt';
 import { useFriends } from '@/lib/stores/useFriendStore';

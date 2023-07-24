@@ -7,7 +7,7 @@ import {
   ListItemText,
   Paper,
 } from '@mui/material';
-import ChannelMembers from '@/types/ChannelMemberTypes';
+import { ChannelMembers } from '@/types/ChannelMemberTypes';
 
 interface BanListDisplayProps {
   member: ChannelMembers;

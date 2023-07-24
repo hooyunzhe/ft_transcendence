@@ -1,3 +1,4 @@
+'use client';
 import { Box, Drawer, Tab, Tabs } from '@mui/material';
 import FriendList from '../friend/FriendList';
 import { ChannelList } from '../channel/ChannelList';
@@ -6,6 +7,7 @@ import Image from 'next/image';
 
 export default function SocialDrawer() {
   const [open, setOpen] = useState(false);
+  const [timeoutID, setTimeoutID] = useState<NodeJS.Timeout>();
   const [selectedTab, setSelectedTab] = useState(0);
 
   return (
@@ -13,8 +15,13 @@ export default function SocialDrawer() {
       sx={{
         marginRight: 'auto',
       }}
-      onMouseOver={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onMouseOver={() => {
+        clearInterval(timeoutID);
+        setOpen(true);
+      }}
+      onMouseLeave={() => {
+        setTimeoutID(setTimeout(() => setOpen(false), 5000));
+      }}
     >
       {!open && (
         <Image

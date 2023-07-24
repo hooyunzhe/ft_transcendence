@@ -81,7 +81,6 @@ export default function FriendDropdown({
       <Collapse in={open && friends.length > 0} timeout='auto' unmountOnExit>
         <Stack
           width='100%'
-          maxWidth={360}
           direction='column'
           justifyContent='center'
           spacing={1}

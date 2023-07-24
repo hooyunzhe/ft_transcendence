@@ -1,3 +1,4 @@
+'use client';
 import { useState } from 'react';
 import DialogPrompt from '../utils/DialogPrompt';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
@@ -125,6 +126,7 @@ export default function ChannelJoinPrompt() {
                 setChannelSearch(channel.name);
                 setSelectedChannel(channel);
               }}
+              isOwner={false}
             />
           ))}
       </Stack>

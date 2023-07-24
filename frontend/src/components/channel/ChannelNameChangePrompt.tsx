@@ -1,16 +1,27 @@
+'use client';
+import { useChannelActions } from '@/lib/stores/useChannelStore';
 import DialogPrompt from '../utils/DialogPrompt';
 import { useState } from 'react';
+import callAPI from '@/lib/callAPI';
 
 interface ChannelNameChangeProps {
   channelID: number;
-  handleAction: (...args: any) => Promise<void>;
 }
 
 export default function ChannelNameChangePrompt({
   channelID,
-  handleAction,
 }: ChannelNameChangeProps) {
+  const { changeChannelName } = useChannelActions();
   const [input, setInput] = useState('');
+
+  async function changeName(channelID: number, newName: string) {
+    await callAPI('PATCH', 'channels', {
+      id: channelID,
+      name: newName,
+    });
+    changeChannelName(channelID, newName);
+    // channelMemberSocket.emit('changeChannelName', newChannel);
+  }
 
   return (
     <DialogPrompt
@@ -26,7 +37,8 @@ export default function ChannelNameChangePrompt({
       backHandler={async () => {}}
       actionButtonText='Change'
       handleAction={async () => {
-        handleAction(channelID, input);
+        changeName(channelID, input);
+        setInput('');
         return '';
       }}
     ></DialogPrompt>

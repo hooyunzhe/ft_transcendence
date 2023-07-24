@@ -1,4 +1,6 @@
-import ChannelMembers, {
+'use client';
+import {
+  ChannelMembers,
   ChannelMemberAction,
   ChannelMemberRole,
   ChannelMemberStatus,

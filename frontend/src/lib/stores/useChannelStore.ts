@@ -15,9 +15,13 @@ interface ChannelStore {
     addJoinedChannel: (channelID: number) => void;
     changeChannelName: (channelID: number, newName: string) => void;
     changeChannelType: (channelID: number, newType: ChannelType) => void;
+    changeChannelHash: (channelID: number, newHash: string) => void;
     deleteChannel: (channelID: number) => void;
     setSelectedChannel: (channel: Channel | undefined) => void;
-    setupChannelSocketEvents: (channelSocket : Socket, channelID : number) => void;
+    setupChannelSocketEvents: (
+      channelSocket: Socket,
+      channelID: number,
+    ) => void;
   };
   checks: {
     checkChannelExists: (channelName: string) => boolean;
@@ -32,7 +36,9 @@ type StoreSetter = (
 type StoreGetter = () => ChannelStore;
 
 async function getChannelData(set: StoreSetter, userID: number): Promise<void> {
-  const channelData = JSON.parse(await callAPI('GET', 'channels?search_type=ALL'));
+  const channelData = JSON.parse(
+    await callAPI('GET', 'channels?search_type=ALL'),
+  );
   const joinedChannelData = JSON.parse(
     await callAPI(
       'GET',
@@ -44,7 +50,7 @@ async function getChannelData(set: StoreSetter, userID: number): Promise<void> {
   joinedChannelData.forEach((joinedChannel: Channel) => {
     joinedChannelLookup[joinedChannel.id] = true;
   });
-    set(({data}) => ({
+  set(({ data }) => ({
     data: {
       ...data,
       channels: channelData,
@@ -61,8 +67,15 @@ function addChannel(set: StoreSetter, newChannel: Channel): void {
 
 function addJoinedChannel(set: StoreSetter, channelID: number): void {
   set(({ data }) => {
-    data.joinedChannels[channelID] = true;
-    return { data };
+    const updatedJoinedChannels = [...data.joinedChannels];
+
+    updatedJoinedChannels[channelID] = true;
+    return {
+      data: {
+        ...data,
+        joinedChannels: updatedJoinedChannels,
+      },
+    };
   });
 }
 
@@ -102,6 +115,24 @@ function changeChannelType(
   }));
 }
 
+function changeChannelHash(
+  set: StoreSetter,
+  channelID: number,
+  newHash: string,
+): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      channels: data.channels.map((channel) => {
+        if (channel.id === channelID) {
+          channel.hash = newHash;
+        }
+        return channel;
+      }),
+    },
+  }));
+}
+
 function deleteChannel(set: StoreSetter, channelID: number): void {
   set(({ data }) => ({
     data: {
@@ -111,11 +142,14 @@ function deleteChannel(set: StoreSetter, channelID: number): void {
   }));
 }
 
-function setSelectedChannel(set: StoreSetter, channel: Channel | undefined): void {
-    set(({ data }) => ({data:
-      {
+function setSelectedChannel(
+  set: StoreSetter,
+  channel: Channel | undefined,
+): void {
+  set(({ data }) => ({
+    data: {
       ...data,
-      selectedChannel: channel, 
+      selectedChannel: channel,
     },
   }));
 }
@@ -145,7 +179,7 @@ function setupChannelSocketEvents(
   );
   // channelSocket.on('newUser', (request: ChannelMembers) => addChannelMember(set, request));
   // channelSocket.on('kickUser', (request: ChannelMembers) => kickChannelMember(set, request.id));
-  // channelSocket.on('changeRole', (request: ChannelMembers, newRole: ChannelMemberRole) => 
+  // channelSocket.on('changeRole', (request: ChannelMembers, newRole: ChannelMemberRole) =>
   //   changeChannelMemberRole(set, request.id, newRole));
   // channelSocket.on('changeStatus', (request: ChannelMembers, newStatus: ChannelMemberStatus) =>
   //   changeChannelMemberStatus(set, request.id, newStatus));
@@ -156,13 +190,13 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     channels: [],
     joinedChannels: [],
     selectedChannel: {
-        id: 0,
-        name: '',
-        type: ChannelType.PUBLIC,
-        hash: '',
-        channelMembers: [],
-        messages: [],
-    }
+      id: 0,
+      name: '',
+      type: ChannelType.PUBLIC,
+      hash: '',
+      channelMembers: [],
+      messages: [],
+    },
   },
   actions: {
     getChannelData: (userID) => getChannelData(set, userID),
@@ -172,9 +206,11 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
       changeChannelName(set, channelID, newName),
     changeChannelType: (channelID, newType) =>
       changeChannelType(set, channelID, newType),
+    changeChannelHash: (channelID, newHash) =>
+      changeChannelHash(set, channelID, newHash),
     deleteChannel: (channelID) => deleteChannel(set, channelID),
-    setSelectedChannel: (channel) =>  setSelectedChannel(set, channel),
-    setupChannelSocketEvents: ( channelSocket, channelID) =>
+    setSelectedChannel: (channel) => setSelectedChannel(set, channel),
+    setupChannelSocketEvents: (channelSocket, channelID) =>
       setupChannelSocketEvents(set, channelSocket, channelID),
   },
   checks: {

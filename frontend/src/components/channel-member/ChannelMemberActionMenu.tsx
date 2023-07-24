@@ -1,7 +1,9 @@
+'use client';
 import * as React from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import ChannelMembers, {
+import {
+  ChannelMembers,
   ChannelMemberAction,
   ChannelMemberRole,
   ChannelMemberStatus,

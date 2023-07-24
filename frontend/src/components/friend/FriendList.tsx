@@ -1,16 +1,12 @@
 'use client';
 import { Stack } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import FriendDropdown from './FriendDropdown';
 import callAPI from '@/lib/callAPI';
 import { Friend, FriendStatus, FriendAction } from '@/types/FriendTypes';
 import { User } from '@/types/UserTypes';
 import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
-import {
-  useCurrentUser,
-  useUserActions,
-  useUserStatus,
-} from '@/lib/stores/useUserStore';
+import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import { useFriendSocket, useUserSocket } from '@/lib/stores/useSocketStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
@@ -20,9 +16,7 @@ import { Socket } from 'socket.io-client';
 export default function FriendList() {
   const currentUser = useCurrentUser();
   const friends = useFriends();
-  const { getFriendData, addFriend, changeFriend, deleteFriend } =
-    useFriendActions();
-  const userStatus = useUserStatus();
+  const { addFriend, changeFriend, deleteFriend } = useFriendActions();
   const { addUserStatus } = useUserActions();
   const userSocket = useUserSocket();
   const friendSocket = useFriendSocket();
@@ -162,10 +156,6 @@ export default function FriendList() {
       }
     }
   }
-
-  useEffect(() => {
-    getFriendData(currentUser.id);
-  }, []);
 
   useEffect(() => {
     if (userSocket) {

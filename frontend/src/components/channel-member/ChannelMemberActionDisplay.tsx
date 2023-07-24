@@ -1,4 +1,6 @@
-import ChannelMembers, {
+'use client';
+import {
+  ChannelMembers,
   ChannelMemberRole,
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';

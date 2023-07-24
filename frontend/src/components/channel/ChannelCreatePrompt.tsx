@@ -1,3 +1,4 @@
+'use client';
 import { useState } from 'react';
 import {
   FormControl,
@@ -40,7 +41,7 @@ export default function ChannelCreatePrompt() {
       await callAPI('POST', 'channels', {
         name: channelName,
         type: channelType,
-        hash: channelPass ?? '',
+        pass: channelPass ?? '',
       }),
     );
 
@@ -55,6 +56,7 @@ export default function ChannelCreatePrompt() {
           }),
         )
       ) {
+        console.log('adding new channel', newChannel);
         addJoinedChannel(newChannel.id);
         return '';
       } else {

@@ -1,23 +1,23 @@
-import { ChannelMembers } from '@/types/ChannelMemberTypes';
+'use client';
 import { Friend } from '@/types/FriendTypes';
 import { Stack } from '@mui/system';
 import { useState } from 'react';
 import DialogPrompt from '../utils/DialogPrompt';
 import FriendDisplay from './ChannelMemberFriendDisplay';
+import { useChannelMembers } from '@/lib/stores/useChannelMemberStore';
+import { useFriends } from '@/lib/stores/useFriendStore';
 
 interface ChannelMemberAddPromptProps {
   addUser: (...args: any) => Promise<string>;
-  friends: Friend[];
-  channelMembers: ChannelMembers[];
   channelHash: string;
 }
 
 export function ChannelMemberAddPrompt({
   addUser,
-  friends,
-  channelMembers,
   channelHash,
 }: ChannelMemberAddPromptProps) {
+  const channelMembers = useChannelMembers();
+  const friends = useFriends();
   const [selectedFriend, setSelectedFriend] = useState<Friend | undefined>();
   const [friendSearch, setFriendSearch] = useState('');
 

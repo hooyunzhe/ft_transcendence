@@ -21,6 +21,8 @@ import {
 import SocialDrawer from './SocialDrawer';
 import { Box } from '@mui/material';
 import Image from 'next/image';
+import { useChannelActions } from '@/lib/stores/useChannelStore';
+import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 
 export default function Cyberpong() {
   const currentUser = useCurrentUser();
@@ -28,7 +30,9 @@ export default function Cyberpong() {
   const friendSocket = useFriendSocket();
   const { initSockets, resetSockets } = useSocketActions();
   const { setupUserSocketEvents } = useUserActions();
-  const { setupFriendSocketEvents } = useFriendActions();
+  const { getFriendData, setupFriendSocketEvents } = useFriendActions();
+  const { getChannelData } = useChannelActions();
+  const { getChannelMemberData } = useChannelMemberActions();
   const confirmation = useConfirmation();
   const { resetConfirmation } = useConfirmationActions();
   const notification = useNotification();
@@ -37,6 +41,9 @@ export default function Cyberpong() {
 
   useEffect(() => {
     initSockets(currentUser.id);
+    getFriendData(currentUser.id);
+    getChannelData(currentUser.id);
+    getChannelMemberData();
 
     return () => {
       resetSockets();
