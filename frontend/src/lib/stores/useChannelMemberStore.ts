@@ -107,10 +107,10 @@ function setupChannelMemberSocketEvents(
   channelMemberSocket.on('socketConnected', () =>
     channelMemberSocket.emit('initConnection', memberID),
   );
-  channelMemberSocket.on('newUser', (request: ChannelMembers) =>
+  channelMemberSocket.on('newMember', (request: ChannelMembers) =>
     addChannelMember(set, request),
   );
-  channelMemberSocket.on('kickUser', (request: ChannelMembers) =>
+  channelMemberSocket.on('kickMember', (request: ChannelMembers) =>
     kickChannelMember(set, request.id),
   );
   channelMemberSocket.on(

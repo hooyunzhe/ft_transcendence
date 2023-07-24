@@ -177,12 +177,18 @@ function setupChannelSocketEvents(
   channelSocket.on('socketConnected', () =>
     channelSocket.emit('initConnection', channelID),
   );
-  // channelSocket.on('newUser', (request: ChannelMembers) => addChannelMember(set, request));
-  // channelSocket.on('kickUser', (request: ChannelMembers) => kickChannelMember(set, request.id));
-  // channelSocket.on('changeRole', (request: ChannelMembers, newRole: ChannelMemberRole) =>
-  //   changeChannelMemberRole(set, request.id, newRole));
-  // channelSocket.on('changeStatus', (request: ChannelMembers, newStatus: ChannelMemberStatus) =>
-  //   changeChannelMemberStatus(set, request.id, newStatus));
+
+  channelSocket.on('newChannel', (data: Channel) =>
+    addChannel(set, data));
+  channelSocket.on('deleteChannel', (data: Channel) =>
+    deleteChannel(set, data.id));
+  channelSocket.on('changeChannelName', (data: {id: number, newName: string}) =>
+    changeChannelName(set, data.id, data.newName));
+  channelSocket.on('changeChannelType', (data: {id: number, newType: ChannelType, newPass?: string}) => {
+    changeChannelType(set, data.id, data.newType);
+    if (data.newType == ChannelType.PROTECTED && data.newPass)
+      changeChannelHash(set, data.id, data.newPass)
+    })
 }
 
 const useChannelStore = create<ChannelStore>()((set, get) => ({

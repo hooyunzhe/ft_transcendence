@@ -10,6 +10,8 @@ import { useState } from 'react';
 import { ChannelType } from '@/types/ChannelTypes';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
 import callAPI from '@/lib/callAPI';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import emitToSocket from '@/lib/emitToSocket';
 
 interface ChannelTypeChangeProps {
   channelID: number;
@@ -23,17 +25,19 @@ export default function ChannelTypeChangePrompt({
   const { changeChannelType, changeChannelHash } = useChannelActions();
   const [input, setInput] = useState('');
   const [selectedChannelType, setSelectedChannelType] = useState(channelType);
+  const channelSocket = useChannelSocket();
 
   async function changeType(
     channelID: number,
     newType: ChannelType,
     newPass?: string,
   ) {
-    await callAPI('PATCH', 'channels', {
+    const data = {
       id: channelID,
       type: newType,
       pass: newPass,
-    });
+    };
+    await callAPI('PATCH', 'channels', data);
     changeChannelType(channelID, newType);
     if (newType === ChannelType.PROTECTED) {
       const updatedChannel = JSON.parse(
@@ -44,7 +48,7 @@ export default function ChannelTypeChangePrompt({
       );
       changeChannelHash(channelID, updatedChannel.hash);
     }
-    // channelMemberSocket.emit('changeChannelType', newChannel);
+    emitToSocket(channelSocket, 'changeChannelType', data);
   }
 
   return (

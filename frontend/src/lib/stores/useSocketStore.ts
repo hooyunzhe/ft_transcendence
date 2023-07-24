@@ -25,7 +25,10 @@ function initSockets(set: StoreSetter, userID: number): void {
 
   userSocket.emit('initConnection', { user_id: userID });
   friendSocket.emit('initConnection', { user_id: userID });
-  set({ data: { userSocket: userSocket, friendSocket: friendSocket, channelSocket : channelSocket, channelMemberSocket: channelMemberSocket} });
+  set({ data: { userSocket: userSocket,
+                friendSocket: friendSocket,
+                channelSocket : channelSocket,
+                channelMemberSocket: channelMemberSocket } });
 }
 
 function resetSockets(set: StoreSetter, get: StoreGetter): void {

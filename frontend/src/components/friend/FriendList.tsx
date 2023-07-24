@@ -11,7 +11,7 @@ import { useFriendSocket, useUserSocket } from '@/lib/stores/useSocketStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import FriendAddPrompt from './FriendAddPrompt';
-import { Socket } from 'socket.io-client';
+import emitToSocket from '@/lib/emitToSocket';
 
 export default function FriendList() {
   const currentUser = useCurrentUser();
@@ -34,19 +34,6 @@ export default function FriendList() {
       ...(action && { action: action }),
     });
   }
-
-  function emitToSocket(socket: Socket | null, message: string, data: any) {
-    if (socket) {
-      if (socket.connected) {
-        socket.emit(message, data);
-      } else {
-        console.log('Failed to emit as socket is disconnected');
-      }
-    } else {
-      console.log('Failed to emit as socket is not initialized');
-    }
-  }
-
   async function sendFriendRequest(user: User): Promise<void> {
     const newRequests = JSON.parse(await callFriendsAPI('POST', user));
 

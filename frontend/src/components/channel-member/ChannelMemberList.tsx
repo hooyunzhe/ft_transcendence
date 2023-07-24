@@ -16,7 +16,8 @@ import {
   useChannelMembers,
 } from '@/lib/stores/useChannelMemberStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
-import { useChannelMemberSocket } from '@/lib/stores/useSocketStore';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import emitToSocket from '@/lib/emitToSocket';
 
 export function ChannelMemberList() {
   const channelMembers = useChannelMembers();
@@ -26,7 +27,7 @@ export function ChannelMemberList() {
     changeChannelMemberRole,
     changeChannelMemberStatus,
   } = useChannelMemberActions();
-  const channelMemberSocket = useChannelMemberSocket();
+  const channelSocket = useChannelSocket();
   const selectedChannel = useSelectedChannel();
   const { displayConfirmation } = useConfirmationActions();
 
@@ -44,14 +45,14 @@ export function ChannelMemberList() {
     const newChannelMember: ChannelMembers = JSON.parse(add);
     console.log('NEWCHANNELMEMBER ADD \n: ', newChannelMember);
     addChannelMember(newChannelMember);
-    channelMemberSocket.emit('addUser', newChannelMember);
+    emitToSocket(channelSocket, 'addMember', newChannelMember);
     return '';
   }
 
   async function kickUser(memberID: number): Promise<string> {
     callAPI('DELETE', 'channel-members', { id: memberID });
     kickChannelMember(memberID);
-    channelMemberSocket.emit('kickUser', memberID);
+    emitToSocket(channelSocket, 'kickMember', memberID);
     return '';
   }
 
@@ -61,7 +62,7 @@ export function ChannelMemberList() {
       role: ChannelMemberRole.ADMIN,
     });
     changeChannelMemberRole(memberID, ChannelMemberRole.ADMIN);
-    channelMemberSocket.emit('changeRole', memberID);
+    emitToSocket(channelSocket, 'changeRole', memberID);
   }
 
   async function changeToMember(memberID: number) {
@@ -70,7 +71,7 @@ export function ChannelMemberList() {
       role: ChannelMemberRole.MEMBER,
     });
     changeChannelMemberRole(memberID, ChannelMemberRole.MEMBER);
-    channelMemberSocket.emit('changeRole', memberID);
+    emitToSocket(channelSocket, 'changeRole', memberID);
   }
 
   async function unmuteMember(memberID: number) {
@@ -80,7 +81,7 @@ export function ChannelMemberList() {
       muted_until: new Date().toISOString(),
     });
     changeChannelMemberStatus(memberID, ChannelMemberStatus.DEFAULT);
-    channelMemberSocket.emit('changeStatus', memberID);
+    emitToSocket(channelSocket, 'changeStatus', memberID);
   }
 
   async function muteMember(memberID: number, duration?: Date) {
@@ -90,7 +91,7 @@ export function ChannelMemberList() {
       muted_until: new Date().toISOString(),
     });
     changeChannelMemberStatus(memberID, ChannelMemberStatus.MUTED);
-    channelMemberSocket.emit('changeStatus', memberID);
+    emitToSocket(channelSocket, 'changeStatus', memberID);
   }
 
   async function banMember(memberID: number) {
@@ -100,7 +101,7 @@ export function ChannelMemberList() {
       muted_until: new Date().toISOString(),
     });
     changeChannelMemberStatus(memberID, ChannelMemberStatus.BANNED);
-    channelMemberSocket.emit('changeStatus', memberID);
+    emitToSocket(channelSocket, 'changeStatus', memberID);
   }
 
   async function changeOwnership(memberID: number) {
@@ -120,7 +121,7 @@ export function ChannelMemberList() {
       role: ChannelMemberRole.ADMIN,
     });
     changeChannelMemberRole(currentOwner.id, ChannelMemberRole.ADMIN);
-    channelMemberSocket.emit('changeStatus', currentOwner.id);
+    emitToSocket(channelSocket, 'changeStatus', memberID);
   }
 
   // * Action handlers that are passed into components * //

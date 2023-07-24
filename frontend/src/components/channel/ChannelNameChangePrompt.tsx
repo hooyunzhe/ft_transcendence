@@ -3,6 +3,8 @@ import { useChannelActions } from '@/lib/stores/useChannelStore';
 import DialogPrompt from '../utils/DialogPrompt';
 import { useState } from 'react';
 import callAPI from '@/lib/callAPI';
+import emitToSocket from '@/lib/emitToSocket';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
 
 interface ChannelNameChangeProps {
   channelID: number;
@@ -13,14 +15,16 @@ export default function ChannelNameChangePrompt({
 }: ChannelNameChangeProps) {
   const { changeChannelName } = useChannelActions();
   const [input, setInput] = useState('');
+  const channelSocket = useChannelSocket();
 
   async function changeName(channelID: number, newName: string) {
-    await callAPI('PATCH', 'channels', {
+    const data = {
       id: channelID,
-      name: newName,
-    });
+      newName: newName,
+    };
+    await callAPI('PATCH', 'channels', data);
     changeChannelName(channelID, newName);
-    // channelMemberSocket.emit('changeChannelName', newChannel);
+    emitToSocket(channelSocket, 'changeChannelName', data);
   }
 
   return (
