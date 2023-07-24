@@ -10,6 +10,7 @@ interface classSkill {
   Agi: Array<Array<boolean>>;
   Int: Array<Array<boolean>>;
 }
+
 class RectObj {
   constructor(x: number, y: number, width: number, height: number) {
     this.x = x;
@@ -43,17 +44,23 @@ class RectObj {
   velocityY: number;
 }
 
-class playerSkill {
+class playerClass {
   private classSkill: classSkill;
-  private passiveSkill: ;
-  constructor(classSkill: classSkill) {
+  paddle: RectObj;
+  private height_multiplier: number = 1;
+  constructor(classSkill: classSkill,x: number, y: number) {
     this.classSkill = classSkill;
+    this.paddle = new RectObj(x, y, 10, 80 * this.height_multiplier);
   }
+
+
 }
 export class GameService {
   windowSize: Coor;
   direction: Coor;
   Ball: RectObj;
+  Player1: playerClass;
+  Player2: playerClass;
   Paddle1: RectObj;
   Paddle2: RectObj;
   velocity: number;
@@ -64,7 +71,7 @@ export class GameService {
 
   refreshMilisec: number = 16;
 
-  constructor(roomid: string, server: Server) {
+  constructor(roomid: string, server: Server, player1: playerClass, player2: playerClass) {
     this.windowSize = {
       x: 800,
       y: 600,
