@@ -23,6 +23,7 @@ import { Box } from '@mui/material';
 import Image from 'next/image';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
+import NavigationHeader from './NavigationHeader';
 
 export default function Cyberpong() {
   const currentUser = useCurrentUser();
@@ -77,6 +78,7 @@ export default function Cyberpong() {
         background: '#4CC9F0',
       }}
     >
+      <NavigationHeader />
       <SocialDrawer />
       <Image
         src='/ball/paddle1.png'

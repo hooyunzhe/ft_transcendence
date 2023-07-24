@@ -33,12 +33,11 @@ export default function SocialDrawer() {
       )}
       <Drawer
         PaperProps={{
-          variant: 'outlined',
           sx: {
             boxSizing: 'border-box',
             width: '20vw',
-            top: '10vh',
-            height: '80vh',
+            height: '70vh',
+            top: '15vh',
             padding: '7px',
             border: 'solid 5px #7209B775',
             borderRadius: '0 15px 15px 0',
