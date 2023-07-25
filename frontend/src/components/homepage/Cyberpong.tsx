@@ -1,5 +1,4 @@
 'use client';
-import { ChannelMemberList } from '@/components/channel-member/ChannelMemberList';
 import { useFriendActions } from '@/lib/stores/useFriendStore';
 import {
   useFriendSocket,
@@ -18,12 +17,11 @@ import {
   useNotification,
   useNotificationActions,
 } from '@/lib/stores/useNotificationStore';
-import SocialDrawer from './SocialDrawer';
-import { Box, Typography } from '@mui/material';
-import Image from 'next/image';
+import { Box } from '@mui/material';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import NavigationHeader from './NavigationHeader';
+import MainArea from './MainArea';
 
 export default function Cyberpong() {
   const currentUser = useCurrentUser();
@@ -70,23 +68,14 @@ export default function Cyberpong() {
         flexGrow: 1,
         alignSelf: 'stretch',
         display: 'flex',
-        justifyContent: 'center',
         alignItems: 'center',
-        flexDirection: 'row',
         margin: '5px',
         borderRadius: '15px',
         background: '#4CC9F0',
       }}
     >
       <NavigationHeader />
-      <SocialDrawer />
-      <Image
-        src='/ball/paddle1.png'
-        width={12}
-        height={110}
-        alt='Paddle 1'
-      ></Image>
-      {/* <ChannelMemberList></ChannelMemberList> */}
+      <MainArea />
       <ConfirmationPrompt
         open={confirmation.required}
         onCloseHandler={resetConfirmation}

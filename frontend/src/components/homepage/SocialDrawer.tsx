@@ -12,9 +12,6 @@ export default function SocialDrawer() {
 
   return (
     <Box
-      sx={{
-        marginRight: 'auto',
-      }}
       onMouseOver={() => {
         clearInterval(timeoutID);
         setOpen(true);
@@ -23,14 +20,12 @@ export default function SocialDrawer() {
         setTimeoutID(setTimeout(() => setOpen(false), 5000));
       }}
     >
-      {!open && (
-        <Image
-          src='/ball/paddle2.png'
-          width={12}
-          height={110}
-          alt='Paddle 1'
-        ></Image>
-      )}
+      <Image
+        src='/ball/paddle2.png'
+        width={12}
+        height={110}
+        alt='Paddle 1'
+      ></Image>
       <Drawer
         PaperProps={{
           sx: {
