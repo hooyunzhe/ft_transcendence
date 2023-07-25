@@ -19,7 +19,7 @@ import {
   useNotificationActions,
 } from '@/lib/stores/useNotificationStore';
 import SocialDrawer from './SocialDrawer';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
@@ -74,7 +74,7 @@ export default function Cyberpong() {
         alignItems: 'center',
         flexDirection: 'row',
         margin: '5px',
-        borderRadius: '10px',
+        borderRadius: '15px',
         background: '#4CC9F0',
       }}
     >

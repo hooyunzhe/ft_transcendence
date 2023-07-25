@@ -1,8 +1,20 @@
 'use client';
-import { Box, Button, Drawer, Paper, Stack } from '@mui/material';
+import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
+import { View } from '@/types/UtilTypes';
+import {
+  AssignmentIndRounded,
+  ChatRounded,
+  EmojiEventsRounded,
+  MilitaryTechRounded,
+  SettingsRounded,
+  SportsTennisRounded,
+} from '@mui/icons-material';
+import { Avatar, Box, Divider, Drawer, Tab, Tabs } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 export default function NavigationHeader() {
+  const currentView = useCurrentView();
+  const { setCurrentView } = useUtilActions();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -16,49 +28,52 @@ export default function NavigationHeader() {
       PaperProps={{
         sx: {
           boxSizing: 'border-box',
-          width: '35vw',
-          height: '7.5vh',
-          top: '92.5vh',
+          width: '33vw',
+          height: '6vh',
+          top: '0.5vh',
+          marginRight: '0.5vh',
           border: 'solid 3px #7209B775',
-          borderRadius: '0 15px 15px 0',
+          borderRadius: '15px',
         },
       }}
       variant='persistent'
-      anchor='left'
+      anchor='right'
       transitionDuration={1000}
       open={open}
     >
-      <Stack
+      <Box
         display='flex'
-        direction='row'
         height='100%'
-        justifyContent='center'
+        justifyContent='space-between'
         alignItems='center'
-        spacing={1}
+        padding='5px 20px'
       >
-        <Box
-          display='flex'
-          flexDirection='row'
-          justifyContent='center'
-          alignItems='center'
-          width='100%'
-          height='100%'
+        <Tabs
+          value={currentView}
+          onChange={(event, newValue) => setCurrentView(newValue)}
         >
-          <Button fullWidth variant='contained' sx={{ height: '100%' }}>
-            Achievements
-          </Button>
-        </Box>
-        <Box
-          display='flex'
-          flexDirection='row'
-          justifyContent='center'
-          alignItems='center'
-          width='100%'
-          height='100%'
-        >
-          Leaderboard
-        </Box>
-      </Stack>
+          <Tab
+            sx={{
+              color: 'green',
+            }}
+            icon={<SportsTennisRounded />}
+            value={View.GAME}
+          />
+          <Tab icon={<ChatRounded />} value={View.CHAT} />
+          <Tab icon={<AssignmentIndRounded />} value={View.PROFILE} />
+          <Tab icon={<MilitaryTechRounded />} value={View.LEADERBOARD} />
+          <Tab icon={<EmojiEventsRounded />} value={View.ACHIEVEMENTS} />
+          <Tab icon={<SettingsRounded />} value={View.SETTINGS} />
+        </Tabs>
+        <Divider
+          sx={{
+            height: '3.5vh',
+          }}
+          orientation='vertical'
+          variant='middle'
+        />
+        <Avatar alt='Avatar'></Avatar>
+      </Box>
     </Drawer>
   );
 }

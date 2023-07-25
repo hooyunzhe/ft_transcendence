@@ -19,6 +19,15 @@ interface UserStore {
 
 type StoreSetter = (helper: (state: UserStore) => Partial<UserStore>) => void;
 
+function setCurrentUser(set: StoreSetter, currentUser: User): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      currentUser: currentUser,
+    },
+  }));
+}
+
 function setUserStatus(
   set: StoreSetter,
   userStatus: UserStatusDictionary,
@@ -70,10 +79,7 @@ const useUserStore = create<UserStore>()((set) => ({
     userStatus: {},
   },
   actions: {
-    setCurrentUser: (currentUser) =>
-      set(({ data }) => ({
-        data: { ...data, currentUser: currentUser },
-      })),
+    setCurrentUser: (currentUser) => setCurrentUser(set, currentUser),
     addUserStatus: (userSocket, userIDs) =>
       addUserStatus(set, userSocket, userIDs),
     changeUserStatus: (userID, newStatus) =>
