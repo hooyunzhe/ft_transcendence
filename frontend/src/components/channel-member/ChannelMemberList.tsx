@@ -43,68 +43,93 @@ export function ChannelMemberList() {
       hash: useHash,
     });
     const newChannelMember: ChannelMembers = JSON.parse(add);
-    console.log('NEWCHANNELMEMBER ADD \n: ', newChannelMember);
+
     addChannelMember(newChannelMember);
     emitToSocket(channelSocket, 'addMember', newChannelMember);
     return '';
   }
 
-  async function kickUser(memberID: number): Promise<string> {
-    callAPI('DELETE', 'channel-members', { id: memberID });
-    kickChannelMember(memberID);
-    emitToSocket(channelSocket, 'kickMember', memberID);
+  async function kickUser(member: ChannelMembers): Promise<string> {
+    callAPI('DELETE', 'channel-members', { id: member.id });
+    kickChannelMember(member.id);
+    emitToSocket(channelSocket, 'kickMember', member);
     return '';
   }
 
-  async function changeToAdmin(memberID: number) {
+  async function changeToAdmin(member: ChannelMembers) {
     callAPI('PATCH', 'channel-members/', {
-      id: memberID,
+      id: member.id,
       role: ChannelMemberRole.ADMIN,
     });
-    changeChannelMemberRole(memberID, ChannelMemberRole.ADMIN);
-    emitToSocket(channelSocket, 'changeRole', memberID);
+    changeChannelMemberRole(member.id, ChannelMemberRole.ADMIN);
+    const data = {
+      memberID: member.id,
+      channelID: member.channel.id,
+      newRole: ChannelMemberRole.ADMIN,
+    };
+    emitToSocket(channelSocket, 'changeRole', data);
   }
 
-  async function changeToMember(memberID: number) {
+  async function changeToMember(member: ChannelMembers) {
     callAPI('PATCH', 'channel-members/', {
-      id: memberID,
+      id: member.id,
       role: ChannelMemberRole.MEMBER,
     });
-    changeChannelMemberRole(memberID, ChannelMemberRole.MEMBER);
-    emitToSocket(channelSocket, 'changeRole', memberID);
+    changeChannelMemberRole(member.id, ChannelMemberRole.MEMBER);
+    const data = {
+      memberID: member.id,
+      channelID: member.channel.id,
+      newRole: ChannelMemberRole.MEMBER,
+    };
+    emitToSocket(channelSocket, 'changeRole', data);
   }
 
-  async function unmuteMember(memberID: number) {
+  async function unmuteMember(member: ChannelMembers) {
     callAPI('PATCH', 'channel-members', {
-      id: memberID,
+      id: member.id,
       status: ChannelMemberStatus.DEFAULT,
       muted_until: new Date().toISOString(),
     });
-    changeChannelMemberStatus(memberID, ChannelMemberStatus.DEFAULT);
-    emitToSocket(channelSocket, 'changeStatus', memberID);
+    changeChannelMemberStatus(member.id, ChannelMemberStatus.DEFAULT);
+    const data = {
+      memberID: member.id,
+      channelID: member.channel.id,
+      newStatus: ChannelMemberStatus.DEFAULT,
+    };
+    emitToSocket(channelSocket, 'changeStatus', data);
   }
 
-  async function muteMember(memberID: number, duration?: Date) {
+  async function muteMember(member: ChannelMembers, duration?: Date) {
     callAPI('PATCH', 'channel-members', {
-      id: memberID,
+      id: member.id,
       status: ChannelMemberStatus.MUTED,
       muted_until: new Date().toISOString(),
     });
-    changeChannelMemberStatus(memberID, ChannelMemberStatus.MUTED);
-    emitToSocket(channelSocket, 'changeStatus', memberID);
+    changeChannelMemberStatus(member.id, ChannelMemberStatus.MUTED);
+    const data = {
+      memberID: member.id,
+      channelID: member.channel.id,
+      newStatus: ChannelMemberStatus.MUTED,
+    };
+    emitToSocket(channelSocket, 'changeStatus', data);
   }
 
-  async function banMember(memberID: number) {
+  async function banMember(member: ChannelMembers) {
     callAPI('PATCH', 'channel-members', {
-      id: memberID,
+      id: member.id,
       status: ChannelMemberStatus.BANNED,
       muted_until: new Date().toISOString(),
     });
-    changeChannelMemberStatus(memberID, ChannelMemberStatus.BANNED);
-    emitToSocket(channelSocket, 'changeStatus', memberID);
+    changeChannelMemberStatus(member.id, ChannelMemberStatus.BANNED);
+    const data = {
+      memberID: member.id,
+      channelID: member.channel.id,
+      newStatus: ChannelMemberStatus.BANNED,
+    };
+    emitToSocket(channelSocket, 'changeStatus', data);
   }
 
-  async function changeOwnership(memberID: number) {
+  async function changeOwnership(member: ChannelMembers) {
     const currentOwner = channelMembers.find((owner) => {
       if (owner.role === ChannelMemberRole.OWNER) {
         return owner.id;
@@ -112,16 +137,21 @@ export function ChannelMemberList() {
       return undefined;
     });
     if (currentOwner === undefined) {
-      console.log('Current owner undefined\n');
+      console.log('FATAL ERROR: CURRENT OWNER NOT FOUND!');
       return undefined;
     }
-    changeChannelMemberStatus(memberID, ChannelMemberStatus.BANNED);
+    changeChannelMemberStatus(member.id, ChannelMemberStatus.BANNED);
     callAPI('PATCH', 'channel-members', {
       id: currentOwner.id,
       role: ChannelMemberRole.ADMIN,
     });
     changeChannelMemberRole(currentOwner.id, ChannelMemberRole.ADMIN);
-    emitToSocket(channelSocket, 'changeStatus', memberID);
+    const data = {
+      memberID: member.id,
+      channelID: member.channel.id,
+      newRole: ChannelMemberRole.ADMIN,
+    };
+    emitToSocket(channelSocket, 'changeStatus', data);
   }
 
   // * Action handlers that are passed into components * //
@@ -137,56 +167,56 @@ export function ChannelMemberList() {
         return displayConfirmation(
           'Change Ownership to ' + member.user.username + '?',
           'You are transfering the ownership of this server.',
-          member.id,
+          member,
           changeOwnership,
         );
       case ChannelMemberAction.KICK:
         return displayConfirmation(
           'Kick user ' + member.user.username + '?',
           'You are booting the user from the channel.',
-          member.id,
+          member,
           kickUser,
         );
       case ChannelMemberAction.ADMIN:
         return displayConfirmation(
           'Make ' + member.user.username + ' an admin?',
           'You are making this user admin.',
-          member.id,
+          member,
           changeToAdmin,
         );
       case ChannelMemberAction.UNADMIN:
         return displayConfirmation(
           'Remove admin privileges from ' + member.user.username + '?',
           'You are removing admin from this user.',
-          member.id,
+          member,
           changeToMember,
         );
       case ChannelMemberAction.BAN:
         return displayConfirmation(
           'Ban ' + member.user.username + '?',
           'You are banning this user from this channel.',
-          member.id,
+          member,
           banMember,
         );
       case ChannelMemberAction.UNBAN:
         return displayConfirmation(
           'Unban ' + member.user.username + '?',
           'You are unbanning this user from this channel.',
-          member.id,
+          member,
           kickUser,
         );
       case ChannelMemberAction.MUTE:
         return displayConfirmation(
           'Mute ' + member.user.username + '?',
           'You are muting this user from chatting.',
-          member.id,
+          member,
           muteMember,
         );
       case ChannelMemberAction.UNMUTE:
         return displayConfirmation(
           'Unmute ' + member.user.username + '?',
           'You are muting this user from chatting.',
-          member.id,
+          member,
           unmuteMember,
         );
     }

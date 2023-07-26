@@ -28,9 +28,9 @@ export default function NavigationHeader() {
       PaperProps={{
         sx: {
           boxSizing: 'border-box',
-          width: '33vw',
+          width: '35vw',
           height: '6vh',
-          top: '0.5vh',
+          marginTop: '0.5vh',
           marginRight: '0.5vh',
           border: 'solid 3px #7209B775',
           borderRadius: '15px',
@@ -44,13 +44,15 @@ export default function NavigationHeader() {
       <Box
         display='flex'
         height='100%'
-        justifyContent='space-between'
+        justifyContent='space-evenly'
         alignItems='center'
-        padding='5px 20px'
+        paddingLeft='0.5vw'
+        paddingRight='0.5vw'
       >
         <Tabs
           value={currentView}
           onChange={(event, newValue) => setCurrentView(newValue)}
+          variant='scrollable'
         >
           <Tab
             sx={{
@@ -68,6 +70,8 @@ export default function NavigationHeader() {
         <Divider
           sx={{
             height: '3.5vh',
+            marginLeft: '0.5vw',
+            marginRight: '0.5vw',
           }}
           orientation='vertical'
           variant='middle'

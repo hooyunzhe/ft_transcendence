@@ -13,7 +13,6 @@ export default function MainArea() {
         height: '70vh',
         justifyContent: 'space-between',
         alignItems: 'center',
-        flexDirection: 'row',
       }}
     >
       <SocialDrawer />

@@ -1,6 +1,7 @@
 'use client';
 import { useFriendActions } from '@/lib/stores/useFriendStore';
 import {
+  useChannelSocket,
   useFriendSocket,
   useSocketActions,
   useUserSocket,
@@ -22,16 +23,20 @@ import { useChannelActions } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import NavigationHeader from './NavigationHeader';
 import MainArea from './MainArea';
+import { useChatActions } from '@/lib/stores/useChatStore';
 
 export default function Cyberpong() {
   const currentUser = useCurrentUser();
   const userSocket = useUserSocket();
   const friendSocket = useFriendSocket();
+  const channelSocket = useChannelSocket();
   const { initSockets, resetSockets } = useSocketActions();
   const { setupUserSocketEvents } = useUserActions();
   const { getFriendData, setupFriendSocketEvents } = useFriendActions();
-  const { getChannelData } = useChannelActions();
-  const { getChannelMemberData } = useChannelMemberActions();
+  const { getChannelData, setupChannelSocketEvents } = useChannelActions();
+  const { getChannelMemberData, setupChannelMemberSocketEvents } =
+    useChannelMemberActions();
+  const { getChatData, setupChatSocketEvents } = useChatActions();
   const confirmation = useConfirmation();
   const { resetConfirmation } = useConfirmationActions();
   const notification = useNotification();
@@ -43,6 +48,7 @@ export default function Cyberpong() {
     getFriendData(currentUser.id);
     getChannelData(currentUser.id);
     getChannelMemberData();
+    getChatData();
 
     return () => {
       resetSockets();
@@ -61,6 +67,14 @@ export default function Cyberpong() {
       setupNotificationSocketEvents(friendSocket);
     }
   }, [friendSocket]);
+
+  useEffect(() => {
+    if (channelSocket) {
+      setupChannelSocketEvents(channelSocket);
+      setupChannelMemberSocketEvents(channelSocket);
+      setupChatSocketEvents(channelSocket);
+    }
+  }, [channelSocket]);
 
   return (
     <Box

@@ -1,10 +1,9 @@
-import { Channel, ChannelType } from '../entities/channel.entity';
-import { ChannelMember } from 'src/channel-member/entities/channel-member.entity';
-import { Message } from 'src/message/entities/message.entity';
+import {
+  ChannelMemberRole,
+  ChannelMemberStatus,
+} from 'src/channel-member/entities/channel-member.entity';
+import { ChannelType } from '../entities/channel.entity';
 
-export class JoinRoomEmitBodyParams {
-  id: number;
-}
 export class ChangeChannelNameEmitBodyParams {
   id: number;
   newName: string;
@@ -16,14 +15,14 @@ export class ChangeChannelTypeEmitBodyParams {
   newPass?: string;
 }
 
-export class ChannelEmitBodyParams {
-  Channel: Channel
+export class ChangeChannelMemberRoleEmitBodyParams {
+  memberID: number;
+  channelID: number;
+  newRole: ChannelMemberRole;
 }
 
-export class ChannelMembersEmitBodyParams {
-  ChannelMember: ChannelMember
-}
-
-export class MessagesEmitBodyParams {
-  messages: Message
+export class ChangeChannelMemberStatusEmitBodyParams {
+  memberID: number;
+  channelID: number;
+  newStatus: ChannelMemberStatus;
 }

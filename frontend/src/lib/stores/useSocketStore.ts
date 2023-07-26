@@ -5,7 +5,6 @@ interface SocketStore {
   data: {
     userSocket: Socket | null;
     friendSocket: Socket | null;
-    channelMemberSocket: Socket | null;
     channelSocket: Socket | null;
   };
   actions: {
@@ -18,17 +17,20 @@ type StoreSetter = (partialState: Partial<SocketStore>) => void;
 type StoreGetter = () => SocketStore;
 
 function initSockets(set: StoreSetter, userID: number): void {
-  const userSocket = io('http://localhost:4242/gateway/users');
-  const friendSocket = io('http://localhost:4242/gateway/friends');
-  const channelMemberSocket = io('http://localhost:4242/gateway/channelMembers');
-  const channelSocket = io('http://localhost:4242/gateway/channels');
+  const userSocket = io('http://localhost:4242/gateway/user');
+  const friendSocket = io('http://localhost:4242/gateway/friend');
+  const channelSocket = io('http://localhost:4242/gateway/channel');
 
-  userSocket.emit('initConnection', { user_id: userID });
-  friendSocket.emit('initConnection', { user_id: userID });
-  set({ data: { userSocket: userSocket,
-                friendSocket: friendSocket,
-                channelSocket : channelSocket,
-                channelMemberSocket: channelMemberSocket } });
+  userSocket.emit('initConnection', userID);
+  friendSocket.emit('initConnection', userID);
+  channelSocket.emit('initConnection', userID);
+  set({
+    data: {
+      userSocket: userSocket,
+      friendSocket: friendSocket,
+      channelSocket: channelSocket,
+    },
+  });
 }
 
 function resetSockets(set: StoreSetter, get: StoreGetter): void {
@@ -36,11 +38,11 @@ function resetSockets(set: StoreSetter, get: StoreGetter): void {
 
   sockets.userSocket?.disconnect();
   sockets.friendSocket?.disconnect();
+  sockets.channelSocket?.disconnect();
   set({
     data: {
       userSocket: null,
       friendSocket: null,
-      channelMemberSocket: null,
       channelSocket: null,
     },
   });
@@ -50,7 +52,6 @@ const useSocketStore = create<SocketStore>()((set, get) => ({
   data: {
     userSocket: null,
     friendSocket: null,
-    channelMemberSocket: null,
     channelSocket: null,
   },
   actions: {
@@ -63,8 +64,6 @@ export const useUserSocket = () =>
   useSocketStore((state) => state.data.userSocket);
 export const useFriendSocket = () =>
   useSocketStore((state) => state.data.friendSocket);
-  export const useChannelSocket = () => 
-    useSocketStore((state) => state.data.channelSocket);
-export const useChannelMemberSocket = () => 
-  useSocketStore((state) => state.data.channelMemberSocket);
+export const useChannelSocket = () =>
+  useSocketStore((state) => state.data.channelSocket);
 export const useSocketActions = () => useSocketStore((state) => state.actions);

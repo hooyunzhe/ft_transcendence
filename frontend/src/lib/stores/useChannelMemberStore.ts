@@ -23,10 +23,7 @@ interface ChannelMemberStore {
       memberID: number,
       newStatus: ChannelMemberStatus,
     ) => void;
-    setupChannelMemberSocketEvents: (
-      channelMemberSocket: Socket,
-      memberID: number,
-    ) => void;
+    setupChannelMemberSocketEvents: (channelSocket: Socket) => void;
   };
   checks: {
     isChannelOwner: (userID: number, channelID: number) => boolean;
@@ -101,27 +98,28 @@ function changeChannelMemberStatus(
 
 function setupChannelMemberSocketEvents(
   set: StoreSetter,
-  channelMemberSocket: Socket,
-  memberID: number,
+  channelSocket: Socket,
 ): void {
-  channelMemberSocket.on('socketConnected', () =>
-    channelMemberSocket.emit('initConnection', memberID),
+  channelSocket.on('newMember', (member: ChannelMembers) =>
+    addChannelMember(set, member),
   );
-  channelMemberSocket.on('newMember', (request: ChannelMembers) =>
-    addChannelMember(set, request),
+  channelSocket.on('kickMember', (member: ChannelMembers) =>
+    kickChannelMember(set, member.id),
   );
-  channelMemberSocket.on('kickMember', (request: ChannelMembers) =>
-    kickChannelMember(set, request.id),
-  );
-  channelMemberSocket.on(
+  channelSocket.on(
     'changeRole',
-    (request: ChannelMembers, newRole: ChannelMemberRole) =>
-      changeChannelMemberRole(set, request.id, newRole),
+    ({ memberID, newRole }: { memberID: number; newRole: ChannelMemberRole }) =>
+      changeChannelMemberRole(set, memberID, newRole),
   );
-  channelMemberSocket.on(
+  channelSocket.on(
     'changeStatus',
-    (request: ChannelMembers, newStatus: ChannelMemberStatus) =>
-      changeChannelMemberStatus(set, request.id, newStatus),
+    ({
+      memberID,
+      newStatus,
+    }: {
+      memberID: number;
+      newStatus: ChannelMemberStatus;
+    }) => changeChannelMemberStatus(set, memberID, newStatus),
   );
 }
 
@@ -148,8 +146,8 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
       changeChannelMemberRole(set, memberID, newRole),
     changeChannelMemberStatus: (memberID, newStatus) =>
       changeChannelMemberStatus(set, memberID, newStatus),
-    setupChannelMemberSocketEvents: (channelMemberSocket, memberID) =>
-      setupChannelMemberSocketEvents(set, channelMemberSocket, memberID),
+    setupChannelMemberSocketEvents: (channelSocket) =>
+      setupChannelMemberSocketEvents(set, channelSocket),
   },
   checks: {
     isChannelOwner: (userID, channelID) =>

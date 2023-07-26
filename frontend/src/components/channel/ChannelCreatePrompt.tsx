@@ -56,7 +56,6 @@ export default function ChannelCreatePrompt() {
           }),
         )
       ) {
-        console.log('adding new channel', newChannel);
         addJoinedChannel(newChannel.id);
         return '';
       } else {

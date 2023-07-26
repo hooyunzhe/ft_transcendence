@@ -1,9 +1,21 @@
-import { ConnectedSocket, MessageBody, OnGatewayConnection, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-import { Server, Socket } from "socket.io";
-import { ChannelMember } from "src/channel-member/entities/channel-member.entity";
-import { ChangeChannelNameEmitBodyParams, ChangeChannelTypeEmitBodyParams, JoinRoomEmitBodyParams } from "./params/emit-body-params";
-import { Channel } from "./entities/channel.entity";
-import { Message } from "src/message/entities/message.entity";
+import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayConnection,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
+import { ChannelMember } from 'src/channel-member/entities/channel-member.entity';
+import {
+  ChangeChannelMemberRoleEmitBodyParams,
+  ChangeChannelMemberStatusEmitBodyParams,
+  ChangeChannelNameEmitBodyParams,
+  ChangeChannelTypeEmitBodyParams,
+} from './params/emit-body-params';
+import { Channel } from './entities/channel.entity';
+import { Message } from 'src/message/entities/message.entity';
 
 @WebSocketGateway({
   cors: {
@@ -11,7 +23,7 @@ import { Message } from "src/message/entities/message.entity";
   },
   namespace: 'gateway/channel',
 })
-export class ChannelMemberGateway implements OnGatewayConnection {
+export class ChannelGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
@@ -19,65 +31,97 @@ export class ChannelMemberGateway implements OnGatewayConnection {
     client.emit('socketConnected');
   }
 
+  @SubscribeMessage('initConnection')
+  initConnection(
+    @MessageBody() data: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.data.user_id = data;
+    client.join(String(client.data.user_id));
+  }
+
   @SubscribeMessage('joinRoom')
-  joinRoom(@MessageBody() data : JoinRoomEmitBodyParams, @ConnectedSocket() client: Socket) {
+  joinRoom(@MessageBody() data: Channel, @ConnectedSocket() client: Socket) {
     client.join(String(data.id));
   }
 
   @SubscribeMessage('newChannel')
   newChannel(@MessageBody() data: Channel, @ConnectedSocket() client: Socket) {
-    client.to([String(data.id), String(data.id)]).emit('newChannel', data)  
+    client.emit('newChannel', data);
+  }
+
+  @SubscribeMessage('joinChannel')
+  joinChannel(@MessageBody() data: Channel, @ConnectedSocket() client: Socket) {
+    client.to(String(client.data.user_id)).emit('joinChannel', data);
   }
 
   @SubscribeMessage('changeChannelName')
-  changeChannelName(@MessageBody() data: ChangeChannelNameEmitBodyParams, @ConnectedSocket() client: Socket) {
-    client.to([String(data.id), String(data.id)]).emit('changeChangeName', data);
+  changeChannelName(
+    @MessageBody() data: ChangeChannelNameEmitBodyParams,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.to(String(data.id)).emit('changeChangeName', data);
   }
 
   @SubscribeMessage('changeChannelType')
-  changeChannelType(@MessageBody() data: ChangeChannelTypeEmitBodyParams, @ConnectedSocket() client: Socket) {
-    client.to([String(data.id), String(data.id)]).emit('changeChangeType', data);
-
+  changeChannelType(
+    @MessageBody() data: ChangeChannelTypeEmitBodyParams,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.to(String(data.id)).emit('changeChangeType', data);
   }
 
   @SubscribeMessage('deleteChannel')
-  deleteChannel(@MessageBody() data: Channel, @ConnectedSocket() client: Socket) {
+  deleteChannel(
+    @MessageBody() data: Channel,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client
+      .to([String(data.id), String(client.data.user_id)])
+      .emit('deleteChannel', data);
     client.leave(String(data.id));
-    client.to([String(data.id), String(data.id)]).emit('deleteChannel', data);
   }
 
   @SubscribeMessage('newMember')
-  newMember(@MessageBody() data: ChannelMember,
-  @ConnectedSocket() client: Socket){
-
-    client.to([String(data.channel.id), String(data.user.id)]).emit('newMember', data);
+  newMember(
+    @MessageBody() data: ChannelMember,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client
+      .to([String(data.channel.id), String(data.user.id)])
+      .emit('newMember', data);
   }
 
   @SubscribeMessage('changeMemberRole')
-  changeMemberRole(@MessageBody() data: ChannelMember,
-  @ConnectedSocket() client: Socket){
-    client.to(String(data.channel.id)).emit('changeMemberRole', data);
+  changeMemberRole(
+    @MessageBody() data: ChangeChannelMemberRoleEmitBodyParams,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.to(String(data.channelID)).emit('changeMemberRole', data);
   }
-  
+
   @SubscribeMessage('changeMemberStatus')
-  changeMemberStatus(@MessageBody() data: ChannelMember,
-  @ConnectedSocket() client: Socket){
-    client.to(String(data.channel.id)).emit('changeMemberStatus', data);
+  changeMemberStatus(
+    @MessageBody() data: ChangeChannelMemberStatusEmitBodyParams,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.to(String(data.channelID)).emit('changeMemberStatus', data);
   }
 
   @SubscribeMessage('kickMember')
-  kickMember(@MessageBody() data: ChannelMember,
-  @ConnectedSocket() client: Socket){
-    client.leave(String(data.channel.id))
+  kickMember(
+    @MessageBody() data: ChannelMember,
+    @ConnectedSocket() client: Socket,
+  ) {
     client.to(String(data.channel.id)).emit('kickMember', data);
+    client.leave(String(data.channel.id));
   }
 
   @SubscribeMessage('newMessage')
-  newMessage(@MessageBody() data: Message, @ConnectedSocket() client : Socket){
-    client.to(String(data.user.id)).emit('newMessage', data);
+  newMessage(@MessageBody() data: Message, @ConnectedSocket() client: Socket) {
+    client.to(String(data.channel.id)).emit('newMessage', data);
   }
 
   // editMessage (maybe?)
   // deleteMessage (maybe?)
-
 }

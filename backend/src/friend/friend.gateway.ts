@@ -7,17 +7,14 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import {
-  FriendEmitBodyParams,
-  InitConnectionEmitBodyParams,
-  NewRequestEmitBodyParams,
-} from './params/emit-body-params';
+import { NewRequestEmitBodyParams } from './params/emit-body-params';
+import { Friend } from './entities/friend.entity';
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
-  namespace: 'gateway/friends',
+  namespace: 'gateway/friend',
 })
 export class FriendGateway implements OnGatewayConnection {
   @WebSocketServer()
@@ -29,10 +26,10 @@ export class FriendGateway implements OnGatewayConnection {
 
   @SubscribeMessage('initConnection')
   initConnection(
-    @MessageBody() initConnectionBodyParams: InitConnectionEmitBodyParams,
+    @MessageBody() user_id: number,
     @ConnectedSocket() client: Socket,
   ) {
-    client.data.user_id = initConnectionBodyParams.user_id;
+    client.data.user_id = user_id;
     client.join(String(client.data.user_id));
   }
 
@@ -63,52 +60,40 @@ export class FriendGateway implements OnGatewayConnection {
 
   @SubscribeMessage('deleteRequest')
   deleteRequest(
-    @MessageBody() deleteRequestBodyParams: FriendEmitBodyParams,
+    @MessageBody() request: Friend,
     @ConnectedSocket() client: Socket,
   ) {
     this.emitToRoom(
-      deleteRequestBodyParams.friendship.incoming_friend.id,
+      request.incoming_friend.id,
       'deleteRequest',
-      deleteRequestBodyParams.friendship.outgoing_friend,
+      request.outgoing_friend,
     );
-    this.emitToSelf(
-      client,
-      'deleteRequest',
-      deleteRequestBodyParams.friendship.outgoing_friend,
-    );
+    this.emitToSelf(client, 'deleteRequest', request.outgoing_friend);
   }
 
   @SubscribeMessage('acceptRequest')
   acceptRequest(
-    @MessageBody() acceptRequestBodyParams: FriendEmitBodyParams,
+    @MessageBody() request: Friend,
     @ConnectedSocket() client: Socket,
   ) {
     this.emitToRoom(
-      acceptRequestBodyParams.friendship.incoming_friend.id,
+      request.incoming_friend.id,
       'acceptRequest',
-      acceptRequestBodyParams.friendship.outgoing_friend,
+      request.outgoing_friend,
     );
-    this.emitToSelf(
-      client,
-      'acceptRequest',
-      acceptRequestBodyParams.friendship.outgoing_friend,
-    );
+    this.emitToSelf(client, 'acceptRequest', request.outgoing_friend);
   }
 
   @SubscribeMessage('rejectRequest')
   rejectRequest(
-    @MessageBody() rejectRequestBodyParams: FriendEmitBodyParams,
+    @MessageBody() request: Friend,
     @ConnectedSocket() client: Socket,
   ) {
     this.emitToRoom(
-      rejectRequestBodyParams.friendship.incoming_friend.id,
+      request.incoming_friend.id,
       'rejectRequest',
-      rejectRequestBodyParams.friendship.outgoing_friend,
+      request.outgoing_friend,
     );
-    this.emitToSelf(
-      client,
-      'rejectRequest',
-      rejectRequestBodyParams.friendship.outgoing_friend,
-    );
+    this.emitToSelf(client, 'rejectRequest', request.outgoing_friend);
   }
 }

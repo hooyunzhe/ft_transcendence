@@ -18,10 +18,7 @@ interface ChannelStore {
     changeChannelHash: (channelID: number, newHash: string) => void;
     deleteChannel: (channelID: number) => void;
     setSelectedChannel: (channel: Channel | undefined) => void;
-    setupChannelSocketEvents: (
-      channelSocket: Socket,
-      channelID: number,
-    ) => void;
+    setupChannelSocketEvents: (channelSocket: Socket) => void;
   };
   checks: {
     checkChannelExists: (channelName: string) => boolean;
@@ -172,37 +169,45 @@ function checkChannelJoined(get: StoreGetter, channelName: string): boolean {
 function setupChannelSocketEvents(
   set: StoreSetter,
   channelSocket: Socket,
-  channelID: number,
 ): void {
-  channelSocket.on('socketConnected', () =>
-    channelSocket.emit('initConnection', channelID),
+  channelSocket.on('newChannel', (channel: Channel) =>
+    addChannel(set, channel),
   );
-
-  channelSocket.on('newChannel', (data: Channel) =>
-    addChannel(set, data));
-  channelSocket.on('deleteChannel', (data: Channel) =>
-    deleteChannel(set, data.id));
-  channelSocket.on('changeChannelName', (data: {id: number, newName: string}) =>
-    changeChannelName(set, data.id, data.newName));
-  channelSocket.on('changeChannelType', (data: {id: number, newType: ChannelType, newPass?: string}) => {
-    changeChannelType(set, data.id, data.newType);
-    if (data.newType == ChannelType.PROTECTED && data.newPass)
-      changeChannelHash(set, data.id, data.newPass)
-    })
+  channelSocket.on('joinChannel', (channel: Channel) => {
+    channelSocket.emit('joinRoom', channel);
+    addJoinedChannel(set, channel.id);
+  });
+  channelSocket.on('deleteChannel', (channel: Channel) =>
+    deleteChannel(set, channel.id),
+  );
+  channelSocket.on(
+    'changeChannelName',
+    ({ id, newName }: { id: number; newName: string }) =>
+      changeChannelName(set, id, newName),
+  );
+  channelSocket.on(
+    'changeChannelType',
+    ({
+      id,
+      newType,
+      newPass,
+    }: {
+      id: number;
+      newType: ChannelType;
+      newPass?: string;
+    }) => {
+      changeChannelType(set, id, newType);
+      if (newType == ChannelType.PROTECTED && newPass)
+        changeChannelHash(set, id, newPass);
+    },
+  );
 }
 
 const useChannelStore = create<ChannelStore>()((set, get) => ({
   data: {
     channels: [],
     joinedChannels: [],
-    selectedChannel: {
-      id: 0,
-      name: '',
-      type: ChannelType.PUBLIC,
-      hash: '',
-      channelMembers: [],
-      messages: [],
-    },
+    selectedChannel: undefined,
   },
   actions: {
     getChannelData: (userID) => getChannelData(set, userID),
@@ -216,8 +221,8 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
       changeChannelHash(set, channelID, newHash),
     deleteChannel: (channelID) => deleteChannel(set, channelID),
     setSelectedChannel: (channel) => setSelectedChannel(set, channel),
-    setupChannelSocketEvents: (channelSocket, channelID) =>
-      setupChannelSocketEvents(set, channelSocket, channelID),
+    setupChannelSocketEvents: (channelSocket) =>
+      setupChannelSocketEvents(set, channelSocket),
   },
   checks: {
     checkChannelExists: (channelName) => checkChannelExists(get, channelName),

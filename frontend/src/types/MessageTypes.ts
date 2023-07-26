@@ -10,7 +10,7 @@ export interface Message {
   id: number;
   content: string;
   type: MessageType;
-  date_of_creation: Date;
+  date_of_creation: string;
   channel: Channel;
   user: User;
 }
