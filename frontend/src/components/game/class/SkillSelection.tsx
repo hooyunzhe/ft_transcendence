@@ -1,10 +1,7 @@
+import { classSkill, skillState } from '../scenes/GameReadyScene';
 import { SkillTree } from './SkillTree';
 
-interface classSkill {
-  Str: Array<Array<boolean>>;
-  Agi: Array<Array<boolean>>;
-  Int: Array<Array<boolean>>;
-}
+
 
 type classType = 'Str' | 'Agi' | 'Int';
 export default class GameSkillSelection {
@@ -17,9 +14,9 @@ export default class GameSkillSelection {
     setSkillState: (
       classType: classType,
       level: number,
-      index: number,
+      name : string,
       action: boolean,
-    ) => boolean,
+    ) => boolean | undefined,
   ) {
     this.skillState = { Str: [], Agi: [], Int: [] };
     scene.add
@@ -89,7 +86,7 @@ export default class GameSkillSelection {
       'Int',
     );
   }
-  setSkill = (level: Array<boolean>, skillClass: classType) => {
+  setSkill = (level: Array<skillState>, skillClass: classType) => {
     this.skillState[skillClass].push(level);
   };
 

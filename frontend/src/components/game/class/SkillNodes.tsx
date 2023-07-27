@@ -1,13 +1,14 @@
-import { Skill, skillHierachy } from './SkillTree';
+import { Skill } from './SkillTree';
 
 export type classType = 'Str' | 'Agi' | 'Int';
 export class SkillNodes {
+  private name: string;
   private skillNodes: Phaser.GameObjects.Image;
   private description: Phaser.GameObjects.Text;
   private title: Phaser.GameObjects.Text;
   private state: boolean;
   private buttonClickable: boolean;
-  private skillHierachy: skillHierachy;
+  private level: number;
   private classType;
   constructor(
     x: number,
@@ -15,17 +16,18 @@ export class SkillNodes {
     skill: Skill,
     scene: Phaser.Scene,
     classType: classType,
-    skillHierachy: skillHierachy,
+    level: number,
     callback: (
       classType: classType,
       level: number,
-      index: number,
+      name: string,
       action: boolean,
     ) => boolean,
   ) {
+    this.name = skill.name;
     this.state = false;
     this.buttonClickable = true;
-    this.skillHierachy = skillHierachy;
+    this.level = level;
     this.classType = classType;
     this.skillNodes = scene.add
       .image(x, y, skill.frame)
@@ -47,8 +49,8 @@ export class SkillNodes {
             // callback2();
             this.state = callback(
               this.classType,
-              this.skillHierachy.level,
-              this.skillHierachy.index,
+              this.level,
+              this.name,
               false,
             );
             if (this.state === false)
@@ -61,8 +63,8 @@ export class SkillNodes {
           } else {
             this.state = callback(
               this.classType,
-              this.skillHierachy.level,
-              this.skillHierachy.index,
+              this.level,
+              this.name,
               true,
             );
             if (this.state === true)

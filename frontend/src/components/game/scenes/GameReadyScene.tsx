@@ -6,10 +6,14 @@ import { SkillTree } from '../class/SkillTree';
 import SkillSelection from '../class/SkillSelection';
 import GameSkillSelection from '../class/SkillSelection';
 
-interface classSkill {
-  Str: Array<Array<boolean>>;
-  Agi: Array<Array<boolean>>;
-  Int: Array<Array<boolean>>;
+export interface skillState {
+  name: string;
+  state: boolean;
+}
+export interface classSkill {
+  Str: Array<Array<skillState>>;
+  Agi: Array<Array<skillState>>;
+  Int: Array<Array<skillState>>;
 }
 
 export default class GameReadyScene extends Phaser.Scene {
@@ -85,37 +89,40 @@ export default class GameReadyScene extends Phaser.Scene {
     const setSkillState = (
       classType: classType,
       level: number,
-      index: number,
+      name: string,
       action: boolean,
     ) => {
+      const keytoupdate = this.skillState[classType][level].find((key) => key.name === name);
       switch (action) {
         case true: {
           if (level - 1 >= 0) {
-            console.log(this.skillState[classType][level - 1], index);
+            console.log(this.skillState[classType][level - 1], name);
             if (
               this.skillState[classType][level - 1].some(
-                (value) => value === false,
+                (value) => value.state === false,
               )
             )
               break;
           }
-          this.skillState[classType][level][index] = action;
+          if (keytoupdate)
+            keytoupdate.state = action;
           break;
+    
         }
         default:
           if (level + 1 <= this.skillState[classType].length - 1) {
-            console.log(this.skillState[classType][level + 1], index);
+            console.log(this.skillState[classType][level + 1], name);
             if (
               this.skillState[classType][level + 1].some(
-                (value) => value === true,
+                (value) => value.state === true,
               )
             )
               break;
           }
-          this.skillState[classType][level][index] = action;
+          if (keytoupdate)
+            keytoupdate.state = action;
           break;
       }
-      return this.skillState[classType][level][index];
     };
 
     const SkillSelection = new GameSkillSelection(

@@ -1,3 +1,4 @@
+import { skillState } from '../scenes/GameReadyScene';
 import { SkillNodes } from './SkillNodes';
 
 interface coordinate {
@@ -11,10 +12,10 @@ export interface Skill {
   description: string;
 }
 
-export interface skillHierachy {
-  level: number;
-  index: number;
-}
+// export interface skillHierachy {
+//   level: number;
+//   index: number;
+// }
 type classType = 'Str' | 'Agi' | 'Int';
 export class SkillTree {
   private skillList: Array<Array<Skill>>;
@@ -28,11 +29,11 @@ export class SkillTree {
     scene: Phaser.Scene,
     startingpoint: coordinate,
     size: coordinate,
-    callback: (level: Array<boolean>, classtype: classType) => void,
+    callback: (level: Array<skillState>, classtype: classType) => void,
     setSkillState: (
       classType: classType,
       level: number,
-      index: number,
+      name: string,
       action: boolean,
     ) => boolean,
     classType: classType,
@@ -54,19 +55,19 @@ export class SkillTree {
     return { x: x + this.startingpoint.x, y: y + this.startingpoint.y };
   }
   createTree(
-    callback: (level: Array<boolean>, classType: classType) => void,
+    callback: (level: Array<skillState>, classType: classType) => void,
     setSkillState: (
       classType: classType,
       level: number,
-      index: number,
+      name: string,
       action: boolean,
     ) => boolean,
   ) {
     this.skillList.forEach((level, levelIndex) => {
       const structure = level.length;
-      const levels: Array<boolean> = [];
+      const levels: Array<skillState> = [];
       level.forEach((skill, index) => {
-        levels.push(false);
+        levels.push({name: skill.name, state: false});
         const coordinate = this.getPosition(structure, levelIndex, index);
         this.skilltreeNode.push(
           new SkillNodes(
@@ -75,7 +76,7 @@ export class SkillTree {
             skill,
             this.scene,
             this.classType,
-            { level: levelIndex, index: index },
+            levelIndex,
             setSkillState,
           ),
         );
