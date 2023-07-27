@@ -1,10 +1,11 @@
+'use client';
 import { Box, Typography } from '@mui/material';
 
 interface ChatHeaderProps {
-  name: string;
+  channelName: string;
 }
 
-export default function ChatHeader({ name }: ChatHeaderProps) {
+export default function ChatHeader({ channelName }: ChatHeaderProps) {
   return (
     <Box
       display='flex'
@@ -14,7 +15,7 @@ export default function ChatHeader({ name }: ChatHeaderProps) {
       bgcolor='#363636'
     >
       <Typography variant='h4' color='white'>
-        {name}
+        {channelName}
       </Typography>
     </Box>
   );

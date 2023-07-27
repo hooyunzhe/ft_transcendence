@@ -4,15 +4,16 @@ import ChatDisplay from './ChatDisplay';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import ChatHeader from './ChatHeader';
 import { useMessages } from '@/lib/stores/useChatStore';
+import ChatBar from './ChatBar';
 
 export default function ChatBox() {
   const messages = useMessages();
   const selectedChannel = useSelectedChannel();
 
   return selectedChannel ? (
-    <Box>
-      <ChatHeader name={selectedChannel.name} />
-      <Stack padding='7px' spacing={1}>
+    <Box display='flex' height='100%' flexDirection='column'>
+      <ChatHeader channelName={selectedChannel.name} />
+      <Stack padding='10px' spacing={1} overflow='scroll'>
         {messages
           .filter((message) => message.channel.id === selectedChannel.id)
           .map((message, index) => (
@@ -25,6 +26,7 @@ export default function ChatBox() {
             />
           ))}
       </Stack>
+      <ChatBar channel={selectedChannel} />
     </Box>
   ) : (
     <Box

@@ -42,13 +42,9 @@ function addUserStatus(
   userSocket: Socket,
   userIDs: number[],
 ): void {
-  userSocket.emit(
-    'getStatus',
-    { user_ids: userIDs },
-    (newStatus: UserStatusDictionary) => {
-      setUserStatus(set, newStatus);
-    },
-  );
+  userSocket.emit('getStatus', userIDs, (newStatus: UserStatusDictionary) => {
+    setUserStatus(set, newStatus);
+  });
 }
 
 function changeUserStatus(
