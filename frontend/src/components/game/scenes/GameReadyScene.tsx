@@ -91,6 +91,7 @@ export default class GameReadyScene extends Phaser.Scene {
       level: number,
       name: string,
       action: boolean,
+      state: boolean,
     ) => {
       const keytoupdate = this.skillState[classType][level].find((key) => key.name === name);
       switch (action) {
@@ -107,7 +108,6 @@ export default class GameReadyScene extends Phaser.Scene {
           if (keytoupdate)
             keytoupdate.state = action;
           break;
-    
         }
         default:
           if (level + 1 <= this.skillState[classType].length - 1) {
@@ -123,6 +123,9 @@ export default class GameReadyScene extends Phaser.Scene {
             keytoupdate.state = action;
           break;
       }
+      if (keytoupdate)
+        return keytoupdate.state;
+      return state;
     };
 
     const SkillSelection = new GameSkillSelection(

@@ -11,12 +11,13 @@ export default class GameSkillSelection {
     gameHeight: number,
     scene: Phaser.Scene,
     texture: string,
-    setSkillState: (
+    setSkillState:(
       classType: classType,
       level: number,
-      name : string,
+      name: string,
       action: boolean,
-    ) => boolean | undefined,
+    state: boolean,
+    ) => boolean,
   ) {
     this.skillState = { Str: [], Agi: [], Int: [] };
     scene.add

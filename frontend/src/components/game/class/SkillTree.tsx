@@ -35,6 +35,7 @@ export class SkillTree {
       level: number,
       name: string,
       action: boolean,
+state: boolean,
     ) => boolean,
     classType: classType,
   ) {
@@ -61,6 +62,7 @@ export class SkillTree {
       level: number,
       name: string,
       action: boolean,
+  state: boolean,
     ) => boolean,
   ) {
     this.skillList.forEach((level, levelIndex) => {

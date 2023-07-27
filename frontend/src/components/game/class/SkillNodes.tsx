@@ -22,6 +22,7 @@ export class SkillNodes {
       level: number,
       name: string,
       action: boolean,
+state: boolean,
     ) => boolean,
   ) {
     this.name = skill.name;
@@ -52,6 +53,7 @@ export class SkillNodes {
               this.level,
               this.name,
               false,
+              this.state,
             );
             if (this.state === false)
               this.skillNodes.setTintFill(
@@ -66,6 +68,7 @@ export class SkillNodes {
               this.level,
               this.name,
               true,
+              this.state,
             );
             if (this.state === true)
               this.skillNodes.setTintFill(255, 255, 255, 255);
