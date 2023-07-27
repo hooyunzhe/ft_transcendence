@@ -52,8 +52,58 @@ class playerClass {
     this.classSkill = classSkill;
     this.paddle = new RectObj(x, y, 10, 80 * this.height_multiplier);
   }
+  
+  
+  enlargePaddle(){
 
+  }
+  ballAccelerate(){
 
+  }
+  IncreasePaddleSpeed(){
+
+  }
+
+  ballDecelerate() {
+
+  }
+
+  reduceCooldown (){
+
+  }
+  
+  decreasePaddleSpeed(){
+
+  }
+
+  stickyPaddle()
+  {
+
+  }
+  strongHit()
+  {
+
+  }
+
+  paddleAssist()
+  {
+
+  }
+
+  slowTime()
+  {
+
+  }
+
+  invertPaddle()
+  {
+
+  }
+
+  invertBallDirection()
+  {
+    
+  }
 }
 export class GameService {
   windowSize: Coor;
