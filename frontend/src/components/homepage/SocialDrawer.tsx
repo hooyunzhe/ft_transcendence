@@ -14,7 +14,7 @@ export default function SocialDrawer() {
   return (
     <Box
       onMouseOver={() => {
-        clearInterval(timeoutID);
+        clearTimeout(timeoutID);
         setOpen(true);
       }}
       onMouseLeave={() => {

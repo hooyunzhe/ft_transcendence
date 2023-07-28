@@ -48,6 +48,18 @@ async function getChannelMemberData(set: StoreSetter): Promise<void> {
   set(() => ({ data: { channelMembers: channelMembersData } }));
 }
 
+function getChannelMember(
+  get: StoreGetter,
+  userID: number,
+  channelID: number,
+): ChannelMembers | undefined {
+  return get().data.channelMembers.find(
+    (channelMember) =>
+      channelMember.user.id === userID &&
+      channelMember.channel.id === channelID,
+  );
+}
+
 function addChannelMember(
   set: StoreSetter,
   channelMember: ChannelMembers,
@@ -138,18 +150,6 @@ function isChannelOwner(
       localMember.user.id === userID &&
       localMember.channel.id === channelID &&
       localMember.role === ChannelMemberRole.OWNER,
-  );
-}
-
-function getChannelMember(
-  get: StoreGetter,
-  userID: number,
-  channelID: number,
-): ChannelMembers | undefined {
-  return get().data.channelMembers.find(
-    (channelMember) =>
-      channelMember.user.id === userID &&
-      channelMember.channel.id === channelID,
   );
 }
 

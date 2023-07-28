@@ -6,7 +6,9 @@ import Gameload from './game';
 
 const Pong = () => {
   const [started, setStarted] = useState(false);
-  const GameSocket = io('http://localhost:4242/gateway/game');
+  const GameSocket = io(
+    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/game',
+  );
   const startGame = () => {
     GameSocket.emit('GameStart');
   };

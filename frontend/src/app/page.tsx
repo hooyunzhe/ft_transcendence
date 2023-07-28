@@ -20,7 +20,8 @@ export default function Home() {
       setSession(currentSession);
       if (currentSession) {
         fetch(
-          `http://localhost:4242/api/users?search_type=TOKEN&search_string=${currentSession.refresh_token}`,
+          process.env.NEXT_PUBLIC_HOST_URL +
+            `:4242/api/users?search_type=TOKEN&search_string=${currentSession.refresh_token}`,
           {
             cache: 'no-store',
             method: 'GET',

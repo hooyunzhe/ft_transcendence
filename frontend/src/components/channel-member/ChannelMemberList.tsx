@@ -223,13 +223,7 @@ export function ChannelMemberList() {
   }
 
   return selectedChannel ? (
-    <Stack
-      width='100%'
-      maxWidth={360}
-      direction='column'
-      justifyContent='center'
-      spacing={1}
-    >
+    <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
       <ListHeader title='My retarded channel member list'></ListHeader>
       <ChannelMemberAddPrompt
         addUser={addUser}

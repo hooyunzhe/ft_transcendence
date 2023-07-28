@@ -13,7 +13,7 @@ class Example extends Phaser.Scene {
   private paddle2: Phaser.Physics.Arcade.Sprite;
   private gameState;
   preload() {
-    this.load.setBaseURL('http://localhost:3000');
+    this.load.setBaseURL(process.env.NEXT_PUBLIC_HOST_URL + ':3000');
     this.load.multiatlas('ballsprite', '/ball/ballsprite.json', 'ball');
     this.load.image('red', '/ball/bubble.png');
     this.load.image('paddle1', '/ball/paddle1.png');

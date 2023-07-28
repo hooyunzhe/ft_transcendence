@@ -3,7 +3,7 @@ export default async function callAPI(
   route: string,
   messageBody?: any,
 ): Promise<string> {
-  const domain = 'http://localhost:4242/api/';
+  const domain = process.env.NEXT_PUBLIC_HOST_URL + ':4242/api/';
 
   return fetch(domain + route, {
     cache: 'no-store',

@@ -1,4 +1,3 @@
-
 import { Console } from 'console';
 import React, { useRef, useState, useEffect } from 'react';
 import { Socket, io } from 'socket.io-client';
@@ -13,7 +12,6 @@ const ballStyle = {
   color: 'white',
 };
 
-
 interface Coor {
   x: number;
   y: number;
@@ -24,17 +22,19 @@ interface Coor {
 // };
 
 const Ball = () => {
-  const GameSocket = io('http://localhost:4242/gateway/game');
+  const GameSocket = io(
+    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/game',
+  );
   const [ball, setBall] = useState<Coor>({ x: 50, y: 50 });
-  
+
   useEffect(() => {
-    GameSocket.on("game", (data: { x: number, y: number }) => {
-      console.log("BAAALLL?");
+    GameSocket.on('game', (data: { x: number; y: number }) => {
+      console.log('BAAALLL?');
       const { x, y } = data;
-      const update: Coor = {x, y};
+      const update: Coor = { x, y };
       setBall(update);
-  })
-}, []);
+    });
+  }, []);
 
   const ballRef = useRef<HTMLDivElement>(null);
 

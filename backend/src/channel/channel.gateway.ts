@@ -41,8 +41,13 @@ export class ChannelGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('joinRoom')
-  joinRoom(@MessageBody() data: Channel, @ConnectedSocket() client: Socket) {
-    client.join(String(data.id));
+  joinRoom(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
+    client.join(String(data));
+  }
+
+  @SubscribeMessage('leaveRoom')
+  leaveRoom(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
+    client.leave(String(data));
   }
 
   @SubscribeMessage('newChannel')
@@ -124,4 +129,20 @@ export class ChannelGateway implements OnGatewayConnection {
 
   // editMessage (maybe?)
   // deleteMessage (maybe?)
+
+  @SubscribeMessage('startTyping')
+  startTyping(
+    @MessageBody() data: ChannelMember,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.to(String(data.channel.id)).emit('startTyping', data);
+  }
+
+  @SubscribeMessage('stopTyping')
+  stopTyping(
+    @MessageBody() data: ChannelMember,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.to(String(data.channel.id)).emit('stopTyping', data);
+  }
 }

@@ -17,9 +17,15 @@ type StoreSetter = (partialState: Partial<SocketStore>) => void;
 type StoreGetter = () => SocketStore;
 
 function initSockets(set: StoreSetter, userID: number): void {
-  const userSocket = io('http://localhost:4242/gateway/user');
-  const friendSocket = io('http://localhost:4242/gateway/friend');
-  const channelSocket = io('http://localhost:4242/gateway/channel');
+  const userSocket = io(
+    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/user',
+  );
+  const friendSocket = io(
+    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/friend',
+  );
+  const channelSocket = io(
+    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/channel',
+  );
 
   userSocket.emit('initConnection', userID);
   friendSocket.emit('initConnection', userID);

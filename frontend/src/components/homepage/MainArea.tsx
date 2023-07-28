@@ -3,6 +3,7 @@ import { Box } from '@mui/material';
 import SocialDrawer from './SocialDrawer';
 import Image from 'next/image';
 import ContentBox from './ContentBox';
+import ChannelMemberDrawer from './ChannelMemberDrawer';
 
 export default function MainArea() {
   return (
@@ -17,13 +18,7 @@ export default function MainArea() {
     >
       <SocialDrawer />
       <ContentBox />
-      <Image
-        src='/ball/paddle1.png'
-        width={12}
-        height={110}
-        alt='Paddle 1'
-      ></Image>
-      {/* <ChannelMemberList></ChannelMemberList> */}
+      <ChannelMemberDrawer />
     </Box>
   );
 }

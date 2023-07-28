@@ -1,5 +1,5 @@
 'use client';
-import { useFriendActions } from '@/lib/stores/useFriendStore';
+import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
 import {
   useChannelSocket,
   useFriendSocket,
@@ -18,14 +18,16 @@ import {
   useNotification,
   useNotificationActions,
 } from '@/lib/stores/useNotificationStore';
-import SocialDrawer from './SocialDrawer';
 import { Box } from '@mui/material';
-import { useChannelActions } from '@/lib/stores/useChannelStore';
+import {
+  useChannelActions,
+  useJoinedChannels,
+} from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import NavigationHeader from './NavigationHeader';
 import MainArea from './MainArea';
 import { useChatActions } from '@/lib/stores/useChatStore';
-import ChannelMemberDrawer from './ChannelMemberDrawer';
+import { Friend } from '@/types/FriendTypes';
 
 export default function Cyberpong() {
   const currentUser = useCurrentUser();
@@ -33,11 +35,13 @@ export default function Cyberpong() {
   const friendSocket = useFriendSocket();
   const channelSocket = useChannelSocket();
   const { initSockets, resetSockets } = useSocketActions();
-  const { setupUserSocketEvents } = useUserActions();
+  const { addUserStatus, setupUserSocketEvents } = useUserActions();
+  const friends = useFriends();
   const { getFriendData, setupFriendSocketEvents } = useFriendActions();
   const { getChannelData, setupChannelSocketEvents } = useChannelActions();
   const { getChannelMemberData, setupChannelMemberSocketEvents } =
     useChannelMemberActions();
+  const joinedChannels = useJoinedChannels();
   const { getChatData, setupChatSocketEvents } = useChatActions();
   const confirmation = useConfirmation();
   const { resetConfirmation } = useConfirmationActions();
@@ -56,6 +60,25 @@ export default function Cyberpong() {
       resetSockets();
     };
   }, []);
+
+  useEffect(() => {
+    if (userSocket) {
+      addUserStatus(
+        userSocket,
+        friends.map((friend: Friend) => friend.incoming_friend.id),
+      );
+    }
+  }, [friends.length]);
+
+  useEffect(() => {
+    if (channelSocket) {
+      joinedChannels.forEach((joined, index) => {
+        if (joined) {
+          channelSocket.emit('joinRoom', index);
+        }
+      });
+    }
+  }, [joinedChannels.length]);
 
   useEffect(() => {
     if (userSocket) {
@@ -92,8 +115,6 @@ export default function Cyberpong() {
     >
       <NavigationHeader />
       <MainArea />
-      <SocialDrawer />
-      <ChannelMemberDrawer />
       <ConfirmationPrompt
         open={confirmation.required}
         onCloseHandler={resetConfirmation}

@@ -189,7 +189,7 @@ function setupChannelSocketEvents(
     addChannel(set, channel),
   );
   channelSocket.on('joinChannel', (channel: Channel) => {
-    channelSocket.emit('joinRoom', channel);
+    channelSocket.emit('joinRoom', channel.id);
     addJoinedChannel(set, channel.id);
   });
   channelSocket.on('deleteChannel', (channel: Channel) =>

@@ -11,7 +11,6 @@ export default function ChannelMemberDrawer() {
 
   return (
     <Box>
-      <div>{selectedChannel?.id}</div>
       {selectedChannel && (
         <Image
           src='/ball/paddle1.png'
@@ -29,7 +28,7 @@ export default function ChannelMemberDrawer() {
             top: '15vh',
             padding: '7px',
             border: 'solid 5px #7209B775',
-            borderRadius: '0 15px 15px 0',
+            borderRadius: '15px 0 0 15px',
             // background: '#3A0CA375',
           },
         }}

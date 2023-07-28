@@ -1,13 +1,12 @@
 'use client';
 import { Stack } from '@mui/material';
-import { useEffect } from 'react';
 import FriendDropdown from './FriendDropdown';
 import callAPI from '@/lib/callAPI';
 import { Friend, FriendStatus, FriendAction } from '@/types/FriendTypes';
 import { User } from '@/types/UserTypes';
-import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
-import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
-import { useFriendSocket, useUserSocket } from '@/lib/stores/useSocketStore';
+import { useFriendActions } from '@/lib/stores/useFriendStore';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useFriendSocket } from '@/lib/stores/useSocketStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import FriendAddPrompt from './FriendAddPrompt';
@@ -15,10 +14,7 @@ import emitToSocket from '@/lib/emitToSocket';
 
 export default function FriendList() {
   const currentUser = useCurrentUser();
-  const friends = useFriends();
   const { addFriend, changeFriend, deleteFriend } = useFriendActions();
-  const { addUserStatus } = useUserActions();
-  const userSocket = useUserSocket();
   const friendSocket = useFriendSocket();
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
@@ -52,21 +48,21 @@ export default function FriendList() {
       FriendStatus.PENDING,
       FriendStatus.FRIENDS,
     );
-    emitToSocket(friendSocket, 'acceptRequest', { friendship: request });
+    emitToSocket(friendSocket, 'acceptRequest', request);
     displayNotification('success', 'Request accepted');
   }
 
   function rejectFriendRequest(request: Friend): void {
     callFriendsAPI('PATCH', request.incoming_friend, FriendAction.REJECT);
     deleteFriend(request.incoming_friend.id);
-    emitToSocket(friendSocket, 'rejectRequest', { friendship: request });
+    emitToSocket(friendSocket, 'rejectRequest', request);
     displayNotification('error', 'Request rejected');
   }
 
   function removeFriendRequest(request: Friend): void {
     callFriendsAPI('DELETE', request.incoming_friend);
     deleteFriend(request.incoming_friend.id);
-    emitToSocket(friendSocket, 'deleteRequest', { friendship: request });
+    emitToSocket(friendSocket, 'deleteRequest', request);
     displayNotification('error', 'Request removed');
   }
 
@@ -99,6 +95,7 @@ export default function FriendList() {
   function removeFriend(friendship: Friend): void {
     callFriendsAPI('DELETE', friendship.incoming_friend);
     deleteFriend(friendship.incoming_friend.id);
+    emitToSocket(friendSocket, 'deleteRequest', friendship);
     displayNotification(
       'error',
       'Unfriended ' + friendship.incoming_friend.username,
@@ -143,15 +140,6 @@ export default function FriendList() {
       }
     }
   }
-
-  useEffect(() => {
-    if (userSocket) {
-      addUserStatus(
-        userSocket,
-        friends.map((friend: Friend) => friend.incoming_friend.id),
-      );
-    }
-  }, [friends.length]);
 
   const categories = ['friends', 'pending', 'invited', 'blocked'];
 

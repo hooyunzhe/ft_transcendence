@@ -4,7 +4,7 @@ export default async function signUp(
   username: string,
   refresh_token: string,
 ): Promise<User> {
-  return await fetch('http://localhost:4242/api/users', {
+  return await fetch(process.env.NEXT_PUBLIC_HOST_URL + ':4242/api/users', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

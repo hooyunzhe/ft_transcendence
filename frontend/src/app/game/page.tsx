@@ -9,7 +9,9 @@ export default function Game() {
   useEffect(() => {
     startGame(), [window.innerWidth];
   });
-  const GameSocket = io('http://localhost:4242/gateway/game');
+  const GameSocket = io(
+    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/game',
+  );
   const triggerOn = () => {
     GameSocket.emit('Start');
   };

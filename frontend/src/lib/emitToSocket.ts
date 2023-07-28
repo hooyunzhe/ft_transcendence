@@ -1,6 +1,10 @@
-import { Socket } from "socket.io-client";
+import { Socket } from 'socket.io-client';
 
-export default function emitToSocket(socket: Socket | null, message: string, data: any) {
+export default function emitToSocket(
+  socket: Socket | null,
+  message: string,
+  data: any,
+) {
   if (socket) {
     if (socket.connected) {
       socket.emit(message, data);

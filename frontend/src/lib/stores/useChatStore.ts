@@ -1,11 +1,13 @@
-import { Message } from '@/types/MessageTypes';
-import callAPI from '../callAPI';
 import { Socket } from 'socket.io-client';
 import { create } from 'zustand';
+import callAPI from '../callAPI';
+import { Message } from '@/types/MessageTypes';
+import { ChannelMembers } from '@/types/ChannelMemberTypes';
 
 interface ChatStore {
   data: {
     messages: Message[];
+    typingMembers: ChannelMembers[];
   };
   actions: {
     getChatData: () => void;
@@ -36,12 +38,37 @@ function addMessage(set: StoreSetter, newMessage: Message): void {
 }
 
 function setupChatSocketEvents(set: StoreSetter, channelSocket: Socket): void {
-  channelSocket.on('newMessage', (data: Message) => addMessage(set, data));
+  channelSocket.on('newMessage', (message: Message) =>
+    addMessage(set, message),
+  );
+  channelSocket.on('startTyping', (member: ChannelMembers) => {
+    console.log('socket start typing');
+    console.log(member);
+    set(({ data }) => ({
+      data: {
+        ...data,
+        typingMembers: [...data.typingMembers, member],
+      },
+    }));
+  });
+  channelSocket.on('stopTyping', (member: ChannelMembers) => {
+    console.log('socket stop typing');
+    console.log(member);
+    set(({ data }) => ({
+      data: {
+        ...data,
+        typingMembers: data.typingMembers.filter(
+          (typingMember) => typingMember.id !== member.id,
+        ),
+      },
+    }));
+  });
 }
 
 const useChatStore = create<ChatStore>()((set) => ({
   data: {
     messages: [],
+    typingMembers: [],
   },
   actions: {
     getChatData: () => getChatData(set),
@@ -52,4 +79,6 @@ const useChatStore = create<ChatStore>()((set) => ({
 }));
 
 export const useMessages = () => useChatStore((state) => state.data.messages);
+export const useTypingMembers = () =>
+  useChatStore((state) => state.data.typingMembers);
 export const useChatActions = () => useChatStore((state) => state.actions);

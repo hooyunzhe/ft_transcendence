@@ -17,7 +17,9 @@ export default function FriendAddPrompt({
 
   async function getUserByName(name: string): Promise<User | null> {
     return fetch(
-      'http://localhost:4242/api/users?search_type=NAME&search_string=' + name,
+      process.env.NEXT_PUBLIC_HOST_URL +
+        ':4242/api/users?search_type=NAME&search_string=' +
+        name,
       {
         cache: 'no-store',
         method: 'GET',
