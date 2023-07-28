@@ -17,6 +17,7 @@ interface ChannelStore {
     changeChannelType: (channelID: number, newType: ChannelType) => void;
     changeChannelHash: (channelID: number, newHash: string) => void;
     deleteChannel: (channelID: number) => void;
+    deleteJoinedChannel: (channelID: number) => void;
     setSelectedChannel: (channel: Channel | undefined) => void;
     setupChannelSocketEvents: (channelSocket: Socket) => void;
   };
@@ -139,6 +140,20 @@ function deleteChannel(set: StoreSetter, channelID: number): void {
   }));
 }
 
+function deleteJoinedChannel(set: StoreSetter, channelID: number): void {
+  set(({ data }) => {
+    const updatedDeletedJoinedChannels = [...data.joinedChannels];
+
+    updatedDeletedJoinedChannels[channelID] = false;
+    return {
+      data: {
+        ...data,
+        joinedChannels: updatedDeletedJoinedChannels,
+      },
+    };
+  });
+}
+
 function setSelectedChannel(
   set: StoreSetter,
   channel: Channel | undefined,
@@ -201,6 +216,24 @@ function setupChannelSocketEvents(
         changeChannelHash(set, id, newPass);
     },
   );
+
+  channelSocket.on('newChannel', (data: Channel) => addChannel(set, data));
+  channelSocket.on('deleteChannel', (data: Channel) =>
+    deleteChannel(set, data.id),
+  );
+  channelSocket.on(
+    'changeChannelName',
+    (data: { id: number; newName: string }) =>
+      changeChannelName(set, data.id, data.newName),
+  );
+  channelSocket.on(
+    'changeChannelType',
+    (data: { id: number; newType: ChannelType; newPass?: string }) => {
+      changeChannelType(set, data.id, data.newType);
+      if (data.newType == ChannelType.PROTECTED && data.newPass)
+        changeChannelHash(set, data.id, data.newPass);
+    },
+  );
 }
 
 const useChannelStore = create<ChannelStore>()((set, get) => ({
@@ -223,6 +256,7 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     setSelectedChannel: (channel) => setSelectedChannel(set, channel),
     setupChannelSocketEvents: (channelSocket) =>
       setupChannelSocketEvents(set, channelSocket),
+    deleteJoinedChannel: (channelID) => deleteJoinedChannel(set, channelID),
   },
   checks: {
     checkChannelExists: (channelName) => checkChannelExists(get, channelName),

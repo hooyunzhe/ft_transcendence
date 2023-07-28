@@ -11,15 +11,24 @@ import ChannelNameChangePrompt from './ChannelNameChangePrompt';
 import ChannelTypeChangePrompt from './ChannelTypeChangePrompt';
 import { ChannelMemberUnbanPrompt } from '../channel-member/ChannelMemberUnbanPrompt';
 import { ChannelType } from '@/types/ChannelTypes';
+import { useChannelMemberChecks } from '@/lib/stores/useChannelMemberStore';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
+import ChannelDeletePrompt from './ChannelDeletePrompt';
+import ChannelPassChangePrompt from './ChannelPassChangePrompt';
+import { Key } from '@mui/icons-material';
 
 interface ChannelSettingsProps {
   channelID: number;
+  channelName: string;
   channelType: ChannelType;
+  channelHash: string;
 }
 
 export default function ChannelSettings({
   channelID,
+  channelName,
   channelType,
+  channelHash,
 }: ChannelSettingsProps) {
   const [open, setOpen] = useState(false);
   const [anchorElement, setAnchorElement] = useState<null | HTMLElement>(null);
@@ -53,6 +62,10 @@ export default function ChannelSettings({
       >
         <Paper sx={{ width: 320, maxWidth: '100%' }}>
           <MenuList>
+            <ChannelDeletePrompt
+              channelID={channelID}
+              channelName={channelName}
+            />
             <MenuItem>
               <ListItemIcon>
                 <SentimentVeryDissatisfiedIcon />
@@ -66,6 +79,15 @@ export default function ChannelSettings({
               <ChannelNameChangePrompt
                 channelID={channelID}
               ></ChannelNameChangePrompt>
+            </MenuItem>
+            <MenuItem>
+              <ListItemIcon>
+                <Key />
+              </ListItemIcon>
+              <ChannelPassChangePrompt
+                channelID={channelID}
+                channelHash={channelHash}
+              ></ChannelPassChangePrompt>
             </MenuItem>
             <MenuItem>
               <ListItemIcon>

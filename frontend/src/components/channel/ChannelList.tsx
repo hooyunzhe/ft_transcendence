@@ -9,8 +9,11 @@ import {
   useJoinedChannels,
   useSelectedChannel,
 } from '@/lib/stores/useChannelStore';
+import {
+  useChannelMemberActions,
+  useChannelMemberChecks,
+} from '@/lib/stores/useChannelMemberStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { useChannelMemberChecks } from '@/lib/stores/useChannelMemberStore';
 
 export function ChannelList() {
   const currentUser = useCurrentUser();
@@ -19,6 +22,7 @@ export function ChannelList() {
   const selectedChannel = useSelectedChannel();
   const { setSelectedChannel } = useChannelActions();
   const { isChannelOwner } = useChannelMemberChecks();
+  const { getChannelMember } = useChannelMemberActions();
 
   return (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
@@ -29,7 +33,11 @@ export function ChannelList() {
         .map((channel, index) => (
           <ChannelDisplay
             key={index}
-            {...channel}
+            channelID={channel.id}
+            channelName={channel.name}
+            channelType={channel.type}
+            channelHash={channel.hash}
+            currentChannelMember={getChannelMember(currentUser.id, channel.id)}
             selected={selectedChannel?.id === channel.id ?? false}
             selectCurrent={() => {
               selectedChannel?.id === channel.id

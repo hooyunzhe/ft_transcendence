@@ -4,6 +4,7 @@ import FriendList from '../friend/FriendList';
 import { ChannelList } from '../channel/ChannelList';
 import { useState } from 'react';
 import Image from 'next/image';
+import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 
 export default function SocialDrawer() {
   const [open, setOpen] = useState(false);

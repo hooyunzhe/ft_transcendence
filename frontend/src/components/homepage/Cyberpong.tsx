@@ -18,12 +18,14 @@ import {
   useNotification,
   useNotificationActions,
 } from '@/lib/stores/useNotificationStore';
+import SocialDrawer from './SocialDrawer';
 import { Box } from '@mui/material';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import NavigationHeader from './NavigationHeader';
 import MainArea from './MainArea';
 import { useChatActions } from '@/lib/stores/useChatStore';
+import ChannelMemberDrawer from './ChannelMemberDrawer';
 
 export default function Cyberpong() {
   const currentUser = useCurrentUser();
@@ -90,6 +92,8 @@ export default function Cyberpong() {
     >
       <NavigationHeader />
       <MainArea />
+      <SocialDrawer />
+      <ChannelMemberDrawer />
       <ConfirmationPrompt
         open={confirmation.required}
         onCloseHandler={resetConfirmation}

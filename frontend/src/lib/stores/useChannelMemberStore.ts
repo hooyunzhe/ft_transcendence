@@ -13,8 +13,13 @@ interface ChannelMemberStore {
   };
   actions: {
     getChannelMemberData: () => void;
+    getChannelMember: (
+      userID: number,
+      channelID: number,
+    ) => ChannelMembers | undefined;
     addChannelMember: (channelMember: ChannelMembers) => void;
     kickChannelMember: (memberID: number) => void;
+    // kickAllChannelMember: (channelID: number) => void;
     changeChannelMemberRole: (
       memberID: number,
       newRole: ChannelMemberRole,
@@ -136,10 +141,24 @@ function isChannelOwner(
   );
 }
 
+function getChannelMember(
+  get: StoreGetter,
+  userID: number,
+  channelID: number,
+): ChannelMembers | undefined {
+  return get().data.channelMembers.find(
+    (channelMember) =>
+      channelMember.user.id === userID &&
+      channelMember.channel.id === channelID,
+  );
+}
+
 const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
   data: { channelMembers: [] },
   actions: {
     getChannelMemberData: () => getChannelMemberData(set),
+    getChannelMember: (userID, channelID) =>
+      getChannelMember(get, userID, channelID),
     addChannelMember: (channelMember) => addChannelMember(set, channelMember),
     kickChannelMember: (memberID) => kickChannelMember(set, memberID),
     changeChannelMemberRole: (memberID, newRole) =>

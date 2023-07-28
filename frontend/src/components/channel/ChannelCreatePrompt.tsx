@@ -15,10 +15,9 @@ import {
   useChannelActions,
   useChannelChecks,
 } from '@/lib/stores/useChannelStore';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 
 export default function ChannelCreatePrompt() {
-  const currentUser = useCurrentUser();
   const { addChannel, addJoinedChannel } = useChannelActions();
   const { checkChannelExists, checkChannelJoined } = useChannelChecks();
   const [channelName, setChannelName] = useState('');
@@ -27,6 +26,7 @@ export default function ChannelCreatePrompt() {
   );
   const [channelPass, setChannelPass] = useState('');
   const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
+  const { addChannelMember } = useChannelMemberActions();
 
   function resetDisplay() {
     setDisplayPasswordPrompt(false);
@@ -49,16 +49,18 @@ export default function ChannelCreatePrompt() {
 
     if (newChannel) {
       addChannel(newChannel);
-      if (
-        JSON.parse(
-          await callAPI('POST', 'channel-members', {
-            channel_id: newChannel.id,
-            user_id: currentUser.id,
-            role: ChannelMemberRole.OWNER,
-          }),
-        )
-      ) {
+
+      const channelCreator = JSON.parse(
+        await callAPI('POST', 'channel-members', {
+          channel_id: newChannel.id,
+          user_id: 1,
+          role: ChannelMemberRole.OWNER,
+        }),
+      );
+
+      if (channelCreator) {
         addJoinedChannel(newChannel.id);
+        addChannelMember(channelCreator);
         return '';
       } else {
         return 'FATAL ERROR: FAILED TO ADD MEMBER TO NEW CHANNEL IN BACKEND';
