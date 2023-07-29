@@ -1,9 +1,11 @@
 'use client';
-import { useTypingMembers } from '@/lib/stores/useChatStore';
 import { Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { useSelectedChannel } from '@/lib/stores/useChannelStore';
+import { useTypingMembers } from '@/lib/stores/useChatStore';
 
 export default function ChatTypingDisplay() {
+  const selectedChannel = useSelectedChannel();
   const typingMembers = useTypingMembers();
   const [isTypingText, setIsTypingText] = useState('');
   const [isTypingIntervalID, setIsTypingIntervalID] = useState<
@@ -11,17 +13,21 @@ export default function ChatTypingDisplay() {
   >(undefined);
 
   useEffect(() => {
-    switch (typingMembers.length) {
+    const filteredTypingMembers = typingMembers.filter(
+      (typingMember) => typingMember.channel.id === selectedChannel?.id,
+    );
+
+    switch (filteredTypingMembers.length) {
       case 0:
         clearInterval(isTypingIntervalID);
         setIsTypingText('');
         break;
       case 1:
-        setIsTypingText(typingMembers[0].user.username + ' is typing');
+        setIsTypingText(filteredTypingMembers[0].user.username + ' is typing');
         break;
       case 2:
         setIsTypingText(
-          typingMembers
+          filteredTypingMembers
             .map((typingMember) => typingMember.user.username)
             .join(' and ') + ' are typing',
         );
@@ -31,7 +37,7 @@ export default function ChatTypingDisplay() {
         break;
     }
 
-    if (typingMembers.length) {
+    if (filteredTypingMembers.length) {
       clearInterval(isTypingIntervalID);
       setIsTypingIntervalID(
         setInterval(() => {
@@ -43,7 +49,7 @@ export default function ChatTypingDisplay() {
         }, 500),
       );
     }
-  }, [typingMembers]);
+  }, [selectedChannel, typingMembers]);
 
   return (
     <Typography

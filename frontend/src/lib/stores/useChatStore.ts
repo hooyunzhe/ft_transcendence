@@ -42,8 +42,6 @@ function setupChatSocketEvents(set: StoreSetter, channelSocket: Socket): void {
     addMessage(set, message),
   );
   channelSocket.on('startTyping', (member: ChannelMembers) => {
-    console.log('socket start typing');
-    console.log(member);
     set(({ data }) => ({
       data: {
         ...data,
@@ -52,8 +50,6 @@ function setupChatSocketEvents(set: StoreSetter, channelSocket: Socket): void {
     }));
   });
   channelSocket.on('stopTyping', (member: ChannelMembers) => {
-    console.log('socket stop typing');
-    console.log(member);
     set(({ data }) => ({
       data: {
         ...data,

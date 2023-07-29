@@ -1,14 +1,12 @@
 'use client';
-import { useMessages } from '@/lib/stores/useChatStore';
-import { Stack } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import { useEffect, useRef } from 'react';
 import ChatDisplay from './ChatDisplay';
+import { useSelectedChannel } from '@/lib/stores/useChannelStore';
+import { useMessages } from '@/lib/stores/useChatStore';
 
-interface ChatListProps {
-  channelID: number;
-}
-
-export default function ChatList({ channelID }: ChatListProps) {
+export default function ChatList() {
+  const selectedChannel = useSelectedChannel();
   const messages = useMessages();
   const chatStack = useRef<HTMLDivElement | null>(null);
 
@@ -18,26 +16,40 @@ export default function ChatList({ channelID }: ChatListProps) {
     if (chatStackElement) {
       chatStackElement.scrollTop = chatStackElement.scrollHeight;
     }
-  }, [messages]);
+  }, [selectedChannel, messages]);
 
   return (
     <Stack
       sx={{ overflow: 'auto', '&::-webkit-scrollbar': { display: 'none' } }}
+      height='100%'
       padding='10px'
       spacing={1}
       ref={chatStack}
     >
-      {messages
-        .filter((message) => message.channel.id === channelID)
-        .map((message, index) => (
-          <ChatDisplay
-            key={index}
-            content={message.content}
-            type={message.type}
-            dateOfCreation={message.date_of_creation}
-            senderName={message.user.username}
-          />
-        ))}
+      {selectedChannel ? (
+        messages
+          .filter((message) => message.channel.id === selectedChannel.id)
+          .map((message, index) => (
+            <ChatDisplay
+              key={index}
+              content={message.content}
+              type={message.type}
+              dateOfCreation={message.date_of_creation}
+              senderName={message.user.username}
+            />
+          ))
+      ) : (
+        <Typography
+          sx={{
+            opacity: '50%',
+          }}
+          variant='h5'
+          align='center'
+          marginTop='26vh'
+        >
+          Select a channel to view messages
+        </Typography>
+      )}
     </Stack>
   );
 }

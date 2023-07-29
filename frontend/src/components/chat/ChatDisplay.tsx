@@ -1,5 +1,4 @@
 'use client';
-import { MessageType } from '@/types/MessageTypes';
 import {
   Avatar,
   Box,
@@ -9,6 +8,7 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
+import { MessageType } from '@/types/MessageTypes';
 
 interface ChatDisplayProps {
   content: string;
