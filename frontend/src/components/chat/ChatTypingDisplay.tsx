@@ -10,7 +10,7 @@ export default function ChatTypingDisplay() {
   const [isTypingText, setIsTypingText] = useState('');
   const [isTypingIntervalID, setIsTypingIntervalID] = useState<
     NodeJS.Timer | undefined
-  >(undefined);
+  >();
 
   useEffect(() => {
     const filteredTypingMembers = typingMembers.filter(

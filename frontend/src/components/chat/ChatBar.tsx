@@ -19,7 +19,7 @@ export default function ChatBar() {
   const [unsentMessages, setUnsentMessages] = useState<string[]>([]);
   const [typingTimeoutID, setTypingTimeoutID] = useState<
     NodeJS.Timeout | undefined
-  >(undefined);
+  >();
 
   function handleInputChange(input: string): void {
     if (selectedChannel) {

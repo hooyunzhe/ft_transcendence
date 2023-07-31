@@ -2,13 +2,35 @@
 import { Drawer } from '@mui/material';
 import ChatBox from '../chat/ChatBox';
 import { useEffect, useState } from 'react';
+import { useCurrentView } from '@/lib/stores/useUtilStore';
+import { View } from '@/types/UtilTypes';
 
 export default function ContentBox() {
+  const currentView = useCurrentView();
+  const [localView, setLocalView] = useState<View>(View.EMPTY);
   const [open, setOpen] = useState(false);
+  const [toggleTimeoutID, setToggleTimeoutID] = useState<
+    NodeJS.Timeout | undefined
+  >();
 
   useEffect(() => {
-    setOpen(true);
-  }, []);
+    if (currentView === View.EMPTY) {
+      setOpen(false);
+      clearTimeout(toggleTimeoutID);
+    } else if (open) {
+      setOpen(false);
+      clearTimeout(toggleTimeoutID);
+      setToggleTimeoutID(
+        setTimeout(() => {
+          setLocalView(currentView);
+          setOpen(true);
+        }, 1250),
+      );
+    } else {
+      setLocalView(currentView);
+      setOpen(true);
+    }
+  }, [currentView]);
 
   return (
     <Drawer
@@ -29,7 +51,7 @@ export default function ContentBox() {
       transitionDuration={1000}
       open={open}
     >
-      <ChatBox />
+      {localView === View.CHAT && <ChatBox />}
     </Drawer>
   );
 }

@@ -30,7 +30,6 @@ interface ChannelStore {
 type StoreSetter = (
   helper: (state: ChannelStore) => Partial<ChannelStore>,
 ) => void;
-
 type StoreGetter = () => ChannelStore;
 
 async function getChannelData(set: StoreSetter, userID: number): Promise<void> {

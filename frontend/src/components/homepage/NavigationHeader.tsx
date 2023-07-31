@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 
 export default function NavigationHeader() {
   const currentView = useCurrentView();
-  const { setCurrentView } = useUtilActions();
+  const { changeCurrentView } = useUtilActions();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -49,23 +49,40 @@ export default function NavigationHeader() {
         paddingLeft='0.5vw'
         paddingRight='0.5vw'
       >
-        <Tabs
-          value={currentView}
-          onChange={(event, newValue) => setCurrentView(newValue)}
-          variant='scrollable'
-        >
+        <Tabs value={currentView} variant='scrollable'>
           <Tab
             sx={{
               color: 'green',
             }}
             icon={<SportsTennisRounded />}
             value={View.GAME}
+            onClick={() => changeCurrentView(View.GAME)}
           />
-          <Tab icon={<ChatRounded />} value={View.CHAT} />
-          <Tab icon={<AssignmentIndRounded />} value={View.PROFILE} />
-          <Tab icon={<MilitaryTechRounded />} value={View.LEADERBOARD} />
-          <Tab icon={<EmojiEventsRounded />} value={View.ACHIEVEMENTS} />
-          <Tab icon={<SettingsRounded />} value={View.SETTINGS} />
+          <Tab
+            icon={<ChatRounded />}
+            value={View.CHAT}
+            onClick={() => changeCurrentView(View.CHAT)}
+          />
+          <Tab
+            icon={<AssignmentIndRounded />}
+            value={View.PROFILE}
+            onClick={() => changeCurrentView(View.PROFILE)}
+          />
+          <Tab
+            icon={<MilitaryTechRounded />}
+            value={View.LEADERBOARD}
+            onClick={() => changeCurrentView(View.LEADERBOARD)}
+          />
+          <Tab
+            icon={<EmojiEventsRounded />}
+            value={View.ACHIEVEMENTS}
+            onClick={() => changeCurrentView(View.ACHIEVEMENTS)}
+          />
+          <Tab
+            icon={<SettingsRounded />}
+            value={View.SETTINGS}
+            onClick={() => changeCurrentView(View.SETTINGS)}
+          />
         </Tabs>
         <Divider
           sx={{
