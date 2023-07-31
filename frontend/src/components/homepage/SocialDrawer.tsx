@@ -4,21 +4,37 @@ import FriendList from '../friend/FriendList';
 import { ChannelList } from '../channel/ChannelList';
 import { useState } from 'react';
 import Image from 'next/image';
+import {
+  useChannelMemberDrawerToggle,
+  useSocialDrawerToggle,
+  useUtilActions,
+} from '@/lib/stores/useUtilStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 
 export default function SocialDrawer() {
-  const [open, setOpen] = useState(false);
   const [timeoutID, setTimeoutID] = useState<NodeJS.Timeout>();
   const [selectedTab, setSelectedTab] = useState(0);
+  const {
+    setSocialDrawerClose,
+    setSocialDrawerOpen,
+    setChannelMemberDrawerClose,
+  } = useUtilActions();
+  const socialDrawerToggle = useSocialDrawerToggle();
+  const selectedChannel = useSelectedChannel();
 
   return (
     <Box
       onMouseOver={() => {
-        clearTimeout(timeoutID);
-        setOpen(true);
+        if (selectedChannel) clearTimeout(timeoutID);
+        setSocialDrawerOpen();
       }}
       onMouseLeave={() => {
-        setTimeoutID(setTimeout(() => setOpen(false), 5000));
+        setTimeoutID(
+          setTimeout(() => {
+            setSocialDrawerClose();
+            setChannelMemberDrawerClose();
+          }, 2000),
+        );
       }}
     >
       <Image
@@ -42,7 +58,7 @@ export default function SocialDrawer() {
         }}
         variant='persistent'
         anchor='left'
-        open={open}
+        open={socialDrawerToggle}
       >
         <Tabs
           sx={{

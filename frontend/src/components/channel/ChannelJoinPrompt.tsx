@@ -42,7 +42,7 @@ export default function ChannelJoinPrompt() {
         channel_id: selectedChannel.id,
         user_id: currentUser.id,
         role: ChannelMemberRole.MEMBER,
-        pass: channelPass ?? '',
+        pass: channelPass,
       });
 
       if (!joiningChannelMember) {

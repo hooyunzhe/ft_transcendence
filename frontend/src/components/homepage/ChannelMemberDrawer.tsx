@@ -1,13 +1,32 @@
 'use client';
 import { Box, Drawer, Tab, Tabs } from '@mui/material';
-import { useState } from 'react';
 import Image from 'next/image';
 import { ChannelMemberList } from '../channel-member/ChannelMemberList';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
+import {
+  useChannelMemberDrawerToggle,
+  useSocialDrawerToggle,
+  useUtilActions,
+} from '@/lib/stores/useUtilStore';
+import { useEffect } from 'react';
 
 export default function ChannelMemberDrawer() {
-  const [open, setOpen] = useState(false);
   const selectedChannel = useSelectedChannel();
+  const channelMemberDrawerToggle = useChannelMemberDrawerToggle();
+  const socialDrawerToggle = useSocialDrawerToggle();
+  const { setChannelMemberDrawerClose, setChannelMemberDrawerOpen } =
+    useUtilActions();
+
+  useEffect(() => {
+    if (selectedChannel === undefined) {
+      setChannelMemberDrawerClose();
+    } else if (channelMemberDrawerToggle) {
+      setChannelMemberDrawerClose();
+      setTimeout(() => setChannelMemberDrawerOpen(), 500);
+    } else {
+      setChannelMemberDrawerOpen();
+    }
+  }, [selectedChannel]);
 
   return (
     <Box>
@@ -34,7 +53,7 @@ export default function ChannelMemberDrawer() {
         }}
         variant='persistent'
         anchor='right'
-        open={selectedChannel ? true : false}
+        open={channelMemberDrawerToggle ? true : false}
       >
         <ChannelMemberList />
       </Drawer>

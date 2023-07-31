@@ -16,8 +16,10 @@ import {
   useChannelChecks,
 } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
 
 export default function ChannelCreatePrompt() {
+  const currentUser = useCurrentUser();
   const { addChannel, addJoinedChannel } = useChannelActions();
   const { checkChannelExists, checkChannelJoined } = useChannelChecks();
   const [channelName, setChannelName] = useState('');
@@ -43,7 +45,7 @@ export default function ChannelCreatePrompt() {
       await callAPI('POST', 'channels', {
         name: channelName,
         type: channelType,
-        pass: channelPass ?? '',
+        pass: channelPass,
       }),
     );
 
@@ -53,8 +55,9 @@ export default function ChannelCreatePrompt() {
       const channelCreator = JSON.parse(
         await callAPI('POST', 'channel-members', {
           channel_id: newChannel.id,
-          user_id: 1,
+          user_id: currentUser.id,
           role: ChannelMemberRole.OWNER,
+          pass: channelPass,
         }),
       );
 
