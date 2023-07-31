@@ -239,5 +239,7 @@ export function ChannelMemberList() {
           />
         ))}
     </Stack>
-  ) : null;
+  ) : (
+    <ListHeader title='My retarded channel member list'></ListHeader>
+  );
 }

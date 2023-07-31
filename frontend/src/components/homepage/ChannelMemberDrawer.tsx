@@ -5,7 +5,6 @@ import { ChannelMemberList } from '../channel-member/ChannelMemberList';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import {
   useChannelMemberDrawerToggle,
-  useSocialDrawerToggle,
   useUtilActions,
 } from '@/lib/stores/useUtilStore';
 import { useEffect } from 'react';
@@ -13,31 +12,38 @@ import { useEffect } from 'react';
 export default function ChannelMemberDrawer() {
   const selectedChannel = useSelectedChannel();
   const channelMemberDrawerToggle = useChannelMemberDrawerToggle();
-  const socialDrawerToggle = useSocialDrawerToggle();
-  const { setChannelMemberDrawerClose, setChannelMemberDrawerOpen } =
+  const { handleDrawerMouseLeave, handleDrawerMouseOver } = useUtilActions();
+  const { setChannelMemberDrawerOpen, setChannelMemberDrawerClose } =
     useUtilActions();
 
   useEffect(() => {
-    if (selectedChannel === undefined) {
-      setChannelMemberDrawerClose();
-    } else if (channelMemberDrawerToggle) {
-      setChannelMemberDrawerClose();
-      setTimeout(() => setChannelMemberDrawerOpen(), 500);
+    if (selectedChannel) {
+      if (channelMemberDrawerToggle) {
+        setChannelMemberDrawerClose();
+        setTimeout(() => setChannelMemberDrawerOpen(), 500);
+      } else {
+        setChannelMemberDrawerOpen();
+      }
     } else {
-      setChannelMemberDrawerOpen();
+      setChannelMemberDrawerClose();
     }
   }, [selectedChannel]);
 
   return (
-    <Box>
-      {selectedChannel && (
-        <Image
-          src='/ball/paddle1.png'
-          width={12}
-          height={110}
-          alt='Paddle 2'
-        ></Image>
-      )}
+    <Box
+      onMouseOver={() => {
+        if (selectedChannel) {
+          handleDrawerMouseOver(true);
+        }
+      }}
+      onMouseLeave={handleDrawerMouseLeave}
+    >
+      <Image
+        src='/ball/paddle1.png'
+        width={12}
+        height={110}
+        alt='Paddle 2'
+      ></Image>
       <Drawer
         PaperProps={{
           sx: {

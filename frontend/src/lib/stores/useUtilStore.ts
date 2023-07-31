@@ -1,3 +1,4 @@
+import { Channel } from '@/types/ChannelTypes';
 import { View } from '@/types/UtilTypes';
 import { create } from 'zustand';
 
@@ -6,6 +7,7 @@ interface UtilStore {
     currentView: View;
     socialDrawerToggle: boolean;
     channelMemberDrawerToggle: boolean;
+    timeoutID: NodeJS.Timeout | undefined;
   };
   actions: {
     setCurrentView: (newView: View) => void;
@@ -14,6 +16,8 @@ interface UtilStore {
     setSocialDrawerClose: () => void;
     setChannelMemberDrawerOpen: () => void;
     setChannelMemberDrawerClose: () => void;
+    handleDrawerMouseOver: (channelSelected: boolean) => void;
+    handleDrawerMouseLeave: () => void;
   };
 }
 
@@ -66,6 +70,7 @@ function setChannelMemberDrawerClose(set: StoreSetter): void {
     },
   }));
 }
+
 function setChannelMemberDrawerOpen(set: StoreSetter): void {
   set(({ data }) => ({
     data: {
@@ -75,11 +80,37 @@ function setChannelMemberDrawerOpen(set: StoreSetter): void {
   }));
 }
 
+function handleDrawerMouseOver(
+  set: StoreSetter,
+  get: StoreGetter,
+  channelSelected: boolean,
+): void {
+  clearTimeout(get().data.timeoutID);
+  setSocialDrawerOpen(set);
+  if (channelSelected) {
+    setChannelMemberDrawerOpen(set);
+  }
+}
+
+function handleDrawerMouseLeave(set: StoreSetter): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      timeoutID: setTimeout(() => {
+        setSocialDrawerClose(set);
+        setChannelMemberDrawerClose(set);
+      }, 2000),
+    },
+  }));
+}
+
 const useUtilStore = create<UtilStore>()((set, get) => ({
   data: {
     currentView: View.EMPTY,
     channelMemberDrawerToggle: false,
     socialDrawerToggle: false,
+    timeoutID: undefined,
+    channelSelected: false,
   },
   actions: {
     setCurrentView: (newView: View) => setCurrentView(set, newView),
@@ -88,6 +119,9 @@ const useUtilStore = create<UtilStore>()((set, get) => ({
     setSocialDrawerClose: () => setSocialDrawerClose(set),
     setChannelMemberDrawerOpen: () => setChannelMemberDrawerOpen(set),
     setChannelMemberDrawerClose: () => setChannelMemberDrawerClose(set),
+    handleDrawerMouseOver: (channelSelected) =>
+      handleDrawerMouseOver(set, get, channelSelected),
+    handleDrawerMouseLeave: () => handleDrawerMouseLeave(set),
   },
 }));
 

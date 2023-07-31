@@ -5,37 +5,24 @@ import { ChannelList } from '../channel/ChannelList';
 import { useState } from 'react';
 import Image from 'next/image';
 import {
-  useChannelMemberDrawerToggle,
   useSocialDrawerToggle,
   useUtilActions,
 } from '@/lib/stores/useUtilStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
+import ListHeader from '../utils/ListHeader';
 
 export default function SocialDrawer() {
-  const [timeoutID, setTimeoutID] = useState<NodeJS.Timeout>();
   const [selectedTab, setSelectedTab] = useState(0);
-  const {
-    setSocialDrawerClose,
-    setSocialDrawerOpen,
-    setChannelMemberDrawerClose,
-  } = useUtilActions();
+  const { handleDrawerMouseLeave, handleDrawerMouseOver } = useUtilActions();
   const socialDrawerToggle = useSocialDrawerToggle();
   const selectedChannel = useSelectedChannel();
 
   return (
     <Box
       onMouseOver={() => {
-        if (selectedChannel) clearTimeout(timeoutID);
-        setSocialDrawerOpen();
+        handleDrawerMouseOver(selectedChannel !== undefined);
       }}
-      onMouseLeave={() => {
-        setTimeoutID(
-          setTimeout(() => {
-            setSocialDrawerClose();
-            setChannelMemberDrawerClose();
-          }, 2000),
-        );
-      }}
+      onMouseLeave={handleDrawerMouseLeave}
     >
       <Image
         src='/ball/paddle2.png'
@@ -60,6 +47,7 @@ export default function SocialDrawer() {
         anchor='left'
         open={socialDrawerToggle}
       >
+        <ListHeader title='Social' />
         <Tabs
           sx={{
             margin: '3px',

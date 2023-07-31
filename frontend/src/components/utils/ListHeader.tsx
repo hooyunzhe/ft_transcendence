@@ -9,7 +9,7 @@ interface ListHeaderProps {
 
 export default function ListHeader({ title, children }: ListHeaderProps) {
   return (
-    <Paper elevation={2} sx={{ color: 'blue' }}>
+    <Paper elevation={2} sx={{ color: 'white', background: '#3A0CA375' }}>
       <Toolbar>
         <Box mr={2}>
           <ChatIcon fontSize={'large'} />
