@@ -29,6 +29,8 @@ export interface ChannelMembers {
   role: ChannelMemberRole;
   status: ChannelMemberStatus;
   muted_until: Date;
+  date_of_creation: string;
+  last_updated: string;
   channel: Channel;
   user: User;
 }

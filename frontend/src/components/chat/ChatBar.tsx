@@ -4,7 +4,10 @@ import { useState } from 'react';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { useSelectedChannel } from '@/lib/stores/useChannelStore';
+import {
+  useChannelActions,
+  useSelectedChannel,
+} from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useChatActions } from '@/lib/stores/useChatStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
@@ -15,6 +18,7 @@ export default function ChatBar() {
   const selectedChannel = useSelectedChannel();
   const { getChannelMember } = useChannelMemberActions();
   const { addMessage } = useChatActions();
+  const { updateRecentChannelActivity } = useChannelActions();
   const channelSocket = useChannelSocket();
   const [unsentMessages, setUnsentMessages] = useState<string[]>([]);
   const [typingTimeoutID, setTypingTimeoutID] = useState<
@@ -43,7 +47,6 @@ export default function ChatBar() {
       );
       setUnsentMessages((unsentMessages) => {
         unsentMessages[selectedChannel.id] = input;
-        console.log(unsentMessages);
         return unsentMessages;
       });
     } else {
@@ -81,10 +84,13 @@ export default function ChatBar() {
 
       if (newMessage) {
         setUnsentMessages((unsentMessages) => {
-          unsentMessages[selectedChannel.id] = '';
-          return unsentMessages;
+          const updatedUnsentMessages = [...unsentMessages];
+
+          updatedUnsentMessages[selectedChannel.id] = '';
+          return updatedUnsentMessages;
         });
         addMessage(newMessage);
+        updateRecentChannelActivity(selectedChannel.id);
         emitToSocket(channelSocket, 'newMessage', newMessage);
       } else {
         console.log('FATAL ERROR: FAILED TO SEND MESSAGE IN BACKEND');

@@ -1,9 +1,11 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
   Unique,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Channel } from 'src/channel/entities/channel.entity';
 import { User } from 'src/user/entities/user.entity';
@@ -34,6 +36,12 @@ export class ChannelMember {
 
   @Column({ default: null })
   muted_until: Date;
+
+  @CreateDateColumn()
+  date_of_creation: Date;
+
+  @UpdateDateColumn()
+  last_updated: Date;
 
   @ManyToOne(() => Channel, (channel) => channel.channelMembers, {
     eager: true,

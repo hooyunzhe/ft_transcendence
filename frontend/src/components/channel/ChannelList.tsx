@@ -7,6 +7,7 @@ import {
   useChannelActions,
   useChannels,
   useJoinedChannels,
+  useRecentChannelActivity,
   useSelectedChannel,
 } from '@/lib/stores/useChannelStore';
 import {
@@ -21,6 +22,7 @@ export function ChannelList() {
   const currentUser = useCurrentUser();
   const channels = useChannels();
   const joinedChannels = useJoinedChannels();
+  const recentChannelActivity = useRecentChannelActivity();
   const selectedChannel = useSelectedChannel();
   const { setSelectedChannel } = useChannelActions();
   const { isChannelOwner } = useChannelMemberChecks();
@@ -33,6 +35,12 @@ export function ChannelList() {
       <ChannelJoinPrompt />
       {channels
         .filter((channel) => joinedChannels[channel.id])
+        .sort((channelA, channelB) => {
+          return (
+            recentChannelActivity[channelB.id] -
+            recentChannelActivity[channelA.id]
+          );
+        })
         .map((channel, index) => (
           <ChannelDisplay
             key={index}

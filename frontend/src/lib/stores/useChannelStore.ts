@@ -7,6 +7,7 @@ interface ChannelStore {
   data: {
     channels: Channel[];
     joinedChannels: boolean[];
+    recentChannelActivity: number[];
     selectedChannel: Channel | undefined;
   };
   actions: {
@@ -18,6 +19,7 @@ interface ChannelStore {
     changeChannelHash: (channelID: number, newHash: string) => void;
     deleteChannel: (channelID: number) => void;
     deleteJoinedChannel: (channelID: number) => void;
+    updateRecentChannelActivity: (channelID: number) => void;
     setSelectedChannel: (channel: Channel | undefined) => void;
     setupChannelSocketEvents: (channelSocket: Socket) => void;
   };
@@ -34,7 +36,7 @@ type StoreGetter = () => ChannelStore;
 
 async function getChannelData(set: StoreSetter, userID: number): Promise<void> {
   const channelData = JSON.parse(
-    await callAPI('GET', 'channels?search_type=ALL'),
+    await callAPI('GET', 'channels?search_type=ALL&load_relations'),
   );
   const joinedChannelData = JSON.parse(
     await callAPI(
@@ -42,16 +44,31 @@ async function getChannelData(set: StoreSetter, userID: number): Promise<void> {
       `users?search_type=RELATION&search_number=${userID}&search_relation=CHANNELS`,
     ),
   );
-  let joinedChannelLookup: boolean[] = [];
+  const joinedChannelLookup: boolean[] = [];
+  const recentChannelActivity: number[] = [];
 
   joinedChannelData.forEach((joinedChannel: Channel) => {
     joinedChannelLookup[joinedChannel.id] = true;
   });
+  channelData.forEach((channel: Channel) => {
+    if (joinedChannelLookup[channel.id]) {
+      const latestMember = channel.channelMembers.slice(-1)[0];
+      const latestMessage = channel.messages.slice(-1)[0];
+
+      recentChannelActivity[channel.id] = Math.max(
+        Date.parse(channel.last_updated),
+        Date.parse(latestMember.last_updated),
+        Date.parse(latestMessage?.date_of_creation ?? '0'),
+      );
+    }
+  });
+
   set(({ data }) => ({
     data: {
       ...data,
       channels: channelData,
       joinedChannels: joinedChannelLookup,
+      recentChannelActivity: recentChannelActivity,
     },
   }));
 }
@@ -60,6 +77,7 @@ function addChannel(set: StoreSetter, newChannel: Channel): void {
   set(({ data }) => ({
     data: { ...data, channels: [...data.channels, newChannel] },
   }));
+  updateRecentChannelActivity(set, newChannel.id);
 }
 
 function addJoinedChannel(set: StoreSetter, channelID: number): void {
@@ -74,6 +92,7 @@ function addJoinedChannel(set: StoreSetter, channelID: number): void {
       },
     };
   });
+  updateRecentChannelActivity(set, channelID);
 }
 
 function changeChannelName(
@@ -92,6 +111,7 @@ function changeChannelName(
       }),
     },
   }));
+  updateRecentChannelActivity(set, channelID);
 }
 
 function changeChannelType(
@@ -110,6 +130,7 @@ function changeChannelType(
       }),
     },
   }));
+  updateRecentChannelActivity(set, channelID);
 }
 
 function changeChannelHash(
@@ -128,6 +149,7 @@ function changeChannelHash(
       }),
     },
   }));
+  updateRecentChannelActivity(set, channelID);
 }
 
 function deleteChannel(set: StoreSetter, channelID: number): void {
@@ -148,6 +170,23 @@ function deleteJoinedChannel(set: StoreSetter, channelID: number): void {
       data: {
         ...data,
         joinedChannels: updatedDeletedJoinedChannels,
+      },
+    };
+  });
+}
+
+function updateRecentChannelActivity(
+  set: StoreSetter,
+  channelID: number,
+): void {
+  set(({ data }) => {
+    const updatedRecentChannelActivity = [...data.recentChannelActivity];
+
+    updatedRecentChannelActivity[channelID] = new Date().getTime();
+    return {
+      data: {
+        ...data,
+        recentChannelActivity: updatedRecentChannelActivity,
       },
     };
   });
@@ -239,6 +278,7 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
   data: {
     channels: [],
     joinedChannels: [],
+    recentChannelActivity: [],
     selectedChannel: undefined,
   },
   actions: {
@@ -252,6 +292,8 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     changeChannelHash: (channelID, newHash) =>
       changeChannelHash(set, channelID, newHash),
     deleteChannel: (channelID) => deleteChannel(set, channelID),
+    updateRecentChannelActivity: (channelID) =>
+      updateRecentChannelActivity(set, channelID),
     setSelectedChannel: (channel) => setSelectedChannel(set, channel),
     setupChannelSocketEvents: (channelSocket) =>
       setupChannelSocketEvents(set, channelSocket),
@@ -267,6 +309,8 @@ export const useChannels = () =>
   useChannelStore((state) => state.data.channels);
 export const useJoinedChannels = () =>
   useChannelStore((state) => state.data.joinedChannels);
+export const useRecentChannelActivity = () =>
+  useChannelStore((state) => state.data.recentChannelActivity);
 export const useSelectedChannel = () =>
   useChannelStore((state) => state.data.selectedChannel);
 export const useChannelActions = () =>
