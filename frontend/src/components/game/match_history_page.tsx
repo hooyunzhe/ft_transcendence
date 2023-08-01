@@ -3,7 +3,7 @@
 import {
   MatchHistoryComponent,
   MatchHistoryHeadComponent,
-} from '../../components/game/match_history';
+} from './match_history';
 // function Layout({rows}: LayoutProps)
 // {
 // //   return (

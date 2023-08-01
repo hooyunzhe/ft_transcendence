@@ -2,7 +2,7 @@
 
 import startGame from '@/components/game/game';
 import { useEffect, useState } from 'react';
-import Pong from '../../components/game/pong';
+import Pong from './pong';
 import { io } from 'socket.io-client';
 
 export default function Game() {

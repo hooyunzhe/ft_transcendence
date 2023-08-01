@@ -1,158 +1,92 @@
 'use client';
-import { Stack } from '@mui/material';
-import FriendDropdown from './FriendDropdown';
-import callAPI from '@/lib/callAPI';
-import { Friend, FriendStatus, FriendAction } from '@/types/FriendTypes';
-import { User } from '@/types/UserTypes';
-import { useFriendActions } from '@/lib/stores/useFriendStore';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { useFriendSocket } from '@/lib/stores/useSocketStore';
-import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
-import { useNotificationActions } from '@/lib/stores/useNotificationStore';
-import FriendAddPrompt from './FriendAddPrompt';
-import emitToSocket from '@/lib/emitToSocket';
+import { Collapse, ListItemButton, Paper, Stack } from '@mui/material';
+import FriendDisplay from './FriendDisplay';
+import {
+  useFriendActions,
+  useFriends,
+  useSelectedFriend,
+} from '@/lib/stores/useFriendStore';
+import { useUserStatus } from '@/lib/stores/useUserStore';
+import { Friend, FriendAction } from '@/types/FriendTypes';
+import { UserStatus } from '@/types/UserTypes';
 
-export default function FriendList() {
-  const currentUser = useCurrentUser();
-  const { addFriend, changeFriend, deleteFriend } = useFriendActions();
-  const friendSocket = useFriendSocket();
-  const { displayConfirmation } = useConfirmationActions();
-  const { displayNotification } = useNotificationActions();
+interface FriendListProps {
+  expand: boolean;
+  category: string;
+  handleAction: (request: Friend, action: FriendAction) => void;
+}
 
-  async function callFriendsAPI(
-    method: string,
-    incoming_friend: User,
-    action?: FriendAction,
-  ): Promise<string> {
-    return callAPI(method, 'friends', {
-      outgoing_id: currentUser.id,
-      incoming_id: incoming_friend.id,
-      ...(action && { action: action }),
-    });
-  }
-  async function sendFriendRequest(user: User): Promise<void> {
-    const newRequests = JSON.parse(await callFriendsAPI('POST', user));
+export default function FriendList({
+  expand,
+  category,
+  handleAction,
+}: FriendListProps) {
+  const friends = useFriends();
+  const selectedFriend = useSelectedFriend();
+  const { setSelectedFriend } = useFriendActions();
+  const userStatus = useUserStatus();
+  const sortOrder = {
+    [UserStatus.IN_GAME]: 0,
+    [UserStatus.ONLINE]: 1,
+    [UserStatus.OFFLINE]: 2,
+  };
 
-    addFriend(newRequests[0]);
-    emitToSocket(friendSocket, 'newRequest', {
-      outgoing_request: newRequests[0],
-      incoming_request: newRequests[1],
-    });
-    displayNotification('success', 'Request sent');
-  }
+  function sortFriends(a: Friend, b: Friend): number {
+    if (category === 'friends') {
+      const userStatusA = userStatus[a.incoming_friend.id];
+      const userStatusB = userStatus[b.incoming_friend.id];
 
-  function acceptFriendRequest(request: Friend): void {
-    callFriendsAPI('PATCH', request.incoming_friend, FriendAction.ACCEPT);
-    changeFriend(
-      request.incoming_friend.id,
-      FriendStatus.PENDING,
-      FriendStatus.FRIENDS,
-    );
-    emitToSocket(friendSocket, 'acceptRequest', request);
-    displayNotification('success', 'Request accepted');
-  }
-
-  function rejectFriendRequest(request: Friend): void {
-    callFriendsAPI('PATCH', request.incoming_friend, FriendAction.REJECT);
-    deleteFriend(request.incoming_friend.id);
-    emitToSocket(friendSocket, 'rejectRequest', request);
-    displayNotification('error', 'Request rejected');
-  }
-
-  function removeFriendRequest(request: Friend): void {
-    callFriendsAPI('DELETE', request.incoming_friend);
-    deleteFriend(request.incoming_friend.id);
-    emitToSocket(friendSocket, 'deleteRequest', request);
-    displayNotification('error', 'Request removed');
-  }
-
-  function blockFriend(friendship: Friend): void {
-    callFriendsAPI('PATCH', friendship.incoming_friend, FriendAction.BLOCK);
-    changeFriend(
-      friendship.incoming_friend.id,
-      FriendStatus.FRIENDS,
-      FriendStatus.BLOCKED,
-    );
-    displayNotification(
-      'warning',
-      'Blocked ' + friendship.incoming_friend.username,
-    );
-  }
-
-  function unblockFriend(friendship: Friend): void {
-    callFriendsAPI('PATCH', friendship.incoming_friend, FriendAction.UNBLOCK);
-    changeFriend(
-      friendship.incoming_friend.id,
-      FriendStatus.BLOCKED,
-      FriendStatus.FRIENDS,
-    );
-    displayNotification(
-      'warning',
-      'Blocked ' + friendship.incoming_friend.username,
-    );
-  }
-
-  function removeFriend(friendship: Friend): void {
-    callFriendsAPI('DELETE', friendship.incoming_friend);
-    deleteFriend(friendship.incoming_friend.id);
-    emitToSocket(friendSocket, 'deleteRequest', friendship);
-    displayNotification(
-      'error',
-      'Unfriended ' + friendship.incoming_friend.username,
-    );
-  }
-
-  function handleAction(request: Friend, action: FriendAction): void {
-    switch (action) {
-      case FriendAction.ACCEPT:
-        return acceptFriendRequest(request);
-      case FriendAction.REJECT:
-        return rejectFriendRequest(request);
-      case FriendAction.REMOVE:
-        return removeFriendRequest(request);
-      case FriendAction.BLOCK: {
-        return displayConfirmation(
-          'Block ',
-          'You will not see ' +
-            request.incoming_friend.username +
-            "'s messages anymore!",
-          request,
-          blockFriend,
-        );
-      }
-      case FriendAction.UNBLOCK: {
-        return displayConfirmation(
-          'Unblock ',
-          'You will now see ' +
-            request.incoming_friend.username +
-            "'s messages!",
-          request,
-          unblockFriend,
-        );
-      }
-      case FriendAction.UNFRIEND: {
-        return displayConfirmation(
-          'Unfriend ',
-          'This action is permanent!',
-          request,
-          removeFriend,
-        );
+      if (userStatusA !== userStatusB) {
+        return sortOrder[userStatusA] - sortOrder[userStatusB];
       }
     }
+    return a.incoming_friend.username.localeCompare(b.incoming_friend.username);
   }
 
-  const categories = ['friends', 'pending', 'invited', 'blocked'];
-
   return (
-    <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
-      <FriendAddPrompt sendFriendRequest={sendFriendRequest} />
-      {categories.map((category, index) => (
-        <FriendDropdown
-          key={index}
-          category={category}
-          handleAction={handleAction}
-        />
-      ))}
-    </Stack>
+    <Collapse
+      in={
+        expand &&
+        friends.some((friend) => friend.status === category.toUpperCase())
+      }
+      timeout='auto'
+      unmountOnExit
+    >
+      <Stack
+        width='100%'
+        direction='column'
+        justifyContent='center'
+        spacing={1}
+      >
+        {friends
+          .filter((friend) => friend.status === category.toUpperCase())
+          .sort(sortFriends)
+          .map((friend, index) =>
+            category === 'friends' ? (
+              <Paper key={index} elevation={2}>
+                <ListItemButton
+                  selected={selectedFriend?.id === friend.id ?? false}
+                  onClick={() => setSelectedFriend(friend)}
+                >
+                  <FriendDisplay
+                    category={category}
+                    friend={friend}
+                    status={userStatus[friend.incoming_friend.id]}
+                    handleAction={handleAction}
+                  ></FriendDisplay>
+                </ListItemButton>
+              </Paper>
+            ) : (
+              <Paper key={index} elevation={2} sx={{ p: '8px 16px' }}>
+                <FriendDisplay
+                  category={category}
+                  friend={friend}
+                  handleAction={handleAction}
+                ></FriendDisplay>
+              </Paper>
+            ),
+          )}
+      </Stack>
+    </Collapse>
   );
 }

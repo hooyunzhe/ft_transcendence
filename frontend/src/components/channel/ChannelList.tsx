@@ -48,6 +48,7 @@ export function ChannelList() {
             channelName={channel.name}
             channelType={channel.type}
             channelHash={channel.hash}
+            isOwner={isChannelOwner(currentUser.id, channel.id)}
             currentChannelMember={getChannelMember(currentUser.id, channel.id)}
             selected={selectedChannel?.id === channel.id ?? false}
             selectCurrent={() => {
@@ -55,10 +56,11 @@ export function ChannelList() {
                 setSelectedChannel(undefined);
               } else {
                 setSelectedChannel(channel);
-                setCurrentView(View.CHAT);
+                if (selectedChannel === undefined) {
+                  setCurrentView(View.CHAT);
+                }
               }
             }}
-            isOwner={isChannelOwner(currentUser.id, channel.id)}
           />
         ))}
     </Stack>

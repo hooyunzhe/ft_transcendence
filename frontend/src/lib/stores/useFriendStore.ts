@@ -7,7 +7,7 @@ import callAPI from '../callAPI';
 interface FriendStore {
   data: {
     friends: Friend[];
-    selectedFriendID: number;
+    selectedFriend: Friend | undefined;
   };
   actions: {
     getFriendData: (userID: number) => void;
@@ -18,7 +18,7 @@ interface FriendStore {
       newStatus: FriendStatus,
     ) => void;
     deleteFriend: (incomingID: number) => void;
-    setSelectedFriendID: (friendID: number) => void;
+    setSelectedFriend: (friend: Friend) => void;
     setupFriendSocketEvents: (friendSocket: Socket) => void;
   };
 }
@@ -79,11 +79,11 @@ function deleteFriend(set: StoreSetter, incomingID: number): void {
   }));
 }
 
-function setSelectedFriendID(set: StoreSetter, friendID: number): void {
+function setSelectedFriend(set: StoreSetter, friend: Friend | undefined): void {
   set(({ data }) => ({
     data: {
       ...data,
-      selectedFriendID: friendID,
+      selectedFriend: friend,
     },
   }));
 }
@@ -102,20 +102,20 @@ function setupFriendSocketEvents(set: StoreSetter, friendSocket: Socket): void {
 }
 
 const useFriendStore = create<FriendStore>()((set) => ({
-  data: { friends: [], selectedFriendID: 0 },
+  data: { friends: [], selectedFriend: undefined },
   actions: {
     getFriendData: (userID) => getFriendData(set, userID),
     addFriend: (friend) => addFriend(set, friend),
     changeFriend: (incomingID, currentStatus, newStatus) =>
       changeFriend(set, incomingID, currentStatus, newStatus),
     deleteFriend: (incomingID) => deleteFriend(set, incomingID),
-    setSelectedFriendID: (friendID) => setSelectedFriendID(set, friendID),
+    setSelectedFriend: (friend) => setSelectedFriend(set, friend),
     setupFriendSocketEvents: (friendSocket) =>
       setupFriendSocketEvents(set, friendSocket),
   },
 }));
 
 export const useFriends = () => useFriendStore((state) => state.data.friends);
-export const useSelectedFriendID = () =>
-  useFriendStore((state) => state.data.selectedFriendID);
+export const useSelectedFriend = () =>
+  useFriendStore((state) => state.data.selectedFriend);
 export const useFriendActions = () => useFriendStore((state) => state.actions);

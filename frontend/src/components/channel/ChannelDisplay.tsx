@@ -38,10 +38,10 @@ export function ChannelDisplay({
   channelName,
   channelType,
   channelHash,
+  isOwner,
   currentChannelMember,
   selected,
   selectCurrent,
-  isOwner,
 }: ChannelDisplayProps) {
   const { kickChannelMember } = useChannelMemberActions();
   const { displayConfirmation } = useConfirmationActions();

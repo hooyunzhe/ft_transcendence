@@ -1,6 +1,6 @@
 'use client';
 import { Box, Drawer, Tab, Tabs } from '@mui/material';
-import FriendList from '../friend/FriendList';
+import FriendStack from '../friend/FriendStack';
 import { ChannelList } from '../channel/ChannelList';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -45,7 +45,7 @@ export default function SocialDrawer() {
         }}
         variant='persistent'
         anchor='left'
-        open={socialDrawerToggle}
+        open
       >
         <ListHeader title='Social' />
         <Tabs
@@ -59,7 +59,7 @@ export default function SocialDrawer() {
           <Tab label='Friends' />
           <Tab label='Channels' />
         </Tabs>
-        {selectedTab === 0 && <FriendList />}
+        {selectedTab === 0 && <FriendStack />}
         {selectedTab === 1 && <ChannelList />}
       </Drawer>
     </Box>

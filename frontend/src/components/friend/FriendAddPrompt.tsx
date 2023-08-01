@@ -1,18 +1,21 @@
 'use client';
 import { useState } from 'react';
 import DialogPrompt from '../utils/LegacyDialogPrompt';
-import { useFriends } from '@/lib/stores/useFriendStore';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
 import { User } from '@/types/UserTypes';
 import { Friend, FriendStatus } from '@/types/FriendTypes';
+import callAPI from '@/lib/callAPI';
+import emitToSocket from '@/lib/emitToSocket';
+import { useFriendSocket } from '@/lib/stores/useSocketStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
-interface FriendAddPromptProps {
-  sendFriendRequest: (user: User) => Promise<void>;
-}
-
-export default function FriendAddPrompt({
-  sendFriendRequest,
-}: FriendAddPromptProps) {
+export default function FriendAddPrompt() {
+  const currentUser = useCurrentUser();
   const friends = useFriends();
+  const { addFriend } = useFriendActions();
+  const friendSocket = useFriendSocket();
+  const { displayNotification } = useNotificationActions();
   const [username, setUsername] = useState('');
 
   async function getUserByName(name: string): Promise<User | null> {
@@ -44,8 +47,6 @@ export default function FriendAddPrompt({
         case FriendStatus.BLOCKED:
           return 'User already blocked';
       }
-    } else {
-      return 'No, you cannot add yourself smartie pants';
     }
     return '';
   }
@@ -59,7 +60,23 @@ export default function FriendAddPrompt({
     if (errorMessage) {
       return errorMessage;
     }
-    sendFriendRequest(userToAdd);
+    if (userToAdd.id === currentUser.id) {
+      return 'No, you cannot add yourself smartie pants';
+    }
+
+    const newRequests = JSON.parse(
+      await callAPI('POST', 'friends', {
+        outgoing_id: currentUser.id,
+        incoming_id: userToAdd.id,
+      }),
+    );
+
+    addFriend(newRequests[0]);
+    emitToSocket(friendSocket, 'newRequest', {
+      outgoing_request: newRequests[0],
+      incoming_request: newRequests[1],
+    });
+    displayNotification('success', 'Request sent');
     return '';
   }
 
