@@ -5,18 +5,49 @@ interface ConfirmationStore {
     required: boolean;
     title: string;
     description: string;
-    arg: any;
-    handleAction: (arg: any) => void;
+    args: any[];
+    handleAction: (...args: any[]) => void;
   };
   actions: {
     displayConfirmation: (
       title: string,
       description: string,
-      arg: any,
-      handleAction: (arg: any) => void,
+      args: any[],
+      handleAction: (...args: any[]) => void,
     ) => void;
     resetConfirmation: () => void;
   };
+}
+
+type StoreSetter = (
+  helper: (state: ConfirmationStore) => Partial<ConfirmationStore>,
+) => void;
+
+function displayConfirmation(
+  set: StoreSetter,
+  title: string,
+  description: string,
+  args: any[],
+  handleAction: (...args: any[]) => void,
+): void {
+  set(({}) => ({
+    data: {
+      required: true,
+      title,
+      description,
+      args,
+      handleAction,
+    },
+  }));
+}
+
+function resetConfirmation(set: StoreSetter): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      required: false,
+    },
+  }));
 }
 
 const useConfirmationStore = create<ConfirmationStore>()((set) => ({
@@ -24,22 +55,13 @@ const useConfirmationStore = create<ConfirmationStore>()((set) => ({
     required: false,
     title: '',
     description: '',
-    arg: null,
+    args: [],
     handleAction: () => null,
   },
   actions: {
-    displayConfirmation: (title, description, arg, handleAction) =>
-      set({ data: { required: true, title, description, arg, handleAction } }),
-    resetConfirmation: () =>
-      set({
-        data: {
-          required: false,
-          title: '',
-          description: '',
-          arg: null,
-          handleAction: () => null,
-        },
-      }),
+    displayConfirmation: (title, description, args, handleAction) =>
+      displayConfirmation(set, title, description, args, handleAction),
+    resetConfirmation: () => resetConfirmation(set),
   },
 }));
 

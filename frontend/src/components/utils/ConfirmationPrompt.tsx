@@ -6,31 +6,34 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
+import {
+  useConfirmation,
+  useConfirmationActions,
+} from '@/lib/stores/useConfirmationStore';
 
-interface ConfirmationPromptProps {
-  open: boolean;
-  onCloseHandler: () => void;
-  promptTitle: string;
-  promptDescription: string;
-  handleAction: () => void;
-}
+export default function ConfirmationPrompt() {
+  const confirmation = useConfirmation();
+  const { resetConfirmation } = useConfirmationActions();
 
-export default function ConfirmationPrompt({
-  open,
-  onCloseHandler,
-  promptTitle,
-  promptDescription,
-  handleAction,
-}: ConfirmationPromptProps) {
+  function handleConfirmation() {
+    confirmation.handleAction(confirmation.args);
+    resetConfirmation();
+  }
+
   return (
-    <Dialog open={open} onClose={onCloseHandler} maxWidth='xs' fullWidth>
-      <DialogTitle>{promptTitle}</DialogTitle>
+    <Dialog
+      open={confirmation.required}
+      onClose={resetConfirmation}
+      maxWidth='xs'
+      fullWidth
+    >
+      <DialogTitle>{confirmation.title}</DialogTitle>
       <DialogContent>
-        <DialogContentText>{promptDescription}</DialogContentText>
+        <DialogContentText>{confirmation.description}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCloseHandler}>No</Button>
-        <Button onClick={handleAction}>Yes</Button>
+        <Button onClick={resetConfirmation}>No</Button>
+        <Button onClick={handleConfirmation}>Yes</Button>
       </DialogActions>
     </Dialog>
   );

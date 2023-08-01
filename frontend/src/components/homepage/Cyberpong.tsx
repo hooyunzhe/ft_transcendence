@@ -10,14 +10,7 @@ import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import { useEffect } from 'react';
 import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import NotificationBar from '../utils/NotificationBar';
-import {
-  useConfirmation,
-  useConfirmationActions,
-} from '@/lib/stores/useConfirmationStore';
-import {
-  useNotification,
-  useNotificationActions,
-} from '@/lib/stores/useNotificationStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { Box } from '@mui/material';
 import {
   useChannelActions,
@@ -43,11 +36,7 @@ export default function Cyberpong() {
     useChannelMemberActions();
   const joinedChannels = useJoinedChannels();
   const { getChatData, setupChatSocketEvents } = useChatActions();
-  const confirmation = useConfirmation();
-  const { resetConfirmation } = useConfirmationActions();
-  const notification = useNotification();
-  const { resetNotification, setupNotificationSocketEvents } =
-    useNotificationActions();
+  const { setupNotificationSocketEvents } = useNotificationActions();
 
   useEffect(() => {
     initSockets(currentUser.id);
@@ -115,22 +104,8 @@ export default function Cyberpong() {
     >
       <NavigationHeader />
       <MainArea />
-      <ConfirmationPrompt
-        open={confirmation.required}
-        onCloseHandler={resetConfirmation}
-        promptTitle={confirmation.title}
-        promptDescription={confirmation.description}
-        handleAction={() => {
-          confirmation.handleAction(confirmation.arg);
-          resetConfirmation();
-        }}
-      />
-      <NotificationBar
-        display={notification.display}
-        level={notification.level}
-        message={notification.message}
-        onCloseHandler={resetNotification}
-      />
+      <ConfirmationPrompt />
+      <NotificationBar />
     </Box>
   );
 }

@@ -16,18 +16,20 @@ interface NotificationStore {
   };
 }
 
-type StoreSetter = (partialState: Partial<NotificationStore>) => void;
+type StoreSetter = (
+  helper: (state: NotificationStore) => Partial<NotificationStore>,
+) => void;
 
 function displayNotification(
   set: StoreSetter,
   level: AlertColor,
   message: string,
 ): void {
-  set({ data: { display: true, level, message } });
+  set(({}) => ({ data: { display: true, level, message } }));
 }
 
 function resetNotification(set: StoreSetter): void {
-  set({ data: { display: false, level: 'success', message: '' } });
+  set(({ data }) => ({ data: { ...data, display: false } }));
 }
 
 function setupNotificationSocketEvents(

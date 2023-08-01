@@ -9,7 +9,7 @@ import {
   TextField,
 } from '@mui/material';
 import { ReactNode, useState } from 'react';
-import NotificationBar from './NotificationBar';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 interface DialogPromptProps {
   disableText?: boolean;
@@ -46,8 +46,7 @@ export default function DialogPrompt({
 }: DialogPromptProps) {
   const [open, setOpen] = useState(false);
   const [emptyError, setEmptyError] = useState(false);
-  const [actionError, setActionError] = useState(false);
-  const [actionErrorMessage, setActionErrorMessage] = useState('');
+  const { displayNotification } = useNotificationActions();
 
   return (
     <>
@@ -109,8 +108,7 @@ export default function DialogPrompt({
             onClick={() => {
               handleAction().then((errorMessage) => {
                 if (errorMessage) {
-                  setActionError(true);
-                  setActionErrorMessage(errorMessage);
+                  displayNotification('error', errorMessage);
                 } else if (actionButtonText !== 'Next') {
                   setOpen(false);
                   resetAltOpen && resetAltOpen();
@@ -122,14 +120,6 @@ export default function DialogPrompt({
           </Button>
         </DialogActions>
       </Dialog>
-      <NotificationBar
-        display={actionError}
-        level={'error'}
-        message={actionErrorMessage}
-        onCloseHandler={() => {
-          setActionError(false);
-        }}
-      ></NotificationBar>
     </>
   );
 }

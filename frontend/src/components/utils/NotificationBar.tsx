@@ -1,30 +1,29 @@
-import { Alert, AlertColor, Snackbar } from '@mui/material';
+import {
+  useNotification,
+  useNotificationActions,
+} from '@/lib/stores/useNotificationStore';
+import { Alert, Snackbar } from '@mui/material';
 
-interface NotificationBarProps {
-  display: boolean;
-  level: AlertColor;
-  message: string;
-  onCloseHandler: () => void;
-}
+export default function NotificationBar() {
+  const notification = useNotification();
+  const { resetNotification } = useNotificationActions();
 
-export default function NotificationBar({
-  display,
-  level,
-  message,
-  onCloseHandler,
-}: NotificationBarProps) {
   return (
     <Snackbar
-      open={display}
-      autoHideDuration={6000}
+      open={notification.display}
+      autoHideDuration={3000}
       onClose={(event, reason) => {
         if (reason !== 'clickaway') {
-          onCloseHandler();
+          resetNotification();
         }
       }}
     >
-      <Alert onClose={onCloseHandler} severity={level} variant='filled'>
-        {message}
+      <Alert
+        onClose={resetNotification}
+        severity={notification.level}
+        variant='filled'
+      >
+        {notification.message}
       </Alert>
     </Snackbar>
   );
