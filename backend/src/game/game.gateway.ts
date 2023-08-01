@@ -9,7 +9,7 @@ import {
 } from '@nestjs/websockets';
 
 import { RemoteSocket, Server, Socket } from 'socket.io';
-import { GameService } from './game.service';
+import { GameService, classSkill, playerClass } from './game.service';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 @WebSocketGateway({
@@ -61,14 +61,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     clients[1].data.player = 2;
     console.log('event: createroom: ', uniquekey);
     this.roomlist.set(uniquekey, new GameService(uniquekey, this.server));
-    console.log('room size : ', this.roomlist.size);
+    // console.log('room size : ', this.roomlist.size);
   }
 
   @SubscribeMessage('ready')
-  async start(@ConnectedSocket() client: Socket) {
+  async start(@ConnectedSocket() client: Socket, @MessageBody() skillState: classSkill) {
     const players = await this.fetchPlayer(client.data.roomid);
     if (players.length != 2) return;
     client.data.ready = !client.data.ready;
+    if (client.data.ready)
+      client.data.playerclass = new playerClass(skillState);
     console.log(
       'client uid: ',
       client.data.id,
@@ -78,6 +80,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (players.every((player) => player.data.ready)) {
       players.forEach((player) => player.emit('start'));
       console.log('Game is starting in room :', client.data.roomid);
+      this.roomlist.get(client.data.roomid).gameInitalizePlayerStats(players[0].data.playerclass,players[1].data.playerclass);
       this.roomlist.get(client.data.roomid).gameStart();
     }
   }

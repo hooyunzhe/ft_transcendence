@@ -5,7 +5,7 @@ interface Coor {
   x: number;
   y: number;
 }
-interface classSkill {
+export interface classSkill {
   Str: Array<Array<boolean>>;
   Agi: Array<Array<boolean>>;
   Int: Array<Array<boolean>>;
@@ -44,7 +44,7 @@ class RectObj {
   velocityY: number;
 }
 
-class playerClass {
+export class playerClass {
   selfBallSpeedMult: number = 1;
   oppBallSpeedMult: number = 1;
   selfPaddleSpeedMult: number = 1;
@@ -66,62 +66,33 @@ class playerClass {
   private classSkill: classSkill;
   paddle: RectObj;
   private height_multiplier: number = 1;
-  constructor(classSkill: classSkill,x: number, y: number) {
-    this.classSkill = classSkill;
-    this.paddle = new RectObj(x, y, 10, 80 * this.height_multiplier);
+  constructor(classSkill: classSkill) {
+    if (classSkill.Str[0][0])
+      this.selfBallSpeedMult = 1.2;
+    if (classSkill.Str[1][0])
+      this.selfPaddleSizeMult = 1.2;
+    if (classSkill.Str[2][0])
+      this.stickyPaddleOn = true;
+    if (classSkill.Str[2][1])
+      this.strongHitOn = true;
+    if (classSkill.Agi[0][0])
+      this.selfPaddleSizeMult = 1.2;
+    if (classSkill.Agi[1][0])
+      this.oppBallSpeedMult = 0.8;
+    if (classSkill.Agi[2][0])
+      this.extraPaddleOn = true;
+    if (classSkill.Agi[2][1])
+      this.slowtimeOn = true;
+    if (classSkill.Int[0][0])
+      this.oppPaddleSpeedMult = 0.8;
+    if (classSkill.Int[1][0])
+      this.cooldownReduction = 0.8
+    if (classSkill.Int[2][0])
+      this.paddleAssistOn = true;
+    if (classSkill.Int[2][1])
+      this.invertBallOn = true;;
   }
   
-  
-  enlargePaddle(){
-
-  }
-  ballAccelerate(){
-
-  }
-  IncreasePaddleSpeed(){
-
-  }
-
-  ballDecelerate() {
-
-  }
-
-  reduceCooldown (){
-
-  }
-  
-  decreasePaddleSpeed(){
-
-  }
-
-  stickyPaddle()
-  {
-
-  }
-  strongHit()
-  {
-
-  }
-
-  paddleAssist()
-  {
-
-  }
-
-  slowTime()
-  {
-
-  }
-
-  invertPaddle()
-  {
-
-  }
-
-  invertBallDirection()
-  {
-    
-  }
 }
 export class GameService {
   windowSize: Coor;
@@ -132,6 +103,7 @@ export class GameService {
   Paddle1: RectObj;
   Paddle2: RectObj;
   velocity: number;
+  speedMult: number;
   score: { player1: number; player2: number };
   roomid: string;
   server: Server;
@@ -139,7 +111,7 @@ export class GameService {
 
   refreshMilisec: number = 16;
 
-  constructor(roomid: string, server: Server, player1: playerClass, player2: playerClass) {
+  constructor(roomid: string, server: Server) {
     this.windowSize = {
       x: 800,
       y: 600,
@@ -155,6 +127,7 @@ export class GameService {
       40,
     );
     this.velocity = 7;
+    this.speedMult = 1;
     this.score = {
       player1: 0,
       player2: 0,
@@ -229,10 +202,14 @@ export class GameService {
     if (this.Ball.left() > this.windowSize.x) {
       this.gameHandleVictory(1);
     }
-    if (
-      (this.gameCollision(this.Ball, this.Paddle1) && this.direction.x < 0) ||
-      (this.gameCollision(this.Ball, this.Paddle2) && this.direction.x > 0)
-    ) {
+    if (this.gameCollision(this.Ball, this.Paddle1) && this.direction.x < 0)
+    {
+     this.speedMult = (1 + (this.Player1.selfBallSpeedMult - this.Player2.oppBallSpeedMult));
+      this.direction.x *= -1;
+    }
+    if (this.gameCollision(this.Ball, this.Paddle2) && this.direction.x > 0)
+    {
+      this.speedMult = (1 + (this.Player2.selfBallSpeedMult - this.Player1.oppBallSpeedMult));
       this.direction.x *= -1;
     }
     this.server.to(this.roomid).emit('game', {
@@ -251,6 +228,9 @@ export class GameService {
     });
   }
 
+  gameInitalizePlayerStats(Player1: playerClass, Player2: playerClass){
+
+  }
   gameUpdate() {
     this.intervalID = setInterval(() => {
       this.gameRefresh();
