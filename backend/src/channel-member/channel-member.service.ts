@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityNotFoundError, Repository } from 'typeorm';
 import {
   ChannelMember,
+  ChannelMemberRole,
   ChannelMemberStatus,
 } from './entities/channel-member.entity';
 import { ChannelService } from 'src/channel/channel.service';
@@ -59,6 +60,20 @@ export class ChannelMemberService {
       );
     }
 
+    if (channelMemberDto.role === ChannelMemberRole.OWNER) {
+      const members = await this.findMembersInChannel(channelFound.id);
+      const channelHasOwner = members.some(
+        (member) => member.role === ChannelMemberRole.OWNER,
+      );
+
+      if (channelHasOwner) {
+        throw new EntityAlreadyExistsError(
+          'ChannelMember',
+          'channel_id = ' + channelFound.id + ' & channel_role = OWNER',
+        );
+      }
+    }
+
     const newChannelMember = this.channelMemberRepository.create({
       channel: channelFound,
       user: userFound,
@@ -83,16 +98,16 @@ export class ChannelMemberService {
   async findMembersInChannel(channel_id: number): Promise<ChannelMember[]> {
     const channelFound = await this.channelService.findOne(channel_id, false);
 
-    return await this.channelMemberRepository.find({
-      where: { channel: channelFound },
+    return await this.channelMemberRepository.findBy({
+      channel: { id: channelFound.id },
     });
   }
 
   async findChannelsOfUser(user_id: number): Promise<ChannelMember[]> {
     const userFound = await this.userService.findOne(user_id, false);
 
-    return await this.channelMemberRepository.find({
-      where: { user: { id: userFound.id } },
+    return await this.channelMemberRepository.findBy({
+      user: { id: userFound.id },
     });
   }
 
