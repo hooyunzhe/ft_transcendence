@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityNotFoundError, ILike, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -120,6 +120,16 @@ export class ChannelService {
   }
 
   async update(channelDto: UpdateChannelDto): Promise<void> {
+    const authorized = await this.authorize(
+      channelDto.id,
+      channelDto.oldPass,
+      '',
+    );
+
+    if (!authorized) {
+      throw new ForbiddenException();
+    }
+
     await this.channelsRepository.update(channelDto.id, {
       ...(channelDto.name && { name: channelDto.name }),
       ...(channelDto.type && { type: channelDto.type }),
