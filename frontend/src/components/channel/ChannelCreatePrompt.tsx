@@ -17,18 +17,23 @@ import {
 } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import emitToSocket from '@/lib/emitToSocket';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
 
 export default function ChannelCreatePrompt() {
   const currentUser = useCurrentUser();
   const { addChannel, addJoinedChannel } = useChannelActions();
   const { checkChannelExists, checkChannelJoined } = useChannelChecks();
+  const { addChannelMember } = useChannelMemberActions();
+  const { displayNotification } = useNotificationActions();
+  const channelSocket = useChannelSocket();
   const [channelName, setChannelName] = useState('');
   const [channelType, setChannelType] = useState<ChannelType>(
     ChannelType.PUBLIC,
   );
   const [channelPass, setChannelPass] = useState('');
   const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
-  const { addChannelMember } = useChannelMemberActions();
 
   function resetDisplay() {
     setDisplayPasswordPrompt(false);
@@ -51,6 +56,7 @@ export default function ChannelCreatePrompt() {
 
     if (newChannel) {
       addChannel(newChannel);
+      emitToSocket(channelSocket, 'newChannel', newChannel);
 
       const channelCreator = JSON.parse(
         await callAPI('POST', 'channel-members', {
@@ -64,6 +70,7 @@ export default function ChannelCreatePrompt() {
       if (channelCreator) {
         addJoinedChannel(newChannel.id);
         addChannelMember(channelCreator);
+        displayNotification('success', 'Channel created');
         return '';
       } else {
         return 'FATAL ERROR: FAILED TO ADD MEMBER TO NEW CHANNEL IN BACKEND';

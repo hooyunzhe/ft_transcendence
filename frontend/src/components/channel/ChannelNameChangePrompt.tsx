@@ -5,6 +5,7 @@ import { useState } from 'react';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 interface ChannelNameChangeProps {
   channelID: number;
@@ -14,6 +15,7 @@ export default function ChannelNameChangePrompt({
   channelID,
 }: ChannelNameChangeProps) {
   const { changeChannelName } = useChannelActions();
+  const { displayNotification } = useNotificationActions();
   const [input, setInput] = useState('');
   const channelSocket = useChannelSocket();
 
@@ -25,6 +27,7 @@ export default function ChannelNameChangePrompt({
     await callAPI('PATCH', 'channels', data);
     changeChannelName(channelID, newName);
     emitToSocket(channelSocket, 'changeChannelName', data);
+    displayNotification('success', 'Channel name changed');
   }
 
   return (

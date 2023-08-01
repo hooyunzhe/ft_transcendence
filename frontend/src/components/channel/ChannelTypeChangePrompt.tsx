@@ -12,6 +12,7 @@ import { useChannelActions } from '@/lib/stores/useChannelStore';
 import callAPI from '@/lib/callAPI';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import emitToSocket from '@/lib/emitToSocket';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 interface ChannelTypeChangeProps {
   channelID: number;
@@ -23,9 +24,10 @@ export default function ChannelTypeChangePrompt({
   channelType,
 }: ChannelTypeChangeProps) {
   const { changeChannelType, changeChannelHash } = useChannelActions();
+  const { displayNotification } = useNotificationActions();
+  const channelSocket = useChannelSocket();
   const [input, setInput] = useState('');
   const [selectedChannelType, setSelectedChannelType] = useState(channelType);
-  const channelSocket = useChannelSocket();
 
   async function changeType(
     channelID: number,
@@ -49,6 +51,7 @@ export default function ChannelTypeChangePrompt({
       changeChannelHash(channelID, updatedChannel.hash);
     }
     emitToSocket(channelSocket, 'changeChannelType', data);
+    displayNotification('success', 'Channel type changed');
   }
 
   return (

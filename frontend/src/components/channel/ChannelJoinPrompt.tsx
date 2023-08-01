@@ -13,18 +13,22 @@ import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
 import callAPI from '@/lib/callAPI';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import emitToSocket from '@/lib/emitToSocket';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
 
 export default function ChannelJoinPrompt() {
+  const currentUser = useCurrentUser();
   const channels = useChannels();
   const joinedChannels = useJoinedChannels();
   const { addJoinedChannel } = useChannelActions();
-  const { addChannelMember } = useChannelMemberActions();
+  const { addChannelMember, getChannelMember } = useChannelMemberActions();
+  const { displayNotification } = useNotificationActions();
+  const channelSocket = useChannelSocket();
   const [channelSearch, setChannelSearch] = useState('');
   const [selectedChannel, setSelectedChannel] = useState<Channel | undefined>();
   const [channelPass, setChannelPass] = useState('');
   const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
-  const currentUser = useCurrentUser();
-  const { getChannelMember } = useChannelMemberActions();
 
   function resetDisplay() {
     setDisplayPasswordPrompt(false);
@@ -47,9 +51,13 @@ export default function ChannelJoinPrompt() {
         }),
       );
 
-      if (joiningChannelMember.statusCode === 403) return 'Incorrect password';
+      if (joiningChannelMember.statusCode === 403) {
+        return 'Incorrect password';
+      }
       addJoinedChannel(selectedChannel.id);
       addChannelMember(joiningChannelMember);
+      emitToSocket(channelSocket, 'newMember', joiningChannelMember);
+      displayNotification('success', 'Channel joined');
       return '';
     } else {
       return 'FATAL ERROR: FAILED TO JOINED DUE TO MISSING SELECTED CHANNEL';

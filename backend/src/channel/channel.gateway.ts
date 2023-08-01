@@ -78,13 +78,13 @@ export class ChannelGateway implements OnGatewayConnection {
 
   @SubscribeMessage('deleteChannel')
   deleteChannel(
-    @MessageBody() data: Channel,
+    @MessageBody() data: number,
     @ConnectedSocket() client: Socket,
   ) {
     client
-      .to([String(data.id), String(client.data.user_id)])
+      .to([String(data), String(client.data.user_id)])
       .emit('deleteChannel', data);
-    client.leave(String(data.id));
+    client.leave(String(data));
   }
 
   @SubscribeMessage('newMember')

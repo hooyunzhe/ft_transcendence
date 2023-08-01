@@ -48,6 +48,7 @@ export function ChannelMemberList() {
 
     addChannelMember(newChannelMember);
     emitToSocket(channelSocket, 'addMember', newChannelMember);
+    displayNotification('success', 'Channel member added');
     return '';
   }
 
@@ -55,6 +56,7 @@ export function ChannelMemberList() {
     callAPI('DELETE', 'channel-members', { id: member.id });
     kickChannelMember(member.id);
     emitToSocket(channelSocket, 'kickMember', member);
+    displayNotification('success', 'Channel member kicked');
     return '';
   }
 
@@ -70,6 +72,7 @@ export function ChannelMemberList() {
       newRole: ChannelMemberRole.ADMIN,
     };
     emitToSocket(channelSocket, 'changeRole', data);
+    displayNotification('success', 'Channel member is now an admin');
   }
 
   async function changeToMember(member: ChannelMembers) {
@@ -84,6 +87,7 @@ export function ChannelMemberList() {
       newRole: ChannelMemberRole.MEMBER,
     };
     emitToSocket(channelSocket, 'changeRole', data);
+    displayNotification('success', 'Channel member is now a member');
   }
 
   async function unmuteMember(member: ChannelMembers) {
@@ -99,6 +103,7 @@ export function ChannelMemberList() {
       newStatus: ChannelMemberStatus.DEFAULT,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
+    displayNotification('success', 'Channel member unmuted');
   }
 
   async function muteMember(member: ChannelMembers, duration?: Date) {
@@ -114,6 +119,7 @@ export function ChannelMemberList() {
       newStatus: ChannelMemberStatus.MUTED,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
+    displayNotification('success', 'Channel member muted');
   }
 
   async function banMember(member: ChannelMembers) {
@@ -129,6 +135,7 @@ export function ChannelMemberList() {
       newStatus: ChannelMemberStatus.BANNED,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
+    displayNotification('success', 'Channel member banned');
   }
 
   async function changeOwnership(member: ChannelMembers) {
@@ -154,6 +161,7 @@ export function ChannelMemberList() {
       newRole: ChannelMemberRole.ADMIN,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
+    displayNotification('success', 'Channel ownership transferred');
   }
 
   // * Action handlers that are passed into components * //

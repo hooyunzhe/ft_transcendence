@@ -230,8 +230,8 @@ function setupChannelSocketEvents(
     channelSocket.emit('joinRoom', channel.id);
     addJoinedChannel(set, channel.id);
   });
-  channelSocket.on('deleteChannel', (channel: Channel) =>
-    deleteChannel(set, channel.id),
+  channelSocket.on('deleteChannel', (channelID: number) =>
+    deleteChannel(set, channelID),
   );
   channelSocket.on(
     'changeChannelName',
@@ -250,26 +250,8 @@ function setupChannelSocketEvents(
       newPass?: string;
     }) => {
       changeChannelType(set, id, newType);
-      if (newType == ChannelType.PROTECTED && newPass)
+      if (newType === ChannelType.PROTECTED && newPass)
         changeChannelHash(set, id, newPass);
-    },
-  );
-
-  channelSocket.on('newChannel', (data: Channel) => addChannel(set, data));
-  channelSocket.on('deleteChannel', (data: Channel) =>
-    deleteChannel(set, data.id),
-  );
-  channelSocket.on(
-    'changeChannelName',
-    (data: { id: number; newName: string }) =>
-      changeChannelName(set, data.id, data.newName),
-  );
-  channelSocket.on(
-    'changeChannelType',
-    (data: { id: number; newType: ChannelType; newPass?: string }) => {
-      changeChannelType(set, data.id, data.newType);
-      if (data.newType == ChannelType.PROTECTED && data.newPass)
-        changeChannelHash(set, data.id, data.newPass);
     },
   );
 }

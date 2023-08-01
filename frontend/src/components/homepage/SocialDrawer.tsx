@@ -45,7 +45,7 @@ export default function SocialDrawer() {
         }}
         variant='persistent'
         anchor='left'
-        open
+        open={socialDrawerToggle}
       >
         <ListHeader title='Social' />
         <Tabs
