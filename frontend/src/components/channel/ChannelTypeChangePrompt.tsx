@@ -5,7 +5,7 @@ import {
   Radio,
   RadioGroup,
 } from '@mui/material';
-import DialogPrompt from '../utils/DialogPrompt';
+import DialogPrompt from '../utils/LegacyDialogPrompt';
 import { useState } from 'react';
 import { ChannelType } from '@/types/ChannelTypes';
 import { useChannelActions } from '@/lib/stores/useChannelStore';

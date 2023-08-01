@@ -4,7 +4,7 @@ import {
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
 import { useState } from 'react';
-import DialogPrompt from '../utils/DialogPrompt';
+import DialogPrompt from '../utils/LegacyDialogPrompt';
 import BanListDisplay from './ChannelMemberBanListDisplay';
 import { Stack } from '@mui/material';
 import callAPI from '@/lib/callAPI';

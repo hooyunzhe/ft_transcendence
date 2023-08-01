@@ -1,5 +1,5 @@
 'use client';
-import { Box, Drawer, Tab, Tabs } from '@mui/material';
+import { Box, Drawer } from '@mui/material';
 import Image from 'next/image';
 import { ChannelMemberList } from '../channel-member/ChannelMemberList';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';

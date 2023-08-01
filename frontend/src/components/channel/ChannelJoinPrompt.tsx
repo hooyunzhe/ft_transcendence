@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import DialogPrompt from '../utils/DialogPrompt';
+import DialogPrompt from '../utils/LegacyDialogPrompt';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { Stack } from '@mui/material';
 import { ChannelDisplay } from './ChannelDisplay';
@@ -38,18 +38,18 @@ export default function ChannelJoinPrompt() {
 
   async function joinChannel(): Promise<string> {
     if (selectedChannel) {
-      const joiningChannelMember = await callAPI('POST', 'channel-members', {
-        channel_id: selectedChannel.id,
-        user_id: currentUser.id,
-        role: ChannelMemberRole.MEMBER,
-        pass: channelPass,
-      });
+      const joiningChannelMember = JSON.parse(
+        await callAPI('POST', 'channel-members', {
+          channel_id: selectedChannel.id,
+          user_id: currentUser.id,
+          role: ChannelMemberRole.MEMBER,
+          pass: channelPass,
+        }),
+      );
 
-      if (!joiningChannelMember) {
-        return 'Incorrect password';
-      }
+      if (joiningChannelMember.statusCode === 403) return 'Incorrect password';
       addJoinedChannel(selectedChannel.id);
-      addChannelMember(JSON.parse(joiningChannelMember));
+      addChannelMember(joiningChannelMember);
       return '';
     } else {
       return 'FATAL ERROR: FAILED TO JOINED DUE TO MISSING SELECTED CHANNEL';

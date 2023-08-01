@@ -1,6 +1,6 @@
 'use client';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
-import DialogPrompt from '../utils/DialogPrompt';
+import DialogPrompt from '../utils/LegacyDialogPrompt';
 import { useState } from 'react';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';

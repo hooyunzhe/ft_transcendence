@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import DialogPrompt from '../utils/DialogPrompt';
+import DialogPrompt from '../utils/LegacyDialogPrompt';
 import { useFriends } from '@/lib/stores/useFriendStore';
 import { User } from '@/types/UserTypes';
 import { Friend, FriendStatus } from '@/types/FriendTypes';
@@ -44,6 +44,8 @@ export default function FriendAddPrompt({
         case FriendStatus.BLOCKED:
           return 'User already blocked';
       }
+    } else {
+      return 'No, you cannot add yourself smartie pants';
     }
     return '';
   }

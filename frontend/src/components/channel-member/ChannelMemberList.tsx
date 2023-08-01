@@ -18,6 +18,7 @@ import {
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import emitToSocket from '@/lib/emitToSocket';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 export function ChannelMemberList() {
   const channelMembers = useChannelMembers();
@@ -30,6 +31,7 @@ export function ChannelMemberList() {
   const channelSocket = useChannelSocket();
   const selectedChannel = useSelectedChannel();
   const { displayConfirmation } = useConfirmationActions();
+  const { displayNotification } = useNotificationActions();
 
   // * Helper Function for update locals * //
 

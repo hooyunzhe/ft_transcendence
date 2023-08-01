@@ -7,7 +7,7 @@ import {
   Radio,
   RadioGroup,
 } from '@mui/material';
-import DialogPrompt from '../utils/DialogPrompt';
+import DialogPrompt from '../utils/LegacyDialogPrompt';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import callAPI from '@/lib/callAPI';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
@@ -43,7 +43,7 @@ export default function ChannelCreatePrompt() {
   async function createChannel(): Promise<string> {
     const newChannel: Channel = JSON.parse(
       await callAPI('POST', 'channels', {
-        name: channelName,
+        name: channelName.trim(),
         type: channelType,
         pass: channelPass,
       }),
@@ -74,10 +74,10 @@ export default function ChannelCreatePrompt() {
   }
 
   async function handleCreateChannelAction(): Promise<string> {
-    if (checkChannelExists(channelName)) {
+    if (checkChannelExists(channelName.trim())) {
       return 'Channel already exists';
     }
-    if (checkChannelJoined(channelName)) {
+    if (checkChannelJoined(channelName.trim())) {
       return 'Already in channel';
     }
     if (channelType === ChannelType.PROTECTED) {

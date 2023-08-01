@@ -5,14 +5,14 @@ interface ConfirmationStore {
     required: boolean;
     title: string;
     description: string;
-    args: any[];
+    args: any;
     handleAction: (...args: any[]) => void;
   };
   actions: {
     displayConfirmation: (
       title: string,
       description: string,
-      args: any[],
+      args: any,
       handleAction: (...args: any[]) => void,
     ) => void;
     resetConfirmation: () => void;

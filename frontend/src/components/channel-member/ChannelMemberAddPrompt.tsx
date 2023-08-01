@@ -2,7 +2,7 @@
 import { Friend } from '@/types/FriendTypes';
 import { Stack } from '@mui/system';
 import { useState } from 'react';
-import DialogPrompt from '../utils/DialogPrompt';
+import DialogPrompt from '../utils/LegacyDialogPrompt';
 import FriendDisplay from './ChannelMemberFriendDisplay';
 import { useChannelMembers } from '@/lib/stores/useChannelMemberStore';
 import { useFriends } from '@/lib/stores/useFriendStore';
