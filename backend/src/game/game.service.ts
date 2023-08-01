@@ -45,6 +45,24 @@ class RectObj {
 }
 
 class playerClass {
+  selfBallSpeedMult: number = 1;
+  oppBallSpeedMult: number = 1;
+  selfPaddleSpeedMult: number = 1;
+  oppPaddleSpeedMult: number = 1;
+  selfPaddleSizeMult: number = 1;
+  cooldownReduction: number = 1;
+  stickyPaddleOn: boolean = false;
+  extraPaddleOn: boolean = false;
+  paddleAssistOn: boolean = false;
+  //active
+
+  strongHitOn: boolean = false;
+  splitBallOn: boolean =false;
+  slowtimeOn: boolean = false;
+  fasttimeOn: boolean = false;
+  invertPaddleOn: boolean = false;
+  invertBallOn: boolean = false;
+
   private classSkill: classSkill;
   paddle: RectObj;
   private height_multiplier: number = 1;
