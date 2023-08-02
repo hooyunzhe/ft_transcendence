@@ -14,9 +14,11 @@ import {
   useChannelMemberActions,
   useChannelMemberChecks,
 } from '@/lib/stores/useChannelMemberStore';
+import { useFriendActions } from '@/lib/stores/useFriendStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
+import { ChannelType } from '@/types/ChannelTypes';
 
 export function ChannelList() {
   const currentUser = useCurrentUser();
@@ -25,6 +27,7 @@ export function ChannelList() {
   const recentChannelActivity = useRecentChannelActivity();
   const selectedChannel = useSelectedChannel();
   const { setSelectedChannel } = useChannelActions();
+  const { setSelectedFriend } = useFriendActions();
   const { isChannelOwner } = useChannelMemberChecks();
   const { getChannelMember } = useChannelMemberActions();
   const { setCurrentView } = useUtilActions();
@@ -34,7 +37,10 @@ export function ChannelList() {
       <ChannelCreatePrompt />
       <ChannelJoinPrompt />
       {channels
-        .filter((channel) => joinedChannels[channel.id])
+        .filter(
+          (channel) =>
+            joinedChannels[channel.id] && channel.type !== ChannelType.DIRECT,
+        )
         .sort((channelA, channelB) => {
           return (
             recentChannelActivity[channelB.id] -
@@ -59,6 +65,7 @@ export function ChannelList() {
                 if (selectedChannel === undefined) {
                   setCurrentView(View.CHAT);
                 }
+                setSelectedFriend(undefined);
               }
             }}
           />

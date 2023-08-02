@@ -8,14 +8,19 @@ import {
   useChannelActions,
   useSelectedChannel,
 } from '@/lib/stores/useChannelStore';
+import { useSelectedFriend } from '@/lib/stores/useFriendStore';
+import { useCurrentSocialTab } from '@/lib/stores/useUtilStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useChatActions } from '@/lib/stores/useChatStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import { MessageType } from '@/types/MessageTypes';
+import { ChannelType } from '@/types/ChannelTypes';
 
 export default function ChatBar() {
   const currentUser = useCurrentUser();
   const selectedChannel = useSelectedChannel();
+  const selectedFriend = useSelectedFriend();
+  const currentSocialTab = useCurrentSocialTab();
   const { getChannelMember } = useChannelMemberActions();
   const { addMessage } = useChatActions();
   const { updateRecentChannelActivity } = useChannelActions();
@@ -116,8 +121,11 @@ export default function ChatBar() {
       }
       label={
         selectedChannel
-          ? 'Message ' + selectedChannel.name
-          : 'Select a channel to start messaging'
+          ? 'Message ' +
+            (selectedChannel.type === ChannelType.DIRECT
+              ? selectedFriend?.incoming_friend.username
+              : selectedChannel.name)
+          : `Select a ${currentSocialTab.toLowerCase()} to start messaging`
       }
       variant='filled'
       color='secondary'

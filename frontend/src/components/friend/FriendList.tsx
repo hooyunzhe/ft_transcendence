@@ -6,9 +6,15 @@ import {
   useFriends,
   useSelectedFriend,
 } from '@/lib/stores/useFriendStore';
+import {
+  useChannelActions,
+  useSelectedChannel,
+} from '@/lib/stores/useChannelStore';
 import { useUserStatus } from '@/lib/stores/useUserStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { Friend, FriendAction } from '@/types/FriendTypes';
 import { UserStatus } from '@/types/UserTypes';
+import { View } from '@/types/UtilTypes';
 
 interface FriendListProps {
   expand: boolean;
@@ -23,7 +29,10 @@ export default function FriendList({
 }: FriendListProps) {
   const friends = useFriends();
   const selectedFriend = useSelectedFriend();
+  const selectedChannel = useSelectedChannel();
   const { setSelectedFriend } = useFriendActions();
+  const { setSelectedChannel, setSelectedDirectChannel } = useChannelActions();
+  const { setCurrentView } = useUtilActions();
   const userStatus = useUserStatus();
   const sortOrder = {
     [UserStatus.IN_GAME]: 0,
@@ -66,14 +75,25 @@ export default function FriendList({
               <Paper key={index} elevation={2}>
                 <ListItemButton
                   selected={selectedFriend?.id === friend.id ?? false}
-                  onClick={() => setSelectedFriend(friend)}
+                  onClick={() => {
+                    if (selectedFriend?.id === friend.id) {
+                      setSelectedFriend(undefined);
+                      setSelectedChannel(undefined);
+                    } else {
+                      setSelectedFriend(friend);
+                      if (selectedChannel === undefined) {
+                        setCurrentView(View.CHAT);
+                      }
+                      setSelectedDirectChannel(friend.incoming_friend.id);
+                    }
+                  }}
                 >
                   <FriendDisplay
                     category={category}
                     friend={friend}
                     status={userStatus[friend.incoming_friend.id]}
                     handleAction={handleAction}
-                  ></FriendDisplay>
+                  />
                 </ListItemButton>
               </Paper>
             ) : (
@@ -82,7 +102,7 @@ export default function FriendList({
                   category={category}
                   friend={friend}
                   handleAction={handleAction}
-                ></FriendDisplay>
+                />
               </Paper>
             ),
           )}

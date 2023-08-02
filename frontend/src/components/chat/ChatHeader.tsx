@@ -1,8 +1,14 @@
 'use client';
 import { Box, Typography } from '@mui/material';
+import { useCurrentSocialTab } from '@/lib/stores/useUtilStore';
+import { useSelectedFriend } from '@/lib/stores/useFriendStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
+import { ChannelType } from '@/types/ChannelTypes';
+import { SocialTab } from '@/types/UtilTypes';
 
 export default function ChatHeader() {
+  const currentSocialTab = useCurrentSocialTab();
+  const selectedFriend = useSelectedFriend();
   const selectedChannel = useSelectedChannel();
 
   return (
@@ -14,7 +20,14 @@ export default function ChatHeader() {
       bgcolor='#363636'
     >
       <Typography variant='h4' color='white'>
-        {selectedChannel?.name ?? 'No Channel Selected'}
+        {selectedChannel &&
+          (selectedChannel.type === ChannelType.DIRECT
+            ? selectedFriend?.incoming_friend.username
+            : selectedChannel.name)}
+        {!selectedChannel &&
+          'No ' +
+            (currentSocialTab === SocialTab.FRIEND ? 'Friend' : 'Channel') +
+            ' Selected'}
       </Typography>
     </Box>
   );

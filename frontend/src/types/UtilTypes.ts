@@ -8,3 +8,8 @@ export enum View {
   ABOUT_US = 'ABOUT_US',
   SETTINGS = 'SETTINGS',
 }
+
+export enum SocialTab {
+  FRIEND = 'FRIEND',
+  CHANNEL = 'CHANNEL',
+}

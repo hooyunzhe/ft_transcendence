@@ -2,18 +2,20 @@
 import { Box, Drawer, Tab, Tabs } from '@mui/material';
 import FriendStack from '../friend/FriendStack';
 import { ChannelList } from '../channel/ChannelList';
-import { useState } from 'react';
 import Image from 'next/image';
 import {
+  useCurrentSocialTab,
   useSocialDrawerToggle,
   useUtilActions,
 } from '@/lib/stores/useUtilStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import ListHeader from '../utils/ListHeader';
+import { SocialTab } from '@/types/UtilTypes';
 
 export default function SocialDrawer() {
-  const [selectedTab, setSelectedTab] = useState(0);
-  const { handleDrawerMouseLeave, handleDrawerMouseOver } = useUtilActions();
+  const currentSocialTab = useCurrentSocialTab();
+  const { setCurrentSocialTab, handleDrawerMouseLeave, handleDrawerMouseOver } =
+    useUtilActions();
   const socialDrawerToggle = useSocialDrawerToggle();
   const selectedChannel = useSelectedChannel();
 
@@ -53,14 +55,17 @@ export default function SocialDrawer() {
             margin: '3px',
           }}
           variant='fullWidth'
-          value={selectedTab}
-          onChange={(event, newValue) => setSelectedTab(newValue)}
+          value={currentSocialTab}
+          onChange={(event, newValue) => setCurrentSocialTab(newValue)}
         >
-          <Tab label='Friends' />
-          <Tab label='Channels' />
+          <Tab label='Friends' value={SocialTab.FRIEND} />
+          <Tab label='Channels' value={SocialTab.CHANNEL} />
         </Tabs>
-        {selectedTab === 0 && <FriendStack />}
-        {selectedTab === 1 && <ChannelList />}
+        {currentSocialTab === SocialTab.FRIEND ? (
+          <FriendStack />
+        ) : (
+          <ChannelList />
+        )}
       </Drawer>
     </Box>
   );

@@ -2,10 +2,12 @@
 import { Stack, Typography } from '@mui/material';
 import { useEffect, useRef } from 'react';
 import ChatDisplay from './ChatDisplay';
+import { useCurrentSocialTab } from '@/lib/stores/useUtilStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { useMessages } from '@/lib/stores/useChatStore';
 
 export default function ChatList() {
+  const currentSocialTab = useCurrentSocialTab();
   const selectedChannel = useSelectedChannel();
   const messages = useMessages();
   const chatStack = useRef<HTMLDivElement | null>(null);
@@ -47,7 +49,7 @@ export default function ChatList() {
           align='center'
           marginTop='26vh'
         >
-          Select a channel to view messages
+          Select a {currentSocialTab.toLowerCase()} to view messages
         </Typography>
       )}
     </Stack>

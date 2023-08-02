@@ -1,17 +1,18 @@
-import { Channel } from '@/types/ChannelTypes';
-import { View } from '@/types/UtilTypes';
+import { SocialTab, View } from '@/types/UtilTypes';
 import { create } from 'zustand';
 
 interface UtilStore {
   data: {
     currentView: View;
+    currentSocialTab: SocialTab;
     socialDrawerToggle: boolean;
     channelMemberDrawerToggle: boolean;
-    timeoutID: NodeJS.Timeout | undefined;
+    drawerTimeoutID: NodeJS.Timeout | undefined;
   };
   actions: {
     setCurrentView: (newView: View) => void;
     changeCurrentView: (newView: View) => void;
+    setCurrentSocialTab: (newTab: SocialTab) => void;
     setSocialDrawerOpen: () => void;
     setSocialDrawerClose: () => void;
     setChannelMemberDrawerOpen: () => void;
@@ -43,6 +44,15 @@ function changeCurrentView(
   } else {
     setCurrentView(set, newView);
   }
+}
+
+function setCurrentSocialTab(set: StoreSetter, newTab: SocialTab): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      currentSocialTab: newTab,
+    },
+  }));
 }
 
 function setSocialDrawerOpen(set: StoreSetter): void {
@@ -85,7 +95,7 @@ function handleDrawerMouseOver(
   get: StoreGetter,
   channelSelected: boolean,
 ): void {
-  clearTimeout(get().data.timeoutID);
+  clearTimeout(get().data.drawerTimeoutID);
   setSocialDrawerOpen(set);
   if (channelSelected) {
     setChannelMemberDrawerOpen(set);
@@ -96,7 +106,7 @@ function handleDrawerMouseLeave(set: StoreSetter): void {
   set(({ data }) => ({
     data: {
       ...data,
-      timeoutID: setTimeout(() => {
+      drawerTimeoutID: setTimeout(() => {
         setSocialDrawerClose(set);
         setChannelMemberDrawerClose(set);
       }, 2000),
@@ -107,14 +117,16 @@ function handleDrawerMouseLeave(set: StoreSetter): void {
 const useUtilStore = create<UtilStore>()((set, get) => ({
   data: {
     currentView: View.EMPTY,
+    currentSocialTab: SocialTab.FRIEND,
     channelMemberDrawerToggle: false,
     socialDrawerToggle: false,
-    timeoutID: undefined,
+    drawerTimeoutID: undefined,
     channelSelected: false,
   },
   actions: {
-    setCurrentView: (newView: View) => setCurrentView(set, newView),
-    changeCurrentView: (newView: View) => changeCurrentView(set, get, newView),
+    setCurrentView: (newView) => setCurrentView(set, newView),
+    changeCurrentView: (newView) => changeCurrentView(set, get, newView),
+    setCurrentSocialTab: (newTab) => setCurrentSocialTab(set, newTab),
     setSocialDrawerOpen: () => setSocialDrawerOpen(set),
     setSocialDrawerClose: () => setSocialDrawerClose(set),
     setChannelMemberDrawerOpen: () => setChannelMemberDrawerOpen(set),
@@ -127,6 +139,8 @@ const useUtilStore = create<UtilStore>()((set, get) => ({
 
 export const useCurrentView = () =>
   useUtilStore((state) => state.data.currentView);
+export const useCurrentSocialTab = () =>
+  useUtilStore((state) => state.data.currentSocialTab);
 export const useChannelMemberDrawerToggle = () =>
   useUtilStore((state) => state.data.channelMemberDrawerToggle);
 export const useSocialDrawerToggle = () =>

@@ -85,7 +85,7 @@ export default function Cyberpong() {
 
   useEffect(() => {
     if (channelSocket) {
-      setupChannelSocketEvents(channelSocket);
+      setupChannelSocketEvents(channelSocket, currentUser.id);
       setupChannelMemberSocketEvents(channelSocket);
       setupChatSocketEvents(channelSocket);
     }

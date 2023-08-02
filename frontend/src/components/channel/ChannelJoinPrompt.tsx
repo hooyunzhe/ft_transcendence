@@ -57,6 +57,7 @@ export default function ChannelJoinPrompt() {
       addJoinedChannel(selectedChannel.id);
       addChannelMember(joiningChannelMember);
       emitToSocket(channelSocket, 'newMember', joiningChannelMember);
+      emitToSocket(channelSocket, 'joinRoom', selectedChannel.id);
       displayNotification('success', 'Channel joined');
       return '';
     } else {

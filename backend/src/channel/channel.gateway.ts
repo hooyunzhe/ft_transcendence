@@ -55,11 +55,6 @@ export class ChannelGateway implements OnGatewayConnection {
     client.emit('newChannel', data);
   }
 
-  @SubscribeMessage('joinChannel')
-  joinChannel(@MessageBody() data: Channel, @ConnectedSocket() client: Socket) {
-    client.to(String(client.data.user_id)).emit('joinChannel', data);
-  }
-
   @SubscribeMessage('changeChannelName')
   changeChannelName(
     @MessageBody() data: ChangeChannelNameEmitBodyParams,

@@ -18,7 +18,7 @@ interface FriendStore {
       newStatus: FriendStatus,
     ) => void;
     deleteFriend: (incomingID: number) => void;
-    setSelectedFriend: (friend: Friend) => void;
+    setSelectedFriend: (friend: Friend | undefined) => void;
     setupFriendSocketEvents: (friendSocket: Socket) => void;
   };
 }

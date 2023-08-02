@@ -47,7 +47,7 @@ export function ChannelMemberList() {
     const newChannelMember: ChannelMembers = JSON.parse(add);
 
     addChannelMember(newChannelMember);
-    emitToSocket(channelSocket, 'addMember', newChannelMember);
+    emitToSocket(channelSocket, 'newMember', newChannelMember);
     displayNotification('success', 'Channel member added');
     return '';
   }

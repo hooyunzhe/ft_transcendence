@@ -2,6 +2,7 @@ import { Channel, ChannelType } from '@/types/ChannelTypes';
 import callAPI from '../callAPI';
 import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
+import { ChannelMembers } from '@/types/ChannelMemberTypes';
 
 interface ChannelStore {
   data: {
@@ -21,7 +22,11 @@ interface ChannelStore {
     deleteJoinedChannel: (channelID: number) => void;
     updateRecentChannelActivity: (channelID: number) => void;
     setSelectedChannel: (channel: Channel | undefined) => void;
-    setupChannelSocketEvents: (channelSocket: Socket) => void;
+    setSelectedDirectChannel: (incomingID: number) => void;
+    setupChannelSocketEvents: (
+      channelSocket: Socket,
+      currentUserID: number,
+    ) => void;
   };
   checks: {
     checkChannelExists: (channelName: string) => boolean;
@@ -204,6 +209,22 @@ function setSelectedChannel(
   }));
 }
 
+function setSelectedDirectChannel(
+  set: StoreSetter,
+  get: StoreGetter,
+  incomingID: number,
+): void {
+  const selectedDirectChannel = get().data.channels.find(
+    (channel) =>
+      channel.type === ChannelType.DIRECT &&
+      channel.name.includes(String(incomingID)),
+  );
+
+  if (selectedDirectChannel) {
+    setSelectedChannel(set, selectedDirectChannel);
+  }
+}
+
 function checkChannelExists(get: StoreGetter, channelName: string): boolean {
   return get().data.channels.some((channel) => channel.name === channelName);
 }
@@ -222,13 +243,16 @@ function checkChannelJoined(get: StoreGetter, channelName: string): boolean {
 function setupChannelSocketEvents(
   set: StoreSetter,
   channelSocket: Socket,
+  currentUserID: number,
 ): void {
   channelSocket.on('newChannel', (channel: Channel) =>
     addChannel(set, channel),
   );
-  channelSocket.on('joinChannel', (channel: Channel) => {
-    channelSocket.emit('joinRoom', channel.id);
-    addJoinedChannel(set, channel.id);
+  channelSocket.on('newMember', (channelMember: ChannelMembers) => {
+    if (channelMember.user.id === currentUserID) {
+      channelSocket.emit('joinRoom', channelMember.channel.id);
+      addJoinedChannel(set, channelMember.channel.id);
+    }
   });
   channelSocket.on('deleteChannel', (channelID: number) =>
     deleteChannel(set, channelID),
@@ -277,8 +301,10 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     updateRecentChannelActivity: (channelID) =>
       updateRecentChannelActivity(set, channelID),
     setSelectedChannel: (channel) => setSelectedChannel(set, channel),
-    setupChannelSocketEvents: (channelSocket) =>
-      setupChannelSocketEvents(set, channelSocket),
+    setSelectedDirectChannel: (incomingID) =>
+      setSelectedDirectChannel(set, get, incomingID),
+    setupChannelSocketEvents: (channelSocket, currentUserID) =>
+      setupChannelSocketEvents(set, channelSocket, currentUserID),
     deleteJoinedChannel: (channelID) => deleteJoinedChannel(set, channelID),
   },
   checks: {
