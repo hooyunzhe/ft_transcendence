@@ -17,15 +17,14 @@ export default function DialogPrompt() {
   const notif = useNotification(); // for my errors
 
   return (
-    <>
-      <Dialog
-        open={dialog.display}
-        onClose={() => {
-          resetDialog();
-        }}
-        maxWidth='xs'
-        fullWidth
-      ></Dialog>
+    <Dialog
+      open={dialog.display}
+      onClose={() => {
+        resetDialog();
+      }}
+      maxWidth='xs'
+      fullWidth
+    >
       <DialogTitle>{dialog.title}</DialogTitle>
       <DialogContent>
         <DialogContentText>{dialog.description}</DialogContentText>
@@ -37,7 +36,7 @@ export default function DialogPrompt() {
             dialog.backHandler();
           }}
         >
-          {dialog.actionButtonText}
+          {dialog.backButtonText}
         </Button>
         <Button
           onClick={() => {
@@ -49,6 +48,6 @@ export default function DialogPrompt() {
           {dialog.actionButtonText}
         </Button>
       </DialogActions>
-    </>
+    </Dialog>
   );
 }

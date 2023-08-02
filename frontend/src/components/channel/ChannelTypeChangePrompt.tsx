@@ -1,9 +1,11 @@
 'use client';
 import {
+  Button,
   FormControl,
   FormControlLabel,
   Radio,
   RadioGroup,
+  TextField,
 } from '@mui/material';
 import DialogPrompt from '../utils/LegacyDialogPrompt';
 import { useState } from 'react';
@@ -13,6 +15,7 @@ import callAPI from '@/lib/callAPI';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import emitToSocket from '@/lib/emitToSocket';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useDialogActions } from '@/lib/stores/useDialogStore';
 
 interface ChannelTypeChangeProps {
   channelID: number;
@@ -28,6 +31,7 @@ export default function ChannelTypeChangePrompt({
   const channelSocket = useChannelSocket();
   const [input, setInput] = useState('');
   const [selectedChannelType, setSelectedChannelType] = useState(channelType);
+  const { setDialogPrompt, resetDialog } = useDialogActions();
 
   async function changeType(
     channelID: number,
@@ -55,50 +59,59 @@ export default function ChannelTypeChangePrompt({
   }
 
   return (
-    <DialogPrompt
-      disableText={selectedChannelType !== ChannelType.PROTECTED}
-      buttonText='Change Channel Type'
-      dialogTitle='Change Channel Type'
-      dialogDescription='Please provide type you want to change to.'
-      labelText='Channel Password'
-      textInput={selectedChannelType === ChannelType.PROTECTED ? input : ''}
-      backButtonText='Cancel'
-      onChangeHandler={(input) => {
-        setInput(input);
-      }}
-      backHandler={async () => {}}
-      actionButtonText='Change'
-      handleAction={async () => {
-        console.log(input);
-        changeType(channelID, selectedChannelType, input);
-        return '';
-      }}
+    <Button
+      onClick={() =>
+        setDialogPrompt(
+          true,
+          'Change Channel Type',
+          'Assign channel type you want to change to.',
+          'Cancel',
+          resetDialog,
+          'Change',
+          async () => {
+            changeType(channelID, selectedChannelType, input);
+            setInput('');
+          },
+          <>
+            <FormControl>
+              <RadioGroup
+                row
+                defaultValue={channelType}
+                onChange={(event) => {
+                  setSelectedChannelType(event.target.value as ChannelType);
+                }}
+              >
+                <FormControlLabel
+                  value={ChannelType.PUBLIC}
+                  control={<Radio />}
+                  label='Public'
+                />
+                <FormControlLabel
+                  value={ChannelType.PROTECTED}
+                  control={<Radio />}
+                  label='Protected'
+                />
+                <FormControlLabel
+                  value={ChannelType.PRIVATE}
+                  control={<Radio />}
+                  label='Private'
+                />
+              </RadioGroup>
+            </FormControl>
+            <TextField
+              disabled={selectedChannelType !== ChannelType.PROTECTED}
+              onChange={(event) => {
+                setInput(event.target.value);
+              }}
+              id='standard-basic'
+              label='Standard'
+              variant='standard'
+            />
+          </>,
+        )
+      }
     >
-      <FormControl>
-        <RadioGroup
-          row
-          defaultValue={channelType}
-          onChange={(event) => {
-            setSelectedChannelType(event.target.value as ChannelType);
-          }}
-        >
-          <FormControlLabel
-            value={ChannelType.PUBLIC}
-            control={<Radio />}
-            label='Public'
-          />
-          <FormControlLabel
-            value={ChannelType.PROTECTED}
-            control={<Radio />}
-            label='Protected'
-          />
-          <FormControlLabel
-            value={ChannelType.PRIVATE}
-            control={<Radio />}
-            label='Private'
-          />
-        </RadioGroup>
-      </FormControl>
-    </DialogPrompt>
+      Change Channel Type
+    </Button>
   );
 }

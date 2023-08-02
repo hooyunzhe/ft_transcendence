@@ -21,6 +21,7 @@ import NavigationHeader from './NavigationHeader';
 import MainArea from './MainArea';
 import { useChatActions } from '@/lib/stores/useChatStore';
 import { Friend } from '@/types/FriendTypes';
+import DialogPrompt from '../utils/DialogPrompt';
 
 export default function Cyberpong() {
   const currentUser = useCurrentUser();
@@ -106,6 +107,7 @@ export default function Cyberpong() {
       <MainArea />
       <ConfirmationPrompt />
       <NotificationBar />
+      <DialogPrompt />
     </Box>
   );
 }

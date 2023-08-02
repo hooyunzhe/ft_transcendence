@@ -11,7 +11,7 @@ import {
 import { ReactNode, useState } from 'react';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
-interface DialogPromptProps {
+interface LegacyDialogPromptProps {
   disableText?: boolean;
   altOpen?: boolean;
   resetAltOpen?: () => void;
@@ -28,7 +28,7 @@ interface DialogPromptProps {
   handleAction: (...args: any) => Promise<string>;
 }
 
-export default function DialogPrompt({
+export default function LegacyDialogPrompt({
   disableText,
   altOpen,
   resetAltOpen,
@@ -43,7 +43,7 @@ export default function DialogPrompt({
   backHandler, // zustand (optional)
   actionButtonText, // zustand
   handleAction, // zustand
-}: DialogPromptProps) {
+}: LegacyDialogPromptProps) {
   const [open, setOpen] = useState(false);
   const [emptyError, setEmptyError] = useState(false);
   const { displayNotification } = useNotificationActions();

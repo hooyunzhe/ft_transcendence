@@ -6,6 +6,10 @@ import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useDialogActions } from '@/lib/stores/useDialogStore';
+import { Button, Stack, TextField } from '@mui/material';
+import { ChannelMembers } from '@/types/ChannelMemberTypes';
+import BanListDisplay from '../channel-member/ChannelMemberBanListDisplay';
 
 interface ChannelNameChangeProps {
   channelID: number;
@@ -18,6 +22,7 @@ export default function ChannelNameChangePrompt({
   const { displayNotification } = useNotificationActions();
   const [input, setInput] = useState('');
   const channelSocket = useChannelSocket();
+  const { setDialogPrompt, resetDialog } = useDialogActions();
 
   async function changeName(channelID: number, newName: string) {
     const data = {
@@ -31,23 +36,35 @@ export default function ChannelNameChangePrompt({
   }
 
   return (
-    <DialogPrompt
-      buttonText='Change channel Name'
-      dialogTitle='Change Channel Name'
-      dialogDescription='Please provide name you want to change to.'
-      labelText='channel name'
-      textInput={input}
-      backButtonText='Cancel'
-      onChangeHandler={(input) => {
-        setInput(input);
-      }}
-      backHandler={async () => {}}
-      actionButtonText='Change'
-      handleAction={async () => {
-        changeName(channelID, input);
-        setInput('');
-        return '';
-      }}
-    ></DialogPrompt>
+    <Button
+      onClick={() =>
+        setDialogPrompt(
+          true,
+          'Change Channel Name',
+          'Please provide name you want to change to.',
+          'Cancel',
+          () => {
+            resetDialog();
+            setInput('');
+          },
+          'Change',
+          async () => {
+            changeName(channelID, input);
+          },
+          <TextField
+            onChange={(event) => {
+              setInput(event.target.value);
+            }}
+            margin='dense'
+            id='standard-basic'
+            label='Standard'
+            variant='standard'
+            fullWidth
+          />,
+        )
+      }
+    >
+      Change Channel Name
+    </Button>
   );
 }
