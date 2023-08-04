@@ -23,7 +23,8 @@ export default function ChannelPassChangePrompt({
   const [oldPass, setOldPass] = useState('');
   const { changeChannelHash } = useChannelActions();
 
-  const handleClickOpen = () => {
+  const handleClickOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     setOpen(true);
   };
 

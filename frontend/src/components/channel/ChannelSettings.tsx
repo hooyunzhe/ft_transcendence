@@ -34,6 +34,7 @@ export default function ChannelSettings({
   const [anchorElement, setAnchorElement] = useState<null | HTMLElement>(null);
 
   function handleClick(event: React.MouseEvent<HTMLElement>): void {
+    event.stopPropagation();
     setAnchorElement(event.currentTarget);
     setOpen(true);
   }
@@ -51,6 +52,9 @@ export default function ChannelSettings({
         anchorEl={anchorElement}
         open={open}
         onClose={handleClose}
+        onClick={(event) => {
+          event.stopPropagation();
+        }}
         anchorOrigin={{
           vertical: 'top',
           horizontal: 'left',

@@ -3,15 +3,15 @@ import { create } from 'zustand';
 
 interface UtilStore {
   data: {
-    currentView: View;
+    currentView: View | false;
     currentSocialTab: SocialTab;
     socialDrawerToggle: boolean;
     channelMemberDrawerToggle: boolean;
     drawerTimeoutID: NodeJS.Timeout | undefined;
   };
   actions: {
-    setCurrentView: (newView: View) => void;
-    changeCurrentView: (newView: View) => void;
+    setCurrentView: (newView: View | false) => void;
+    changeCurrentView: (newView: View | false) => void;
     setCurrentSocialTab: (newTab: SocialTab) => void;
     setSocialDrawerOpen: () => void;
     setSocialDrawerClose: () => void;
@@ -25,7 +25,7 @@ interface UtilStore {
 type StoreSetter = (helper: (state: UtilStore) => Partial<UtilStore>) => void;
 type StoreGetter = () => UtilStore;
 
-function setCurrentView(set: StoreSetter, newView: View): void {
+function setCurrentView(set: StoreSetter, newView: View | false): void {
   set(({ data }) => ({
     data: {
       ...data,
@@ -37,10 +37,10 @@ function setCurrentView(set: StoreSetter, newView: View): void {
 function changeCurrentView(
   set: StoreSetter,
   get: StoreGetter,
-  newView: View,
+  newView: View | false,
 ): void {
   if (get().data.currentView === newView) {
-    setCurrentView(set, View.EMPTY);
+    setCurrentView(set, false);
   } else {
     setCurrentView(set, newView);
   }
@@ -116,7 +116,7 @@ function handleDrawerMouseLeave(set: StoreSetter): void {
 
 const useUtilStore = create<UtilStore>()((set, get) => ({
   data: {
-    currentView: View.EMPTY,
+    currentView: false,
     currentSocialTab: SocialTab.FRIEND,
     channelMemberDrawerToggle: false,
     socialDrawerToggle: false,

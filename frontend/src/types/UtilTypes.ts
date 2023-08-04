@@ -1,5 +1,4 @@
 export enum View {
-  EMPTY = 'EMPTY',
   GAME = 'GAME',
   CHAT = 'CHAT',
   PROFILE = 'PROFILE',

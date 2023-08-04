@@ -71,8 +71,8 @@ export function ChannelDisplay({
 
   return (
     <Paper elevation={2}>
-      <ListItemButton selected={selected} onClick={selectCurrent}>
-        <ListItem>
+      <ListItem>
+        <ListItemButton selected={selected} onClick={selectCurrent}>
           <ListItemAvatar>
             <Avatar alt=''></Avatar>
           </ListItemAvatar>
@@ -83,26 +83,26 @@ export function ChannelDisplay({
           {channelType === ChannelType.PUBLIC && <AccountCircleRounded />}
           {channelType === ChannelType.PRIVATE && <AdminPanelSettingsRounded />}
           {channelType === ChannelType.PROTECTED && <LockPersonRounded />}
-          {isOwner ? (
-            <ChannelSettings
-              channelID={channelID}
-              channelName={channelName}
-              channelType={channelType}
-              channelHash={channelHash}
-            />
-          ) : (
-            currentChannelMember && (
-              <IconButton
-                onClick={() =>
-                  leaveChannelConfirmation(channelName, currentChannelMember)
-                }
-              >
-                <ExitToAppRounded />
-              </IconButton>
-            )
-          )}
-        </ListItem>
-      </ListItemButton>
+        </ListItemButton>
+        {isOwner ? (
+          <ChannelSettings
+            channelID={channelID}
+            channelName={channelName}
+            channelType={channelType}
+            channelHash={channelHash}
+          />
+        ) : (
+          currentChannelMember && (
+            <IconButton
+              onClick={() =>
+                leaveChannelConfirmation(channelName, currentChannelMember)
+              }
+            >
+              <ExitToAppRounded />
+            </IconButton>
+          )
+        )}
+      </ListItem>
     </Paper>
   );
 }
