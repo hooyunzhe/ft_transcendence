@@ -1,6 +1,6 @@
 'use client';
 import { ChannelDisplay } from './ChannelDisplay';
-import { Stack } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import ChannelCreatePrompt from './ChannelCreatePrompt';
 import ChannelJoinPrompt from './ChannelJoinPrompt';
 import {
@@ -19,6 +19,7 @@ import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
 import { ChannelType } from '@/types/ChannelTypes';
+import { useDialogActions } from '@/lib/stores/useDialogStore';
 
 export function ChannelList() {
   const currentUser = useCurrentUser();
@@ -31,11 +32,32 @@ export function ChannelList() {
   const { isChannelOwner } = useChannelMemberChecks();
   const { getChannelMember } = useChannelMemberActions();
   const { setCurrentView } = useUtilActions();
+  const { displayDialog } = useDialogActions();
 
   return (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
-      <ChannelCreatePrompt />
-      <ChannelJoinPrompt />
+      <Button
+        onClick={() =>
+          displayDialog(
+            'Channel Creation',
+            'Add channels here',
+            <ChannelCreatePrompt />,
+            'Next',
+          )
+        }
+      >
+        Create Channel
+      </Button>
+      <Button
+        onClick={() =>
+          displayDialog(
+            'Channel Join',
+            'Join channel here',
+            <ChannelJoinPrompt />,
+            'Join',
+          )
+        }
+      ></Button>
       {channels
         .filter(
           (channel) =>

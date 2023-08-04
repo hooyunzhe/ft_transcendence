@@ -17,8 +17,6 @@ import ChannelNameChangePrompt from './ChannelNameChangePrompt';
 import ChannelTypeChangePrompt from './ChannelTypeChangePrompt';
 import { ChannelMemberUnbanPrompt } from '../channel-member/ChannelMemberUnbanPrompt';
 import { ChannelType } from '@/types/ChannelTypes';
-import { useChannelMemberChecks } from '@/lib/stores/useChannelMemberStore';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
 import ChannelDeletePrompt from './ChannelDeletePrompt';
 import ChannelPassChangePrompt from './ChannelPassChangePrompt';
 import { Key, LocalFireDepartmentSharp } from '@mui/icons-material';

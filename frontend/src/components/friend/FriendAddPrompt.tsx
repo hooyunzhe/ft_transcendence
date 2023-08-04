@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
 import { User } from '@/types/UserTypes';
@@ -8,7 +8,10 @@ import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import { useFriendSocket } from '@/lib/stores/useSocketStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
-import { useDialogActions } from '@/lib/stores/useDialogStore';
+import {
+  useDialogActions,
+  useDialogTriggers,
+} from '@/lib/stores/useDialogStore';
 import { Button, TextField } from '@mui/material';
 
 export default function FriendAddPrompt() {
@@ -18,8 +21,8 @@ export default function FriendAddPrompt() {
   const friendSocket = useFriendSocket();
   const { displayNotification } = useNotificationActions();
   const [username, setUsername] = useState('');
-  const { setDialogPrompt, resetDialog } = useDialogActions();
-  const [input, setInput] = useState('');
+  const { resetDialog, resetTriggers } = useDialogActions();
+  const { actionClicked, backClicked } = useDialogTriggers();
 
   async function getUserByName(name: string): Promise<User | null> {
     return fetch(
@@ -82,35 +85,32 @@ export default function FriendAddPrompt() {
     displayNotification('success', 'Request sent');
   }
 
+  useEffect(() => {
+    if (actionClicked) {
+      handleAddFriendAction()
+        .then(() => resetDialog())
+        .catch((error) => {
+          resetTriggers();
+          displayNotification('error', error);
+        });
+    }
+    if (backClicked) {
+      resetDialog();
+    }
+  }, [actionClicked, backClicked]);
+
   return (
-    <Button
-      onClick={() =>
-        setDialogPrompt(
-          true,
-          'Send friend request',
-          'Add friends by their username',
-          'Cancel',
-          () => {
-            resetDialog();
-            setInput('');
-          },
-          'Add Friend',
-          handleAddFriendAction,
-          <TextField
-            autoComplete='off'
-            onChange={(event) => {
-              setInput(event.target.value);
-            }}
-            margin='dense'
-            id='standard-basic'
-            label='username...'
-            variant='standard'
-            fullWidth
-          ></TextField>,
-        )
-      }
-    >
-      Add Friend
-    </Button>
+    <TextField
+      autoComplete='off'
+      onChange={(event) => {
+        setUsername(event.target.value);
+      }}
+      margin='dense'
+      id='standard-basic'
+      label='username...'
+      variant='standard'
+      fullWidth
+      value={username}
+    ></TextField>
   );
 }

@@ -1,11 +1,16 @@
 'use client';
 import { Friend } from '@/types/FriendTypes';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import FriendDisplay from './ChannelMemberFriendDisplay';
 import { useChannelMembers } from '@/lib/stores/useChannelMemberStore';
 import { useFriends } from '@/lib/stores/useFriendStore';
-import { useDialog, useDialogActions } from '@/lib/stores/useDialogStore';
+import {
+  useDialog,
+  useDialogActions,
+  useDialogTriggers,
+} from '@/lib/stores/useDialogStore';
 import { Button, Stack } from '@mui/material';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 interface ChannelMemberAddPromptProps {
   addUser: (...args: any) => Promise<string>;
@@ -20,7 +25,9 @@ export function ChannelMemberAddPrompt({
   const friends = useFriends();
   const [selectedFriend, setSelectedFriend] = useState<Friend | undefined>();
   const [friendSearch, setFriendSearch] = useState('');
-  const { setDialogPrompt, resetDialog } = useDialogActions();
+  const { actionClicked, backClicked } = useDialogTriggers();
+  const { resetDialog, resetTriggers } = useDialogActions();
+  const { displayNotification } = useNotificationActions();
 
   async function handleAddMemberAction(): Promise<void> {
     if (selectedFriend === undefined) {
@@ -36,41 +43,40 @@ export function ChannelMemberAddPrompt({
     addUser(friendToJoin.incoming_friend.id, channelHash);
   }
 
+  useEffect(() => {
+    if (actionClicked) {
+      handleAddMemberAction()
+        .then(() => resetDialog())
+        .catch((error) => {
+          resetTriggers();
+          displayNotification('error', error);
+        });
+    }
+    if (backClicked) {
+      resetDialog();
+    }
+  }, [actionClicked, backClicked]);
+
   return (
-    <Button
-      onClick={() =>
-        setDialogPrompt(
-          true,
-          'Add members',
-          'Add your friends to the channel',
-          'Cancel',
-          resetDialog,
-          'Add channel member',
-          handleAddMemberAction,
-          <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
-            {friends.length > 0 &&
-              friends
-                .filter((friend) =>
-                  channelMembers.every((member) => {
-                    return member.user.id !== friend.incoming_friend.id;
-                  }),
-                )
-                .map((friend: Friend, index: number) => (
-                  <FriendDisplay
-                    key={index}
-                    selected={selectedFriend?.incoming_friend.id ?? 0}
-                    selectCurrent={() => {
-                      setFriendSearch(friend.incoming_friend.username);
-                      setSelectedFriend(friend);
-                    }}
-                    friend={friend}
-                  ></FriendDisplay>
-                ))}
-          </Stack>,
-        )
-      }
-    >
-      Add Channel Members
-    </Button>
+    <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
+      {friends.length > 0 &&
+        friends
+          .filter((friend) =>
+            channelMembers.every((member) => {
+              return member.user.id !== friend.incoming_friend.id;
+            }),
+          )
+          .map((friend: Friend, index: number) => (
+            <FriendDisplay
+              key={index}
+              selected={selectedFriend?.incoming_friend.id ?? 0}
+              selectCurrent={() => {
+                setFriendSearch(friend.incoming_friend.username);
+                setSelectedFriend(friend);
+              }}
+              friend={friend}
+            ></FriendDisplay>
+          ))}
+    </Stack>
   );
 }

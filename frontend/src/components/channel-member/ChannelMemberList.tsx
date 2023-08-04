@@ -6,7 +6,7 @@ import {
   ChannelMemberRole,
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
-import { Stack } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { ChannelMemberActionDisplay } from './ChannelMemberActionDisplay';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
@@ -19,6 +19,7 @@ import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import emitToSocket from '@/lib/emitToSocket';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useDialogActions } from '@/lib/stores/useDialogStore';
 
 export function ChannelMemberList() {
   const channelMembers = useChannelMembers();
@@ -32,6 +33,7 @@ export function ChannelMemberList() {
   const selectedChannel = useSelectedChannel();
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
+  const { displayDialog } = useDialogActions();
 
   // * Helper Function for update locals * //
 
@@ -235,10 +237,22 @@ export function ChannelMemberList() {
   return selectedChannel ? (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
       <ListHeader title='My retarded channel member list'></ListHeader>
-      <ChannelMemberAddPrompt
-        addUser={addUser}
-        channelHash={selectedChannel.hash}
-      ></ChannelMemberAddPrompt>
+      <Button
+        onClick={() =>
+          displayDialog(
+            'Add Channel Member',
+            'Add Channel Member here',
+            <ChannelMemberAddPrompt
+              addUser={addUser}
+              channelHash={selectedChannel.hash}
+            ></ChannelMemberAddPrompt>,
+            'Add',
+          )
+        }
+      >
+        Add Channel Member
+      </Button>
+
       {channelMembers
         .filter((members) => members.channel.id === selectedChannel.id)
         .map((channelMember: ChannelMembers, index: number) => (

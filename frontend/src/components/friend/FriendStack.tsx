@@ -1,5 +1,5 @@
 'use client';
-import { Stack } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import FriendAddPrompt from './FriendAddPrompt';
 import FriendDropdown from './FriendDropdown';
 import callAPI from '@/lib/callAPI';
@@ -18,6 +18,7 @@ import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import { useDialogActions } from '@/lib/stores/useDialogStore';
 
 export default function FriendStack() {
   const currentUser = useCurrentUser();
@@ -29,6 +30,7 @@ export default function FriendStack() {
   const channelSocket = useChannelSocket();
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
+  const { displayDialog } = useDialogActions();
 
   async function callFriendsAPI(
     method: string,
@@ -201,7 +203,18 @@ export default function FriendStack() {
 
   return (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
-      <FriendAddPrompt />
+      <Button
+        onClick={() =>
+          displayDialog(
+            'Add Friend',
+            'Add people to your friendlist',
+            <FriendAddPrompt />,
+            'Change',
+          )
+        }
+      >
+        Add Friend
+      </Button>
       <FriendDropdown category='friends' handleAction={handleAction} />
       <FriendDropdown category='pending' handleAction={handleAction} />
       <FriendDropdown category='invited' handleAction={handleAction} />
