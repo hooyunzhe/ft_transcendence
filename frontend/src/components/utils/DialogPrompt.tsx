@@ -1,7 +1,4 @@
 'use client';
-
-import { useDialog, useDialogActions } from '@/lib/stores/useDialogStore';
-import { useNotification } from '@/lib/stores/useNotificationStore';
 import {
   Button,
   Dialog,
@@ -10,11 +7,11 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
+import { useDialog, useDialogActions } from '@/lib/stores/useDialogStore';
 
 export default function DialogPrompt() {
   const dialog = useDialog();
-  const { resetDialog } = useDialogActions();
-  const notif = useNotification(); // for my errors
+  const { setActionClicked, setBackClicked, resetDialog } = useDialogActions();
 
   return (
     <Dialog
@@ -31,22 +28,8 @@ export default function DialogPrompt() {
         {dialog.children}
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={() => {
-            dialog.backHandler();
-          }}
-        >
-          {dialog.backButtonText}
-        </Button>
-        <Button
-          onClick={() => {
-            dialog.handleAction().catch((errMsg) => {
-              console.log(errMsg);
-            });
-          }}
-        >
-          {dialog.actionButtonText}
-        </Button>
+        <Button onClick={setBackClicked}>{dialog.backButtonText}</Button>
+        <Button onClick={setActionClicked}>{dialog.actionButtonText}</Button>
       </DialogActions>
     </Dialog>
   );

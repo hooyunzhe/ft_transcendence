@@ -3,7 +3,7 @@ import {
   ChannelMembers,
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DialogPrompt from '../utils/LegacyDialogPrompt';
 import BanListDisplay from './ChannelMemberBanListDisplay';
 import { Button, Stack } from '@mui/material';
@@ -13,7 +13,10 @@ import {
   useChannelMembers,
 } from '@/lib/stores/useChannelMemberStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
-import { useDialogActions } from '@/lib/stores/useDialogStore';
+import {
+  useDialogActions,
+  useDialogTriggers,
+} from '@/lib/stores/useDialogStore';
 import { useNotification } from '@/lib/stores/useNotificationStore';
 
 export function ChannelMemberUnbanPrompt() {
@@ -21,8 +24,9 @@ export function ChannelMemberUnbanPrompt() {
   const { kickChannelMember } = useChannelMemberActions();
   const { displayConfirmation } = useConfirmationActions();
   const [selectedMember, setSelectedMember] = useState<ChannelMembers>();
-  const { setDialogPrompt, resetDialog } = useDialogActions();
+  const { resetDialog } = useDialogActions();
   const notif = useNotification(); // for my errors
+  const { actionClicked, backClicked } = useDialogTriggers();
 
   const [memberSearch, setMemberSearch] = useState('');
 
@@ -45,37 +49,32 @@ export function ChannelMemberUnbanPrompt() {
     );
   }
 
+  useEffect(() => {
+    if (actionClicked) {
+      handleUnbanMember().then(() => resetDialog());
+    }
+
+    if (backClicked) {
+      resetDialog();
+    }
+  }, [actionClicked, backClicked]);
+
   return (
-    <Button
-      onClick={() =>
-        setDialogPrompt(
-          true,
-          'Unban List',
-          'Unban whoever you want',
-          'Cancel',
-          resetDialog,
-          'Unban user',
-          handleUnbanMember,
-          <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
-            {channelMembers
-              .filter((member) => {
-                return member.status === ChannelMemberStatus.BANNED;
-              })
-              .map((member: ChannelMembers, index: number) => (
-                <BanListDisplay
-                  key={index}
-                  selected={selectedMember?.id ?? 0}
-                  selectCurrent={() => {
-                    setSelectedMember(member);
-                  }}
-                  member={member}
-                ></BanListDisplay>
-              ))}
-          </Stack>,
-        )
-      }
-    >
-      Unban Channel Members
-    </Button>
+    <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
+      {channelMembers
+        .filter((member) => {
+          return member.status === ChannelMemberStatus.BANNED;
+        })
+        .map((member: ChannelMembers, index: number) => (
+          <BanListDisplay
+            key={index}
+            selected={selectedMember?.id ?? 0}
+            selectCurrent={() => {
+              setSelectedMember(member);
+            }}
+            member={member}
+          ></BanListDisplay>
+        ))}
+    </Stack>
   );
 }

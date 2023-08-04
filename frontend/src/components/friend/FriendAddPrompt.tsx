@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import DialogPrompt from '../utils/LegacyDialogPrompt';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
 import { User } from '@/types/UserTypes';
@@ -9,6 +8,8 @@ import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import { useFriendSocket } from '@/lib/stores/useSocketStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useDialogActions } from '@/lib/stores/useDialogStore';
+import { Button, TextField } from '@mui/material';
 
 export default function FriendAddPrompt() {
   const currentUser = useCurrentUser();
@@ -17,6 +18,8 @@ export default function FriendAddPrompt() {
   const friendSocket = useFriendSocket();
   const { displayNotification } = useNotificationActions();
   const [username, setUsername] = useState('');
+  const { setDialogPrompt, resetDialog } = useDialogActions();
+  const [input, setInput] = useState('');
 
   async function getUserByName(name: string): Promise<User | null> {
     return fetch(
@@ -51,17 +54,17 @@ export default function FriendAddPrompt() {
     return '';
   }
 
-  async function handleAddFriendAction(): Promise<string> {
+  async function handleAddFriendAction(): Promise<void> {
     const userToAdd = await getUserByName(username);
     if (!userToAdd) {
-      return 'User not found';
+      throw 'User not found';
     }
     const errorMessage = checkFriendship(userToAdd.id);
     if (errorMessage) {
-      return errorMessage;
+      throw errorMessage;
     }
     if (userToAdd.id === currentUser.id) {
-      return 'No, you cannot add yourself smartie pants';
+      throw 'No, you simply cannot add yourself smartie pants';
     }
 
     const newRequests = JSON.parse(
@@ -77,21 +80,37 @@ export default function FriendAddPrompt() {
       incoming_request: newRequests[1],
     });
     displayNotification('success', 'Request sent');
-    return '';
   }
 
   return (
-    <DialogPrompt
-      buttonText='Add Friend'
-      dialogTitle='Send friend request'
-      dialogDescription='Add friends by their username'
-      labelText='Username'
-      textInput={username}
-      onChangeHandler={(input) => setUsername(input)}
-      backButtonText='Cancel'
-      backHandler={() => {}}
-      actionButtonText='Send'
-      handleAction={handleAddFriendAction}
-    />
+    <Button
+      onClick={() =>
+        setDialogPrompt(
+          true,
+          'Send friend request',
+          'Add friends by their username',
+          'Cancel',
+          () => {
+            resetDialog();
+            setInput('');
+          },
+          'Add Friend',
+          handleAddFriendAction,
+          <TextField
+            autoComplete='off'
+            onChange={(event) => {
+              setInput(event.target.value);
+            }}
+            margin='dense'
+            id='standard-basic'
+            label='username...'
+            variant='standard'
+            fullWidth
+          ></TextField>,
+        )
+      }
+    >
+      Add Friend
+    </Button>
   );
 }

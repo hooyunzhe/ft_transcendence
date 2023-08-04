@@ -1,21 +1,23 @@
 'use client';
 import {
-  Button,
   FormControl,
   FormControlLabel,
   Radio,
   RadioGroup,
   TextField,
 } from '@mui/material';
-import DialogPrompt from '../utils/LegacyDialogPrompt';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChannelType } from '@/types/ChannelTypes';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
 import callAPI from '@/lib/callAPI';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import emitToSocket from '@/lib/emitToSocket';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
-import { useDialogActions } from '@/lib/stores/useDialogStore';
+import {
+  useDialogActions,
+  useDialogTriggers,
+} from '@/lib/stores/useDialogStore';
+import PasswordField from '../utils/PasswordField';
 
 interface ChannelTypeChangeProps {
   channelID: number;
@@ -29,89 +31,91 @@ export default function ChannelTypeChangePrompt({
   const { changeChannelType, changeChannelHash } = useChannelActions();
   const { displayNotification } = useNotificationActions();
   const channelSocket = useChannelSocket();
-  const [input, setInput] = useState('');
-  const [selectedChannelType, setSelectedChannelType] = useState(channelType);
-  const { setDialogPrompt, resetDialog } = useDialogActions();
+  const [channelPass, setChannelPass] = useState('');
+  const [selectedChannelType, setSelectedChannelType] = useState<
+    ChannelType | undefined
+  >();
+  const { resetDialog, resetTriggers } = useDialogActions();
+  const { actionClicked, backClicked } = useDialogTriggers();
 
-  async function changeType(
-    channelID: number,
-    newType: ChannelType,
-    newPass?: string,
-  ) {
-    const data = {
-      id: channelID,
-      type: newType,
-      pass: newPass,
-    };
-    await callAPI('PATCH', 'channels', data);
-    changeChannelType(channelID, newType);
-    if (newType === ChannelType.PROTECTED) {
-      const updatedChannel = JSON.parse(
-        await callAPI(
-          'GET',
-          `channels?search_type=ONE&search_number=${channelID}`,
-        ),
-      );
-      changeChannelHash(channelID, updatedChannel.hash);
+  async function handleTypeChange() {
+    if (selectedChannelType) {
+      const data = {
+        id: channelID,
+        type: selectedChannelType,
+        pass: channelPass,
+      };
+      await callAPI('PATCH', 'channels', data);
+      changeChannelType(channelID, selectedChannelType);
+      if (selectedChannelType === ChannelType.PROTECTED) {
+        const updatedChannel = JSON.parse(
+          await callAPI(
+            'GET',
+            `channels?search_type=ONE&search_number=${channelID}`,
+          ),
+        );
+        changeChannelHash(channelID, updatedChannel.hash);
+      }
+      emitToSocket(channelSocket, 'changeChannelType', data);
+      displayNotification('success', 'Channel type changed');
+    } else {
+      throw 'No channel type was selected';
     }
-    emitToSocket(channelSocket, 'changeChannelType', data);
-    displayNotification('success', 'Channel type changed');
   }
 
+  useEffect(() => {
+    if (actionClicked) {
+      handleTypeChange()
+        .then(() => resetDialog())
+        .catch((error) => {
+          resetTriggers();
+          displayNotification('error', error);
+        });
+    }
+    if (backClicked) {
+      resetDialog();
+    }
+  }, [actionClicked, backClicked]);
+
   return (
-    <Button
-      onClick={() =>
-        setDialogPrompt(
-          true,
-          'Change Channel Type',
-          'Assign channel type you want to change to.',
-          'Cancel',
-          resetDialog,
-          'Change',
-          async () => {
-            changeType(channelID, selectedChannelType, input);
-            setInput('');
-          },
-          <>
-            <FormControl>
-              <RadioGroup
-                row
-                defaultValue={channelType}
-                onChange={(event) => {
-                  setSelectedChannelType(event.target.value as ChannelType);
-                }}
-              >
-                <FormControlLabel
-                  value={ChannelType.PUBLIC}
-                  control={<Radio />}
-                  label='Public'
-                />
-                <FormControlLabel
-                  value={ChannelType.PROTECTED}
-                  control={<Radio />}
-                  label='Protected'
-                />
-                <FormControlLabel
-                  value={ChannelType.PRIVATE}
-                  control={<Radio />}
-                  label='Private'
-                />
-              </RadioGroup>
-            </FormControl>
-            <TextField
-              disabled={selectedChannelType !== ChannelType.PROTECTED}
-              onChange={(event) => {
-                setInput(event.target.value);
-              }}
-              id='standard-basic'
-              label='Standard'
-              variant='standard'
-            />
-          </>,
-        )
-      }
-    >
-      Change Channel Type
-    </Button>
+    <>
+      <FormControl>
+        <RadioGroup
+          row
+          onChange={(event) => {
+            setSelectedChannelType(event.target.value as ChannelType);
+            if (event.target.value !== ChannelType.PROTECTED) {
+              setChannelPass('');
+            }
+          }}
+        >
+          <FormControlLabel
+            value={ChannelType.PUBLIC}
+            control={<Radio />}
+            label='Public'
+            disabled={channelType === ChannelType.PUBLIC}
+          />
+          <FormControlLabel
+            value={ChannelType.PROTECTED}
+            control={<Radio />}
+            label='Protected'
+            disabled={channelType === ChannelType.PROTECTED}
+          />
+          <FormControlLabel
+            value={ChannelType.PRIVATE}
+            control={<Radio />}
+            label='Private'
+            disabled={channelType === ChannelType.PRIVATE}
+          />
+        </RadioGroup>
+      </FormControl>
+      <PasswordField
+        value={channelPass}
+        onChange={setChannelPass}
+        label='Password'
+        variant='standard'
+        disabled={selectedChannelType !== ChannelType.PROTECTED}
+      />
+    </>
   );
 }

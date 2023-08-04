@@ -14,6 +14,7 @@ export default function FirstTimeSetup({ refresh_token }: FirstTimeSetupProps) {
 
   return (
     <TextField
+      autoComplete='off'
       id='username'
       label='Username'
       onChange={(e) => {

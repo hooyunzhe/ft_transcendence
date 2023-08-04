@@ -72,6 +72,7 @@ export default function LegacyDialogPrompt({
           <DialogContentText>{dialogDescription}</DialogContentText>
           <TextField
             disabled={disableText}
+            autoComplete='off'
             autoFocus
             fullWidth
             margin='dense'

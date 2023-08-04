@@ -1,15 +1,15 @@
 'use client';
-import { useChannelActions } from '@/lib/stores/useChannelStore';
-import DialogPrompt from '../utils/LegacyDialogPrompt';
-import { useState } from 'react';
+import { TextField } from '@mui/material';
+import { useEffect, useState } from 'react';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useChannelActions } from '@/lib/stores/useChannelStore';
+import {
+  useDialogActions,
+  useDialogTriggers,
+} from '@/lib/stores/useDialogStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
-import { useDialogActions } from '@/lib/stores/useDialogStore';
-import { Button, Stack, TextField } from '@mui/material';
-import { ChannelMembers } from '@/types/ChannelMemberTypes';
-import BanListDisplay from '../channel-member/ChannelMemberBanListDisplay';
 
 interface ChannelNameChangeProps {
   channelID: number;
@@ -19,12 +19,13 @@ export default function ChannelNameChangePrompt({
   channelID,
 }: ChannelNameChangeProps) {
   const { changeChannelName } = useChannelActions();
-  const { displayNotification } = useNotificationActions();
-  const [input, setInput] = useState('');
   const channelSocket = useChannelSocket();
-  const { setDialogPrompt, resetDialog } = useDialogActions();
+  const { actionClicked, backClicked } = useDialogTriggers();
+  const { resetDialog } = useDialogActions();
+  const { displayNotification } = useNotificationActions();
+  const [newName, setNewName] = useState('');
 
-  async function changeName(channelID: number, newName: string) {
+  async function handleNameChange() {
     const data = {
       id: channelID,
       newName: newName,
@@ -35,36 +36,26 @@ export default function ChannelNameChangePrompt({
     displayNotification('success', 'Channel name changed');
   }
 
+  useEffect(() => {
+    if (actionClicked) {
+      handleNameChange().then(() => resetDialog());
+    }
+    if (backClicked) {
+      resetDialog();
+    }
+  }, [actionClicked, backClicked]);
+
   return (
-    <Button
-      onClick={() =>
-        setDialogPrompt(
-          true,
-          'Change Channel Name',
-          'Please provide name you want to change to.',
-          'Cancel',
-          () => {
-            resetDialog();
-            setInput('');
-          },
-          'Change',
-          async () => {
-            changeName(channelID, input);
-          },
-          <TextField
-            onChange={(event) => {
-              setInput(event.target.value);
-            }}
-            margin='dense'
-            id='standard-basic'
-            label='Standard'
-            variant='standard'
-            fullWidth
-          />,
-        )
-      }
-    >
-      Change Channel Name
-    </Button>
+    <TextField
+      fullWidth
+      autoComplete='off'
+      variant='standard'
+      margin='dense'
+      label='Channel Name'
+      value={newName}
+      onChange={(event) => {
+        setNewName(event.target.value);
+      }}
+    />
   );
 }

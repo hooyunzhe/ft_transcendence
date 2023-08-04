@@ -6,24 +6,26 @@ interface DialogStore {
     display: boolean;
     title: string;
     description: string;
-    backButtonText: string;
-    backHandler: () => void;
-    actionButtonText: string;
-    handleAction: () => Promise<void>;
     children: ReactNode;
+    actionButtonText: string;
+    backButtonText: string;
+  };
+  triggers: {
+    actionClicked: boolean;
+    backClicked: boolean;
   };
   actions: {
-    setDialogPrompt: (
-      display: boolean,
+    displayDialog: (
       title: string,
       description: string,
-      backButtonText: string,
-      backHandler: () => void,
-      actionButtonText: string,
-      handleAction: () => Promise<void>,
       children: ReactNode,
+      actionButtonText: string,
+      backButtonText?: string,
     ) => void;
+    setActionClicked: () => void;
+    setBackClicked: () => void;
     resetDialog: () => void;
+    resetTriggers: () => void;
   };
 }
 
@@ -31,33 +33,55 @@ type StoreSetter = (
   helper: (state: DialogStore) => Partial<DialogStore>,
 ) => void;
 
-function setDialogPrompt(
+function displayDialog(
   set: StoreSetter,
-  display: boolean,
   title: string,
   description: string,
-  backButtonText: string,
-  backHandler: () => void,
-  actionButtonText: string,
-  handleAction: () => Promise<void>,
   children: ReactNode,
+  actionButtonText: string,
+  backButtonText?: string,
 ): void {
   set(({}) => ({
     data: {
-      display: display,
+      display: true,
       title: title,
       description: description,
-      backButtonText: backButtonText,
-      backHandler: backHandler,
-      actionButtonText: actionButtonText,
-      handleAction: handleAction,
       children: children,
+      actionButtonText: actionButtonText,
+      backButtonText: backButtonText ?? 'Cancel',
+    },
+  }));
+}
+
+function setActionClicked(set: StoreSetter): void {
+  set(({}) => ({
+    triggers: {
+      actionClicked: true,
+      backClicked: false,
+    },
+  }));
+}
+
+function setBackClicked(set: StoreSetter): void {
+  set(({}) => ({
+    triggers: {
+      actionClicked: false,
+      backClicked: true,
     },
   }));
 }
 
 function resetDialog(set: StoreSetter): void {
-  set(({ data }) => ({ data: { ...data, display: false } }));
+  set(({ data }) => ({
+    data: { ...data, display: false },
+    triggers: { actionClicked: false, backClicked: false },
+  }));
+}
+
+function resetTriggers(set: StoreSetter): void {
+  set(({}) => ({
+    triggers: { actionClicked: false, backClicked: false },
+  }));
 }
 
 const useDialogStore = create<DialogStore>()((set) => ({
@@ -65,37 +89,38 @@ const useDialogStore = create<DialogStore>()((set) => ({
     display: false,
     title: '',
     description: '',
-    backButtonText: '',
-    backHandler: () => null,
-    actionButtonText: '',
-    handleAction: async () => {},
     children: null,
+    actionButtonText: '',
+    backButtonText: 'Cancel',
+  },
+  triggers: {
+    actionClicked: false,
+    backClicked: false,
   },
   actions: {
-    setDialogPrompt: (
-      display,
+    displayDialog: (
       title,
       description,
-      backButtonText,
-      backHandler,
-      actionButtonText,
-      handleAction,
       children,
+      actionButtonText,
+      backButtonText,
     ) =>
-      setDialogPrompt(
+      displayDialog(
         set,
-        display,
         title,
         description,
-        backButtonText,
-        backHandler,
-        actionButtonText,
-        handleAction,
         children,
+        actionButtonText,
+        backButtonText,
       ),
+    setActionClicked: () => setActionClicked(set),
+    setBackClicked: () => setBackClicked(set),
     resetDialog: () => resetDialog(set),
+    resetTriggers: () => resetTriggers(set),
   },
 }));
 
 export const useDialog = () => useDialogStore((state) => state.data);
+export const useDialogTriggers = () =>
+  useDialogStore((state) => state.triggers);
 export const useDialogActions = () => useDialogStore((state) => state.actions);

@@ -1,93 +1,92 @@
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import { useState } from 'react';
+'use client';
+import { Stack } from '@mui/material';
+import PasswordField from '../utils/PasswordField';
+import { useState, useEffect } from 'react';
+import callAPI from '@/lib/callAPI';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
+import {
+  useDialogActions,
+  useDialogTriggers,
+} from '@/lib/stores/useDialogStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 interface ChangePassChangePromptProps {
   channelID: number;
-  channelHash: string;
 }
 
 export default function ChannelPassChangePrompt({
   channelID,
-  channelHash,
 }: ChangePassChangePromptProps) {
-  const [open, setOpen] = useState(false);
-
-  const [newPass, setNewPass] = useState('');
   const [oldPass, setOldPass] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [newPassConfirm, setNewPassConfirm] = useState('');
   const { changeChannelHash } = useChannelActions();
+  const { actionClicked, backClicked } = useDialogTriggers();
+  const { resetDialog, resetTriggers } = useDialogActions();
+  const { displayNotification } = useNotificationActions();
 
-  const handleClickOpen = (event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  function checkPasswordMatch() {
-    if (newPass === oldPass) {
-      // changeChannelHash();
+  async function handlePasswordChange(): Promise<void> {
+    if (newPassConfirm !== newPass) {
+      throw "Confirmation doesn't match new password";
     }
+    if (newPass === oldPass) {
+      throw 'Cannot change password to the same password, bro wth.';
+    }
+
+    const passChanged = await callAPI('PATCH', 'channels', {
+      id: channelID,
+      pass: newPass,
+      oldPass: oldPass,
+    });
+
+    if (passChanged) {
+      throw 'Current Password is incorrect';
+    }
+
+    const changedChannel = JSON.parse(
+      await callAPI(
+        'GET',
+        `channels?search_type=ONE&search_number=${channelID}`,
+      ),
+    );
+
+    changeChannelHash(channelID, changedChannel.hash);
   }
 
-  function handlePasswordChange(channelID: number) {
-    if (newPass === oldPass) {
-      // changeChannelHash();
+  useEffect(() => {
+    if (actionClicked) {
+      handlePasswordChange()
+        .then(() => resetDialog())
+        .catch((error) => {
+          resetTriggers();
+          displayNotification('error', error);
+        });
     }
-  }
+    if (backClicked) {
+      resetDialog();
+    }
+  }, [actionClicked, backClicked]);
 
   return (
-    <div>
-      <Button
-        sx={{
-          color: 'black',
-          background: 'white',
-        }}
-        variant='outlined'
-        onClick={handleClickOpen}
-      >
-        Change channel password
-      </Button>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Kill yourself</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Key in new password and old password.
-          </DialogContentText>
-          <TextField
-            margin='dense'
-            label='Old Password'
-            fullWidth
-            variant='standard'
-            onChange={(e) => {
-              setNewPass(e.target.value);
-              // onChangeHandler(e.target.value);
-            }}
-          />
-          <TextField
-            margin='dense'
-            label='New Password'
-            fullWidth
-            variant='standard'
-            onChange={(e) => {
-              setOldPass(e.target.value);
-              // onChangeHandler(e.target.value);
-            }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose}>Change</Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+    <Stack spacing={1}>
+      <PasswordField
+        value={oldPass}
+        onChange={(input) => setOldPass(input)}
+        label='Current Password'
+        variant='standard'
+      />
+      <PasswordField
+        value={newPass}
+        onChange={(input) => setNewPass(input)}
+        label='New Password'
+        variant='standard'
+      />
+      <PasswordField
+        value={newPassConfirm}
+        onChange={(input) => setNewPassConfirm(input)}
+        label='Confirm New Password'
+        variant='standard'
+      />
+    </Stack>
   );
 }

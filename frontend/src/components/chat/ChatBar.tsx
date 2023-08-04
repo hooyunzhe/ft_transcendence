@@ -110,6 +110,7 @@ export default function ChatBar() {
       sx={{
         background: '#4CC9F075',
       }}
+      autoComplete='off'
       fullWidth
       disabled={selectedChannel === undefined}
       onChange={(event) => handleInputChange(event.target.value)}

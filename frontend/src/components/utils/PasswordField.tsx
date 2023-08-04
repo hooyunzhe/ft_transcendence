@@ -4,18 +4,31 @@ import { IconButton, InputAdornment, TextField } from '@mui/material';
 import { useState } from 'react';
 
 interface PasswordFieldProps {
-  input: string;
-  onChange: (newInput: string) => void;
+  value: string;
+  onChange: (input: string) => void;
+  label?: string;
+  variant?: 'filled' | 'outlined' | 'standard';
+  disabled?: boolean;
 }
 
-export default function PasswordField({ input, onChange }: PasswordFieldProps) {
+export default function PasswordField({
+  value,
+  onChange,
+  label,
+  variant,
+  disabled,
+}: PasswordFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <TextField
+      fullWidth
+      autoComplete='off'
       type={showPassword ? 'text' : 'password'}
-      label='Password'
-      value={input}
+      label={label ?? 'Password'}
+      variant={variant}
+      disabled={disabled}
+      value={value}
       onChange={(event) => onChange(event.target.value)}
       InputProps={{
         endAdornment: (
