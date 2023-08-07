@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DialogPrompt from '../utils/LegacyDialogPrompt';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { Stack } from '@mui/material';
@@ -16,6 +16,11 @@ import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import emitToSocket from '@/lib/emitToSocket';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import {
+  useDialogActions,
+  useDialogTriggers,
+} from '@/lib/stores/useDialogStore';
+import PasswordField from '../utils/PasswordField';
 
 export default function ChannelJoinPrompt() {
   const currentUser = useCurrentUser();
@@ -29,6 +34,8 @@ export default function ChannelJoinPrompt() {
   const [selectedChannel, setSelectedChannel] = useState<Channel | undefined>();
   const [channelPass, setChannelPass] = useState('');
   const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
+  const { actionClicked, backClicked } = useDialogTriggers();
+  const { resetDialog, resetTriggers } = useDialogActions();
 
   function resetDisplay() {
     setDisplayPasswordPrompt(false);
@@ -40,7 +47,7 @@ export default function ChannelJoinPrompt() {
     setChannelPass('');
   }
 
-  async function joinChannel(): Promise<string> {
+  async function joinChannel(): Promise<void> {
     if (selectedChannel) {
       const joiningChannelMember = JSON.parse(
         await callAPI('POST', 'channel-members', {
@@ -52,26 +59,25 @@ export default function ChannelJoinPrompt() {
       );
 
       if (joiningChannelMember.statusCode === 403) {
-        return 'Incorrect password';
+        throw 'Incorrect password';
       }
       addJoinedChannel(selectedChannel.id);
       addChannelMember(joiningChannelMember);
       emitToSocket(channelSocket, 'newMember', joiningChannelMember);
       emitToSocket(channelSocket, 'joinRoom', selectedChannel.id);
       displayNotification('success', 'Channel joined');
-      return '';
     } else {
-      return 'FATAL ERROR: FAILED TO JOINED DUE TO MISSING SELECTED CHANNEL';
+      throw 'FATAL ERROR: FAILED TO JOINED DUE TO MISSING SELECTED CHANNEL';
     }
   }
 
-  async function handleJoinChannelAction(): Promise<string> {
+  async function handleJoinChannelAction(): Promise<void> {
     const channelToJoin = channels.find(
       (channel) => channel.id === selectedChannel?.id,
     );
 
     if (!channelToJoin) {
-      return "Channel doesn't exist";
+      throw "Channel doesn't exist";
     }
 
     if (channelToJoin.type === ChannelType.PROTECTED) {
@@ -80,78 +86,69 @@ export default function ChannelJoinPrompt() {
       joinChannel();
       resetState();
     }
-    return '';
   }
 
+  useEffect(() => {
+    if (actionClicked) {
+      if (displayPasswordPrompt) {
+        joinChannel()
+          .then(() => resetDialog())
+          .catch((error) => {
+            resetTriggers();
+            displayNotification('error', error);
+          });
+      } else {
+        handleJoinChannelAction()
+          .then(() => {
+            if (selectedChannel?.type === ChannelType.PROTECTED) {
+              resetTriggers();
+            } else {
+              resetDialog();
+            }
+          })
+          .catch((error) => {
+            resetTriggers();
+            displayNotification('error', error);
+          });
+      }
+    }
+    if (backClicked) {
+      resetDialog();
+    }
+  }, [actionClicked, backClicked]);
+
   return displayPasswordPrompt ? (
-    <DialogPrompt
-      buttonText='Join channel'
-      dialogTitle='Enter channel password'
-      dialogDescription='Join channel using password'
-      labelText='Password'
-      textInput={channelPass}
-      onChangeHandler={(input) => {
-        setChannelPass(input);
-      }}
-      backButtonText='Back'
-      backHandler={resetDisplay}
-      actionButtonText='Join'
-      handleAction={async () => {
-        const res = await joinChannel();
-        if (!res) {
-          resetState();
-          resetDisplay();
-        }
-        return res;
-      }}
+    <PasswordField
+      value={channelPass}
+      onChange={(input) => setChannelPass(input)}
+      variant='standard'
     />
   ) : (
-    <DialogPrompt
-      buttonText='Join channel'
-      dialogTitle='Search channels'
-      dialogDescription='Find a channel to join'
-      labelText='Channel name'
-      textInput={channelSearch}
-      onChangeHandler={(input) => {
-        setSelectedChannel(undefined);
-        setChannelSearch(input);
-      }}
-      backButtonText='Cancel'
-      backHandler={resetDisplay}
-      actionButtonText={
-        selectedChannel?.type === ChannelType.PROTECTED ? 'Next' : 'Join'
-      }
-      handleAction={handleJoinChannelAction}
-    >
-      <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
-        {channels
-          .filter(
-            (channel) =>
-              !joinedChannels[channel.id] &&
-              channel.name
-                .toLowerCase()
-                .includes(channelSearch.trim().toLowerCase()),
-          )
-          .map((channel: Channel, index: number) => (
-            <ChannelDisplay
-              key={index}
-              channelID={channel.id}
-              channelName={channel.name}
-              channelType={channel.type}
-              channelHash={channel.hash}
-              currentChannelMember={getChannelMember(
-                currentUser.id,
-                channel.id,
-              )}
-              selected={selectedChannel?.id === channel.id ?? false}
-              selectCurrent={() => {
-                setChannelSearch(channel.name);
-                setSelectedChannel(channel);
-              }}
-              isOwner={false}
-            />
-          ))}
-      </Stack>
-    </DialogPrompt>
+    <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
+      {channels
+        .filter(
+          (channel) =>
+            !joinedChannels[channel.id] &&
+            channel.name
+              .toLowerCase()
+              .includes(channelSearch.trim().toLowerCase()),
+        )
+        .map((channel: Channel, index: number) => (
+          <ChannelDisplay
+            key={index}
+            channelID={channel.id}
+            channelName={channel.name}
+            channelType={channel.type}
+            channelHash={channel.hash}
+            currentChannelMember={getChannelMember(currentUser.id, channel.id)}
+            selected={selectedChannel?.id === channel.id ?? false}
+            selectCurrent={() => {
+              setChannelSearch(channel.name);
+              setSelectedChannel(channel);
+            }}
+            isOwner={false}
+          />
+        ))}
+    </Stack>
   );
 }

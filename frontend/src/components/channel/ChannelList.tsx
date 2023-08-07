@@ -57,7 +57,9 @@ export function ChannelList() {
             'Join',
           )
         }
-      ></Button>
+      >
+        Join Channel
+      </Button>
       {channels
         .filter(
           (channel) =>

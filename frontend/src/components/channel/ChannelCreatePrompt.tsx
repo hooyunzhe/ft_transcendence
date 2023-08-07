@@ -3,12 +3,10 @@ import { useEffect, useState } from 'react';
 import {
   FormControl,
   FormControlLabel,
-  FormLabel,
   Radio,
   RadioGroup,
   TextField,
 } from '@mui/material';
-import DialogPrompt from '../utils/LegacyDialogPrompt';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import callAPI from '@/lib/callAPI';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
@@ -63,7 +61,7 @@ export default function ChannelCreatePrompt() {
     );
 
     if (newChannel) {
-      addChannel(newChannel);
+      // addChannel(newChannel); // causes duplicate if created
       emitToSocket(channelSocket, 'newChannel', newChannel);
 
       const channelCreator = JSON.parse(
