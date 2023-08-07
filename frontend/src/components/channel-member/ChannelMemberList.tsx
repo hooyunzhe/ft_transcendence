@@ -13,6 +13,7 @@ import ListHeader from '../utils/ListHeader';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import {
   useChannelMemberActions,
+  useChannelMemberChecks,
   useChannelMembers,
 } from '@/lib/stores/useChannelMemberStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
@@ -20,6 +21,7 @@ import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import emitToSocket from '@/lib/emitToSocket';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
 
 export function ChannelMemberList() {
   const channelMembers = useChannelMembers();
@@ -31,9 +33,27 @@ export function ChannelMemberList() {
   } = useChannelMemberActions();
   const channelSocket = useChannelSocket();
   const selectedChannel = useSelectedChannel();
+  const currentUser = useCurrentUser();
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
   const { displayDialog } = useDialogActions();
+  const { isChannelAdmin, isChannelOwner } = useChannelMemberChecks();
+
+  function getCurrentRole(): ChannelMemberRole {
+    if (!selectedChannel?.id) {
+      return ChannelMemberRole.MEMBER;
+    }
+    if (isChannelOwner(currentUser.id, selectedChannel?.id)) {
+      return ChannelMemberRole.OWNER;
+    }
+    if (isChannelAdmin(currentUser.id, selectedChannel?.id))
+      return ChannelMemberRole.ADMIN;
+    else {
+      return ChannelMemberRole.MEMBER;
+    }
+  }
+
+  const currentRole = getCurrentRole();
 
   // * Helper Function for update locals * //
 
@@ -259,6 +279,7 @@ export function ChannelMemberList() {
           <ChannelMemberActionDisplay
             key={index}
             channelMember={channelMember}
+            currentRole={currentRole}
             handleAction={handleDisplayAction}
           />
         ))}

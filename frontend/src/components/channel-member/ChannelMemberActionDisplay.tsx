@@ -14,15 +14,15 @@ import {
 } from '@mui/material';
 import ChannelMemberActionMenu from './ChannelMemberActionMenu';
 
-const TempRole = ChannelMemberRole.OWNER;
-
 interface ChannelMemberActionDisplayProps {
   channelMember: ChannelMembers;
+  currentRole: ChannelMemberRole;
   handleAction: (...args: any) => Promise<void>;
 }
 
 export function ChannelMemberActionDisplay({
   channelMember,
+  currentRole,
   handleAction,
 }: ChannelMemberActionDisplayProps) {
   return (
@@ -44,7 +44,7 @@ export function ChannelMemberActionDisplay({
           {channelMember.role !== ChannelMemberRole.OWNER ? (
             <ChannelMemberActionMenu
               channelMember={channelMember}
-              currentUserRole={TempRole}
+              currentUserRole={currentRole}
               handleAction={handleAction}
             />
           ) : null}

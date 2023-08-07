@@ -62,7 +62,6 @@ export function ChannelMemberDisplay({
 
             <IconButton
               onClick={() => {
-                console.log('printing admin button click');
                 // need to think on how to handle owner
                 if (channelMember.role === ChannelMemberRole.MEMBER) {
                   handleAction(channelMember, ChannelMemberAction.ADMIN);

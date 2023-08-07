@@ -32,6 +32,7 @@ interface ChannelMemberStore {
   };
   checks: {
     isChannelOwner: (userID: number, channelID: number) => boolean;
+    isChannelAdmin: (userID: number, channelID: number) => boolean;
   };
 }
 
@@ -153,6 +154,19 @@ function isChannelOwner(
   );
 }
 
+function isChannelAdmin(
+  get: StoreGetter,
+  userID: number,
+  channelID: number,
+): boolean {
+  return get().data.channelMembers.some(
+    (localMember) =>
+      localMember.user.id === userID &&
+      localMember.channel.id === channelID &&
+      localMember.role === ChannelMemberRole.ADMIN,
+  );
+}
+
 const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
   data: { channelMembers: [] },
   actions: {
@@ -171,6 +185,8 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
   checks: {
     isChannelOwner: (userID, channelID) =>
       isChannelOwner(get, userID, channelID),
+    isChannelAdmin: (userID, channelID) =>
+      isChannelAdmin(get, userID, channelID),
   },
 }));
 
