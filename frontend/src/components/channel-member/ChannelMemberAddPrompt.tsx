@@ -59,7 +59,15 @@ export function ChannelMemberAddPrompt({
   }, [actionClicked, backClicked]);
 
   return (
-    <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
+    <Stack
+      maxHeight={200}
+      spacing={1}
+      sx={{
+        p: 1,
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { display: 'none' },
+      }}
+    >
       {friends.length > 0 &&
         friends
           .filter(

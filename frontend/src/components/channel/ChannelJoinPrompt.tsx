@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import DialogPrompt from '../utils/LegacyDialogPrompt';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { Stack } from '@mui/material';
 import { ChannelDisplay } from './ChannelDisplay';
@@ -11,7 +10,10 @@ import {
 } from '@/lib/stores/useChannelStore';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
 import callAPI from '@/lib/callAPI';
-import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
+import {
+  useChannelMemberActions,
+  useChannelMemberChecks,
+} from '@/lib/stores/useChannelMemberStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import emitToSocket from '@/lib/emitToSocket';
@@ -28,6 +30,7 @@ export default function ChannelJoinPrompt() {
   const joinedChannels = useJoinedChannels();
   const { addJoinedChannel } = useChannelActions();
   const { addChannelMember, getChannelMember } = useChannelMemberActions();
+  const { isMemberBanned } = useChannelMemberChecks();
   const { displayNotification } = useNotificationActions();
   const channelSocket = useChannelSocket();
   const [channelSearch, setChannelSearch] = useState('');
@@ -124,11 +127,20 @@ export default function ChannelJoinPrompt() {
       variant='standard'
     />
   ) : (
-    <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
+    <Stack
+      maxHeight={200}
+      spacing={1}
+      sx={{
+        p: 1,
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { display: 'none' },
+      }}
+    >
       {channels
         .filter(
           (channel) =>
             !joinedChannels[channel.id] &&
+            !isMemberBanned(currentUser.id, channel.id) &&
             channel.name
               .toLowerCase()
               .includes(channelSearch.trim().toLowerCase()),

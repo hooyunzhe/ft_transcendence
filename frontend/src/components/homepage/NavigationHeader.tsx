@@ -1,4 +1,5 @@
 'use client';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
 import {
@@ -13,6 +14,7 @@ import { Avatar, Box, Divider, Drawer, Tab, Tabs } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 export default function NavigationHeader() {
+  const currentUser = useCurrentUser();
   const currentView = useCurrentView();
   const { changeCurrentView } = useUtilActions();
   const [open, setOpen] = useState(false);
@@ -93,7 +95,7 @@ export default function NavigationHeader() {
           orientation='vertical'
           variant='middle'
         />
-        <Avatar alt='Avatar'></Avatar>
+        <Avatar alt='Avatar' src={currentUser.avatar_url} />
       </Box>
     </Drawer>
   );

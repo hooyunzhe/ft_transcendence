@@ -123,6 +123,7 @@ export function ChannelMemberList() {
     const data = {
       memberID: member.id,
       channelID: member.channel.id,
+      userID: member.user.id,
       newStatus: ChannelMemberStatus.DEFAULT,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
@@ -139,6 +140,7 @@ export function ChannelMemberList() {
     const data = {
       memberID: member.id,
       channelID: member.channel.id,
+      userID: member.user.id,
       newStatus: ChannelMemberStatus.MUTED,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
@@ -155,6 +157,7 @@ export function ChannelMemberList() {
     const data = {
       memberID: member.id,
       channelID: member.channel.id,
+      userID: member.user.id,
       newStatus: ChannelMemberStatus.BANNED,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
@@ -257,23 +260,23 @@ export function ChannelMemberList() {
 
   return selectedChannel ? (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
-      <ListHeader title='My retarded channel member list'></ListHeader>
+      <ListHeader title='Members' />
       <Button
+        variant='contained'
         onClick={() =>
           displayDialog(
-            'Add Channel Member',
-            'Add Channel Member here',
+            'Add Member',
+            'Add members here',
             <ChannelMemberAddPrompt
               addUser={addUser}
               selectedChannel={selectedChannel}
-            ></ChannelMemberAddPrompt>,
+            />,
             'Add',
           )
         }
       >
-        Add Channel Member
+        Add Member
       </Button>
-
       {channelMembers
         .filter((members) => members.channel.id === selectedChannel.id)
         .map((channelMember: ChannelMembers, index: number) => (
@@ -286,6 +289,6 @@ export function ChannelMemberList() {
         ))}
     </Stack>
   ) : (
-    <ListHeader title='My retarded channel member list'></ListHeader>
+    <ListHeader title='Members' />
   );
 }

@@ -76,7 +76,6 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: number,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log('---delete channel in gateway---');
     client
       .to([String(data), String(client.data.user_id)])
       .emit('deleteChannel', data);

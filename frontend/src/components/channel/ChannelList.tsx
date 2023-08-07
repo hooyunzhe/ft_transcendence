@@ -29,7 +29,7 @@ export function ChannelList() {
   const selectedChannel = useSelectedChannel();
   const { setSelectedChannel } = useChannelActions();
   const { setSelectedFriend } = useFriendActions();
-  const { isChannelOwner } = useChannelMemberChecks();
+  const { isChannelOwner, isMemberBanned } = useChannelMemberChecks();
   const { getChannelMember } = useChannelMemberActions();
   const { setCurrentView } = useUtilActions();
   const { displayDialog } = useDialogActions();
@@ -37,6 +37,7 @@ export function ChannelList() {
   return (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
       <Button
+        variant='contained'
         onClick={() =>
           displayDialog(
             'Channel Creation',
@@ -49,10 +50,11 @@ export function ChannelList() {
         Create Channel
       </Button>
       <Button
+        variant='contained'
         onClick={() =>
           displayDialog(
             'Channel Join',
-            'Join channel here',
+            'Join channels here',
             <ChannelJoinPrompt />,
             'Join',
           )
@@ -63,7 +65,9 @@ export function ChannelList() {
       {channels
         .filter(
           (channel) =>
-            joinedChannels[channel.id] && channel.type !== ChannelType.DIRECT,
+            joinedChannels[channel.id] &&
+            !isMemberBanned(currentUser.id, channel.id) &&
+            channel.type !== ChannelType.DIRECT,
         )
         .sort((channelA, channelB) => {
           return (

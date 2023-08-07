@@ -8,5 +8,6 @@ export interface User {
   id: number;
   username: string;
   refresh_token: string;
+  avatar_url: string;
   date_of_creation: Date;
 }

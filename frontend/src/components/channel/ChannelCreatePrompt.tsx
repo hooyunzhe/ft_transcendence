@@ -41,10 +41,6 @@ export default function ChannelCreatePrompt() {
   const { actionClicked, backClicked } = useDialogTriggers();
   const { resetDialog, resetTriggers } = useDialogActions();
 
-  function resetDisplay() {
-    setDisplayPasswordPrompt(false);
-  }
-
   function resetState() {
     setChannelName('');
     setChannelType(ChannelType.PUBLIC);
@@ -86,6 +82,9 @@ export default function ChannelCreatePrompt() {
   }
 
   async function handleCreateChannelAction(): Promise<void> {
+    if (!channelName) {
+      throw 'Channel name cannot be empty';
+    }
     if (checkChannelExists(channelName.trim())) {
       throw 'Channel already exists';
     }
@@ -125,7 +124,12 @@ export default function ChannelCreatePrompt() {
       }
     }
     if (backClicked) {
-      resetDialog();
+      if (displayPasswordPrompt) {
+        setDisplayPasswordPrompt(false);
+        resetTriggers();
+      } else {
+        resetDialog();
+      }
     }
   }, [actionClicked, backClicked]);
 

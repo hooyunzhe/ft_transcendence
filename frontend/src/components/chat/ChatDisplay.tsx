@@ -15,6 +15,7 @@ interface ChatDisplayProps {
   type: MessageType;
   dateOfCreation: string;
   senderName: string;
+  avatarUrl: string;
 }
 
 export default function ChatDisplay({
@@ -22,6 +23,7 @@ export default function ChatDisplay({
   type,
   dateOfCreation,
   senderName,
+  avatarUrl,
 }: ChatDisplayProps) {
   return (
     <Box display='flex' flexDirection='column' alignItems='flex-start'>
@@ -33,7 +35,7 @@ export default function ChatDisplay({
           }}
         >
           <ListItemAvatar>
-            <Avatar alt='' />
+            <Avatar alt='' src={avatarUrl} />
           </ListItemAvatar>
           <ListItemText
             primary={content}

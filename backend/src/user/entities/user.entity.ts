@@ -28,6 +28,9 @@ export class User {
   @Column()
   refresh_token: string;
 
+  @Column()
+  avatar_url: string;
+
   @CreateDateColumn()
   date_of_creation: Date;
 

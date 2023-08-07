@@ -12,7 +12,7 @@ import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
-import { Button, TextField } from '@mui/material';
+import { TextField } from '@mui/material';
 
 export default function FriendAddPrompt() {
   const currentUser = useCurrentUser();
@@ -101,16 +101,15 @@ export default function FriendAddPrompt() {
 
   return (
     <TextField
+      fullWidth
       autoComplete='off'
+      margin='dense'
+      label='Username'
+      variant='standard'
+      value={username}
       onChange={(event) => {
         setUsername(event.target.value);
       }}
-      margin='dense'
-      id='standard-basic'
-      label='username...'
-      variant='standard'
-      fullWidth
-      value={username}
-    ></TextField>
+    />
   );
 }

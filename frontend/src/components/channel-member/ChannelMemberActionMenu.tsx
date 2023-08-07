@@ -13,7 +13,6 @@ import {
   ListItemIcon,
   ListItemText,
   MenuList,
-  Paper,
 } from '@mui/material';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import AddModeratorIcon from '@mui/icons-material/AddModerator';
@@ -74,100 +73,98 @@ export default function ChannelMemberMenu({
           horizontal: 'left',
         }}
       >
-        <Paper sx={{ width: 320, maxWidth: '100%' }}>
-          <MenuList>
-            {currentUserRole == ChannelMemberRole.OWNER ? (
-              <MenuItem
-                onClick={() =>
-                  handleAction(channelMember, ChannelMemberAction.CHOWN)
+        <MenuList>
+          {currentUserRole == ChannelMemberRole.OWNER ? (
+            <MenuItem
+              onClick={() =>
+                handleAction(channelMember, ChannelMemberAction.CHOWN)
+              }
+            >
+              <ListItemIcon>
+                <FortIcon fontSize='small' />
+              </ListItemIcon>
+              <ListItemText>Pass Channel Ownership</ListItemText>
+            </MenuItem>
+          ) : null}
+
+          {currentUserRole !== ChannelMemberRole.MEMBER ? (
+            <MenuItem
+              onClick={() =>
+                handleAction(channelMember, ChannelMemberAction.BAN)
+              }
+            >
+              <ListItemIcon>
+                <GavelRoundedIcon fontSize='small' />
+              </ListItemIcon>
+              <ListItemText>Ban User</ListItemText>
+            </MenuItem>
+          ) : null}
+
+          {currentUserRole !== ChannelMemberRole.MEMBER ? (
+            <MenuItem
+              onClick={() => {
+                handleAction(channelMember, ChannelMemberAction.KICK);
+              }}
+            >
+              <ListItemIcon>
+                <SportsMartialArtsIcon fontSize='small' />
+              </ListItemIcon>
+              <ListItemText>Kick User</ListItemText>
+            </MenuItem>
+          ) : null}
+
+          {currentUserRole === ChannelMemberRole.OWNER ? (
+            <MenuItem
+              onClick={() => {
+                if (channelMember.role === ChannelMemberRole.MEMBER) {
+                  handleAction(channelMember, ChannelMemberAction.ADMIN);
+                } else {
+                  handleAction(channelMember, ChannelMemberAction.UNADMIN);
                 }
-              >
+              }}
+            >
+              <>
                 <ListItemIcon>
-                  <FortIcon fontSize='small' />
-                </ListItemIcon>
-                <ListItemText>Pass Channel Ownership</ListItemText>
-              </MenuItem>
-            ) : null}
-
-            {currentUserRole !== ChannelMemberRole.MEMBER ? (
-              <MenuItem
-                onClick={() =>
-                  handleAction(channelMember, ChannelMemberAction.BAN)
-                }
-              >
-                <ListItemIcon>
-                  <GavelRoundedIcon fontSize='small' />
-                </ListItemIcon>
-                <ListItemText>Ban User</ListItemText>
-              </MenuItem>
-            ) : null}
-
-            {currentUserRole !== ChannelMemberRole.MEMBER ? (
-              <MenuItem
-                onClick={() => {
-                  handleAction(channelMember, ChannelMemberAction.KICK);
-                }}
-              >
-                <ListItemIcon>
-                  <SportsMartialArtsIcon fontSize='small' />
-                </ListItemIcon>
-                <ListItemText>Kick User</ListItemText>
-              </MenuItem>
-            ) : null}
-
-            {currentUserRole === ChannelMemberRole.OWNER ? (
-              <MenuItem
-                onClick={() => {
-                  if (channelMember.role === ChannelMemberRole.MEMBER) {
-                    handleAction(channelMember, ChannelMemberAction.ADMIN);
-                  } else {
-                    handleAction(channelMember, ChannelMemberAction.UNADMIN);
-                  }
-                }}
-              >
-                <>
-                  <ListItemIcon>
-                    {channelMember.role === ChannelMemberRole.MEMBER ? (
-                      <AddModeratorIcon />
-                    ) : (
-                      <RemoveModeratorIcon />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText>
-                    {channelMember.role === ChannelMemberRole.MEMBER
-                      ? 'Promote to Admin'
-                      : 'Demote to Member'}
-                  </ListItemText>
-                </>
-              </MenuItem>
-            ) : null}
-
-            {currentUserRole !== ChannelMemberRole.MEMBER ? (
-              <MenuItem
-                onClick={() => {
-                  if (channelMember.status === ChannelMemberStatus.MUTED) {
-                    handleAction(channelMember, ChannelMemberAction.UNMUTE);
-                  } else {
-                    handleAction(channelMember, ChannelMemberAction.MUTE);
-                  }
-                }}
-              >
-                <ListItemIcon>
-                  {channelMember.status === ChannelMemberStatus.MUTED ? (
-                    <CommentsDisabledIcon />
+                  {channelMember.role === ChannelMemberRole.MEMBER ? (
+                    <AddModeratorIcon />
                   ) : (
-                    <CommentIcon />
+                    <RemoveModeratorIcon />
                   )}
                 </ListItemIcon>
                 <ListItemText>
-                  {channelMember.status === ChannelMemberStatus.MUTED
-                    ? 'Unmute User'
-                    : 'Mute User'}
+                  {channelMember.role === ChannelMemberRole.MEMBER
+                    ? 'Promote to Admin'
+                    : 'Demote to Member'}
                 </ListItemText>
-              </MenuItem>
-            ) : null}
-          </MenuList>
-        </Paper>
+              </>
+            </MenuItem>
+          ) : null}
+
+          {currentUserRole !== ChannelMemberRole.MEMBER ? (
+            <MenuItem
+              onClick={() => {
+                if (channelMember.status === ChannelMemberStatus.MUTED) {
+                  handleAction(channelMember, ChannelMemberAction.UNMUTE);
+                } else {
+                  handleAction(channelMember, ChannelMemberAction.MUTE);
+                }
+              }}
+            >
+              <ListItemIcon>
+                {channelMember.status === ChannelMemberStatus.MUTED ? (
+                  <CommentsDisabledIcon />
+                ) : (
+                  <CommentIcon />
+                )}
+              </ListItemIcon>
+              <ListItemText>
+                {channelMember.status === ChannelMemberStatus.MUTED
+                  ? 'Unmute User'
+                  : 'Mute User'}
+              </ListItemText>
+            </MenuItem>
+          ) : null}
+        </MenuList>
       </Menu>
     </div>
   );

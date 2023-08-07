@@ -204,12 +204,13 @@ export default function FriendStack() {
   return (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
       <Button
+        variant='contained'
         onClick={() =>
           displayDialog(
             'Add Friend',
-            'Add people to your friendlist',
+            'Add people to your friend list',
             <FriendAddPrompt />,
-            'Change',
+            'Add',
           )
         }
       >

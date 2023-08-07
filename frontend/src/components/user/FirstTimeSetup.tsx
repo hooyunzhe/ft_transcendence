@@ -1,32 +1,112 @@
 'use client';
 import signUp from '@/lib/signUp';
 import { useUserActions } from '@/lib/stores/useUserStore';
-import { TextField } from '@mui/material';
-import { useState } from 'react';
+import {
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Grow,
+  Slide,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { Session } from 'next-auth';
+import { useEffect, useRef, useState } from 'react';
 
 interface FirstTimeSetupProps {
-  refresh_token: string;
+  session: Session;
 }
 
-export default function FirstTimeSetup({ refresh_token }: FirstTimeSetupProps) {
+export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
   const { setCurrentUser } = useUserActions();
   const [username, setUsername] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [largeAvatarUrl, setLargeAvatarUrl] = useState('');
+  const uploadRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    async function getData() {
+      console.log(session.access_token);
+
+      const userData = await fetch(
+        `https://api.intra.42.fr/v2/me?access_token=${session.access_token}`,
+        {
+          cache: 'no-store',
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        },
+      ).then((res) => res.json());
+      setAvatarUrl(userData.image.versions.small);
+      setLargeAvatarUrl(userData.image.versions.large);
+    }
+
+    getData();
+  }, []);
 
   return (
-    <TextField
-      autoComplete='off'
-      id='username'
-      label='Username'
-      onChange={(e) => {
-        setUsername(e.target.value);
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          signUp(username, refresh_token).then((newUser) =>
-            setCurrentUser(newUser),
-          );
-        }
-      }}
-    ></TextField>
+    <Box
+      width='60vw'
+      height='70vh'
+      display='flex'
+      flexDirection='column'
+      justifyContent='space-evenly'
+    >
+      <Slide direction='down' in timeout={2500}>
+        <Typography variant='h1' align='center'>
+          Welcome, {session.user?.name}
+        </Typography>
+      </Slide>
+      <Grow in={avatarUrl.length > 0} timeout={2500}>
+        <Badge
+          sx={{
+            alignSelf: 'center',
+          }}
+          overlap='circular'
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          badgeContent={
+            <Button
+              size='small'
+              variant='contained'
+              onClick={() => uploadRef && uploadRef.current?.click()}
+            >
+              Change
+              <input
+                ref={uploadRef}
+                type='file'
+                hidden
+                onClick={() => console.log('INPUT CLICKED')}
+              />
+            </Button>
+          }
+        >
+          <Avatar
+            alt='profile'
+            src={largeAvatarUrl}
+            sx={{ width: 250, height: 250 }}
+          />
+        </Badge>
+      </Grow>
+      <Slide direction='up' in timeout={2500}>
+        <TextField
+          sx={{
+            maxWidth: '30vw',
+            marginLeft: '15vw',
+          }}
+          autoComplete='off'
+          label='Username'
+          onChange={(e) => {
+            setUsername(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              signUp(username, session.refresh_token, avatarUrl).then(
+                (newUser) => setCurrentUser(newUser),
+              );
+            }
+          }}
+        />
+      </Slide>
+    </Box>
   );
 }

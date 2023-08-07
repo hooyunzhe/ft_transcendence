@@ -38,6 +38,7 @@ export default function ChatList() {
               type={message.type}
               dateOfCreation={message.date_of_creation}
               senderName={message.user.username}
+              avatarUrl={message.user.avatar_url}
             />
           ))
       ) : (

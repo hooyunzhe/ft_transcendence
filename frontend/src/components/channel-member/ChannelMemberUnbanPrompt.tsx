@@ -4,9 +4,8 @@ import {
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
 import { useEffect, useState } from 'react';
-import DialogPrompt from '../utils/LegacyDialogPrompt';
 import BanListDisplay from './ChannelMemberBanListDisplay';
-import { Button, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import callAPI from '@/lib/callAPI';
 import {
   useChannelMemberActions,
@@ -17,41 +16,44 @@ import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
-import { useNotification } from '@/lib/stores/useNotificationStore';
+import emitToSocket from '@/lib/emitToSocket';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 export function ChannelMemberUnbanPrompt() {
   const channelMembers = useChannelMembers();
+  const channelSocket = useChannelSocket();
   const { kickChannelMember } = useChannelMemberActions();
   const { displayConfirmation } = useConfirmationActions();
-  const [selectedMember, setSelectedMember] = useState<ChannelMembers>();
   const { resetDialog } = useDialogActions();
-  const notif = useNotification(); // for my errors
   const { actionClicked, backClicked } = useDialogTriggers();
+  const { displayNotification } = useNotificationActions();
+  const [selectedMember, setSelectedMember] = useState<ChannelMembers>();
 
-  const [memberSearch, setMemberSearch] = useState('');
-
-  async function kickMember(memberID: number): Promise<string> {
-    await callAPI('DELETE', 'channel-members', { id: memberID });
-    kickChannelMember(memberID);
-    return '';
+  async function kickMember(member: ChannelMembers): Promise<void> {
+    await callAPI('DELETE', 'channel-members', { id: member.id });
+    kickChannelMember(member.id);
+    emitToSocket(channelSocket, 'kickMember', member);
   }
 
   async function handleUnbanMember() {
     if (!selectedMember) {
-      throw 'User does not exist';
+      throw 'Please select a member';
     }
 
     return displayConfirmation(
       'Unban ' + selectedMember.user.username + '?',
       'You are unbanning this user from this channel.',
-      selectedMember.id,
+      selectedMember,
       kickMember,
     );
   }
 
   useEffect(() => {
     if (actionClicked) {
-      handleUnbanMember().then(() => resetDialog());
+      handleUnbanMember()
+        .then(() => resetDialog())
+        .catch((error) => displayNotification('error', error));
     }
 
     if (backClicked) {
@@ -62,9 +64,7 @@ export function ChannelMemberUnbanPrompt() {
   return (
     <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
       {channelMembers
-        .filter((member) => {
-          return member.status === ChannelMemberStatus.BANNED;
-        })
+        .filter((member) => member.status === ChannelMemberStatus.BANNED)
         .map((member: ChannelMembers, index: number) => (
           <BanListDisplay
             key={index}
@@ -73,7 +73,7 @@ export function ChannelMemberUnbanPrompt() {
               setSelectedMember(member);
             }}
             member={member}
-          ></BanListDisplay>
+          />
         ))}
     </Stack>
   );

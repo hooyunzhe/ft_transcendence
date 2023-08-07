@@ -283,15 +283,25 @@ function setupChannelSocketEvents(
     }
   });
 
-  channelSocket.on('changeStatus', (channelMember: ChannelMembers) => {
-    if (
-      channelMember.user.id === currentUserID &&
-      channelMember.status === ChannelMemberStatus.BANNED
-    ) {
-      resetSelectedChannel(set, channelMember.channel.id);
-      deleteJoinedChannel(set, channelMember.channel.id);
-    }
-  });
+  channelSocket.on(
+    'changeStatus',
+    ({
+      channelID,
+      userID,
+      newStatus,
+    }: {
+      channelID: number;
+      userID: number;
+      newStatus: ChannelMemberStatus;
+    }) => {
+      if (
+        userID === currentUserID &&
+        newStatus === ChannelMemberStatus.BANNED
+      ) {
+        resetSelectedChannel(set, channelID);
+      }
+    },
+  );
 
   channelSocket.on(
     'changeChannelName',

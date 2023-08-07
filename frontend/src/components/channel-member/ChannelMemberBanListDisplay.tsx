@@ -23,13 +23,10 @@ export default function BanListDisplay({
 }: BanListDisplayProps) {
   return (
     <Paper elevation={2}>
-      <ListItemButton
-        selected={selected === member.user.id}
-        onClick={selectCurrent}
-      >
+      <ListItemButton selected={selected === member.id} onClick={selectCurrent}>
         <ListItem>
           <ListItemAvatar>
-            <Avatar alt=''></Avatar>
+            <Avatar alt='' src={member.user.avatar_url} />
           </ListItemAvatar>
           <ListItemText primary={member.user.username} />
         </ListItem>

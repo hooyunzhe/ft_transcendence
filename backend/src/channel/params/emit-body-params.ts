@@ -24,5 +24,6 @@ export class ChangeChannelMemberRoleEmitBodyParams {
 export class ChangeChannelMemberStatusEmitBodyParams {
   memberID: number;
   channelID: number;
+  userID: number;
   newStatus: ChannelMemberStatus;
 }

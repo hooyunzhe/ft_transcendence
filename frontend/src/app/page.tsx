@@ -50,9 +50,7 @@ export default function Home() {
       }}
     >
       {session === null && <Login />}
-      {session && user === null && (
-        <FirstTimeSetup refresh_token={session.refresh_token} />
-      )}
+      {session && user === null && <FirstTimeSetup session={session} />}
       {session && user && user.id !== 0 && <Cyberpong />}
     </Box>
   );

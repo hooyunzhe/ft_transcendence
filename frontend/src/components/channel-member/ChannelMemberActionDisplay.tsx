@@ -30,7 +30,7 @@ export function ChannelMemberActionDisplay({
       {channelMember.status !== ChannelMemberStatus.BANNED ? (
         <ListItem>
           <ListItemAvatar>
-            <Avatar alt=''></Avatar>
+            <Avatar alt='' src={channelMember.user.avatar_url} />
           </ListItemAvatar>
           <ListItemText
             primary={channelMember.user.username}
