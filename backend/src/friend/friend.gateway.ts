@@ -96,4 +96,17 @@ export class FriendGateway implements OnGatewayConnection {
     );
     this.emitToSelf(client, 'rejectRequest', request.outgoing_friend);
   }
+
+  @SubscribeMessage('deleteFriend')
+  deleteFriend(
+    @MessageBody() request: Friend,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.emitToRoom(
+      request.incoming_friend.id,
+      'deleteFriend',
+      request.outgoing_friend,
+    );
+    this.emitToSelf(client, 'deleteFriend', request.outgoing_friend);
+  }
 }

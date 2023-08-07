@@ -52,7 +52,7 @@ export class ChannelGateway implements OnGatewayConnection {
 
   @SubscribeMessage('newChannel')
   newChannel(@MessageBody() data: Channel, @ConnectedSocket() client: Socket) {
-    client.emit('newChannel', data);
+    client.broadcast.emit('newChannel', data);
   }
 
   @SubscribeMessage('changeChannelName')
@@ -76,6 +76,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: number,
     @ConnectedSocket() client: Socket,
   ) {
+    console.log('---delete channel in gateway---');
     client
       .to([String(data), String(client.data.user_id)])
       .emit('deleteChannel', data);
@@ -92,20 +93,20 @@ export class ChannelGateway implements OnGatewayConnection {
       .emit('newMember', data);
   }
 
-  @SubscribeMessage('changeMemberRole')
+  @SubscribeMessage('changeRole')
   changeMemberRole(
     @MessageBody() data: ChangeChannelMemberRoleEmitBodyParams,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.channelID)).emit('changeMemberRole', data);
+    client.to(String(data.channelID)).emit('changeRole', data);
   }
 
-  @SubscribeMessage('changeMemberStatus')
+  @SubscribeMessage('changeStatus')
   changeMemberStatus(
     @MessageBody() data: ChangeChannelMemberStatusEmitBodyParams,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.channelID)).emit('changeMemberStatus', data);
+    client.to(String(data.channelID)).emit('changeStatus', data);
   }
 
   @SubscribeMessage('kickMember')

@@ -99,6 +99,9 @@ function setupFriendSocketEvents(set: StoreSetter, friendSocket: Socket): void {
   friendSocket.on('rejectRequest', (sender: User) =>
     deleteFriend(set, sender.id),
   );
+  friendSocket.on('deleteFriend', (sender: User) =>
+    deleteFriend(set, sender.id),
+  );
 }
 
 const useFriendStore = create<FriendStore>()((set) => ({

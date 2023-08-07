@@ -1,5 +1,5 @@
 'use client';
-import { Friend } from '@/types/FriendTypes';
+import { Friend, FriendStatus } from '@/types/FriendTypes';
 import { useEffect, useState } from 'react';
 import FriendDisplay from './ChannelMemberFriendDisplay';
 import { useChannelMembers } from '@/lib/stores/useChannelMemberStore';
@@ -11,15 +11,16 @@ import {
 } from '@/lib/stores/useDialogStore';
 import { Button, Stack } from '@mui/material';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { Channel } from '@/types/ChannelTypes';
 
 interface ChannelMemberAddPromptProps {
   addUser: (...args: any) => Promise<string>;
-  channelHash: string;
+  selectedChannel: Channel;
 }
 
 export function ChannelMemberAddPrompt({
   addUser,
-  channelHash,
+  selectedChannel,
 }: ChannelMemberAddPromptProps) {
   const channelMembers = useChannelMembers();
   const friends = useFriends();
@@ -40,7 +41,7 @@ export function ChannelMemberAddPrompt({
     if (!friendToJoin) {
       throw 'Invalid friend name!';
     }
-    addUser(friendToJoin.incoming_friend.id, channelHash);
+    addUser(friendToJoin.incoming_friend.id, selectedChannel.hash);
   }
 
   useEffect(() => {
@@ -61,10 +62,15 @@ export function ChannelMemberAddPrompt({
     <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
       {friends.length > 0 &&
         friends
-          .filter((friend) =>
-            channelMembers.every((member) => {
-              return member.user.id !== friend.incoming_friend.id;
-            }),
+          .filter(
+            (friend) =>
+              friend.status === FriendStatus.FRIENDS &&
+              channelMembers.every((member) => {
+                return (
+                  member.user.id !== friend.incoming_friend.id ||
+                  member.channel.id !== selectedChannel.id
+                );
+              }),
           )
           .map((friend: Friend, index: number) => (
             <FriendDisplay

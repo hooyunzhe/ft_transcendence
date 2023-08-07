@@ -85,10 +85,14 @@ function changeChannelMemberRole(
   memberID: number,
   newRole: ChannelMemberRole,
 ): void {
+  console.log('MemberID: ' + memberID + '\n');
+  console.log('newRole: ' + newRole + '\n');
   set(({ data }) => ({
     data: {
+      ...data,
       channelMembers: data.channelMembers.map((localMember) => {
         if (localMember.id === memberID) {
+          console.log('yay\n');
           localMember.role = newRole;
         }
         return localMember;
@@ -104,6 +108,7 @@ function changeChannelMemberStatus(
 ): void {
   set(({ data }) => ({
     data: {
+      ...data,
       channelMembers: data.channelMembers.map((localMember) => {
         if (localMember.id === memberID) {
           localMember.status = newStatus;
@@ -126,8 +131,17 @@ function setupChannelMemberSocketEvents(
   );
   channelSocket.on(
     'changeRole',
-    ({ memberID, newRole }: { memberID: number; newRole: ChannelMemberRole }) =>
-      changeChannelMemberRole(set, memberID, newRole),
+    ({
+      memberID,
+      channelID,
+      newRole,
+    }: {
+      memberID: number;
+      channelID: number;
+      newRole: ChannelMemberRole;
+    }) => {
+      changeChannelMemberRole(set, memberID, newRole);
+    },
   );
   channelSocket.on(
     'changeStatus',

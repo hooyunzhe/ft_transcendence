@@ -2,7 +2,10 @@ import { Channel, ChannelType } from '@/types/ChannelTypes';
 import callAPI from '../callAPI';
 import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
-import { ChannelMembers } from '@/types/ChannelMemberTypes';
+import {
+  ChannelMemberStatus,
+  ChannelMembers,
+} from '@/types/ChannelMemberTypes';
 
 interface ChannelStore {
   data: {
@@ -23,6 +26,7 @@ interface ChannelStore {
     updateRecentChannelActivity: (channelID: number) => void;
     setSelectedChannel: (channel: Channel | undefined) => void;
     setSelectedDirectChannel: (incomingID: number) => void;
+    resetSelectedChannel: (channelID: number) => void;
     setupChannelSocketEvents: (
       channelSocket: Socket,
       currentUserID: number,
@@ -225,6 +229,18 @@ function setSelectedDirectChannel(
   }
 }
 
+function resetSelectedChannel(set: StoreSetter, channelID: number): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      selectedChannel:
+        data.selectedChannel?.id === channelID
+          ? undefined
+          : data.selectedChannel,
+    },
+  }));
+}
+
 function checkChannelExists(get: StoreGetter, channelName: string): boolean {
   return get().data.channels.some((channel) => channel.name === channelName);
 }
@@ -254,9 +270,29 @@ function setupChannelSocketEvents(
       addJoinedChannel(set, channelMember.channel.id);
     }
   });
-  channelSocket.on('deleteChannel', (channelID: number) =>
-    deleteChannel(set, channelID),
-  );
+
+  channelSocket.on('deleteChannel', (channelID: number) => {
+    resetSelectedChannel(set, channelID);
+    deleteChannel(set, channelID);
+  });
+
+  channelSocket.on('kickMember', (channelMember: ChannelMembers) => {
+    if (channelMember.user.id === currentUserID) {
+      resetSelectedChannel(set, channelMember.channel.id);
+      deleteJoinedChannel(set, channelMember.channel.id);
+    }
+  });
+
+  channelSocket.on('changeStatus', (channelMember: ChannelMembers) => {
+    if (
+      channelMember.user.id === currentUserID &&
+      channelMember.status === ChannelMemberStatus.BANNED
+    ) {
+      resetSelectedChannel(set, channelMember.channel.id);
+      deleteJoinedChannel(set, channelMember.channel.id);
+    }
+  });
+
   channelSocket.on(
     'changeChannelName',
     ({ id, newName }: { id: number; newName: string }) =>
@@ -303,6 +339,7 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     setSelectedChannel: (channel) => setSelectedChannel(set, channel),
     setSelectedDirectChannel: (incomingID) =>
       setSelectedDirectChannel(set, get, incomingID),
+    resetSelectedChannel: (channelID) => resetSelectedChannel(set, channelID),
     setupChannelSocketEvents: (channelSocket, currentUserID) =>
       setupChannelSocketEvents(set, channelSocket, currentUserID),
     deleteJoinedChannel: (channelID) => deleteJoinedChannel(set, channelID),

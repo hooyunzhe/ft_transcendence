@@ -108,6 +108,7 @@ export function ChannelMemberList() {
       channelID: member.channel.id,
       newRole: ChannelMemberRole.MEMBER,
     };
+    console.log('---CHANGE ROLE TO MEMBER----\n');
     emitToSocket(channelSocket, 'changeRole', data);
     displayNotification('success', 'Channel member is now a member');
   }
@@ -264,7 +265,7 @@ export function ChannelMemberList() {
             'Add Channel Member here',
             <ChannelMemberAddPrompt
               addUser={addUser}
-              channelHash={selectedChannel.hash}
+              selectedChannel={selectedChannel}
             ></ChannelMemberAddPrompt>,
             'Add',
           )

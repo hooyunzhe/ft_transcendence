@@ -61,7 +61,7 @@ export default function ChannelCreatePrompt() {
     );
 
     if (newChannel) {
-      // addChannel(newChannel); // causes duplicate if created
+      addChannel(newChannel);
       emitToSocket(channelSocket, 'newChannel', newChannel);
 
       const channelCreator = JSON.parse(

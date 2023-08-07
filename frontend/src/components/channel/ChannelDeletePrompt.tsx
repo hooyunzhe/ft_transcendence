@@ -20,7 +20,7 @@ export default function ChannelDeletePrompt({
   channelID,
   channelName,
 }: ChannelDeletePromptProps) {
-  const { deleteChannel } = useChannelActions();
+  const { deleteChannel, resetSelectedChannel } = useChannelActions();
   const { displayNotification } = useNotificationActions();
   const channelSocket = useChannelSocket();
   const { actionClicked, backClicked } = useDialogTriggers();
@@ -35,6 +35,7 @@ export default function ChannelDeletePrompt({
     await callAPI('DELETE', 'channels', { id: channelID });
     deleteChannel(channelID);
     emitToSocket(channelSocket, 'deleteChannel', channelID);
+    resetSelectedChannel(channelID);
     displayNotification('error', 'Channel deleted');
   }
 

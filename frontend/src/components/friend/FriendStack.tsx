@@ -149,7 +149,7 @@ export default function FriendStack() {
   async function removeFriend(friendship: Friend): Promise<void> {
     await callFriendsAPI('DELETE', friendship.incoming_friend);
     deleteFriend(friendship.incoming_friend.id);
-    emitToSocket(friendSocket, 'deleteRequest', friendship);
+    emitToSocket(friendSocket, 'deleteFriend', friendship);
     displayNotification(
       'error',
       'Unfriended ' + friendship.incoming_friend.username,
