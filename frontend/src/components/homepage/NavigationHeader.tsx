@@ -96,6 +96,7 @@ export default function NavigationHeader() {
           variant='middle'
         />
         <Avatar src={currentUser.avatar_url} />
+        <div>{currentUser.username}</div>
       </Box>
     </Drawer>
   );

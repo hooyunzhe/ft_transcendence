@@ -59,7 +59,8 @@ export default function ChannelMemberDrawer() {
         }}
         variant='persistent'
         anchor='right'
-        open={channelMemberDrawerToggle ? true : false}
+        open
+        // open={channelMemberDrawerToggle ? true : false}
       >
         <ChannelMemberList />
       </Drawer>

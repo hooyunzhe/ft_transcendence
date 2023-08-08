@@ -1,5 +1,4 @@
 'use client';
-import * as React from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import {
@@ -22,6 +21,7 @@ import CommentIcon from '@mui/icons-material/Comment';
 import SportsMartialArtsIcon from '@mui/icons-material/SportsMartialArts';
 import GavelRoundedIcon from '@mui/icons-material/GavelRounded';
 import FortIcon from '@mui/icons-material/Fort';
+import { useState } from 'react';
 
 interface ChannelMemberActionMenuProps {
   channelMember: ChannelMembers;
@@ -34,7 +34,7 @@ export default function ChannelMemberMenu({
   currentUserRole,
   handleAction,
 }: ChannelMemberActionMenuProps) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

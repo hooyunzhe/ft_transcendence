@@ -1,6 +1,14 @@
 import { Channel } from './ChannelTypes';
 import { User } from './UserTypes';
 
+export enum ChannelMemberMuteDuration {
+  NONE = 'NONE',
+  MINUTE = 'MINUTE',
+  HOUR = 'HOUR',
+  DAY = 'DAY',
+  LIFETIME = 'LIFETIME',
+}
+
 export enum ChannelMemberAction {
   ADMIN = 'ADMIN',
   UNADMIN = 'UNADMIN',
