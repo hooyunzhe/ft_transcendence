@@ -87,7 +87,7 @@ export default function ChatBar() {
         }),
       );
 
-      if (newMessage) {
+      if (newMessage.status === 200) {
         setUnsentMessages((unsentMessages) => {
           const updatedUnsentMessages = [...unsentMessages];
 

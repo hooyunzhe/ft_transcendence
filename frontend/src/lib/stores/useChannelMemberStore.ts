@@ -86,14 +86,11 @@ function changeChannelMemberRole(
   memberID: number,
   newRole: ChannelMemberRole,
 ): void {
-  console.log('MemberID: ' + memberID + '\n');
-  console.log('newRole: ' + newRole + '\n');
   set(({ data }) => ({
     data: {
       ...data,
       channelMembers: data.channelMembers.map((localMember) => {
         if (localMember.id === memberID) {
-          console.log('yay\n');
           localMember.role = newRole;
         }
         return localMember;

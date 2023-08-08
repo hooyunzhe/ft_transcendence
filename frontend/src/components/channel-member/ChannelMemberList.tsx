@@ -120,7 +120,6 @@ export function ChannelMemberList() {
     callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.DEFAULT,
-      muted_until: new Date().toISOString(),
     });
     changeChannelMemberStatus(member.id, ChannelMemberStatus.DEFAULT);
     const data = {
@@ -133,9 +132,7 @@ export function ChannelMemberList() {
     displayNotification('success', 'Channel member unmuted');
   }
 
-  async function muteMember(member: ChannelMembers, duration?: Date) {
-    console.log('--Date\n--', new Date().toISOString());
-    console.log('-GG-: \n', duration);
+  async function muteMember(member: ChannelMembers, duration: Date) {
     callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.MUTED,

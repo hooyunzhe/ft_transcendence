@@ -26,6 +26,18 @@ export class ChannelMemberService {
     private readonly userService: UserService,
   ) {}
 
+  async checkMute(channelID: number, userID: number): Promise<boolean> {
+    const mutedChannelMember = await this.findExact(channelID, userID);
+
+    if (
+      mutedChannelMember.muted_until &&
+      mutedChannelMember.muted_until.getTime() >= Date.now()
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   async create(
     channelMemberDto: CreateChannelMemberDto,
   ): Promise<ChannelMember | null> {
