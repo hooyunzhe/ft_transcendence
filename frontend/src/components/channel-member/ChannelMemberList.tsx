@@ -177,18 +177,28 @@ export function ChannelMemberList() {
       console.log('FATAL ERROR: CURRENT OWNER NOT FOUND!');
       return undefined;
     }
-    changeChannelMemberStatus(member.id, ChannelMemberStatus.BANNED);
     callAPI('PATCH', 'channel-members', {
       id: currentOwner.id,
       role: ChannelMemberRole.ADMIN,
     });
+    callAPI('PATCH', 'channel-members', {
+      id: member.id,
+      role: ChannelMemberRole.OWNER,
+    });
     changeChannelMemberRole(currentOwner.id, ChannelMemberRole.ADMIN);
-    const data = {
+    changeChannelMemberRole(member.id, ChannelMemberRole.OWNER);
+    const newOwnerData = {
       memberID: member.id,
+      channelID: member.channel.id,
+      newRole: ChannelMemberRole.OWNER,
+    };
+    const oldOwnerData = {
+      memberID: currentOwner.id,
       channelID: member.channel.id,
       newRole: ChannelMemberRole.ADMIN,
     };
-    emitToSocket(channelSocket, 'changeStatus', data);
+    emitToSocket(channelSocket, 'changeRole', newOwnerData);
+    emitToSocket(channelSocket, 'changeRole', oldOwnerData);
     displayNotification('success', 'Channel ownership transferred');
   }
 
