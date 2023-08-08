@@ -24,13 +24,13 @@ import FortIcon from '@mui/icons-material/Fort';
 import { useState } from 'react';
 
 interface ChannelMemberActionMenuProps {
-  channelMember: ChannelMembers;
+  member: ChannelMembers;
   currentUserRole: ChannelMemberRole;
   handleAction: (...args: any) => Promise<void>;
 }
 
-export default function ChannelMemberMenu({
-  channelMember,
+export default function ChannelMemberActionMenu({
+  member,
   currentUserRole,
   handleAction,
 }: ChannelMemberActionMenuProps) {
@@ -45,7 +45,7 @@ export default function ChannelMemberMenu({
 
   return (
     <div>
-      {(channelMember.role != ChannelMemberRole.ADMIN &&
+      {(member.role != ChannelMemberRole.ADMIN &&
         currentUserRole === ChannelMemberRole.ADMIN) ||
       currentUserRole === ChannelMemberRole.OWNER ? (
         <IconButton
@@ -76,9 +76,7 @@ export default function ChannelMemberMenu({
         <MenuList>
           {currentUserRole == ChannelMemberRole.OWNER ? (
             <MenuItem
-              onClick={() =>
-                handleAction(channelMember, ChannelMemberAction.CHOWN)
-              }
+              onClick={() => handleAction(member, ChannelMemberAction.CHOWN)}
             >
               <ListItemIcon>
                 <FortIcon fontSize='small' />
@@ -89,9 +87,7 @@ export default function ChannelMemberMenu({
 
           {currentUserRole !== ChannelMemberRole.MEMBER ? (
             <MenuItem
-              onClick={() =>
-                handleAction(channelMember, ChannelMemberAction.BAN)
-              }
+              onClick={() => handleAction(member, ChannelMemberAction.BAN)}
             >
               <ListItemIcon>
                 <GavelRoundedIcon fontSize='small' />
@@ -103,7 +99,7 @@ export default function ChannelMemberMenu({
           {currentUserRole !== ChannelMemberRole.MEMBER ? (
             <MenuItem
               onClick={() => {
-                handleAction(channelMember, ChannelMemberAction.KICK);
+                handleAction(member, ChannelMemberAction.KICK);
               }}
             >
               <ListItemIcon>
@@ -116,23 +112,23 @@ export default function ChannelMemberMenu({
           {currentUserRole === ChannelMemberRole.OWNER ? (
             <MenuItem
               onClick={() => {
-                if (channelMember.role === ChannelMemberRole.MEMBER) {
-                  handleAction(channelMember, ChannelMemberAction.ADMIN);
+                if (member.role === ChannelMemberRole.MEMBER) {
+                  handleAction(member, ChannelMemberAction.ADMIN);
                 } else {
-                  handleAction(channelMember, ChannelMemberAction.UNADMIN);
+                  handleAction(member, ChannelMemberAction.UNADMIN);
                 }
               }}
             >
               <>
                 <ListItemIcon>
-                  {channelMember.role === ChannelMemberRole.MEMBER ? (
+                  {member.role === ChannelMemberRole.MEMBER ? (
                     <AddModeratorIcon />
                   ) : (
                     <RemoveModeratorIcon />
                   )}
                 </ListItemIcon>
                 <ListItemText>
-                  {channelMember.role === ChannelMemberRole.MEMBER
+                  {member.role === ChannelMemberRole.MEMBER
                     ? 'Promote to Admin'
                     : 'Demote to Member'}
                 </ListItemText>
@@ -143,22 +139,22 @@ export default function ChannelMemberMenu({
           {currentUserRole !== ChannelMemberRole.MEMBER ? (
             <MenuItem
               onClick={() => {
-                if (channelMember.status === ChannelMemberStatus.MUTED) {
-                  handleAction(channelMember, ChannelMemberAction.UNMUTE);
+                if (member.status === ChannelMemberStatus.MUTED) {
+                  handleAction(member, ChannelMemberAction.UNMUTE);
                 } else {
-                  handleAction(channelMember, ChannelMemberAction.MUTE);
+                  handleAction(member, ChannelMemberAction.MUTE);
                 }
               }}
             >
               <ListItemIcon>
-                {channelMember.status === ChannelMemberStatus.MUTED ? (
+                {member.status === ChannelMemberStatus.MUTED ? (
                   <CommentsDisabledIcon />
                 ) : (
                   <CommentIcon />
                 )}
               </ListItemIcon>
               <ListItemText>
-                {channelMember.status === ChannelMemberStatus.MUTED
+                {member.status === ChannelMemberStatus.MUTED
                   ? 'Unmute User'
                   : 'Mute User'}
               </ListItemText>

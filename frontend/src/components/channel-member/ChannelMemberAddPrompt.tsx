@@ -1,16 +1,16 @@
 'use client';
 import { Friend, FriendStatus } from '@/types/FriendTypes';
 import { useEffect, useState } from 'react';
-import FriendDisplay from './ChannelMemberFriendDisplay';
 import { useChannelMembers } from '@/lib/stores/useChannelMemberStore';
 import { useFriends } from '@/lib/stores/useFriendStore';
 import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
-import { Button, Stack } from '@mui/material';
+import { ListItemButton, Paper, Stack } from '@mui/material';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { Channel } from '@/types/ChannelTypes';
+import ChannelMemberDisplay from './ChannelMemberDisplay';
 
 interface ChannelMemberAddPromptProps {
   addUser: (...args: any) => Promise<string>;
@@ -24,7 +24,6 @@ export function ChannelMemberAddPrompt({
   const channelMembers = useChannelMembers();
   const friends = useFriends();
   const [selectedFriend, setSelectedFriend] = useState<Friend | undefined>();
-  const [friendSearch, setFriendSearch] = useState('');
   const { actionClicked, backClicked } = useDialogTriggers();
   const { resetDialog, resetTriggers } = useDialogActions();
   const { displayNotification } = useNotificationActions();
@@ -80,15 +79,18 @@ export function ChannelMemberAddPrompt({
               }),
           )
           .map((friend: Friend, index: number) => (
-            <FriendDisplay
-              key={index}
-              selected={selectedFriend?.incoming_friend.id ?? 0}
-              selectCurrent={() => {
-                setFriendSearch(friend.incoming_friend.username);
-                setSelectedFriend(friend);
-              }}
-              friend={friend}
-            ></FriendDisplay>
+            <Paper key={index} elevation={2}>
+              <ListItemButton
+                selected={selectedFriend?.id === friend.id ?? false}
+                onClick={() =>
+                  selectedFriend?.id === friend.id
+                    ? setSelectedFriend(undefined)
+                    : setSelectedFriend(friend)
+                }
+              >
+                <ChannelMemberDisplay user={friend.incoming_friend} />
+              </ListItemButton>
+            </Paper>
           ))}
     </Stack>
   );

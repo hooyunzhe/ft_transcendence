@@ -5,10 +5,8 @@ import {
   ChannelMemberAction,
   ChannelMemberRole,
   ChannelMemberStatus,
-  ChannelMemberMuteDuration,
 } from '@/types/ChannelMemberTypes';
-import { Button, RadioGroup, Stack } from '@mui/material';
-import { ChannelMemberActionDisplay } from './ChannelMemberActionDisplay';
+import { Button, ListItem, Paper, Stack } from '@mui/material';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
@@ -23,8 +21,9 @@ import emitToSocket from '@/lib/emitToSocket';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { useState } from 'react';
 import { ChannelMemberMutePrompt } from './ChannelMemberMutePrompt';
+import ChannelMemberActionMenu from './ChannelMemberActionMenu';
+import ChannelMemberDisplay from './ChannelMemberDisplay';
 
 export function ChannelMemberList() {
   const channelMembers = useChannelMembers();
@@ -41,7 +40,6 @@ export function ChannelMemberList() {
   const { displayNotification } = useNotificationActions();
   const { displayDialog } = useDialogActions();
   const { isChannelAdmin, isChannelOwner } = useChannelMemberChecks();
-  const [duration, setDuration] = useState('');
 
   function getCurrentRole(): ChannelMemberRole {
     if (!selectedChannel?.id) {
@@ -284,14 +282,28 @@ export function ChannelMemberList() {
         Add Member
       </Button>
       {channelMembers
-        .filter((members) => members.channel.id === selectedChannel.id)
-        .map((channelMember: ChannelMembers, index: number) => (
-          <ChannelMemberActionDisplay
-            key={index}
-            channelMember={channelMember}
-            currentRole={currentRole}
-            handleAction={handleDisplayAction}
-          />
+        .filter(
+          (member) =>
+            member.channel.id === selectedChannel.id &&
+            member.status === ChannelMemberStatus.DEFAULT,
+        )
+        .map((member: ChannelMembers, index: number) => (
+          <Paper key={index} elevation={2}>
+            <ListItem>
+              <ChannelMemberDisplay
+                key={index}
+                user={member.user}
+                role={member.role}
+              />
+              {member.role !== ChannelMemberRole.OWNER && (
+                <ChannelMemberActionMenu
+                  member={member}
+                  currentUserRole={currentRole}
+                  handleAction={handleDisplayAction}
+                />
+              )}
+            </ListItem>
+          </Paper>
         ))}
     </Stack>
   ) : (
