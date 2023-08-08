@@ -13,19 +13,24 @@ interface FriendStore {
     getFriendData: (userID: number) => void;
     addFriend: (friend: Friend) => void;
     changeFriend: (
-      incomingID: number,
+      friendID: number,
       currentStatus: FriendStatus,
       newStatus: FriendStatus,
     ) => void;
-    deleteFriend: (incomingID: number) => void;
+    deleteFriend: (friendID: number) => void;
     setSelectedFriend: (friend: Friend | undefined) => void;
+    resetSelectedFriend: (friendID: number) => void;
     setupFriendSocketEvents: (friendSocket: Socket) => void;
+  };
+  checks: {
+    isFriendBlocked: (friendID: number) => boolean;
   };
 }
 
 type StoreSetter = (
   helper: (state: FriendStore) => Partial<FriendStore>,
 ) => void;
+type StoreGetter = () => FriendStore;
 
 async function getFriendData(set: StoreSetter, userID: number): Promise<void> {
   const friendData = JSON.parse(
@@ -48,7 +53,7 @@ function addFriend(set: StoreSetter, friend: Friend): void {
 
 function changeFriend(
   set: StoreSetter,
-  incomingID: number,
+  friendID: number,
   currentStatus: FriendStatus,
   newStatus: FriendStatus,
 ): void {
@@ -56,10 +61,7 @@ function changeFriend(
     data: {
       ...data,
       friends: data.friends.map((friend) => {
-        if (
-          friend.incoming_friend.id === incomingID &&
-          friend.status === currentStatus
-        ) {
+        if (friend.id === friendID && friend.status === currentStatus) {
           friend.status = newStatus;
         }
         return friend;
@@ -68,13 +70,11 @@ function changeFriend(
   }));
 }
 
-function deleteFriend(set: StoreSetter, incomingID: number): void {
+function deleteFriend(set: StoreSetter, friendID: number): void {
   set(({ data }) => ({
     data: {
       ...data,
-      friends: data.friends.filter(
-        (friend) => friend.incoming_friend.id !== incomingID,
-      ),
+      friends: data.friends.filter((friend) => friend.id !== friendID),
     },
   }));
 }
@@ -84,6 +84,16 @@ function setSelectedFriend(set: StoreSetter, friend: Friend | undefined): void {
     data: {
       ...data,
       selectedFriend: friend,
+    },
+  }));
+}
+
+function resetSelectedFriend(set: StoreSetter, friendID: number): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      selectedFriend:
+        data.selectedFriend?.id === friendID ? undefined : data.selectedFriend,
     },
   }));
 }
@@ -104,17 +114,29 @@ function setupFriendSocketEvents(set: StoreSetter, friendSocket: Socket): void {
   );
 }
 
-const useFriendStore = create<FriendStore>()((set) => ({
+function isFriendBlocked(get: StoreGetter, incomingID: number): boolean {
+  return get().data.friends.some(
+    (friend) =>
+      friend.incoming_friend.id === incomingID &&
+      friend.status === FriendStatus.BLOCKED,
+  );
+}
+
+const useFriendStore = create<FriendStore>()((set, get) => ({
   data: { friends: [], selectedFriend: undefined },
   actions: {
     getFriendData: (userID) => getFriendData(set, userID),
     addFriend: (friend) => addFriend(set, friend),
-    changeFriend: (incomingID, currentStatus, newStatus) =>
-      changeFriend(set, incomingID, currentStatus, newStatus),
-    deleteFriend: (incomingID) => deleteFriend(set, incomingID),
+    changeFriend: (friendID, currentStatus, newStatus) =>
+      changeFriend(set, friendID, currentStatus, newStatus),
+    deleteFriend: (friendID) => deleteFriend(set, friendID),
     setSelectedFriend: (friend) => setSelectedFriend(set, friend),
+    resetSelectedFriend: (friendID) => resetSelectedFriend(set, friendID),
     setupFriendSocketEvents: (friendSocket) =>
       setupFriendSocketEvents(set, friendSocket),
+  },
+  checks: {
+    isFriendBlocked: (incomingID) => isFriendBlocked(get, incomingID),
   },
 }));
 
@@ -122,3 +144,4 @@ export const useFriends = () => useFriendStore((state) => state.data.friends);
 export const useSelectedFriend = () =>
   useFriendStore((state) => state.data.selectedFriend);
 export const useFriendActions = () => useFriendStore((state) => state.actions);
+export const useFriendChecks = () => useFriendStore((state) => state.checks);

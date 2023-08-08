@@ -24,6 +24,7 @@ import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { ChannelMemberMutePrompt } from './ChannelMemberMutePrompt';
 import ChannelMemberActionMenu from './ChannelMemberActionMenu';
 import ChannelMemberDisplay from './ChannelMemberDisplay';
+import { useFriendChecks } from '@/lib/stores/useFriendStore';
 
 export function ChannelMemberList() {
   const channelMembers = useChannelMembers();
@@ -40,6 +41,7 @@ export function ChannelMemberList() {
   const { displayNotification } = useNotificationActions();
   const { displayDialog } = useDialogActions();
   const { isChannelAdmin, isChannelOwner } = useChannelMemberChecks();
+  const { isFriendBlocked } = useFriendChecks();
 
   function getCurrentRole(): ChannelMemberRole {
     if (!selectedChannel?.id) {
@@ -285,7 +287,8 @@ export function ChannelMemberList() {
         .filter(
           (member) =>
             member.channel.id === selectedChannel.id &&
-            member.status === ChannelMemberStatus.DEFAULT,
+            member.status === ChannelMemberStatus.DEFAULT &&
+            !isFriendBlocked(member.user.id),
         )
         .map((member: ChannelMembers, index: number) => (
           <Paper key={index} elevation={2}>

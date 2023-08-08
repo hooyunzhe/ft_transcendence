@@ -22,8 +22,10 @@ import { useDialogActions } from '@/lib/stores/useDialogStore';
 
 export default function FriendStack() {
   const currentUser = useCurrentUser();
-  const { changeFriend, deleteFriend } = useFriendActions();
-  const { addChannel, addJoinedChannel } = useChannelActions();
+  const { changeFriend, deleteFriend, resetSelectedFriend } =
+    useFriendActions();
+  const { addChannel, addJoinedChannel, resetSelectedDirectChannel } =
+    useChannelActions();
   const { checkChannelExists } = useChannelChecks();
   const { addChannelMember } = useChannelMemberActions();
   const friendSocket = useFriendSocket();
@@ -83,11 +85,7 @@ export default function FriendStack() {
   async function acceptFriendRequest(request: Friend): Promise<void> {
     console.log('request: ', request);
     await callFriendsAPI('PATCH', request.incoming_friend, FriendAction.ACCEPT);
-    changeFriend(
-      request.incoming_friend.id,
-      FriendStatus.PENDING,
-      FriendStatus.FRIENDS,
-    );
+    changeFriend(request.id, FriendStatus.PENDING, FriendStatus.FRIENDS);
     emitToSocket(friendSocket, 'acceptRequest', request);
     displayNotification('success', 'Request accepted');
 
@@ -100,14 +98,14 @@ export default function FriendStack() {
 
   async function rejectFriendRequest(request: Friend): Promise<void> {
     await callFriendsAPI('PATCH', request.incoming_friend, FriendAction.REJECT);
-    deleteFriend(request.incoming_friend.id);
+    deleteFriend(request.id);
     emitToSocket(friendSocket, 'rejectRequest', request);
     displayNotification('error', 'Request rejected');
   }
 
   async function removeFriendRequest(request: Friend): Promise<void> {
     await callFriendsAPI('DELETE', request.incoming_friend);
-    deleteFriend(request.incoming_friend.id);
+    deleteFriend(request.id);
     emitToSocket(friendSocket, 'deleteRequest', request);
     displayNotification('error', 'Request removed');
   }
@@ -118,15 +116,13 @@ export default function FriendStack() {
       friendship.incoming_friend,
       FriendAction.BLOCK,
     );
-    changeFriend(
-      friendship.incoming_friend.id,
-      FriendStatus.FRIENDS,
-      FriendStatus.BLOCKED,
-    );
+    changeFriend(friendship.id, FriendStatus.FRIENDS, FriendStatus.BLOCKED);
     displayNotification(
       'warning',
       'Blocked ' + friendship.incoming_friend.username,
     );
+    resetSelectedFriend(friendship.id);
+    resetSelectedDirectChannel(friendship.incoming_friend.id);
   }
 
   async function unblockFriend(friendship: Friend): Promise<void> {
@@ -135,11 +131,7 @@ export default function FriendStack() {
       friendship.incoming_friend,
       FriendAction.UNBLOCK,
     );
-    changeFriend(
-      friendship.incoming_friend.id,
-      FriendStatus.BLOCKED,
-      FriendStatus.FRIENDS,
-    );
+    changeFriend(friendship.id, FriendStatus.BLOCKED, FriendStatus.FRIENDS);
     displayNotification(
       'warning',
       'Blocked ' + friendship.incoming_friend.username,
@@ -148,7 +140,7 @@ export default function FriendStack() {
 
   async function removeFriend(friendship: Friend): Promise<void> {
     await callFriendsAPI('DELETE', friendship.incoming_friend);
-    deleteFriend(friendship.incoming_friend.id);
+    deleteFriend(friendship.id);
     emitToSocket(friendSocket, 'deleteFriend', friendship);
     displayNotification(
       'error',

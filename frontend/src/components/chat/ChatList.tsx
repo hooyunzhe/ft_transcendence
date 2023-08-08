@@ -5,11 +5,13 @@ import ChatDisplay from './ChatDisplay';
 import { useCurrentSocialTab } from '@/lib/stores/useUtilStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { useMessages } from '@/lib/stores/useChatStore';
+import { useFriendChecks } from '@/lib/stores/useFriendStore';
 
 export default function ChatList() {
   const currentSocialTab = useCurrentSocialTab();
   const selectedChannel = useSelectedChannel();
   const messages = useMessages();
+  const { isFriendBlocked } = useFriendChecks();
   const chatStack = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -30,7 +32,11 @@ export default function ChatList() {
     >
       {selectedChannel ? (
         messages
-          .filter((message) => message.channel.id === selectedChannel.id)
+          .filter(
+            (message) =>
+              message.channel.id === selectedChannel.id &&
+              !isFriendBlocked(message.user.id),
+          )
           .map((message, index) => (
             <ChatDisplay
               key={index}

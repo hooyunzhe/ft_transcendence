@@ -27,6 +27,7 @@ interface ChannelStore {
     setSelectedChannel: (channel: Channel | undefined) => void;
     setSelectedDirectChannel: (incomingID: number) => void;
     resetSelectedChannel: (channelID: number) => void;
+    resetSelectedDirectChannel: (incomingID: number) => void;
     setupChannelSocketEvents: (
       channelSocket: Socket,
       currentUserID: number,
@@ -241,6 +242,22 @@ function resetSelectedChannel(set: StoreSetter, channelID: number): void {
   }));
 }
 
+function resetSelectedDirectChannel(
+  set: StoreSetter,
+  incomingID: number,
+): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      selectedChannel:
+        data.selectedChannel?.type === ChannelType.DIRECT &&
+        data.selectedChannel?.name.includes(String(incomingID))
+          ? undefined
+          : data.selectedChannel,
+    },
+  }));
+}
+
 function checkChannelExists(get: StoreGetter, channelName: string): boolean {
   return get().data.channels.some((channel) => channel.name === channelName);
 }
@@ -344,15 +361,17 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     changeChannelHash: (channelID, newHash) =>
       changeChannelHash(set, channelID, newHash),
     deleteChannel: (channelID) => deleteChannel(set, channelID),
+    deleteJoinedChannel: (channelID) => deleteJoinedChannel(set, channelID),
     updateRecentChannelActivity: (channelID) =>
       updateRecentChannelActivity(set, channelID),
     setSelectedChannel: (channel) => setSelectedChannel(set, channel),
     setSelectedDirectChannel: (incomingID) =>
       setSelectedDirectChannel(set, get, incomingID),
     resetSelectedChannel: (channelID) => resetSelectedChannel(set, channelID),
+    resetSelectedDirectChannel: (incomingID) =>
+      resetSelectedDirectChannel(set, incomingID),
     setupChannelSocketEvents: (channelSocket, currentUserID) =>
       setupChannelSocketEvents(set, channelSocket, currentUserID),
-    deleteJoinedChannel: (channelID) => deleteJoinedChannel(set, channelID),
   },
   checks: {
     checkChannelExists: (channelName) => checkChannelExists(get, channelName),
