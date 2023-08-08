@@ -28,7 +28,6 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
 
   useEffect(() => {
     async function getData() {
-      console.log(session.access_token);
       const userData = await fetch(
         `https://api.intra.42.fr/v2/me?access_token=${session.access_token}`,
         {
@@ -36,7 +35,9 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         },
-      ).then((res) => res.json());
+      )
+        .then((res) => res.json())
+        .catch((error) => window.location.reload());
       setIntraID(userData.login);
       setAvatarUrl(userData.image.versions.small);
       setLargeAvatarUrl(userData.image.versions.large);
@@ -49,8 +50,9 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
     if (avatarFile) {
       const formData = new FormData();
 
-      formData.set('file', avatarFile);
+      formData.set('avatarFile', avatarFile);
       formData.set('intraID', intraID);
+      formData.set('oldAvatarPath', avatarUrl);
 
       const res = await fetch('/api/upload-avatar', {
         method: 'POST',
