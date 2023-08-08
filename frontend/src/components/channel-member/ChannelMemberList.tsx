@@ -5,8 +5,9 @@ import {
   ChannelMemberAction,
   ChannelMemberRole,
   ChannelMemberStatus,
+  ChannelMemberMuteDuration,
 } from '@/types/ChannelMemberTypes';
-import { Button, Stack } from '@mui/material';
+import { Button, RadioGroup, Stack } from '@mui/material';
 import { ChannelMemberActionDisplay } from './ChannelMemberActionDisplay';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ListHeader from '../utils/ListHeader';
@@ -22,6 +23,8 @@ import emitToSocket from '@/lib/emitToSocket';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useState } from 'react';
+import { ChannelMemberMutePrompt } from './ChannelMemberMutePrompt';
 
 export function ChannelMemberList() {
   const channelMembers = useChannelMembers();
@@ -38,6 +41,7 @@ export function ChannelMemberList() {
   const { displayNotification } = useNotificationActions();
   const { displayDialog } = useDialogActions();
   const { isChannelAdmin, isChannelOwner } = useChannelMemberChecks();
+  const [duration, setDuration] = useState('');
 
   function getCurrentRole(): ChannelMemberRole {
     if (!selectedChannel?.id) {
@@ -108,7 +112,6 @@ export function ChannelMemberList() {
       channelID: member.channel.id,
       newRole: ChannelMemberRole.MEMBER,
     };
-    console.log('---CHANGE ROLE TO MEMBER----\n');
     emitToSocket(channelSocket, 'changeRole', data);
     displayNotification('success', 'Channel member is now a member');
   }
@@ -131,10 +134,12 @@ export function ChannelMemberList() {
   }
 
   async function muteMember(member: ChannelMembers, duration?: Date) {
+    console.log('--Date\n--', new Date().toISOString());
+    console.log('-GG-: \n', duration);
     callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.MUTED,
-      muted_until: new Date().toISOString(),
+      muted_until: duration,
     });
     changeChannelMemberStatus(member.id, ChannelMemberStatus.MUTED);
     const data = {
@@ -242,16 +247,17 @@ export function ChannelMemberList() {
           kickUser,
         );
       case ChannelMemberAction.MUTE:
-        return displayConfirmation(
-          'Mute ' + member.user.username + '?',
-          'You are muting this user from chatting.',
-          member,
-          muteMember,
+        return displayDialog(
+          'Mute member',
+          'You are muting this user. He would not be able to chat',
+          <ChannelMemberMutePrompt member={member} muteUser={muteMember} />,
+          'Mute',
         );
+
       case ChannelMemberAction.UNMUTE:
         return displayConfirmation(
           'Unmute ' + member.user.username + '?',
-          'You are muting this user from chatting.',
+          'You are unmuting this user. He will be able to chat again',
           member,
           unmuteMember,
         );

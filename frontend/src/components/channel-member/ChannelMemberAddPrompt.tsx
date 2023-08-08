@@ -5,7 +5,6 @@ import FriendDisplay from './ChannelMemberFriendDisplay';
 import { useChannelMembers } from '@/lib/stores/useChannelMemberStore';
 import { useFriends } from '@/lib/stores/useFriendStore';
 import {
-  useDialog,
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
