@@ -30,9 +30,7 @@ export default function Home() {
         )
           .then((res) => (res.ok ? res.json() : null))
           .then((currentUser) => {
-            // if (currentUser) {
             setCurrentUser(currentUser);
-            // }
           });
       }
     }

@@ -35,7 +35,7 @@ export default function ChatDisplay({
           }}
         >
           <ListItemAvatar>
-            <Avatar alt='' src={avatarUrl} />
+            <Avatar src={avatarUrl} />
           </ListItemAvatar>
           <ListItemText
             primary={content}

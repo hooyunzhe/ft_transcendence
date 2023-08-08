@@ -74,7 +74,7 @@ export function ChannelDisplay({
       <ListItem>
         <ListItemButton selected={selected} onClick={selectCurrent}>
           <ListItemAvatar>
-            <Avatar alt=''></Avatar>
+            <Avatar />
           </ListItemAvatar>
           <ListItemText
             primary={channelName}

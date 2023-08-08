@@ -95,7 +95,7 @@ export default function NavigationHeader() {
           orientation='vertical'
           variant='middle'
         />
-        <Avatar alt='Avatar' src={currentUser.avatar_url} />
+        <Avatar src={currentUser.avatar_url} />
       </Box>
     </Drawer>
   );

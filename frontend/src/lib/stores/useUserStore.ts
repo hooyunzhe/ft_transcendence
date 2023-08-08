@@ -70,6 +70,7 @@ const useUserStore = create<UserStore>()((set) => ({
       id: 0,
       username: '',
       refresh_token: '',
+      avatar_url: '',
       date_of_creation: new Date(),
     },
     userStatus: {},

@@ -21,6 +21,7 @@ interface FirstTimeSetupProps {
 export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
   const { setCurrentUser } = useUserActions();
   const [username, setUsername] = useState('');
+  const [intraID, setIntraID] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [largeAvatarUrl, setLargeAvatarUrl] = useState('');
   const uploadRef = useRef<HTMLInputElement | null>(null);
@@ -28,7 +29,6 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
   useEffect(() => {
     async function getData() {
       console.log(session.access_token);
-
       const userData = await fetch(
         `https://api.intra.42.fr/v2/me?access_token=${session.access_token}`,
         {
@@ -37,12 +37,36 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
           headers: { 'Content-Type': 'application/json' },
         },
       ).then((res) => res.json());
+      setIntraID(userData.login);
       setAvatarUrl(userData.image.versions.small);
       setLargeAvatarUrl(userData.image.versions.large);
     }
 
     getData();
   }, []);
+
+  async function uploadAvatar(avatarFile: File | undefined): Promise<void> {
+    if (avatarFile) {
+      const formData = new FormData();
+
+      formData.set('file', avatarFile);
+      formData.set('intraID', intraID);
+
+      const res = await fetch('/api/upload-avatar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const body = await res.json();
+
+        setAvatarUrl(body['path']);
+        setLargeAvatarUrl(body['path']);
+      } else {
+        console.log(await res.text());
+      }
+    }
+  }
 
   return (
     <Box
@@ -72,19 +96,15 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
             >
               Change
               <input
-                ref={uploadRef}
-                type='file'
                 hidden
-                onClick={() => console.log('INPUT CLICKED')}
+                type='file'
+                ref={uploadRef}
+                onChange={(event) => uploadAvatar(event.target.files?.[0])}
               />
             </Button>
           }
         >
-          <Avatar
-            alt='profile'
-            src={largeAvatarUrl}
-            sx={{ width: 250, height: 250 }}
-          />
+          <Avatar src={largeAvatarUrl} sx={{ width: 250, height: 250 }} />
         </Badge>
       </Grow>
       <Slide direction='up' in timeout={2500}>

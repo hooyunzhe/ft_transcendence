@@ -38,7 +38,7 @@ export default function FriendDisplay({
       }}
     >
       <ListItemAvatar>
-        <Avatar alt='' src={friend.incoming_friend.avatar_url} />
+        <Avatar src={friend.incoming_friend.avatar_url} />
       </ListItemAvatar>
       <ListItemText primary={friend.incoming_friend.username} />
       {category === 'friends' && (

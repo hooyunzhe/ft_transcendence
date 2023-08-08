@@ -26,7 +26,7 @@ export default function BanListDisplay({
       <ListItemButton selected={selected === member.id} onClick={selectCurrent}>
         <ListItem>
           <ListItemAvatar>
-            <Avatar alt='' src={member.user.avatar_url} />
+            <Avatar src={member.user.avatar_url} />
           </ListItemAvatar>
           <ListItemText primary={member.user.username} />
         </ListItem>
