@@ -37,28 +37,36 @@ function addMessage(set: StoreSetter, newMessage: Message): void {
   }));
 }
 
+function newTypingMember(set: StoreSetter, member: ChannelMembers): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      typingMembers: [...data.typingMembers, member],
+    },
+  }));
+}
+
+function deleteTypingMember(set: StoreSetter, memberID: number): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      typingMembers: data.typingMembers.filter(
+        (typingMember) => typingMember.id !== memberID,
+      ),
+    },
+  }));
+}
+
 function setupChatSocketEvents(set: StoreSetter, channelSocket: Socket): void {
   channelSocket.on('newMessage', (message: Message) =>
     addMessage(set, message),
   );
-  channelSocket.on('startTyping', (member: ChannelMembers) => {
-    set(({ data }) => ({
-      data: {
-        ...data,
-        typingMembers: [...data.typingMembers, member],
-      },
-    }));
-  });
-  channelSocket.on('stopTyping', (member: ChannelMembers) => {
-    set(({ data }) => ({
-      data: {
-        ...data,
-        typingMembers: data.typingMembers.filter(
-          (typingMember) => typingMember.id !== member.id,
-        ),
-      },
-    }));
-  });
+  channelSocket.on('startTyping', (member: ChannelMembers) =>
+    newTypingMember(set, member),
+  );
+  channelSocket.on('stopTyping', (member: ChannelMembers) =>
+    deleteTypingMember(set, member.id),
+  );
 }
 
 const useChatStore = create<ChatStore>()((set) => ({

@@ -132,17 +132,8 @@ function setupChannelMemberSocketEvents(
   );
   channelSocket.on(
     'changeRole',
-    ({
-      memberID,
-      channelID,
-      newRole,
-    }: {
-      memberID: number;
-      channelID: number;
-      newRole: ChannelMemberRole;
-    }) => {
-      changeChannelMemberRole(set, memberID, newRole);
-    },
+    ({ memberID, newRole }: { memberID: number; newRole: ChannelMemberRole }) =>
+      changeChannelMemberRole(set, memberID, newRole),
   );
   channelSocket.on(
     'changeStatus',

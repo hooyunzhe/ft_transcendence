@@ -6,6 +6,7 @@ import {
   ChannelMemberStatus,
   ChannelMembers,
 } from '@/types/ChannelMemberTypes';
+import { Message } from '@/types/MessageTypes';
 
 interface ChannelStore {
   data: {
@@ -281,45 +282,22 @@ function setupChannelSocketEvents(
   channelSocket.on('newChannel', (channel: Channel) =>
     addChannel(set, channel),
   );
+  channelSocket.on('deleteChannel', (channelID: number) => {
+    resetSelectedChannel(set, channelID);
+    deleteChannel(set, channelID);
+  });
   channelSocket.on('newMember', (channelMember: ChannelMembers) => {
     if (channelMember.user.id === currentUserID) {
       channelSocket.emit('joinRoom', channelMember.channel.id);
       addJoinedChannel(set, channelMember.channel.id);
     }
   });
-
-  channelSocket.on('deleteChannel', (channelID: number) => {
-    resetSelectedChannel(set, channelID);
-    deleteChannel(set, channelID);
-  });
-
   channelSocket.on('kickMember', (channelMember: ChannelMembers) => {
     if (channelMember.user.id === currentUserID) {
       resetSelectedChannel(set, channelMember.channel.id);
       deleteJoinedChannel(set, channelMember.channel.id);
     }
   });
-
-  channelSocket.on(
-    'changeStatus',
-    ({
-      channelID,
-      userID,
-      newStatus,
-    }: {
-      channelID: number;
-      userID: number;
-      newStatus: ChannelMemberStatus;
-    }) => {
-      if (
-        userID === currentUserID &&
-        newStatus === ChannelMemberStatus.BANNED
-      ) {
-        resetSelectedChannel(set, channelID);
-      }
-    },
-  );
-
   channelSocket.on(
     'changeChannelName',
     ({ id, newName }: { id: number; newName: string }) =>
@@ -340,6 +318,28 @@ function setupChannelSocketEvents(
       if (newType === ChannelType.PROTECTED && newPass)
         changeChannelHash(set, id, newPass);
     },
+  );
+  channelSocket.on(
+    'changeStatus',
+    ({
+      channelID,
+      userID,
+      newStatus,
+    }: {
+      channelID: number;
+      userID: number;
+      newStatus: ChannelMemberStatus;
+    }) => {
+      if (
+        userID === currentUserID &&
+        newStatus === ChannelMemberStatus.BANNED
+      ) {
+        resetSelectedChannel(set, channelID);
+      }
+    },
+  );
+  channelSocket.on('newMessage', (message: Message) =>
+    updateRecentChannelActivity(set, message.channel.id),
   );
 }
 
