@@ -136,8 +136,6 @@ function setupChannelMemberSocketEvents(
   currentUserID: number,
 ): void {
   channelSocket.on('newMember', (member: ChannelMember) => {
-    console.log('member Socket called \n');
-    console.log(member);
     addChannelMember(set, member);
   });
   channelSocket.on('kickMember', (member: ChannelMember) => {
