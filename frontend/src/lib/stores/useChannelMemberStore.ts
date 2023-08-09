@@ -34,6 +34,7 @@ interface ChannelMemberStore {
     isChannelOwner: (userID: number, channelID: number) => boolean;
     isChannelAdmin: (userID: number, channelID: number) => boolean;
     isMemberBanned: (userID: number, channelID: number) => boolean;
+    isMemberMuted: (userID: number, channelID: number) => boolean;
   };
 }
 
@@ -183,6 +184,19 @@ function isMemberBanned(
   );
 }
 
+function isMemberMuted(
+  get: StoreGetter,
+  userID: number,
+  channelID: number,
+): boolean {
+  return get().data.channelMembers.some(
+    (localMember) =>
+      localMember.user.id === userID &&
+      localMember.channel.id === channelID &&
+      localMember.status === ChannelMemberStatus.MUTED,
+  );
+}
+
 const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
   data: { channelMembers: [] },
   actions: {
@@ -205,6 +219,7 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
       isChannelAdmin(get, userID, channelID),
     isMemberBanned: (userID, channelID) =>
       isMemberBanned(get, userID, channelID),
+    isMemberMuted: (userID, channelID) => isMemberMuted(get, userID, channelID),
   },
 }));
 

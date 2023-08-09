@@ -14,6 +14,7 @@ interface ChannelStore {
     joinedChannels: boolean[];
     recentChannelActivity: number[];
     selectedChannel: Channel | undefined;
+    selectedChannelMuted: boolean;
   };
   actions: {
     getChannelData: (userID: number) => void;
@@ -27,6 +28,7 @@ interface ChannelStore {
     updateRecentChannelActivity: (channelID: number) => void;
     setSelectedChannel: (channel: Channel | undefined) => void;
     setSelectedDirectChannel: (incomingID: number) => void;
+    setSelectedChannelMuted: (channelID: number, isMuted: boolean) => void;
     resetSelectedChannel: (channelID: number) => void;
     resetSelectedDirectChannel: (incomingID: number) => void;
     setupChannelSocketEvents: (
@@ -231,6 +233,22 @@ function setSelectedDirectChannel(
   }
 }
 
+function setSelectedChannelMuted(
+  set: StoreSetter,
+  channelID: number,
+  isMuted: boolean,
+): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      selectedChannelMuted:
+        data.selectedChannel?.id === channelID
+          ? isMuted
+          : data.selectedChannelMuted,
+    },
+  }));
+}
+
 function resetSelectedChannel(set: StoreSetter, channelID: number): void {
   set(({ data }) => ({
     data: {
@@ -330,11 +348,14 @@ function setupChannelSocketEvents(
       userID: number;
       newStatus: ChannelMemberStatus;
     }) => {
-      if (
-        userID === currentUserID &&
-        newStatus === ChannelMemberStatus.BANNED
-      ) {
-        resetSelectedChannel(set, channelID);
+      if (userID === currentUserID) {
+        if (newStatus === ChannelMemberStatus.BANNED) {
+          resetSelectedChannel(set, channelID);
+        } else if (newStatus === ChannelMemberStatus.MUTED) {
+          setSelectedChannelMuted(set, channelID, true);
+        } else if (newStatus === ChannelMemberStatus.DEFAULT) {
+          setSelectedChannelMuted(set, channelID, false);
+        }
       }
     },
   );
@@ -349,6 +370,7 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     joinedChannels: [],
     recentChannelActivity: [],
     selectedChannel: undefined,
+    selectedChannelMuted: false,
   },
   actions: {
     getChannelData: (userID) => getChannelData(set, userID),
@@ -367,6 +389,8 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     setSelectedChannel: (channel) => setSelectedChannel(set, channel),
     setSelectedDirectChannel: (incomingID) =>
       setSelectedDirectChannel(set, get, incomingID),
+    setSelectedChannelMuted: (channelID, isMuted) =>
+      setSelectedChannelMuted(set, channelID, isMuted),
     resetSelectedChannel: (channelID) => resetSelectedChannel(set, channelID),
     resetSelectedDirectChannel: (incomingID) =>
       resetSelectedDirectChannel(set, incomingID),
@@ -387,6 +411,8 @@ export const useRecentChannelActivity = () =>
   useChannelStore((state) => state.data.recentChannelActivity);
 export const useSelectedChannel = () =>
   useChannelStore((state) => state.data.selectedChannel);
+export const useSelectedChannelMuted = () =>
+  useChannelStore((state) => state.data.selectedChannelMuted);
 export const useChannelActions = () =>
   useChannelStore((state) => state.actions);
 export const useChannelChecks = () => useChannelStore((state) => state.checks);

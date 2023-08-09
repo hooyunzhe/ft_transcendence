@@ -294,12 +294,12 @@ export function ChannelMemberList() {
         .filter(
           (member) =>
             member.channel.id === selectedChannel.id &&
-            member.status === ChannelMemberStatus.DEFAULT &&
+            member.status !== ChannelMemberStatus.BANNED &&
             !isFriendBlocked(member.user.id),
         )
         .map((member: ChannelMembers, index: number) => (
           <Paper key={index} elevation={2}>
-            <ListItem>
+            <ListItem component='div'>
               <ChannelMemberDisplay
                 key={index}
                 user={member.user}

@@ -140,10 +140,12 @@ export default function ChannelCreatePrompt() {
       variant='standard'
     />
   ) : (
-    <FormControl>
+    <FormControl fullWidth>
       <TextField
         fullWidth
+        autoComplete='off'
         variant='standard'
+        margin='dense'
         label='Channel Name'
         value={channelName}
         onChange={(event) => setChannelName(event.target.value)}

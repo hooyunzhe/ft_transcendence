@@ -7,10 +7,14 @@ import { useCurrentUser } from '@/lib/stores/useUserStore';
 import {
   useChannelActions,
   useSelectedChannel,
+  useSelectedChannelMuted,
 } from '@/lib/stores/useChannelStore';
 import { useSelectedFriend } from '@/lib/stores/useFriendStore';
 import { useCurrentSocialTab } from '@/lib/stores/useUtilStore';
-import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
+import {
+  useChannelMemberActions,
+  useChannelMemberChecks,
+} from '@/lib/stores/useChannelMemberStore';
 import { useChatActions } from '@/lib/stores/useChatStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import { MessageType } from '@/types/MessageTypes';
@@ -19,6 +23,7 @@ import { ChannelType } from '@/types/ChannelTypes';
 export default function ChatBar() {
   const currentUser = useCurrentUser();
   const selectedChannel = useSelectedChannel();
+  const selectedChannelMuted = useSelectedChannelMuted();
   const selectedFriend = useSelectedFriend();
   const currentSocialTab = useCurrentSocialTab();
   const { getChannelMember } = useChannelMemberActions();
@@ -110,9 +115,9 @@ export default function ChatBar() {
       sx={{
         background: '#4CC9F075',
       }}
-      autoComplete='off'
       fullWidth
-      disabled={selectedChannel === undefined}
+      autoComplete='off'
+      disabled={selectedChannel === undefined || selectedChannelMuted}
       onChange={(event) => handleInputChange(event.target.value)}
       onKeyDown={(event) => handleKeyDown(event.key)}
       value={
@@ -121,7 +126,9 @@ export default function ChatBar() {
           : ''
       }
       label={
-        selectedChannel
+        selectedChannelMuted
+          ? 'Unable to message, you have been muted'
+          : selectedChannel
           ? 'Message ' +
             (selectedChannel.type === ChannelType.DIRECT
               ? selectedFriend?.incoming_friend.username

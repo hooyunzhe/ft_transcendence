@@ -27,9 +27,10 @@ export function ChannelList() {
   const joinedChannels = useJoinedChannels();
   const recentChannelActivity = useRecentChannelActivity();
   const selectedChannel = useSelectedChannel();
-  const { setSelectedChannel } = useChannelActions();
+  const { setSelectedChannel, setSelectedChannelMuted } = useChannelActions();
   const { setSelectedFriend } = useFriendActions();
-  const { isChannelOwner, isMemberBanned } = useChannelMemberChecks();
+  const { isChannelOwner, isMemberBanned, isMemberMuted } =
+    useChannelMemberChecks();
   const { getChannelMember } = useChannelMemberActions();
   const { setCurrentView } = useUtilActions();
   const { displayDialog } = useDialogActions();
@@ -87,9 +88,14 @@ export function ChannelList() {
             selected={selectedChannel?.id === channel.id ?? false}
             selectCurrent={() => {
               if (selectedChannel?.id === channel.id) {
+                setSelectedChannelMuted(channel.id, false);
                 setSelectedChannel(undefined);
               } else {
                 setSelectedChannel(channel);
+                setSelectedChannelMuted(
+                  channel.id,
+                  isMemberMuted(currentUser.id, channel.id),
+                );
                 if (selectedChannel === undefined) {
                   setCurrentView(View.CHAT);
                 }
