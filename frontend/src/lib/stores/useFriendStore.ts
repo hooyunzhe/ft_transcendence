@@ -13,11 +13,11 @@ interface FriendStore {
     getFriendData: (userID: number) => void;
     addFriend: (friend: Friend) => void;
     changeFriend: (
-      friendID: number,
+      friend: Friend,
       currentStatus: FriendStatus,
       newStatus: FriendStatus,
     ) => void;
-    deleteFriend: (friendID: number) => void;
+    deleteFriend: (friend: Friend) => void;
     setSelectedFriend: (friend: Friend | undefined) => void;
     resetSelectedFriend: (friendID: number) => void;
     setupFriendSocketEvents: (friendSocket: Socket) => void;
@@ -53,7 +53,7 @@ function addFriend(set: StoreSetter, friend: Friend): void {
 
 function changeFriend(
   set: StoreSetter,
-  friendID: number,
+  incomingID: number,
   currentStatus: FriendStatus,
   newStatus: FriendStatus,
 ): void {
@@ -61,7 +61,10 @@ function changeFriend(
     data: {
       ...data,
       friends: data.friends.map((friend) => {
-        if (friend.id === friendID && friend.status === currentStatus) {
+        if (
+          friend.incoming_friend.id === incomingID &&
+          friend.status === currentStatus
+        ) {
           friend.status = newStatus;
         }
         return friend;
@@ -70,11 +73,13 @@ function changeFriend(
   }));
 }
 
-function deleteFriend(set: StoreSetter, friendID: number): void {
+function deleteFriend(set: StoreSetter, incomingID: number): void {
   set(({ data }) => ({
     data: {
       ...data,
-      friends: data.friends.filter((friend) => friend.id !== friendID),
+      friends: data.friends.filter(
+        (friend) => friend.incoming_friend.id !== incomingID,
+      ),
     },
   }));
 }
@@ -127,9 +132,9 @@ const useFriendStore = create<FriendStore>()((set, get) => ({
   actions: {
     getFriendData: (userID) => getFriendData(set, userID),
     addFriend: (friend) => addFriend(set, friend),
-    changeFriend: (friendID, currentStatus, newStatus) =>
-      changeFriend(set, friendID, currentStatus, newStatus),
-    deleteFriend: (friendID) => deleteFriend(set, friendID),
+    changeFriend: (friend, currentStatus, newStatus) =>
+      changeFriend(set, friend.incoming_friend.id, currentStatus, newStatus),
+    deleteFriend: (friend) => deleteFriend(set, friend.incoming_friend.id),
     setSelectedFriend: (friend) => setSelectedFriend(set, friend),
     resetSelectedFriend: (friendID) => resetSelectedFriend(set, friendID),
     setupFriendSocketEvents: (friendSocket) =>

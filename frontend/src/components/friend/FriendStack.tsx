@@ -85,7 +85,7 @@ export default function FriendStack() {
   async function acceptFriendRequest(request: Friend): Promise<void> {
     console.log('request: ', request);
     await callFriendsAPI('PATCH', request.incoming_friend, FriendAction.ACCEPT);
-    changeFriend(request.id, FriendStatus.PENDING, FriendStatus.FRIENDS);
+    changeFriend(request, FriendStatus.PENDING, FriendStatus.FRIENDS);
     emitToSocket(friendSocket, 'acceptRequest', request);
     displayNotification('success', 'Request accepted');
 
@@ -98,14 +98,14 @@ export default function FriendStack() {
 
   async function rejectFriendRequest(request: Friend): Promise<void> {
     await callFriendsAPI('PATCH', request.incoming_friend, FriendAction.REJECT);
-    deleteFriend(request.id);
+    deleteFriend(request);
     emitToSocket(friendSocket, 'rejectRequest', request);
     displayNotification('error', 'Request rejected');
   }
 
   async function removeFriendRequest(request: Friend): Promise<void> {
     await callFriendsAPI('DELETE', request.incoming_friend);
-    deleteFriend(request.id);
+    deleteFriend(request);
     emitToSocket(friendSocket, 'deleteRequest', request);
     displayNotification('error', 'Request removed');
   }
@@ -116,7 +116,7 @@ export default function FriendStack() {
       friendship.incoming_friend,
       FriendAction.BLOCK,
     );
-    changeFriend(friendship.id, FriendStatus.FRIENDS, FriendStatus.BLOCKED);
+    changeFriend(friendship, FriendStatus.FRIENDS, FriendStatus.BLOCKED);
     displayNotification(
       'warning',
       'Blocked ' + friendship.incoming_friend.username,
@@ -131,7 +131,7 @@ export default function FriendStack() {
       friendship.incoming_friend,
       FriendAction.UNBLOCK,
     );
-    changeFriend(friendship.id, FriendStatus.BLOCKED, FriendStatus.FRIENDS);
+    changeFriend(friendship, FriendStatus.BLOCKED, FriendStatus.FRIENDS);
     displayNotification(
       'warning',
       'Blocked ' + friendship.incoming_friend.username,
@@ -140,7 +140,7 @@ export default function FriendStack() {
 
   async function removeFriend(friendship: Friend): Promise<void> {
     await callFriendsAPI('DELETE', friendship.incoming_friend);
-    deleteFriend(friendship.id);
+    deleteFriend(friendship);
     emitToSocket(friendSocket, 'deleteFriend', friendship);
     displayNotification(
       'error',
