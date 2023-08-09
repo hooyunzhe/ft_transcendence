@@ -76,9 +76,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: number,
     @ConnectedSocket() client: Socket,
   ) {
-    client
-      .to([String(data), String(client.data.user_id)])
-      .emit('deleteChannel', data);
+    client.broadcast.emit('deleteChannel', data);
     client.leave(String(data));
   }
 
@@ -114,7 +112,6 @@ export class ChannelGateway implements OnGatewayConnection {
     @ConnectedSocket() client: Socket,
   ) {
     client.to(String(data.channel.id)).emit('kickMember', data);
-    client.leave(String(data.channel.id));
   }
 
   @SubscribeMessage('newMessage')

@@ -8,7 +8,7 @@ import {
   useChannels,
   useJoinedChannels,
 } from '@/lib/stores/useChannelStore';
-import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import { ChannelMember, ChannelMemberRole } from '@/types/ChannelMemberTypes';
 import callAPI from '@/lib/callAPI';
 import {
   useChannelMemberActions,
@@ -64,10 +64,19 @@ export default function ChannelJoinPrompt() {
       if (joiningChannelMember.statusCode === 403) {
         throw 'Incorrect password';
       }
+
+      const existingChannelMembers = JSON.parse(
+        await callAPI(
+          'GET',
+          `channel-members?search_type=CHANNEL&search_number=${selectedChannel.id}`,
+        ),
+      );
       addJoinedChannel(selectedChannel.id);
-      addChannelMember(joiningChannelMember);
-      emitToSocket(channelSocket, 'newMember', joiningChannelMember);
+      existingChannelMembers.forEach((member: ChannelMember) =>
+        addChannelMember(member),
+      );
       emitToSocket(channelSocket, 'joinRoom', selectedChannel.id);
+      emitToSocket(channelSocket, 'newMember', joiningChannelMember);
       displayNotification('success', 'Channel joined');
     } else {
       throw 'FATAL ERROR: FAILED TO JOINED DUE TO MISSING SELECTED CHANNEL';
@@ -152,13 +161,13 @@ export default function ChannelJoinPrompt() {
             channelName={channel.name}
             channelType={channel.type}
             channelHash={channel.hash}
-            currentChannelMember={getChannelMember(currentUser.id, channel.id)}
+            isOwner={false}
+            currentChannelMember={undefined}
             selected={selectedChannel?.id === channel.id ?? false}
             selectCurrent={() => {
               setChannelSearch(channel.name);
               setSelectedChannel(channel);
             }}
-            isOwner={false}
           />
         ))}
     </Stack>

@@ -1,14 +1,11 @@
 'use client';
-import {
-  ChannelMembers,
-  ChannelMemberStatus,
-} from '@/types/ChannelMemberTypes';
+import { ChannelMember, ChannelMemberStatus } from '@/types/ChannelMemberTypes';
 import { useEffect, useState } from 'react';
 import { ListItemButton, Paper, Stack } from '@mui/material';
 import callAPI from '@/lib/callAPI';
 import {
   useChannelMemberActions,
-  useChannelMembers,
+  useChannelMember,
 } from '@/lib/stores/useChannelMemberStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import {
@@ -21,7 +18,7 @@ import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import ChannelMemberDisplay from './ChannelMemberDisplay';
 
 export function ChannelMemberUnbanPrompt() {
-  const channelMembers = useChannelMembers();
+  const channelMembers = useChannelMember();
   const channelSocket = useChannelSocket();
   const { kickChannelMember } = useChannelMemberActions();
   const { displayConfirmation } = useConfirmationActions();
@@ -29,10 +26,10 @@ export function ChannelMemberUnbanPrompt() {
   const { actionClicked, backClicked } = useDialogTriggers();
   const { displayNotification } = useNotificationActions();
   const [selectedMember, setSelectedMember] = useState<
-    ChannelMembers | undefined
+    ChannelMember | undefined
   >();
 
-  async function kickMember(member: ChannelMembers): Promise<void> {
+  async function kickMember(member: ChannelMember): Promise<void> {
     await callAPI('DELETE', 'channel-members', { id: member.id });
     kickChannelMember(member.id);
     emitToSocket(channelSocket, 'kickMember', member);
@@ -70,7 +67,7 @@ export function ChannelMemberUnbanPrompt() {
     <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
       {channelMembers
         .filter((member) => member.status === ChannelMemberStatus.BANNED)
-        .map((member: ChannelMembers, index: number) => (
+        .map((member: ChannelMember, index: number) => (
           <Paper key={index} elevation={2}>
             <ListItemButton
               selected={selectedMember?.id === member.id ?? false}

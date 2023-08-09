@@ -2,10 +2,7 @@ import { Channel, ChannelType } from '@/types/ChannelTypes';
 import callAPI from '../callAPI';
 import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
-import {
-  ChannelMemberStatus,
-  ChannelMembers,
-} from '@/types/ChannelMemberTypes';
+import { ChannelMemberStatus, ChannelMember } from '@/types/ChannelMemberTypes';
 import { Message } from '@/types/MessageTypes';
 
 interface ChannelStore {
@@ -304,16 +301,17 @@ function setupChannelSocketEvents(
     resetSelectedChannel(set, channelID);
     deleteChannel(set, channelID);
   });
-  channelSocket.on('newMember', (channelMember: ChannelMembers) => {
+  channelSocket.on('newMember', (channelMember: ChannelMember) => {
     if (channelMember.user.id === currentUserID) {
-      channelSocket.emit('joinRoom', channelMember.channel.id);
       addJoinedChannel(set, channelMember.channel.id);
+      channelSocket.emit('joinRoom', channelMember.channel.id);
     }
   });
-  channelSocket.on('kickMember', (channelMember: ChannelMembers) => {
+  channelSocket.on('kickMember', (channelMember: ChannelMember) => {
     if (channelMember.user.id === currentUserID) {
       resetSelectedChannel(set, channelMember.channel.id);
       deleteJoinedChannel(set, channelMember.channel.id);
+      channelSocket.emit('leaveRoom', channelMember.channel.id);
     }
   });
   channelSocket.on(

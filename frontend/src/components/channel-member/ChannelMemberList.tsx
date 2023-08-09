@@ -1,7 +1,7 @@
 'use client';
 import callAPI from '@/lib/callAPI';
 import {
-  ChannelMembers,
+  ChannelMember,
   ChannelMemberAction,
   ChannelMemberRole,
   ChannelMemberStatus,
@@ -13,7 +13,7 @@ import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import {
   useChannelMemberActions,
   useChannelMemberChecks,
-  useChannelMembers,
+  useChannelMember,
 } from '@/lib/stores/useChannelMemberStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
@@ -27,7 +27,7 @@ import ChannelMemberDisplay from './ChannelMemberDisplay';
 import { useFriendChecks } from '@/lib/stores/useFriendStore';
 
 export function ChannelMemberList() {
-  const channelMembers = useChannelMembers();
+  const channelMembers = useChannelMember();
   const {
     addChannelMember,
     kickChannelMember,
@@ -63,30 +63,27 @@ export function ChannelMemberList() {
 
   //* ignore the above * //
 
-  async function addUser(userID: number, useHash?: string): Promise<string> {
+  async function addUser(userID: number, useHash?: string): Promise<void> {
     const add = await callAPI('POST', 'channel-members', {
       channel_id: selectedChannel?.id,
       user_id: userID,
       role: ChannelMemberRole.MEMBER,
       hash: useHash,
     });
-    const newChannelMember: ChannelMembers = JSON.parse(add);
-
+    const newChannelMember: ChannelMember = JSON.parse(add);
     addChannelMember(newChannelMember);
     emitToSocket(channelSocket, 'newMember', newChannelMember);
     displayNotification('success', 'Channel member added');
-    return '';
   }
 
-  async function kickUser(member: ChannelMembers): Promise<string> {
+  async function kickUser(member: ChannelMember): Promise<void> {
     callAPI('DELETE', 'channel-members', { id: member.id });
     kickChannelMember(member.id);
     emitToSocket(channelSocket, 'kickMember', member);
     displayNotification('success', 'Channel member kicked');
-    return '';
   }
 
-  async function changeToAdmin(member: ChannelMembers) {
+  async function changeToAdmin(member: ChannelMember) {
     callAPI('PATCH', 'channel-members/', {
       id: member.id,
       role: ChannelMemberRole.ADMIN,
@@ -101,7 +98,7 @@ export function ChannelMemberList() {
     displayNotification('success', 'Channel member is now an admin');
   }
 
-  async function changeToMember(member: ChannelMembers) {
+  async function changeToMember(member: ChannelMember) {
     callAPI('PATCH', 'channel-members/', {
       id: member.id,
       role: ChannelMemberRole.MEMBER,
@@ -116,7 +113,7 @@ export function ChannelMemberList() {
     displayNotification('success', 'Channel member is now a member');
   }
 
-  async function unmuteMember(member: ChannelMembers) {
+  async function unmuteMember(member: ChannelMember) {
     callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.DEFAULT,
@@ -132,7 +129,7 @@ export function ChannelMemberList() {
     displayNotification('success', 'Channel member unmuted');
   }
 
-  async function muteMember(member: ChannelMembers, duration: Date) {
+  async function muteMember(member: ChannelMember, duration: Date) {
     callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.MUTED,
@@ -149,7 +146,7 @@ export function ChannelMemberList() {
     displayNotification('success', 'Channel member muted');
   }
 
-  async function banMember(member: ChannelMembers) {
+  async function banMember(member: ChannelMember) {
     callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.BANNED,
@@ -166,7 +163,7 @@ export function ChannelMemberList() {
     displayNotification('success', 'Channel member banned');
   }
 
-  async function changeOwnership(member: ChannelMembers) {
+  async function changeOwnership(member: ChannelMember) {
     const currentOwner = channelMembers.find((owner) => {
       if (owner.role === ChannelMemberRole.OWNER) {
         return owner.id;
@@ -205,9 +202,8 @@ export function ChannelMemberList() {
   // * Action handlers that are passed into components * //
 
   async function handleDisplayAction(
-    member: ChannelMembers,
+    member: ChannelMember,
     action: ChannelMemberAction,
-    duration?: Date,
   ) {
     // * Probably gotta change the testing thingy * //
     switch (action) {
@@ -297,7 +293,7 @@ export function ChannelMemberList() {
             member.status !== ChannelMemberStatus.BANNED &&
             !isFriendBlocked(member.user.id),
         )
-        .map((member: ChannelMembers, index: number) => (
+        .map((member: ChannelMember, index: number) => (
           <Paper key={index} elevation={2}>
             <ListItem component='div'>
               <ChannelMemberDisplay

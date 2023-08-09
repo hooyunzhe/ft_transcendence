@@ -2,12 +2,12 @@ import { Socket } from 'socket.io-client';
 import { create } from 'zustand';
 import callAPI from '../callAPI';
 import { Message } from '@/types/MessageTypes';
-import { ChannelMembers } from '@/types/ChannelMemberTypes';
+import { ChannelMember } from '@/types/ChannelMemberTypes';
 
 interface ChatStore {
   data: {
     messages: Message[];
-    typingMembers: ChannelMembers[];
+    typingMembers: ChannelMember[];
   };
   actions: {
     getChatData: () => void;
@@ -37,7 +37,7 @@ function addMessage(set: StoreSetter, newMessage: Message): void {
   }));
 }
 
-function newTypingMember(set: StoreSetter, member: ChannelMembers): void {
+function newTypingMember(set: StoreSetter, member: ChannelMember): void {
   set(({ data }) => ({
     data: {
       ...data,
@@ -61,10 +61,10 @@ function setupChatSocketEvents(set: StoreSetter, channelSocket: Socket): void {
   channelSocket.on('newMessage', (message: Message) =>
     addMessage(set, message),
   );
-  channelSocket.on('startTyping', (member: ChannelMembers) =>
+  channelSocket.on('startTyping', (member: ChannelMember) =>
     newTypingMember(set, member),
   );
-  channelSocket.on('stopTyping', (member: ChannelMembers) =>
+  channelSocket.on('stopTyping', (member: ChannelMember) =>
     deleteTypingMember(set, member.id),
   );
 }

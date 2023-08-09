@@ -72,6 +72,7 @@ export default function ChannelCreatePrompt() {
       if (channelCreator) {
         addJoinedChannel(newChannel.id);
         addChannelMember(channelCreator);
+        emitToSocket(channelSocket, 'joinRoom', newChannel.id);
         displayNotification('success', 'Channel created');
       } else {
         throw 'FATAL ERROR: FAILED TO ADD MEMBER TO NEW CHANNEL IN BACKEND';

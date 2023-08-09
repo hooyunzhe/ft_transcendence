@@ -1,7 +1,7 @@
 'use client';
 import { Friend, FriendStatus } from '@/types/FriendTypes';
 import { useEffect, useState } from 'react';
-import { useChannelMembers } from '@/lib/stores/useChannelMemberStore';
+import { useChannelMember } from '@/lib/stores/useChannelMemberStore';
 import { useFriends } from '@/lib/stores/useFriendStore';
 import {
   useDialogActions,
@@ -13,7 +13,7 @@ import { Channel } from '@/types/ChannelTypes';
 import ChannelMemberDisplay from './ChannelMemberDisplay';
 
 interface ChannelMemberAddPromptProps {
-  addUser: (...args: any) => Promise<string>;
+  addUser: (...args: any) => Promise<void>;
   selectedChannel: Channel;
 }
 
@@ -21,7 +21,7 @@ export function ChannelMemberAddPrompt({
   addUser,
   selectedChannel,
 }: ChannelMemberAddPromptProps) {
-  const channelMembers = useChannelMembers();
+  const channelMembers = useChannelMember();
   const friends = useFriends();
   const [selectedFriend, setSelectedFriend] = useState<Friend | undefined>();
   const { actionClicked, backClicked } = useDialogTriggers();

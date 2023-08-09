@@ -32,7 +32,7 @@ export enum ChannelMemberStatus {
   DEFAULT = 'DEFAULT',
 }
 
-export interface ChannelMembers {
+export interface ChannelMember {
   id: number;
   role: ChannelMemberRole;
   status: ChannelMemberStatus;

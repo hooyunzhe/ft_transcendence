@@ -92,7 +92,9 @@ export default function ChatBar() {
         }),
       );
 
-      if (newMessage.status === 200) {
+      if (newMessage.status === 403) {
+        console.log('FATAL ERROR: FAILED TO SEND MESSAGE IN BACKEND');
+      } else {
         setUnsentMessages((unsentMessages) => {
           const updatedUnsentMessages = [...unsentMessages];
 
@@ -102,8 +104,6 @@ export default function ChatBar() {
         addMessage(newMessage);
         updateRecentChannelActivity(selectedChannel.id);
         emitToSocket(channelSocket, 'newMessage', newMessage);
-      } else {
-        console.log('FATAL ERROR: FAILED TO SEND MESSAGE IN BACKEND');
       }
     } else {
       console.log('FATAL ERROR: NO CHANNEL IS SELECTED');

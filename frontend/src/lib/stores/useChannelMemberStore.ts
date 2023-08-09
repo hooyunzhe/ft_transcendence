@@ -1,7 +1,7 @@
 import {
   ChannelMemberRole,
   ChannelMemberStatus,
-  ChannelMembers,
+  ChannelMember,
 } from '@/types/ChannelMemberTypes';
 import { create } from 'zustand';
 import callAPI from '../callAPI';
@@ -9,17 +9,17 @@ import { Socket } from 'socket.io-client';
 
 interface ChannelMemberStore {
   data: {
-    channelMembers: ChannelMembers[];
+    channelMembers: ChannelMember[];
   };
   actions: {
     getChannelMemberData: () => void;
     getChannelMember: (
       userID: number,
       channelID: number,
-    ) => ChannelMembers | undefined;
-    addChannelMember: (channelMember: ChannelMembers) => void;
+    ) => ChannelMember | undefined;
+    addChannelMember: (channelMember: ChannelMember) => void;
     kickChannelMember: (memberID: number) => void;
-    // kickAllChannelMember: (channelID: number) => void;
+    deleteChannelMembers: (channelID: number) => void;
     changeChannelMemberRole: (
       memberID: number,
       newRole: ChannelMemberRole,
@@ -28,7 +28,10 @@ interface ChannelMemberStore {
       memberID: number,
       newStatus: ChannelMemberStatus,
     ) => void;
-    setupChannelMemberSocketEvents: (channelSocket: Socket) => void;
+    setupChannelMemberSocketEvents: (
+      channelSocket: Socket,
+      currentUserID: number,
+    ) => void;
   };
   checks: {
     isChannelOwner: (userID: number, channelID: number) => boolean;
@@ -55,17 +58,15 @@ function getChannelMember(
   get: StoreGetter,
   userID: number,
   channelID: number,
-): ChannelMembers | undefined {
+): ChannelMember | undefined {
   return get().data.channelMembers.find(
-    (channelMember) =>
-      channelMember.user.id === userID &&
-      channelMember.channel.id === channelID,
+    (member) => member.user.id === userID && member.channel.id === channelID,
   );
 }
 
 function addChannelMember(
   set: StoreSetter,
-  channelMember: ChannelMembers,
+  channelMember: ChannelMember,
 ): void {
   set(({ data }) => ({
     data: { channelMembers: [...data.channelMembers, channelMember] },
@@ -76,7 +77,18 @@ function kickChannelMember(set: StoreSetter, memberID: number): void {
   set(({ data }) => ({
     data: {
       channelMembers: data.channelMembers.filter(
-        (localMember) => localMember.id !== memberID,
+        (member) => member.id !== memberID,
+      ),
+    },
+  }));
+}
+
+function deleteChannelMembers(set: StoreSetter, channelID: number): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      channelMembers: data.channelMembers.filter(
+        (member) => member.channel.id !== channelID,
       ),
     },
   }));
@@ -90,11 +102,11 @@ function changeChannelMemberRole(
   set(({ data }) => ({
     data: {
       ...data,
-      channelMembers: data.channelMembers.map((localMember) => {
-        if (localMember.id === memberID) {
-          localMember.role = newRole;
+      channelMembers: data.channelMembers.map((member) => {
+        if (member.id === memberID) {
+          member.role = newRole;
         }
-        return localMember;
+        return member;
       }),
     },
   }));
@@ -108,11 +120,11 @@ function changeChannelMemberStatus(
   set(({ data }) => ({
     data: {
       ...data,
-      channelMembers: data.channelMembers.map((localMember) => {
-        if (localMember.id === memberID) {
-          localMember.status = newStatus;
+      channelMembers: data.channelMembers.map((member) => {
+        if (member.id === memberID) {
+          member.status = newStatus;
         }
-        return localMember;
+        return member;
       }),
     },
   }));
@@ -121,13 +133,19 @@ function changeChannelMemberStatus(
 function setupChannelMemberSocketEvents(
   set: StoreSetter,
   channelSocket: Socket,
+  currentUserID: number,
 ): void {
-  channelSocket.on('newMember', (member: ChannelMembers) =>
-    addChannelMember(set, member),
-  );
-  channelSocket.on('kickMember', (member: ChannelMembers) =>
-    kickChannelMember(set, member.id),
-  );
+  channelSocket.on('newMember', (member: ChannelMember) => {
+    console.log('member Socket called \n');
+    console.log(member);
+    addChannelMember(set, member);
+  });
+  channelSocket.on('kickMember', (member: ChannelMember) => {
+    if (member.user.id === currentUserID) {
+      deleteChannelMembers(set, member.channel.id);
+    }
+    kickChannelMember(set, member.id);
+  });
   channelSocket.on(
     'changeRole',
     ({ memberID, newRole }: { memberID: number; newRole: ChannelMemberRole }) =>
@@ -151,10 +169,10 @@ function isChannelOwner(
   channelID: number,
 ): boolean {
   return get().data.channelMembers.some(
-    (localMember) =>
-      localMember.user.id === userID &&
-      localMember.channel.id === channelID &&
-      localMember.role === ChannelMemberRole.OWNER,
+    (member) =>
+      member.user.id === userID &&
+      member.channel.id === channelID &&
+      member.role === ChannelMemberRole.OWNER,
   );
 }
 
@@ -164,10 +182,10 @@ function isChannelAdmin(
   channelID: number,
 ): boolean {
   return get().data.channelMembers.some(
-    (localMember) =>
-      localMember.user.id === userID &&
-      localMember.channel.id === channelID &&
-      localMember.role === ChannelMemberRole.ADMIN,
+    (member) =>
+      member.user.id === userID &&
+      member.channel.id === channelID &&
+      member.role === ChannelMemberRole.ADMIN,
   );
 }
 
@@ -177,10 +195,10 @@ function isMemberBanned(
   channelID: number,
 ): boolean {
   return get().data.channelMembers.some(
-    (localMember) =>
-      localMember.user.id === userID &&
-      localMember.channel.id === channelID &&
-      localMember.status === ChannelMemberStatus.BANNED,
+    (member) =>
+      member.user.id === userID &&
+      member.channel.id === channelID &&
+      member.status === ChannelMemberStatus.BANNED,
   );
 }
 
@@ -190,10 +208,10 @@ function isMemberMuted(
   channelID: number,
 ): boolean {
   return get().data.channelMembers.some(
-    (localMember) =>
-      localMember.user.id === userID &&
-      localMember.channel.id === channelID &&
-      localMember.status === ChannelMemberStatus.MUTED,
+    (member) =>
+      member.user.id === userID &&
+      member.channel.id === channelID &&
+      member.status === ChannelMemberStatus.MUTED,
   );
 }
 
@@ -209,8 +227,9 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
       changeChannelMemberRole(set, memberID, newRole),
     changeChannelMemberStatus: (memberID, newStatus) =>
       changeChannelMemberStatus(set, memberID, newStatus),
-    setupChannelMemberSocketEvents: (channelSocket) =>
-      setupChannelMemberSocketEvents(set, channelSocket),
+    setupChannelMemberSocketEvents: (channelSocket, currentUserID) =>
+      setupChannelMemberSocketEvents(set, channelSocket, currentUserID),
+    deleteChannelMembers: (channelID) => deleteChannelMembers(set, channelID),
   },
   checks: {
     isChannelOwner: (userID, channelID) =>
@@ -223,7 +242,7 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
   },
 }));
 
-export const useChannelMembers = () =>
+export const useChannelMember = () =>
   useChannelMemberStore((state) => state.data.channelMembers);
 export const useChannelMemberActions = () =>
   useChannelMemberStore((state) => state.actions);

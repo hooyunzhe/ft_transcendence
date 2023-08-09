@@ -20,14 +20,16 @@ import callAPI from '@/lib/callAPI';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
-import { ChannelMembers } from '@/types/ChannelMemberTypes';
+import { ChannelMember } from '@/types/ChannelMemberTypes';
+import emitToSocket from '@/lib/emitToSocket';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
 
 export interface ChannelDisplayProps {
   channelID: number;
   channelName: string;
   channelType: ChannelType;
   channelHash: string;
-  currentChannelMember: ChannelMembers | undefined;
+  currentChannelMember: ChannelMember | undefined;
   selected: boolean;
   selectCurrent: () => void;
   isOwner: boolean;
@@ -43,22 +45,26 @@ export function ChannelDisplay({
   selected,
   selectCurrent,
 }: ChannelDisplayProps) {
-  const { kickChannelMember } = useChannelMemberActions();
+  const { kickChannelMember, deleteChannelMembers } = useChannelMemberActions();
   const { displayConfirmation } = useConfirmationActions();
-  const { deleteJoinedChannel } = useChannelActions();
+  const { deleteJoinedChannel, resetSelectedChannel } = useChannelActions();
+  const channelSocket = useChannelSocket();
 
   async function leaveChannel(
-    leavingChannelMember: ChannelMembers,
-  ): Promise<string> {
+    leavingChannelMember: ChannelMember,
+  ): Promise<void> {
     await callAPI('DELETE', 'channel-members', { id: leavingChannelMember.id });
     kickChannelMember(leavingChannelMember.id);
+    deleteChannelMembers(leavingChannelMember.channel.id);
     deleteJoinedChannel(leavingChannelMember.channel.id);
-    return '';
+    emitToSocket(channelSocket, 'kickMember', leavingChannelMember);
+    emitToSocket(channelSocket, 'leaveRoom', leavingChannelMember.channel.id);
+    resetSelectedChannel(leavingChannelMember.channel.id);
   }
 
   async function leaveChannelConfirmation(
     channelName: string,
-    leavingChannelMember: ChannelMembers | undefined,
+    leavingChannelMember: ChannelMember | undefined,
   ) {
     displayConfirmation(
       'You are leaving ' + channelName + '?',

@@ -2,7 +2,7 @@
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import {
-  ChannelMembers,
+  ChannelMember,
   ChannelMemberAction,
   ChannelMemberRole,
   ChannelMemberStatus,
@@ -24,7 +24,7 @@ import FortIcon from '@mui/icons-material/Fort';
 import { useState } from 'react';
 
 interface ChannelMemberActionMenuProps {
-  member: ChannelMembers;
+  member: ChannelMember;
   currentUserRole: ChannelMemberRole;
   handleAction: (...args: any) => Promise<void>;
 }

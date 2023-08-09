@@ -5,13 +5,13 @@ import {
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import {
   ChannelMemberMuteDuration,
-  ChannelMembers,
+  ChannelMember,
 } from '@/types/ChannelMemberTypes';
 import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 interface ChannelMemberMutePromptProps {
-  member: ChannelMembers;
+  member: ChannelMember;
   muteUser: (...args: any) => Promise<void>;
 }
 

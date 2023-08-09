@@ -1,4 +1,4 @@
-import { ChannelMembers } from './ChannelMemberTypes';
+import { ChannelMember } from './ChannelMemberTypes';
 import { Message } from './MessageTypes';
 
 export enum ChannelType {
