@@ -27,3 +27,9 @@ export class ChangeChannelMemberStatusEmitBodyParams {
   userID: number;
   newStatus: ChannelMemberStatus;
 }
+
+export class EditMessageEmitBodyParams {
+  messageID: number;
+  channelID: number;
+  content: string;
+}

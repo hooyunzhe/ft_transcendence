@@ -13,6 +13,7 @@ import {
   ChangeChannelMemberStatusEmitBodyParams,
   ChangeChannelNameEmitBodyParams,
   ChangeChannelTypeEmitBodyParams,
+  EditMessageEmitBodyParams,
 } from './params/emit-body-params';
 import { Channel } from './entities/channel.entity';
 import { Message } from 'src/message/entities/message.entity';
@@ -119,8 +120,21 @@ export class ChannelGateway implements OnGatewayConnection {
     client.to(String(data.channel.id)).emit('newMessage', data);
   }
 
-  // editMessage (maybe?)
-  // deleteMessage (maybe?)
+  @SubscribeMessage('editMessage')
+  editMessage(
+    @MessageBody() data: EditMessageEmitBodyParams,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.to(String(data.channelID)).emit('editMessage', data);
+  }
+
+  @SubscribeMessage('deleteMessage')
+  deleteMessage(
+    @MessageBody() data: Message,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.to(String(data.channel.id)).emit('deleteMessage', data);
+  }
 
   @SubscribeMessage('startTyping')
   startTyping(

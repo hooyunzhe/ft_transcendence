@@ -5,12 +5,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import EditIcon from '@mui/icons-material/Edit';
 import BrushIcon from '@mui/icons-material/Brush';
-import {
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  MenuList,
-} from '@mui/material';
+import { IconButton, ListItemIcon, ListItemText } from '@mui/material';
 import { useState } from 'react';
 import ChannelNameChangePrompt from './ChannelNameChangePrompt';
 import ChannelTypeChangePrompt from './ChannelTypeChangePrompt';
@@ -34,124 +29,104 @@ export default function ChannelSettings({
   channelType,
 }: ChannelSettingsProps) {
   const { displayDialog } = useDialogActions();
-  const [open, setOpen] = useState(false);
-  const [anchorElement, setAnchorElement] = useState<null | HTMLElement>(null);
-
-  function handleClick(event: React.MouseEvent<HTMLElement>): void {
-    event.stopPropagation();
-    setAnchorElement(event.currentTarget);
-    setOpen(true);
-  }
-  function handleClose(): void {
-    setAnchorElement(null);
-    setOpen(false);
-  }
+  const [anchorElement, setAnchorElement] = useState<HTMLElement | undefined>();
 
   return (
-    <div>
-      <IconButton onClick={handleClick}>
+    <>
+      <IconButton onClick={(event) => setAnchorElement(event.currentTarget)}>
         <SettingsIcon />
       </IconButton>
       <Menu
+        open={anchorElement !== undefined}
         anchorEl={anchorElement}
-        open={open}
-        onClose={handleClose}
-        onClick={(event) => {
-          event.stopPropagation();
-        }}
+        onClose={() => setAnchorElement(undefined)}
         anchorOrigin={{
           vertical: 'top',
           horizontal: 'left',
         }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
       >
-        <MenuList>
-          <MenuItem
-            onClick={() =>
-              displayDialog(
-                'Change Channel Name',
-                'Please provide the name you want to change to',
-                <ChannelNameChangePrompt channelID={channelID} />,
-                'Change',
-              )
-            }
-          >
-            <ListItemIcon>
-              <EditIcon />
-            </ListItemIcon>
-            <ListItemText>Change Channel Name</ListItemText>
-          </MenuItem>
-          <MenuItem
-            onClick={() =>
-              displayDialog(
-                'Change Channel Type',
-                'Choose the channel type you want.',
-                <ChannelTypeChangePrompt
-                  channelID={channelID}
-                  channelType={channelType}
-                />,
-                'Change',
-              )
-            }
-          >
-            <ListItemIcon>
-              <BrushIcon />
-            </ListItemIcon>
-            <ListItemText>Change Channel Type</ListItemText>
-          </MenuItem>
-          <MenuItem
-            onClick={() =>
-              displayDialog(
-                'Change Channel Password',
-                'Enter the current password to proceed',
-                <ChannelPassChangePrompt channelID={channelID} />,
-                'Change',
-              )
-            }
-          >
-            <ListItemIcon>
-              <Key />
-            </ListItemIcon>
-            <ListItemText>Change Channel Password</ListItemText>
-          </MenuItem>
-          <MenuItem
-            onClick={() =>
-              displayDialog(
-                'Unban list',
-                'Unban the people who have sinned',
-                <ChannelMemberUnbanPrompt />,
-                'Unban',
-              )
-            }
-          >
-            <ListItemIcon>
-              <SentimentVeryDissatisfiedIcon />
-            </ListItemIcon>
-            <ListItemText>Unban List</ListItemText>
-          </MenuItem>
-          <MenuItem
-            onClick={() =>
-              displayDialog(
-                'Delete Channel',
-                'Enter the channel name to confirm deletion',
-                <ChannelDeletePrompt
-                  channelID={channelID}
-                  channelName={channelName}
-                />,
-                'Delete',
-              )
-            }
-          >
-            <ListItemIcon>
-              <LocalFireDepartmentSharp />
-            </ListItemIcon>
-            <ListItemText>Delete Channel</ListItemText>
-          </MenuItem>
-        </MenuList>
+        <MenuItem
+          onClick={() =>
+            displayDialog(
+              'Change Channel Name',
+              'Please provide the name you want to change to',
+              <ChannelNameChangePrompt channelID={channelID} />,
+              'Change',
+            )
+          }
+        >
+          <ListItemIcon>
+            <EditIcon />
+          </ListItemIcon>
+          <ListItemText>Change Channel Name</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            displayDialog(
+              'Change Channel Type',
+              'Choose the channel type you want.',
+              <ChannelTypeChangePrompt
+                channelID={channelID}
+                channelType={channelType}
+              />,
+              'Change',
+            )
+          }
+        >
+          <ListItemIcon>
+            <BrushIcon />
+          </ListItemIcon>
+          <ListItemText>Change Channel Type</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            displayDialog(
+              'Change Channel Password',
+              'Enter the current password to proceed',
+              <ChannelPassChangePrompt channelID={channelID} />,
+              'Change',
+            )
+          }
+        >
+          <ListItemIcon>
+            <Key />
+          </ListItemIcon>
+          <ListItemText>Change Channel Password</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            displayDialog(
+              'Unban list',
+              'Unban the people who have sinned',
+              <ChannelMemberUnbanPrompt />,
+              'Unban',
+            )
+          }
+        >
+          <ListItemIcon>
+            <SentimentVeryDissatisfiedIcon />
+          </ListItemIcon>
+          <ListItemText>Unban List</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            displayDialog(
+              'Delete Channel',
+              'Enter the channel name to confirm deletion',
+              <ChannelDeletePrompt
+                channelID={channelID}
+                channelName={channelName}
+              />,
+              'Delete',
+            )
+          }
+        >
+          <ListItemIcon>
+            <LocalFireDepartmentSharp />
+          </ListItemIcon>
+          <ListItemText>Delete Channel</ListItemText>
+        </MenuItem>
       </Menu>
-    </div>
+    </>
   );
 }

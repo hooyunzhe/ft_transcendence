@@ -2,32 +2,55 @@
 import {
   Avatar,
   Box,
+  IconButton,
   ListItem,
   ListItemAvatar,
   ListItemText,
   Paper,
+  TextField,
   Typography,
 } from '@mui/material';
-import { MessageType } from '@/types/MessageTypes';
+import { Message } from '@/types/MessageTypes';
+import ChatMenu from './ChatMenu';
+import { useState } from 'react';
+import { Clear, Done } from '@mui/icons-material';
+import { useChatActions, useSelectedMessage } from '@/lib/stores/useChatStore';
+import callAPI from '@/lib/callAPI';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import emitToSocket from '@/lib/emitToSocket';
 
 interface ChatDisplayProps {
-  content: string;
-  type: MessageType;
-  dateOfCreation: string;
-  senderName: string;
-  avatarUrl: string;
+  message: Message;
 }
 
-export default function ChatDisplay({
-  content,
-  type,
-  dateOfCreation,
-  senderName,
-  avatarUrl,
-}: ChatDisplayProps) {
+export default function ChatDisplay({ message }: ChatDisplayProps) {
+  const selectedMessage = useSelectedMessage();
+  const { editMessage, setSelectedMessage } = useChatActions();
+  const channelSocket = useChannelSocket();
+  const [input, setInput] = useState(message.content);
+
+  async function handleEdit(): Promise<void> {
+    await callAPI('PATCH', 'messages', {
+      id: message.id,
+      content: input,
+    });
+    editMessage(message.id, input);
+    emitToSocket(channelSocket, 'editMessage', {
+      messageID: message.id,
+      channelID: message.channel.id,
+      content: input,
+    });
+    setSelectedMessage(undefined);
+  }
+
+  function handleCancel(): void {
+    setInput('');
+    setSelectedMessage(undefined);
+  }
+
   return (
     <Box display='flex' flexDirection='column' alignItems='flex-start'>
-      <Typography color='white'>{senderName}</Typography>
+      <Typography color='white'>{message.user.username}</Typography>
       <Paper>
         <ListItem
           sx={{
@@ -35,16 +58,47 @@ export default function ChatDisplay({
           }}
         >
           <ListItemAvatar>
-            <Avatar src={avatarUrl} />
+            <Avatar src={message.user.avatar_url} />
           </ListItemAvatar>
-          <ListItemText
-            primary={content}
-            secondary={new Date(dateOfCreation).toLocaleTimeString('en-US', {
-              hour: 'numeric',
-              minute: 'numeric',
-            })}
-            secondaryTypographyProps={{ align: 'right' }}
-          ></ListItemText>
+          {selectedMessage?.id === message.id ? (
+            <TextField
+              hiddenLabel
+              autoFocus
+              autoComplete='off'
+              margin='normal'
+              variant='standard'
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+            />
+          ) : (
+            <ListItemText
+              primary={message.content}
+              primaryTypographyProps={{ sx: { wordBreak: 'break-all' } }}
+              secondary={new Date(message.date_of_creation).toLocaleTimeString(
+                'en-US',
+                {
+                  hour: 'numeric',
+                  minute: 'numeric',
+                },
+              )}
+              secondaryTypographyProps={{ align: 'right' }}
+            />
+          )}
+          {selectedMessage?.id === message.id ? (
+            <>
+              <IconButton onClick={handleEdit}>
+                <Done fontSize='small' />
+              </IconButton>
+              <IconButton onClick={handleCancel}>
+                <Clear fontSize='small' />
+              </IconButton>
+            </>
+          ) : (
+            <ChatMenu
+              message={message}
+              toggleEdit={() => setSelectedMessage(message)}
+            />
+          )}
         </ListItem>
       </Paper>
     </Box>

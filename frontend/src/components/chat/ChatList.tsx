@@ -38,14 +38,7 @@ export default function ChatList() {
               !isFriendBlocked(message.user.id),
           )
           .map((message, index) => (
-            <ChatDisplay
-              key={index}
-              content={message.content}
-              type={message.type}
-              dateOfCreation={message.date_of_creation}
-              senderName={message.user.username}
-              avatarUrl={message.user.avatar_url}
-            />
+            <ChatDisplay key={index} message={message} />
           ))
       ) : (
         <Typography
