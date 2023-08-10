@@ -30,10 +30,10 @@ export class Channel {
   @Column({ default: null })
   hash: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   date_of_creation: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   last_updated: Date;
 
   @OneToMany(() => ChannelMember, (channelMember) => channelMember.channel)

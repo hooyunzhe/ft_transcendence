@@ -12,6 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Session } from 'next-auth';
+import { signOut } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
 
 interface FirstTimeSetupProps {
@@ -35,9 +36,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         },
-      )
-        .then((res) => res.json())
-        .catch((error) => window.location.reload());
+      ).then((res) => (res.ok ? res.json() : signOut()));
       setIntraID(userData.login);
       setAvatarUrl(userData.image.versions.small);
       setLargeAvatarUrl(userData.image.versions.large);

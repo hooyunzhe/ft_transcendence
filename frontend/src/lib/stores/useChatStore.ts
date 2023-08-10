@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io-client';
 import { create } from 'zustand';
 import callAPI from '../callAPI';
-import { Message } from '@/types/MessageTypes';
+import { Message, MessageType } from '@/types/MessageTypes';
 import { ChannelMember } from '@/types/ChannelMemberTypes';
 
 interface ChatStore {
@@ -51,7 +51,11 @@ function editMessage(
       ...data,
       messages: data.messages.map((message) =>
         message.id === messageID
-          ? { ...message, content: newContent }
+          ? {
+              ...message,
+              content: newContent,
+              last_updated: new Date().toISOString(),
+            }
           : message,
       ),
     },
@@ -62,7 +66,11 @@ function deleteMessage(set: StoreSetter, messageID: number): void {
   set(({ data }) => ({
     data: {
       ...data,
-      messages: data.messages.filter((message) => message.id != messageID),
+      messages: data.messages.map((message) =>
+        message.id === messageID
+          ? { ...message, type: MessageType.DELETED }
+          : message,
+      ),
     },
   }));
 }

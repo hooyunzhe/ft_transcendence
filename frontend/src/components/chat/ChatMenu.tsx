@@ -12,7 +12,7 @@ import callAPI from '@/lib/callAPI';
 import { useChatActions } from '@/lib/stores/useChatStore';
 import emitToSocket from '@/lib/emitToSocket';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
-import { Message } from '@/types/MessageTypes';
+import { Message, MessageType } from '@/types/MessageTypes';
 
 interface ChatMenuProps {
   message: Message;
@@ -25,8 +25,9 @@ export default function ChatMenu({ message, toggleEdit }: ChatMenuProps) {
   const [anchorElement, setAnchorElement] = useState<HTMLElement | undefined>();
 
   async function handleDelete(): Promise<void> {
-    await callAPI('DELETE', 'messages', {
+    await callAPI('PATCH', 'messages', {
       id: message.id,
+      type: MessageType.DELETED,
     });
     deleteMessage(message.id);
     emitToSocket(channelSocket, 'deleteMessage', message);
@@ -40,8 +41,9 @@ export default function ChatMenu({ message, toggleEdit }: ChatMenuProps) {
   return (
     <>
       <IconButton
-        onClick={(event) => setAnchorElement(event.currentTarget)}
         edge='end'
+        disabled={message.type === MessageType.DELETED}
+        onClick={(event) => setAnchorElement(event.currentTarget)}
       >
         <MoreVert />
       </IconButton>

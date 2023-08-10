@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { Message } from '@/types/MessageTypes';
+import { Message, MessageType } from '@/types/MessageTypes';
 import ChatMenu from './ChatMenu';
 import { useState } from 'react';
 import { Clear, Done } from '@mui/icons-material';
@@ -72,15 +72,27 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
             />
           ) : (
             <ListItemText
-              primary={message.content}
-              primaryTypographyProps={{ sx: { wordBreak: 'break-all' } }}
-              secondary={new Date(message.date_of_creation).toLocaleTimeString(
-                'en-US',
-                {
+              primary={
+                message.type === MessageType.TEXT
+                  ? message.content
+                  : 'Message deleted'
+              }
+              primaryTypographyProps={{
+                fontStyle:
+                  message.type === MessageType.DELETED ? 'italic' : 'normal',
+                sx: { wordBreak: 'break-all' },
+              }}
+              secondary={
+                (message.type === MessageType.TEXT &&
+                new Date(message.last_updated) >
+                  new Date(message.date_of_creation)
+                  ? 'edited '
+                  : '') +
+                new Date(message.last_updated).toLocaleTimeString('en-US', {
                   hour: 'numeric',
                   minute: 'numeric',
-                },
-              )}
+                })
+              }
               secondaryTypographyProps={{ align: 'right' }}
             />
           )}

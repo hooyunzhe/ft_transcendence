@@ -4,6 +4,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Channel } from 'src/channel/entities/channel.entity';
 import { User } from 'src/user/entities/user.entity';
@@ -11,6 +12,7 @@ import { User } from 'src/user/entities/user.entity';
 export enum MessageType {
   TEXT = 'TEXT',
   INVITE = 'INVITE',
+  DELETED = 'DELETED',
 }
 
 @Entity()
@@ -24,8 +26,11 @@ export class Message {
   @Column()
   type: MessageType;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   date_of_creation: Date;
+
+  @UpdateDateColumn({ type: 'timestamptz' })
+  last_updated: Date;
 
   @ManyToOne(() => Channel, (channel) => channel.messages, {
     eager: true,

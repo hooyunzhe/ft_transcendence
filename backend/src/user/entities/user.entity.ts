@@ -31,7 +31,7 @@ export class User {
   @Column()
   avatar_url: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   date_of_creation: Date;
 
   @OneToMany(() => ChannelMember, (channelMember) => channelMember.user)

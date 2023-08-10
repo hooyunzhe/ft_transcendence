@@ -37,10 +37,10 @@ export class ChannelMember {
   @Column({ default: null })
   muted_until: Date;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   date_of_creation: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   last_updated: Date;
 
   @ManyToOne(() => Channel, (channel) => channel.channelMembers, {

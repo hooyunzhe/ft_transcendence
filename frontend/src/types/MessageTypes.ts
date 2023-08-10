@@ -4,6 +4,7 @@ import { User } from './UserTypes';
 export enum MessageType {
   TEXT = 'TEXT',
   INVITE = 'INVITE',
+  DELETED = 'DELETED',
 }
 
 export interface Message {
@@ -11,6 +12,7 @@ export interface Message {
   content: string;
   type: MessageType;
   date_of_creation: string;
+  last_updated: string;
   channel: Channel;
   user: User;
 }

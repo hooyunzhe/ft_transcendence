@@ -14,7 +14,7 @@ export class UserAchievement {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   date_of_creation: Date;
 
   @ManyToOne(() => User, (user) => user.userAchievements, {
