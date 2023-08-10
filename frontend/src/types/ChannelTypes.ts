@@ -15,6 +15,6 @@ export interface Channel {
   hash: string;
   date_of_creation: string;
   last_updated: string;
-  channelMembers: ChannelMembers[];
+  channelMembers: ChannelMember[];
   messages: Message[];
 }

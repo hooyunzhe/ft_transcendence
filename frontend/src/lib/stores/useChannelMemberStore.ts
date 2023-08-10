@@ -27,6 +27,7 @@ interface ChannelMemberStore {
     changeChannelMemberStatus: (
       memberID: number,
       newStatus: ChannelMemberStatus,
+      mutedUntil?: string,
     ) => void;
     setupChannelMemberSocketEvents: (
       channelSocket: Socket,
@@ -51,7 +52,9 @@ async function getChannelMemberData(set: StoreSetter): Promise<void> {
   const channelMembersData = JSON.parse(
     await callAPI('GET', 'channel-members?search_type=ALL'),
   );
-  set(() => ({ data: { channelMembers: channelMembersData } }));
+  set(({ data }) => ({
+    data: { ...data, channelMembers: channelMembersData },
+  }));
 }
 
 function getChannelMember(
@@ -69,13 +72,17 @@ function addChannelMember(
   channelMember: ChannelMember,
 ): void {
   set(({ data }) => ({
-    data: { channelMembers: [...data.channelMembers, channelMember] },
+    data: {
+      ...data,
+      channelMembers: [...data.channelMembers, channelMember],
+    },
   }));
 }
 
 function kickChannelMember(set: StoreSetter, memberID: number): void {
   set(({ data }) => ({
     data: {
+      ...data,
       channelMembers: data.channelMembers.filter(
         (member) => member.id !== memberID,
       ),
@@ -116,6 +123,7 @@ function changeChannelMemberStatus(
   set: StoreSetter,
   memberID: number,
   newStatus: ChannelMemberStatus,
+  mutedUntil?: string,
 ): void {
   set(({ data }) => ({
     data: {
@@ -123,6 +131,12 @@ function changeChannelMemberStatus(
       channelMembers: data.channelMembers.map((member) => {
         if (member.id === memberID) {
           member.status = newStatus;
+          if (newStatus === ChannelMemberStatus.MUTED && mutedUntil) {
+            member.muted_until = mutedUntil;
+          }
+          if (newStatus === ChannelMemberStatus.DEFAULT) {
+            member.muted_until = '';
+          }
         }
         return member;
       }),
@@ -154,10 +168,12 @@ function setupChannelMemberSocketEvents(
     ({
       memberID,
       newStatus,
+      mutedUntil,
     }: {
       memberID: number;
       newStatus: ChannelMemberStatus;
-    }) => changeChannelMemberStatus(set, memberID, newStatus),
+      mutedUntil: string | undefined;
+    }) => changeChannelMemberStatus(set, memberID, newStatus, mutedUntil),
   );
 }
 
@@ -214,7 +230,9 @@ function isMemberMuted(
 }
 
 const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
-  data: { channelMembers: [] },
+  data: {
+    channelMembers: [],
+  },
   actions: {
     getChannelMemberData: () => getChannelMemberData(set),
     getChannelMember: (userID, channelID) =>
@@ -223,8 +241,8 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
     kickChannelMember: (memberID) => kickChannelMember(set, memberID),
     changeChannelMemberRole: (memberID, newRole) =>
       changeChannelMemberRole(set, memberID, newRole),
-    changeChannelMemberStatus: (memberID, newStatus) =>
-      changeChannelMemberStatus(set, memberID, newStatus),
+    changeChannelMemberStatus: (memberID, newStatus, mutedUntil) =>
+      changeChannelMemberStatus(set, memberID, newStatus, mutedUntil),
     setupChannelMemberSocketEvents: (channelSocket, currentUserID) =>
       setupChannelMemberSocketEvents(set, channelSocket, currentUserID),
     deleteChannelMembers: (channelID) => deleteChannelMembers(set, channelID),

@@ -18,8 +18,10 @@ import { useFriendActions } from '@/lib/stores/useFriendStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
-import { ChannelType } from '@/types/ChannelTypes';
+import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { ChannelMemberStatus } from '@/types/ChannelMemberTypes';
 
 export function ChannelList() {
   const currentUser = useCurrentUser();
@@ -27,13 +29,46 @@ export function ChannelList() {
   const joinedChannels = useJoinedChannels();
   const recentChannelActivity = useRecentChannelActivity();
   const selectedChannel = useSelectedChannel();
-  const { setSelectedChannel, setSelectedChannelMuted } = useChannelActions();
+  const { setSelectedChannel, setSelectedChannelMuted, setUnmuteTimeout } =
+    useChannelActions();
   const { setSelectedFriend } = useFriendActions();
   const { isChannelOwner, isMemberBanned, isMemberMuted } =
     useChannelMemberChecks();
   const { getChannelMember } = useChannelMemberActions();
   const { setCurrentView } = useUtilActions();
   const { displayDialog } = useDialogActions();
+  const channelSocket = useChannelSocket();
+
+  function handleChannelSelect(channel: Channel): void {
+    if (selectedChannel?.id === channel.id) {
+      setSelectedChannelMuted(channel.id, false);
+      setSelectedChannel(undefined);
+    } else {
+      const currentMember = getChannelMember(currentUser.id, channel.id);
+      if (
+        channelSocket &&
+        currentMember?.status === ChannelMemberStatus.MUTED
+      ) {
+        setUnmuteTimeout(
+          currentMember.muted_until,
+          currentMember.id,
+          currentUser.id,
+          channel.id,
+          channelSocket,
+        );
+      }
+      setSelectedChannel(channel);
+
+      setSelectedChannelMuted(
+        channel.id,
+        isMemberMuted(currentUser.id, channel.id),
+      );
+      if (selectedChannel === undefined) {
+        setCurrentView(View.CHAT);
+      }
+      setSelectedFriend(undefined);
+    }
+  }
 
   return (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
@@ -86,22 +121,7 @@ export function ChannelList() {
             isOwner={isChannelOwner(currentUser.id, channel.id)}
             currentChannelMember={getChannelMember(currentUser.id, channel.id)}
             selected={selectedChannel?.id === channel.id ?? false}
-            selectCurrent={() => {
-              if (selectedChannel?.id === channel.id) {
-                setSelectedChannelMuted(channel.id, false);
-                setSelectedChannel(undefined);
-              } else {
-                setSelectedChannel(channel);
-                setSelectedChannelMuted(
-                  channel.id,
-                  isMemberMuted(currentUser.id, channel.id),
-                );
-                if (selectedChannel === undefined) {
-                  setCurrentView(View.CHAT);
-                }
-                setSelectedFriend(undefined);
-              }
-            }}
+            selectCurrent={() => handleChannelSelect(channel)}
           />
         ))}
     </Stack>

@@ -23,9 +23,10 @@ export class ChangeChannelMemberRoleEmitBodyParams {
 
 export class ChangeChannelMemberStatusEmitBodyParams {
   memberID: number;
-  channelID: number;
   userID: number;
+  channelID: number;
   newStatus: ChannelMemberStatus;
+  mutedUntil?: string;
 }
 
 export class EditMessageEmitBodyParams {

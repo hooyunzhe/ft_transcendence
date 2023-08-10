@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
 import { ChannelMemberStatus, ChannelMember } from '@/types/ChannelMemberTypes';
 import { Message } from '@/types/MessageTypes';
+import emitToSocket from '../emitToSocket';
 
 interface ChannelStore {
   data: {
@@ -12,6 +13,7 @@ interface ChannelStore {
     recentChannelActivity: number[];
     selectedChannel: Channel | undefined;
     selectedChannelMuted: boolean;
+    unmuteTimeoutID: NodeJS.Timeout | undefined;
   };
   actions: {
     getChannelData: (userID: number) => void;
@@ -28,6 +30,13 @@ interface ChannelStore {
     setSelectedChannelMuted: (channelID: number, isMuted: boolean) => void;
     resetSelectedChannel: (channelID: number) => void;
     resetSelectedDirectChannel: (incomingID: number) => void;
+    setUnmuteTimeout: (
+      mutedUntil: string,
+      memberID: number,
+      userID: number,
+      channelID: number,
+      channelSocket: Socket,
+    ) => void;
     setupChannelSocketEvents: (
       channelSocket: Socket,
       currentUserID: number,
@@ -274,23 +283,54 @@ function resetSelectedDirectChannel(
   }));
 }
 
-function checkChannelExists(get: StoreGetter, channelName: string): boolean {
-  return get().data.channels.some((channel) => channel.name === channelName);
+async function handleUnmute(
+  set: StoreSetter,
+  memberID: number,
+  userID: number,
+  channelID: number,
+  channelSocket: Socket,
+): Promise<void> {
+  await callAPI('PATCH', 'channel-members', {
+    id: memberID,
+    status: ChannelMemberStatus.DEFAULT,
+  });
+  emitToSocket(channelSocket, 'changeStatus', {
+    memberID: memberID,
+    userID: userID,
+    channelID: channelID,
+    newStatus: ChannelMemberStatus.DEFAULT,
+  });
+  setSelectedChannelMuted(set, channelID, false);
 }
 
-function checkChannelJoined(get: StoreGetter, channelName: string): boolean {
-  const channel = get().data.channels.find(
-    (channel) => channel.name === channelName,
-  );
-
-  if (channel) {
-    return get().data.joinedChannels[channel.id];
+function setUnmuteTimeout(
+  set: StoreSetter,
+  get: StoreGetter,
+  mutedUntil: string,
+  memberID: number,
+  userID: number,
+  channelID: number,
+  channelSocket: Socket,
+): void {
+  clearTimeout(get().data.unmuteTimeoutID);
+  if (new Date(mutedUntil).getTime() <= Date.now()) {
+    handleUnmute(set, memberID, userID, channelID, channelSocket);
+  } else {
+    set(({ data }) => ({
+      data: {
+        ...data,
+        unmuteTimeoutID: setTimeout(
+          () => handleUnmute(set, memberID, userID, channelID, channelSocket),
+          new Date(mutedUntil).getTime() - Date.now(),
+        ),
+      },
+    }));
   }
-  return false;
 }
 
 function setupChannelSocketEvents(
   set: StoreSetter,
+  get: StoreGetter,
   channelSocket: Socket,
   currentUserID: number,
 ): void {
@@ -338,18 +378,33 @@ function setupChannelSocketEvents(
   channelSocket.on(
     'changeStatus',
     ({
-      channelID,
+      memberID,
       userID,
+      channelID,
       newStatus,
+      mutedUntil,
     }: {
-      channelID: number;
+      memberID: number;
       userID: number;
+      channelID: number;
       newStatus: ChannelMemberStatus;
+      mutedUntil: string | undefined;
     }) => {
       if (userID === currentUserID) {
         if (newStatus === ChannelMemberStatus.BANNED) {
           resetSelectedChannel(set, channelID);
         } else if (newStatus === ChannelMemberStatus.MUTED) {
+          if (mutedUntil && channelID === get().data.selectedChannel?.id) {
+            setUnmuteTimeout(
+              set,
+              get,
+              mutedUntil,
+              memberID,
+              userID,
+              channelID,
+              channelSocket,
+            );
+          }
           setSelectedChannelMuted(set, channelID, true);
         } else if (newStatus === ChannelMemberStatus.DEFAULT) {
           setSelectedChannelMuted(set, channelID, false);
@@ -362,6 +417,21 @@ function setupChannelSocketEvents(
   );
 }
 
+function checkChannelExists(get: StoreGetter, channelName: string): boolean {
+  return get().data.channels.some((channel) => channel.name === channelName);
+}
+
+function checkChannelJoined(get: StoreGetter, channelName: string): boolean {
+  const channel = get().data.channels.find(
+    (channel) => channel.name === channelName,
+  );
+
+  if (channel) {
+    return get().data.joinedChannels[channel.id];
+  }
+  return false;
+}
+
 const useChannelStore = create<ChannelStore>()((set, get) => ({
   data: {
     channels: [],
@@ -369,6 +439,7 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     recentChannelActivity: [],
     selectedChannel: undefined,
     selectedChannelMuted: false,
+    unmuteTimeoutID: undefined,
   },
   actions: {
     getChannelData: (userID) => getChannelData(set, userID),
@@ -392,8 +463,24 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     resetSelectedChannel: (channelID) => resetSelectedChannel(set, channelID),
     resetSelectedDirectChannel: (incomingID) =>
       resetSelectedDirectChannel(set, incomingID),
+    setUnmuteTimeout: (
+      mutedUntil,
+      memberID,
+      userID,
+      channelID,
+      channelSocket,
+    ) =>
+      setUnmuteTimeout(
+        set,
+        get,
+        mutedUntil,
+        memberID,
+        userID,
+        channelID,
+        channelSocket,
+      ),
     setupChannelSocketEvents: (channelSocket, currentUserID) =>
-      setupChannelSocketEvents(set, channelSocket, currentUserID),
+      setupChannelSocketEvents(set, get, channelSocket, currentUserID),
   },
   checks: {
     checkChannelExists: (channelName) => checkChannelExists(get, channelName),

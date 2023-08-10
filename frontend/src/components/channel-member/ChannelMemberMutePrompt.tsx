@@ -27,7 +27,7 @@ export function ChannelMemberMutePrompt({
   function calculateMuteDuration(): string {
     switch (duration) {
       case ChannelMemberMuteDuration.MINUTE:
-        return new Date(Date.now() + 60000).toISOString();
+        return new Date(Date.now() + 6000).toISOString();
       case ChannelMemberMuteDuration.HOUR:
         return new Date(Date.now() + 3600000).toISOString();
       case ChannelMemberMuteDuration.DAY:

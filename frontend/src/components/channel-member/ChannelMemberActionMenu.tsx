@@ -53,7 +53,10 @@ export default function ChannelMemberActionMenu({
       >
         {currentUserRole == ChannelMemberRole.OWNER && (
           <MenuItem
-            onClick={() => handleAction(member, ChannelMemberAction.CHOWN)}
+            onClick={() => {
+              setAnchorElement(undefined);
+              handleAction(member, ChannelMemberAction.CHOWN);
+            }}
           >
             <ListItemIcon>
               <FortIcon fontSize='small' />
@@ -63,7 +66,10 @@ export default function ChannelMemberActionMenu({
         )}
         {currentUserRole !== ChannelMemberRole.MEMBER && (
           <MenuItem
-            onClick={() => handleAction(member, ChannelMemberAction.BAN)}
+            onClick={() => {
+              setAnchorElement(undefined);
+              handleAction(member, ChannelMemberAction.BAN);
+            }}
           >
             <ListItemIcon>
               <GavelRoundedIcon fontSize='small' />
@@ -74,6 +80,7 @@ export default function ChannelMemberActionMenu({
         {currentUserRole !== ChannelMemberRole.MEMBER && (
           <MenuItem
             onClick={() => {
+              setAnchorElement(undefined);
               handleAction(member, ChannelMemberAction.KICK);
             }}
           >
@@ -86,6 +93,7 @@ export default function ChannelMemberActionMenu({
         {currentUserRole === ChannelMemberRole.OWNER && (
           <MenuItem
             onClick={() => {
+              setAnchorElement(undefined);
               if (member.role === ChannelMemberRole.MEMBER) {
                 handleAction(member, ChannelMemberAction.ADMIN);
               } else {
@@ -110,7 +118,11 @@ export default function ChannelMemberActionMenu({
         {currentUserRole !== ChannelMemberRole.MEMBER && (
           <MenuItem
             onClick={() => {
-              if (member.status === ChannelMemberStatus.MUTED) {
+              setAnchorElement(undefined);
+              if (
+                member.status === ChannelMemberStatus.MUTED &&
+                new Date(member.muted_until).getTime() > Date.now()
+              ) {
                 handleAction(member, ChannelMemberAction.UNMUTE);
               } else {
                 handleAction(member, ChannelMemberAction.MUTE);
@@ -118,14 +130,16 @@ export default function ChannelMemberActionMenu({
             }}
           >
             <ListItemIcon>
-              {member.status === ChannelMemberStatus.MUTED ? (
+              {member.status === ChannelMemberStatus.MUTED &&
+              new Date(member.muted_until).getTime() > Date.now() ? (
                 <CommentsDisabledIcon />
               ) : (
                 <CommentIcon />
               )}
             </ListItemIcon>
             <ListItemText>
-              {member.status === ChannelMemberStatus.MUTED
+              {member.status === ChannelMemberStatus.MUTED &&
+              new Date(member.muted_until).getTime() > Date.now()
                 ? 'Unmute User'
                 : 'Mute User'}
             </ListItemText>

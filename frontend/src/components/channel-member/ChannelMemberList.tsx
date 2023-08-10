@@ -121,26 +121,27 @@ export function ChannelMemberList() {
     changeChannelMemberStatus(member.id, ChannelMemberStatus.DEFAULT);
     const data = {
       memberID: member.id,
-      channelID: member.channel.id,
       userID: member.user.id,
+      channelID: member.channel.id,
       newStatus: ChannelMemberStatus.DEFAULT,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
     displayNotification('success', 'Channel member unmuted');
   }
 
-  async function muteMember(member: ChannelMember, duration: Date) {
+  async function muteMember(member: ChannelMember, mutedUntil: string) {
     callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.MUTED,
-      muted_until: duration,
+      muted_until: mutedUntil,
     });
-    changeChannelMemberStatus(member.id, ChannelMemberStatus.MUTED);
+    changeChannelMemberStatus(member.id, ChannelMemberStatus.MUTED, mutedUntil);
     const data = {
       memberID: member.id,
-      channelID: member.channel.id,
       userID: member.user.id,
+      channelID: member.channel.id,
       newStatus: ChannelMemberStatus.MUTED,
+      mutedUntil: mutedUntil,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
     displayNotification('success', 'Channel member muted');
@@ -155,8 +156,8 @@ export function ChannelMemberList() {
     changeChannelMemberStatus(member.id, ChannelMemberStatus.BANNED);
     const data = {
       memberID: member.id,
-      channelID: member.channel.id,
       userID: member.user.id,
+      channelID: member.channel.id,
       newStatus: ChannelMemberStatus.BANNED,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
