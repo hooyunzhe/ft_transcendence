@@ -1,16 +1,7 @@
 'use client';
 import signUp from '@/lib/signUp';
 import { useUserActions } from '@/lib/stores/useUserStore';
-import {
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Grow,
-  Slide,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Avatar, Box, Grow, Slide, TextField, Typography } from '@mui/material';
 import { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
@@ -25,6 +16,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
   const [intraID, setIntraID] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [largeAvatarUrl, setLargeAvatarUrl] = useState('');
+  const [isHover, setIsHover] = useState(false);
   const uploadRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -83,30 +75,28 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
         </Typography>
       </Slide>
       <Grow in={avatarUrl.length > 0} timeout={2500}>
-        <Badge
-          sx={{
-            alignSelf: 'center',
-          }}
-          overlap='circular'
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          badgeContent={
-            <Button
-              size='small'
-              variant='contained'
-              onClick={() => uploadRef && uploadRef.current?.click()}
-            >
-              Change
-              <input
-                hidden
-                type='file'
-                ref={uploadRef}
-                onChange={(event) => uploadAvatar(event.target.files?.[0])}
-              />
-            </Button>
-          }
+        <Box
+          alignSelf='center'
+          onMouseOver={() => setIsHover(true)}
+          onMouseLeave={() => setIsHover(false)}
+          onClick={() => uploadRef && uploadRef.current?.click()}
         >
-          <Avatar src={largeAvatarUrl} sx={{ width: 250, height: 250 }} />
-        </Badge>
+          <input
+            hidden
+            type='file'
+            ref={uploadRef}
+            onChange={(event) => uploadAvatar(event.target.files?.[0])}
+          />
+          <Avatar
+            src={largeAvatarUrl}
+            sx={{
+              width: 250,
+              height: 250,
+              opacity: isHover ? 0.5 : 1,
+              transition: 'opacity 0.25s',
+            }}
+          />
+        </Box>
       </Grow>
       <Slide direction='up' in timeout={2500}>
         <TextField
