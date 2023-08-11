@@ -5,11 +5,12 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
-  TextField,
 } from '@mui/material';
+import PasswordField from '../utils/PasswordField';
+import InputField from '../utils/InputField';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
-import callAPI from '@/lib/callAPI';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import callAPI from '@/lib/callAPI';
 import {
   useChannelActions,
   useChannelChecks,
@@ -23,7 +24,6 @@ import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
-import PasswordField from '../utils/PasswordField';
 
 export default function ChannelCreatePrompt() {
   const currentUser = useCurrentUser();
@@ -100,29 +100,33 @@ export default function ChannelCreatePrompt() {
     }
   }
 
+  async function handleAction(): Promise<void> {
+    if (displayPasswordPrompt) {
+      createChannel()
+        .then(() => resetDialog())
+        .catch((error) => {
+          resetTriggers();
+          displayNotification('error', error);
+        });
+    } else {
+      handleCreateChannelAction()
+        .then(() => {
+          if (channelType === ChannelType.PROTECTED) {
+            resetTriggers();
+          } else {
+            resetDialog();
+          }
+        })
+        .catch((error) => {
+          resetTriggers();
+          displayNotification('error', error);
+        });
+    }
+  }
+
   useEffect(() => {
     if (actionClicked) {
-      if (displayPasswordPrompt) {
-        createChannel()
-          .then(() => resetDialog())
-          .catch((error) => {
-            resetTriggers();
-            displayNotification('error', error);
-          });
-      } else {
-        handleCreateChannelAction()
-          .then(() => {
-            if (channelType === ChannelType.PROTECTED) {
-              resetTriggers();
-            } else {
-              resetDialog();
-            }
-          })
-          .catch((error) => {
-            resetTriggers();
-            displayNotification('error', error);
-          });
-      }
+      handleAction();
     }
     if (backClicked) {
       if (displayPasswordPrompt) {
@@ -142,14 +146,11 @@ export default function ChannelCreatePrompt() {
     />
   ) : (
     <FormControl fullWidth>
-      <TextField
-        fullWidth
-        autoComplete='off'
-        variant='standard'
-        margin='dense'
+      <InputField
         label='Channel Name'
         value={channelName}
-        onChange={(event) => setChannelName(event.target.value)}
+        onChange={setChannelName}
+        onSubmit={handleAction}
       />
       <RadioGroup
         row

@@ -33,7 +33,10 @@ export default function ChannelSettings({
 
   return (
     <>
-      <IconButton onClick={(event) => setAnchorElement(event.currentTarget)}>
+      <IconButton
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={(event) => setAnchorElement(event.currentTarget)}
+      >
         <SettingsIcon />
       </IconButton>
       <Menu
@@ -46,14 +49,15 @@ export default function ChannelSettings({
         }}
       >
         <MenuItem
-          onClick={() =>
+          onClick={() => {
             displayDialog(
               'Change Channel Name',
               'Please provide the name you want to change to',
               <ChannelNameChangePrompt channelID={channelID} />,
               'Change',
-            )
-          }
+            );
+            setAnchorElement(undefined);
+          }}
         >
           <ListItemIcon>
             <EditIcon />
@@ -61,7 +65,7 @@ export default function ChannelSettings({
           <ListItemText>Change Channel Name</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() =>
+          onClick={() => {
             displayDialog(
               'Change Channel Type',
               'Choose the channel type you want.',
@@ -70,8 +74,9 @@ export default function ChannelSettings({
                 channelType={channelType}
               />,
               'Change',
-            )
-          }
+            );
+            setAnchorElement(undefined);
+          }}
         >
           <ListItemIcon>
             <BrushIcon />
@@ -79,14 +84,15 @@ export default function ChannelSettings({
           <ListItemText>Change Channel Type</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() =>
+          onClick={() => {
             displayDialog(
               'Change Channel Password',
               'Enter the current password to proceed',
               <ChannelPassChangePrompt channelID={channelID} />,
               'Change',
-            )
-          }
+            );
+            setAnchorElement(undefined);
+          }}
         >
           <ListItemIcon>
             <Key />
@@ -94,14 +100,15 @@ export default function ChannelSettings({
           <ListItemText>Change Channel Password</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() =>
+          onClick={() => {
             displayDialog(
               'Unban list',
               'Unban the people who have sinned',
               <ChannelMemberUnbanPrompt />,
               'Unban',
-            )
-          }
+            );
+            setAnchorElement(undefined);
+          }}
         >
           <ListItemIcon>
             <SentimentVeryDissatisfiedIcon />
@@ -109,7 +116,7 @@ export default function ChannelSettings({
           <ListItemText>Unban List</ListItemText>
         </MenuItem>
         <MenuItem
-          onClick={() =>
+          onClick={() => {
             displayDialog(
               'Delete Channel',
               'Enter the channel name to confirm deletion',
@@ -118,8 +125,9 @@ export default function ChannelSettings({
                 channelName={channelName}
               />,
               'Delete',
-            )
-          }
+            );
+            setAnchorElement(undefined);
+          }}
         >
           <ListItemIcon>
             <LocalFireDepartmentSharp />

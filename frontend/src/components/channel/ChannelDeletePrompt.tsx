@@ -1,6 +1,6 @@
 'use client';
-import { TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
+import InputField from '../utils/InputField';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
@@ -39,14 +39,18 @@ export default function ChannelDeletePrompt({
     displayNotification('error', 'Channel deleted');
   }
 
+  async function handleAction(): Promise<void> {
+    deleteChannelApproved()
+      .then(() => resetDialog())
+      .catch((error) => {
+        resetTriggers();
+        displayNotification('error', error);
+      });
+  }
+
   useEffect(() => {
     if (actionClicked) {
-      deleteChannelApproved()
-        .then(() => resetDialog())
-        .catch((error) => {
-          resetTriggers();
-          displayNotification('error', error);
-        });
+      handleAction();
     }
     if (backClicked) {
       resetDialog();
@@ -54,14 +58,11 @@ export default function ChannelDeletePrompt({
   }, [actionClicked, backClicked]);
 
   return (
-    <TextField
-      fullWidth
-      autoComplete='off'
-      variant='standard'
-      margin='dense'
+    <InputField
       label='Confirm Channel Name'
       value={nameConfirm}
-      onChange={(event) => setNameConfirm(event.target.value)}
+      onChange={setNameConfirm}
+      onSubmit={handleAction}
     />
   );
 }

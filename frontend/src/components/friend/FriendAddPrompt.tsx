@@ -1,18 +1,18 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
-import { User } from '@/types/UserTypes';
-import { Friend, FriendStatus } from '@/types/FriendTypes';
+import InputField from '../utils/InputField';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
 import { useFriendSocket } from '@/lib/stores/useSocketStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
-import { TextField } from '@mui/material';
+import { User } from '@/types/UserTypes';
+import { Friend, FriendStatus } from '@/types/FriendTypes';
 
 export default function FriendAddPrompt() {
   const currentUser = useCurrentUser();
@@ -85,14 +85,18 @@ export default function FriendAddPrompt() {
     displayNotification('success', 'Request sent');
   }
 
+  async function handleAction(): Promise<void> {
+    handleAddFriendAction()
+      .then(() => resetDialog())
+      .catch((error) => {
+        resetTriggers();
+        displayNotification('error', error);
+      });
+  }
+
   useEffect(() => {
     if (actionClicked) {
-      handleAddFriendAction()
-        .then(() => resetDialog())
-        .catch((error) => {
-          resetTriggers();
-          displayNotification('error', error);
-        });
+      handleAction();
     }
     if (backClicked) {
       resetDialog();
@@ -100,16 +104,11 @@ export default function FriendAddPrompt() {
   }, [actionClicked, backClicked]);
 
   return (
-    <TextField
-      fullWidth
-      autoComplete='off'
-      margin='dense'
+    <InputField
       label='Username'
-      variant='standard'
       value={username}
-      onChange={(event) => {
-        setUsername(event.target.value);
-      }}
+      onChange={setUsername}
+      onSubmit={handleAction}
     />
   );
 }

@@ -7,17 +7,17 @@ import {
   ListItemAvatar,
   ListItemText,
   Paper,
-  TextField,
   Typography,
 } from '@mui/material';
-import { Message, MessageType } from '@/types/MessageTypes';
-import ChatMenu from './ChatMenu';
-import { useState } from 'react';
 import { Clear, Done } from '@mui/icons-material';
-import { useChatActions, useSelectedMessage } from '@/lib/stores/useChatStore';
+import { useState } from 'react';
+import ChatMenu from './ChatMenu';
+import InputField from '../utils/InputField';
 import callAPI from '@/lib/callAPI';
-import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import emitToSocket from '@/lib/emitToSocket';
+import { useChatActions, useSelectedMessage } from '@/lib/stores/useChatStore';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { Message, MessageType } from '@/types/MessageTypes';
 
 interface ChatDisplayProps {
   message: Message;
@@ -61,14 +61,12 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
             <Avatar src={message.user.avatar_url} />
           </ListItemAvatar>
           {selectedMessage?.id === message.id ? (
-            <TextField
-              hiddenLabel
-              autoFocus
-              autoComplete='off'
-              margin='normal'
-              variant='standard'
+            <InputField
+              normalMargin
+              label=''
               value={input}
-              onChange={(event) => setInput(event.target.value)}
+              onChange={setInput}
+              onSubmit={handleEdit}
             />
           ) : (
             <ListItemText

@@ -1,10 +1,11 @@
 'use client';
-import signUp from '@/lib/signUp';
-import { useUserActions } from '@/lib/stores/useUserStore';
-import { Avatar, Box, Grow, Slide, TextField, Typography } from '@mui/material';
 import { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
+import { Avatar, Box, Grow, Slide, Typography } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+import InputField from '../utils/InputField';
+import signUp from '@/lib/signUp';
+import { useUserActions } from '@/lib/stores/useUserStore';
 
 interface FirstTimeSetupProps {
   session: Session;
@@ -99,24 +100,24 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
         </Box>
       </Grow>
       <Slide direction='up' in timeout={2500}>
-        <TextField
+        <Box
           sx={{
             maxWidth: '30vw',
             marginLeft: '15vw',
           }}
-          autoComplete='off'
-          label='Username'
-          onChange={(e) => {
-            setUsername(e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+        >
+          <InputField
+            outlined
+            label='Username'
+            value={username}
+            onChange={setUsername}
+            onSubmit={() =>
               signUp(username, session.refresh_token, avatarUrl).then(
                 (newUser) => setCurrentUser(newUser),
-              );
+              )
             }
-          }}
-        />
+          />
+        </Box>
       </Slide>
     </Box>
   );

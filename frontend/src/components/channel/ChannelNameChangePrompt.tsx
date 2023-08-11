@@ -1,6 +1,6 @@
 'use client';
-import { TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
+import InputField from '../utils/InputField';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
@@ -36,9 +36,13 @@ export default function ChannelNameChangePrompt({
     displayNotification('success', 'Channel name changed');
   }
 
+  async function handleAction(): Promise<void> {
+    handleNameChange().then(() => resetDialog());
+  }
+
   useEffect(() => {
     if (actionClicked) {
-      handleNameChange().then(() => resetDialog());
+      handleAction();
     }
     if (backClicked) {
       resetDialog();
@@ -46,16 +50,11 @@ export default function ChannelNameChangePrompt({
   }, [actionClicked, backClicked]);
 
   return (
-    <TextField
-      fullWidth
-      autoComplete='off'
-      variant='standard'
-      margin='dense'
+    <InputField
       label='Channel Name'
       value={newName}
-      onChange={(event) => {
-        setNewName(event.target.value);
-      }}
+      onChange={setNewName}
+      onSubmit={handleAction}
     />
   );
 }

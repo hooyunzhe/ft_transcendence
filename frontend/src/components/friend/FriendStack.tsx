@@ -197,6 +197,7 @@ export default function FriendStack() {
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
       <Button
         variant='contained'
+        onMouseDown={(event) => event.preventDefault()}
         onClick={() =>
           displayDialog(
             'Add Friend',

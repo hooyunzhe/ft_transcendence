@@ -57,6 +57,7 @@ export default function SocialDrawer() {
           variant='fullWidth'
           value={currentSocialTab}
           onChange={(event, newValue) => setCurrentSocialTab(newValue)}
+          onMouseDown={(event) => event.preventDefault()}
         >
           <Tab label='Friends' value={SocialTab.FRIEND} />
           <Tab label='Channels' value={SocialTab.CHANNEL} />

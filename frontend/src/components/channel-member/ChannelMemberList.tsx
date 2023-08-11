@@ -273,6 +273,7 @@ export function ChannelMemberList() {
       <ListHeader title='Members' />
       <Button
         variant='contained'
+        onMouseDown={(event) => event.preventDefault()}
         onClick={() =>
           displayDialog(
             'Add Member',

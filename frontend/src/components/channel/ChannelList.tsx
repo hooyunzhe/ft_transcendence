@@ -74,6 +74,7 @@ export function ChannelList() {
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
       <Button
         variant='contained'
+        onMouseDown={(event) => event.preventDefault()}
         onClick={() =>
           displayDialog(
             'Channel Creation',
@@ -87,6 +88,7 @@ export function ChannelList() {
       </Button>
       <Button
         variant='contained'
+        onMouseDown={(event) => event.preventDefault()}
         onClick={() =>
           displayDialog(
             'Channel Join',
