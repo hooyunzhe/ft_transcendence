@@ -133,11 +133,19 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       .gameSetPosition(position.x, position.y);
   }
 
+  @SubscribeMessage('Spectator')
+  SpectateGame(@MessageBody() roomid: string, @ConnectedSocket() client: Socket)
+  {
+    client.data.player = 0;
+    client.join(roomid);
+  }
   @SubscribeMessage('Player')
   MovePaddle(
     @MessageBody() movement: string,
     @ConnectedSocket() client: Socket,
   ): void {
+    if (client.data.player === 0)
+     return;
     if (movement === 'w')
       this.roomlist
         .get(client.data.roomid)

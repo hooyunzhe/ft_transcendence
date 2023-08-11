@@ -10,6 +10,7 @@ import GameRender from '@/components/game/GameRender';
 export default function GamePage() {
   // const [session, setSession] = useState(useSession());
   const { data: session } = useSession();
+  const [spectate, setSpectate] = useState(false);
   const [skillState, setSkillState] = useState<boolean[]>([]);
   const [searching, setsearching] = useState(false);
   const [matchFound, setMatchFound] = useState(false);
@@ -77,6 +78,10 @@ export default function GamePage() {
   //   gameSocket.emit('reject');
   //   setMatchFound(false);
   // };
+  const spectateGame = () => {
+    gameSocket.connect();
+    gameSocket.emit('spectate', 'roomid');
+  }
 
   const disconnectGame = () => {
     gameSocket.disconnect();
@@ -101,6 +106,11 @@ export default function GamePage() {
         onChange={startGame}
         disabled={!matchFound}
       >
+          <ToggleButton value={spectate} onChange={spectateGame} disabled={spectate}>
+        spectate
+      </ToggleButton>
+      {/* <Button onClick={CheckStatus}>Check Status </Button> */}
+
         {gameReady ? 'Unready' : 'Ready'}
       </ToggleButton>
       {/* <ConfirmationPrompt
