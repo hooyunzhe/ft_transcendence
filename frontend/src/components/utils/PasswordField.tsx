@@ -19,6 +19,8 @@ export default function PasswordField({
   disabled,
 }: PasswordFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
+  // const displayNotification = display;
 
   return (
     <TextField
@@ -29,7 +31,11 @@ export default function PasswordField({
       variant={variant}
       disabled={disabled}
       value={value}
-      onChange={(event) => onChange(event.target.value)}
+      onChange={(event) => {
+        onChange(event.target.value);
+      }}
+      error={passwordError}
+      helperText={passwordError ? `${label} criteria for password not met` : ''}
       InputProps={{
         endAdornment: (
           <InputAdornment position='end'>

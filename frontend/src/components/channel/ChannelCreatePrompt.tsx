@@ -5,12 +5,11 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
+  TextField,
 } from '@mui/material';
-import PasswordField from '../utils/PasswordField';
-import InputField from '../utils/InputField';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
-import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
 import callAPI from '@/lib/callAPI';
+import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
 import {
   useChannelActions,
   useChannelChecks,
@@ -24,6 +23,7 @@ import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
+import PasswordField from '../utils/PasswordField';
 
 export default function ChannelCreatePrompt() {
   const currentUser = useCurrentUser();
@@ -100,14 +100,36 @@ export default function ChannelCreatePrompt() {
     }
   }
 
+  async function handlePasswordCriteria(input: string): Promise<void> {
+    const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+    const uppercaseChars = /[A-Z]/;
+    const lowercaseChars = /[a-z]/;
+    const numberChars = /[1-9]/;
+
+    if (input.length < 11) {
+      throw 'Password length must be at least 12 characters long.';
+    }
+    if (!numberChars.test(input)) {
+      throw 'Password must have at least one number.';
+    }
+    if (!specialChars.test(input)) {
+      throw 'Password does not contain any special characters.';
+    }
+    if (!uppercaseChars.test(input)) {
+      throw 'Password needs to have at least one uppercase characters.';
+    }
+    if (!lowercaseChars.test(input)) {
+      throw 'Password needs to have at least one lowercase characters.';
+    }
+    createChannel();
+  }
+
   async function handleAction(): Promise<void> {
     if (displayPasswordPrompt) {
-      createChannel()
-        .then(() => resetDialog())
-        .catch((error) => {
-          resetTriggers();
-          displayNotification('error', error);
-        });
+      handlePasswordCriteria(channelPass).catch((error) => {
+        resetTriggers();
+        displayNotification('error', error);
+      });
     } else {
       handleCreateChannelAction()
         .then(() => {
@@ -146,11 +168,14 @@ export default function ChannelCreatePrompt() {
     />
   ) : (
     <FormControl fullWidth>
-      <InputField
+      <TextField
+        fullWidth
+        autoComplete='off'
+        variant='standard'
+        margin='dense'
         label='Channel Name'
         value={channelName}
-        onChange={setChannelName}
-        onSubmit={handleAction}
+        onChange={(event) => setChannelName(event.target.value)}
       />
       <RadioGroup
         row
