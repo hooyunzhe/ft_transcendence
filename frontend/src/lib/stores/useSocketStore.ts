@@ -6,6 +6,7 @@ interface SocketStore {
     userSocket: Socket | null;
     friendSocket: Socket | null;
     channelSocket: Socket | null;
+    gameSocket: Socket | null;
   };
   actions: {
     initSockets: (userID: number) => void;
@@ -26,6 +27,9 @@ function initSockets(set: StoreSetter, userID: number): void {
   const channelSocket = io(
     process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/channel',
   );
+  const gameSocket = io(
+    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/game',
+  );
 
   userSocket.emit('initConnection', userID);
   friendSocket.emit('initConnection', userID);
@@ -35,6 +39,7 @@ function initSockets(set: StoreSetter, userID: number): void {
       userSocket: userSocket,
       friendSocket: friendSocket,
       channelSocket: channelSocket,
+      gameSocket: gameSocket,
     },
   });
 }
@@ -45,11 +50,13 @@ function resetSockets(set: StoreSetter, get: StoreGetter): void {
   sockets.userSocket?.disconnect();
   sockets.friendSocket?.disconnect();
   sockets.channelSocket?.disconnect();
+  sockets.gameSocket?.disconnect();
   set({
     data: {
       userSocket: null,
       friendSocket: null,
       channelSocket: null,
+      gameSocket: null,
     },
   });
 }
@@ -59,6 +66,7 @@ const useSocketStore = create<SocketStore>()((set, get) => ({
     userSocket: null,
     friendSocket: null,
     channelSocket: null,
+    gameSocket: null,
   },
   actions: {
     initSockets: (userID) => initSockets(set, userID),
@@ -72,4 +80,6 @@ export const useFriendSocket = () =>
   useSocketStore((state) => state.data.friendSocket);
 export const useChannelSocket = () =>
   useSocketStore((state) => state.data.channelSocket);
+export const useGameSocket = () =>
+  useSocketStore((state) => state.data.gameSocket);
 export const useSocketActions = () => useSocketStore((state) => state.actions);

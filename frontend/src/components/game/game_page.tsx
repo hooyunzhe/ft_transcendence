@@ -4,28 +4,30 @@ import startGame from '@/components/game/game';
 import { useEffect, useState } from 'react';
 import Pong from './pong';
 import { io } from 'socket.io-client';
+import { useGameSocket } from '@/lib/stores/useSocketStore';
 
 export default function Game() {
   useEffect(() => {
     startGame(), [window.innerWidth];
   });
-  const GameSocket = io(
-    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/game',
-  );
+  const gameSocket = useGameSocket();
+  if (!gameSocket) {
+    return;
+  }
   const triggerOn = () => {
-    GameSocket.emit('Start');
+    gameSocket.emit('Start');
   };
 
   const resetGame = () => {
-    GameSocket.emit('Reset');
+    gameSocket.emit('Reset');
   };
 
   const stopGame = () => {
-    GameSocket.emit('Stop');
+    gameSocket.emit('Stop');
   };
 
   const InitGame = () => {
-    GameSocket.emit('initialize');
+    gameSocket.emit('initialize');
   };
 
   const [x, setX] = useState(0);
@@ -37,7 +39,7 @@ export default function Game() {
   };
 
   const SetPos = (pos: { x: number; y: number }) => {
-    GameSocket.emit('set', pos);
+    gameSocket.emit('set', pos);
   };
   return (
     <div>
