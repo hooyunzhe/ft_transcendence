@@ -1,3 +1,10 @@
+'use client';
+import { useEffect, useState } from 'react';
+import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
+import callAPI from '@/lib/callAPI';
+import emitToSocket from '@/lib/emitToSocket';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import {
   useDialogActions,
   useDialogTriggers,
@@ -6,25 +13,24 @@ import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import {
   ChannelMemberMuteDuration,
   ChannelMember,
+  ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
-import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
-import { useEffect, useState } from 'react';
 
 interface ChannelMemberMutePromptProps {
   member: ChannelMember;
-  muteUser: (...args: any) => Promise<void>;
 }
 
 export function ChannelMemberMutePrompt({
   member,
-  muteUser,
 }: ChannelMemberMutePromptProps) {
+  const channelSocket = useChannelSocket();
+  const { changeChannelMemberStatus } = useChannelMemberActions();
   const { actionClicked, backClicked } = useDialogTriggers();
   const { resetDialog, resetTriggers } = useDialogActions();
   const { displayNotification } = useNotificationActions();
   const [duration, setDuration] = useState(ChannelMemberMuteDuration.MINUTE);
 
-  function calculateMuteDuration(): string {
+  function calculateMuteUntil(): string {
     switch (duration) {
       case ChannelMemberMuteDuration.MINUTE:
         return new Date(Date.now() + 6000).toISOString();
@@ -38,10 +44,30 @@ export function ChannelMemberMutePrompt({
     return new Date().toISOString();
   }
 
+  async function muteUser(): Promise<void> {
+    const mutedUntil = calculateMuteUntil();
+
+    callAPI('PATCH', 'channel-members', {
+      id: member.id,
+      status: ChannelMemberStatus.MUTED,
+      muted_until: mutedUntil,
+    });
+    changeChannelMemberStatus(member.id, ChannelMemberStatus.MUTED, mutedUntil);
+    const data = {
+      memberID: member.id,
+      userID: member.user.id,
+      channelID: member.channel.id,
+      newStatus: ChannelMemberStatus.MUTED,
+      mutedUntil: mutedUntil,
+    };
+    emitToSocket(channelSocket, 'changeStatus', data);
+    displayNotification('success', 'Channel member muted');
+  }
+
   useEffect(() => {
     if (actionClicked) {
-      muteUser(member, calculateMuteDuration())
-        .then(() => resetDialog())
+      muteUser()
+        .then(resetDialog)
         .catch((error) => {
           resetTriggers();
           displayNotification('error', error);

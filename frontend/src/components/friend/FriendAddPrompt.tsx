@@ -6,23 +6,26 @@ import emitToSocket from '@/lib/emitToSocket';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
 import { useFriendSocket } from '@/lib/stores/useSocketStore';
-import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { User } from '@/types/UserTypes';
 import { Friend, FriendStatus } from '@/types/FriendTypes';
+import { FriendCategory } from '@/types/UtilTypes';
 
 export default function FriendAddPrompt() {
   const currentUser = useCurrentUser();
   const friends = useFriends();
-  const { addFriend } = useFriendActions();
   const friendSocket = useFriendSocket();
-  const { displayNotification } = useNotificationActions();
-  const [username, setUsername] = useState('');
+  const { addFriend } = useFriendActions();
   const { resetDialog, resetTriggers } = useDialogActions();
   const { actionClicked, backClicked } = useDialogTriggers();
+  const { displayNotification } = useNotificationActions();
+  const { setCurrentFriendCategory } = useUtilActions();
+  const [usernameToSearch, setUsernameToSearch] = useState('');
 
   async function getUserByName(name: string): Promise<User | null> {
     return fetch(
@@ -58,7 +61,7 @@ export default function FriendAddPrompt() {
   }
 
   async function handleAddFriendAction(): Promise<void> {
-    const userToAdd = await getUserByName(username);
+    const userToAdd = await getUserByName(usernameToSearch);
     if (!userToAdd) {
       throw 'User not found';
     }
@@ -83,11 +86,12 @@ export default function FriendAddPrompt() {
       incoming_request: newRequests[1],
     });
     displayNotification('success', 'Request sent');
+    setCurrentFriendCategory(FriendCategory.INVITED);
   }
 
   async function handleAction(): Promise<void> {
     handleAddFriendAction()
-      .then(() => resetDialog())
+      .then(resetDialog)
       .catch((error) => {
         resetTriggers();
         displayNotification('error', error);
@@ -106,8 +110,8 @@ export default function FriendAddPrompt() {
   return (
     <InputField
       label='Username'
-      value={username}
-      onChange={setUsername}
+      value={usernameToSearch}
+      onChange={setUsernameToSearch}
       onSubmit={handleAction}
     />
   );

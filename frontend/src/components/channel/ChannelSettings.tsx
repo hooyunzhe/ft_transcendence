@@ -1,20 +1,22 @@
 'use client';
+import { useState } from 'react';
+import { IconButton, ListItemIcon, ListItemText } from '@mui/material';
+import { Key, LocalFireDepartmentSharp } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import EditIcon from '@mui/icons-material/Edit';
 import BrushIcon from '@mui/icons-material/Brush';
-import { IconButton, ListItemIcon, ListItemText } from '@mui/material';
-import { useState } from 'react';
 import ChannelNameChangePrompt from './ChannelNameChangePrompt';
 import ChannelTypeChangePrompt from './ChannelTypeChangePrompt';
-import { ChannelMemberUnbanPrompt } from '../channel-member/ChannelMemberUnbanPrompt';
-import { ChannelType } from '@/types/ChannelTypes';
-import ChannelDeletePrompt from './ChannelDeletePrompt';
 import ChannelPassChangePrompt from './ChannelPassChangePrompt';
-import { Key, LocalFireDepartmentSharp } from '@mui/icons-material';
+import ChannelMemberUnbanPrompt from '../channel-member/ChannelMemberUnbanPrompt';
+import ChannelDeletePrompt from './ChannelDeletePrompt';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
+import { ChannelType } from '@/types/ChannelTypes';
+import { useChannelMembers } from '@/lib/stores/useChannelMemberStore';
+import { ChannelMemberStatus } from '@/types/ChannelMemberTypes';
 
 interface ChannelSettingsProps {
   channelID: number;
@@ -28,8 +30,14 @@ export default function ChannelSettings({
   channelName,
   channelType,
 }: ChannelSettingsProps) {
+  const channelMembers = useChannelMembers();
   const { displayDialog } = useDialogActions();
   const [anchorElement, setAnchorElement] = useState<HTMLElement | undefined>();
+  const unbannableMembers = channelMembers.filter(
+    (member) =>
+      member.channel.id === channelID &&
+      member.status === ChannelMemberStatus.BANNED,
+  );
 
   return (
     <>
@@ -71,6 +79,7 @@ export default function ChannelSettings({
               'Choose the channel type you want.',
               <ChannelTypeChangePrompt
                 channelID={channelID}
+                channelName={channelName}
                 channelType={channelType}
               />,
               'Change',
@@ -103,8 +112,12 @@ export default function ChannelSettings({
           onClick={() => {
             displayDialog(
               'Unban list',
-              'Unban the people who have sinned',
-              <ChannelMemberUnbanPrompt />,
+              unbannableMembers.length
+                ? 'Unban the people who have sinned'
+                : 'No members to unban, what a clean channel!',
+              <ChannelMemberUnbanPrompt
+                unbannableMembers={unbannableMembers}
+              />,
               'Unban',
             );
             setAnchorElement(undefined);

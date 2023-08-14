@@ -1,12 +1,7 @@
 'use client';
+import { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import {
-  ChannelMember,
-  ChannelMemberAction,
-  ChannelMemberRole,
-  ChannelMemberStatus,
-} from '@/types/ChannelMemberTypes';
 import { IconButton, ListItemIcon, ListItemText } from '@mui/material';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import AddModeratorIcon from '@mui/icons-material/AddModerator';
@@ -16,7 +11,12 @@ import CommentIcon from '@mui/icons-material/Comment';
 import SportsMartialArtsIcon from '@mui/icons-material/SportsMartialArts';
 import GavelRoundedIcon from '@mui/icons-material/GavelRounded';
 import FortIcon from '@mui/icons-material/Fort';
-import { useState } from 'react';
+import {
+  ChannelMember,
+  ChannelMemberAction,
+  ChannelMemberRole,
+  ChannelMemberStatus,
+} from '@/types/ChannelMemberTypes';
 
 interface ChannelMemberActionMenuProps {
   member: ChannelMember;

@@ -1,8 +1,9 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { Stack } from '@mui/material';
 import PasswordField from '../utils/PasswordField';
-import { useState, useEffect } from 'react';
 import callAPI from '@/lib/callAPI';
+import checkPasswordCriteria from '@/lib/checkPasswordCriteria';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
 import {
   useDialogActions,
@@ -17,18 +18,32 @@ interface ChangePassChangePromptProps {
 export default function ChannelPassChangePrompt({
   channelID,
 }: ChangePassChangePromptProps) {
+  const { changeChannelHash } = useChannelActions();
+  const { setActionButtonDisabled, resetDialog, resetTriggers } =
+    useDialogActions();
+  const { actionClicked, backClicked } = useDialogTriggers();
+  const { displayNotification } = useNotificationActions();
   const [oldPass, setOldPass] = useState('');
   const [newPass, setNewPass] = useState('');
   const [newPassConfirm, setNewPassConfirm] = useState('');
-  const { changeChannelHash } = useChannelActions();
-  const { actionClicked, backClicked } = useDialogTriggers();
-  const { resetDialog, resetTriggers } = useDialogActions();
-  const { displayNotification } = useNotificationActions();
+
+  function handleOldPass(pass: string): void {
+    setOldPass(pass);
+    setActionButtonDisabled(!pass || !newPass || !newPassConfirm);
+  }
+
+  function handleNewPass(pass: string): void {
+    setNewPass(pass);
+    setActionButtonDisabled(
+      !oldPass || !pass || !newPassConfirm || pass !== newPassConfirm,
+    );
+  }
+  function handleNewPassConfirm(pass: string): void {
+    setNewPassConfirm(pass);
+    setActionButtonDisabled(!oldPass || !newPass || !pass || newPass !== pass);
+  }
 
   async function handlePasswordChange(): Promise<void> {
-    if (newPassConfirm !== newPass) {
-      throw "Confirmation doesn't match new password";
-    }
     if (newPass === oldPass) {
       throw 'Cannot change password to the same password, bro wth.';
     }
@@ -53,14 +68,18 @@ export default function ChannelPassChangePrompt({
     changeChannelHash(channelID, changedChannel.hash);
   }
 
+  async function handleAction(): Promise<void> {
+    handlePasswordChange()
+      .then(resetDialog)
+      .catch((error) => {
+        resetTriggers();
+        displayNotification('error', error);
+      });
+  }
+
   useEffect(() => {
     if (actionClicked) {
-      handlePasswordChange()
-        .then(() => resetDialog())
-        .catch((error) => {
-          resetTriggers();
-          displayNotification('error', error);
-        });
+      handleAction();
     }
     if (backClicked) {
       resetDialog();
@@ -70,22 +89,26 @@ export default function ChannelPassChangePrompt({
   return (
     <Stack spacing={1}>
       <PasswordField
-        value={oldPass}
-        onChange={(input) => setOldPass(input)}
         label='Current Password'
-        variant='standard'
+        value={oldPass}
+        onChange={handleOldPass}
+        onSubmit={handleAction}
       />
       <PasswordField
-        value={newPass}
-        onChange={(input) => setNewPass(input)}
+        unfocused
+        hasCriteria
         label='New Password'
-        variant='standard'
+        value={newPass}
+        onChange={handleNewPass}
+        onSubmit={handleAction}
       />
       <PasswordField
-        value={newPassConfirm}
-        onChange={(input) => setNewPassConfirm(input)}
+        unfocused
+        disabled={checkPasswordCriteria(newPass).length > 0}
         label='Confirm New Password'
-        variant='standard'
+        value={newPassConfirm}
+        onChange={handleNewPassConfirm}
+        onSubmit={handleAction}
       />
     </Stack>
   );

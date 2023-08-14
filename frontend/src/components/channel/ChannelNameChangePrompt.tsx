@@ -18,10 +18,10 @@ interface ChannelNameChangeProps {
 export default function ChannelNameChangePrompt({
   channelID,
 }: ChannelNameChangeProps) {
-  const { changeChannelName } = useChannelActions();
   const channelSocket = useChannelSocket();
-  const { actionClicked, backClicked } = useDialogTriggers();
+  const { changeChannelName } = useChannelActions();
   const { resetDialog } = useDialogActions();
+  const { actionClicked, backClicked } = useDialogTriggers();
   const { displayNotification } = useNotificationActions();
   const [newName, setNewName] = useState('');
 
@@ -37,7 +37,7 @@ export default function ChannelNameChangePrompt({
   }
 
   async function handleAction(): Promise<void> {
-    handleNameChange().then(() => resetDialog());
+    handleNameChange().then(resetDialog);
   }
 
   useEffect(() => {

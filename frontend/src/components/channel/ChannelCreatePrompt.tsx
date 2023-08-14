@@ -5,47 +5,40 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
-  TextField,
 } from '@mui/material';
-import { Channel, ChannelType } from '@/types/ChannelTypes';
+import PasswordField from '../utils/PasswordField';
+import InputField from '../utils/InputField';
 import callAPI from '@/lib/callAPI';
-import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import emitToSocket from '@/lib/emitToSocket';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import {
   useChannelActions,
   useChannelChecks,
 } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { useNotificationActions } from '@/lib/stores/useNotificationStore';
-import emitToSocket from '@/lib/emitToSocket';
-import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
-import PasswordField from '../utils/PasswordField';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { Channel, ChannelType } from '@/types/ChannelTypes';
+import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
 
 export default function ChannelCreatePrompt() {
   const currentUser = useCurrentUser();
+  const channelSocket = useChannelSocket();
   const { addChannel, addJoinedChannel } = useChannelActions();
   const { checkChannelExists, checkChannelJoined } = useChannelChecks();
   const { addChannelMember } = useChannelMemberActions();
-  const { displayNotification } = useNotificationActions();
-  const channelSocket = useChannelSocket();
-  const [channelName, setChannelName] = useState('');
-  const [channelType, setChannelType] = useState<ChannelType>(
-    ChannelType.PUBLIC,
-  );
-  const [channelPass, setChannelPass] = useState('');
-  const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
   const { actionClicked, backClicked } = useDialogTriggers();
-  const { resetDialog, resetTriggers } = useDialogActions();
-
-  function resetState() {
-    setChannelName('');
-    setChannelType(ChannelType.PUBLIC);
-    setChannelPass('');
-  }
+  const { changeDialog, changeActionText, resetDialog, resetTriggers } =
+    useDialogActions();
+  const { displayNotification } = useNotificationActions();
+  const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
+  const [channelName, setChannelName] = useState('');
+  const [channelType, setChannelType] = useState(ChannelType.PUBLIC);
+  const [channelPass, setChannelPass] = useState('');
 
   async function createChannel(): Promise<void> {
     const newChannel: Channel = JSON.parse(
@@ -83,9 +76,6 @@ export default function ChannelCreatePrompt() {
   }
 
   async function handleCreateChannelAction(): Promise<void> {
-    if (!channelName) {
-      throw 'Channel name cannot be empty';
-    }
     if (checkChannelExists(channelName.trim())) {
       throw 'Channel already exists';
     }
@@ -94,51 +84,33 @@ export default function ChannelCreatePrompt() {
     }
     if (channelType === ChannelType.PROTECTED) {
       setDisplayPasswordPrompt(true);
+      changeDialog(
+        'Set Password',
+        `Create a good and memorable password for ${channelName}`,
+        'Create',
+        'Back',
+        !channelPass,
+      );
     } else {
       createChannel();
-      resetState();
     }
-  }
-
-  async function handlePasswordCriteria(input: string): Promise<void> {
-    const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
-    const uppercaseChars = /[A-Z]/;
-    const lowercaseChars = /[a-z]/;
-    const numberChars = /[1-9]/;
-
-    if (input.length < 11) {
-      throw 'Password length must be at least 12 characters long.';
-    }
-    if (!numberChars.test(input)) {
-      throw 'Password must have at least one number.';
-    }
-    if (!specialChars.test(input)) {
-      throw 'Password does not contain any special characters.';
-    }
-    if (!uppercaseChars.test(input)) {
-      throw 'Password needs to have at least one uppercase characters.';
-    }
-    if (!lowercaseChars.test(input)) {
-      throw 'Password needs to have at least one lowercase characters.';
-    }
-    createChannel();
   }
 
   async function handleAction(): Promise<void> {
     if (displayPasswordPrompt) {
-      handlePasswordCriteria(channelPass).catch((error) => {
-        resetTriggers();
-        displayNotification('error', error);
-      });
+      createChannel()
+        .then(resetDialog)
+        .catch((error) => {
+          resetTriggers();
+          displayNotification('error', error);
+        });
     } else {
       handleCreateChannelAction()
-        .then(() => {
-          if (channelType === ChannelType.PROTECTED) {
-            resetTriggers();
-          } else {
-            resetDialog();
-          }
-        })
+        .then(() =>
+          channelType === ChannelType.PROTECTED
+            ? resetTriggers()
+            : resetDialog(),
+        )
         .catch((error) => {
           resetTriggers();
           displayNotification('error', error);
@@ -153,6 +125,12 @@ export default function ChannelCreatePrompt() {
     if (backClicked) {
       if (displayPasswordPrompt) {
         setDisplayPasswordPrompt(false);
+        changeDialog(
+          'Create Channel',
+          'Choose a name and type to get started',
+          'Next',
+          'Cancel',
+        );
         resetTriggers();
       } else {
         resetDialog();
@@ -162,25 +140,26 @@ export default function ChannelCreatePrompt() {
 
   return displayPasswordPrompt ? (
     <PasswordField
+      hasCriteria
       value={channelPass}
-      onChange={(input) => setChannelPass(input)}
-      variant='standard'
+      onChange={setChannelPass}
+      onSubmit={handleAction}
     />
   ) : (
     <FormControl fullWidth>
-      <TextField
-        fullWidth
-        autoComplete='off'
-        variant='standard'
-        margin='dense'
+      <InputField
         label='Channel Name'
         value={channelName}
-        onChange={(event) => setChannelName(event.target.value)}
+        onChange={setChannelName}
+        onSubmit={handleAction}
       />
       <RadioGroup
         row
         value={channelType}
         onChange={(event) => {
+          changeActionText(
+            event.target.value === ChannelType.PROTECTED ? 'Next' : 'Create',
+          );
           setChannelType(event.target.value as ChannelType);
         }}
       >

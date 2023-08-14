@@ -1,27 +1,27 @@
 'use client';
-import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
+import { useEffect } from 'react';
+import { Box } from '@mui/material';
+import NavigationHeader from './NavigationHeader';
+import MainArea from './MainArea';
+import DialogPrompt from '../utils/DialogPrompt';
+import ConfirmationPrompt from '../utils/ConfirmationPrompt';
+import NotificationBar from '../utils/NotificationBar';
+import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import {
   useChannelSocket,
   useFriendSocket,
   useSocketActions,
   useUserSocket,
 } from '@/lib/stores/useSocketStore';
-import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
-import { useEffect } from 'react';
-import ConfirmationPrompt from '../utils/ConfirmationPrompt';
-import NotificationBar from '../utils/NotificationBar';
-import { useNotificationActions } from '@/lib/stores/useNotificationStore';
-import { Box } from '@mui/material';
+import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
 import {
   useChannelActions,
   useJoinedChannels,
 } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
-import NavigationHeader from './NavigationHeader';
-import MainArea from './MainArea';
 import { useChatActions } from '@/lib/stores/useChatStore';
-import { Friend } from '@/types/FriendTypes';
-import DialogPrompt from '../utils/DialogPrompt';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 
 export default function Cyberpong() {
   const currentUser = useCurrentUser();
@@ -38,6 +38,7 @@ export default function Cyberpong() {
   const joinedChannels = useJoinedChannels();
   const { getChatData, setupChatSocketEvents } = useChatActions();
   const { setupNotificationSocketEvents } = useNotificationActions();
+  const { setupUtilSocketEvents } = useUtilActions();
 
   useEffect(() => {
     initSockets(currentUser.id);
@@ -55,7 +56,7 @@ export default function Cyberpong() {
     if (userSocket) {
       addUserStatus(
         userSocket,
-        friends.map((friend: Friend) => friend.incoming_friend.id),
+        friends.map((friend) => friend.incoming_friend.id),
       );
     }
   }, [friends.length]);
@@ -80,6 +81,7 @@ export default function Cyberpong() {
     if (friendSocket) {
       setupFriendSocketEvents(friendSocket);
       setupNotificationSocketEvents(friendSocket);
+      setupUtilSocketEvents(friendSocket);
     }
   }, [friendSocket]);
 
@@ -105,9 +107,9 @@ export default function Cyberpong() {
     >
       <NavigationHeader />
       <MainArea />
+      <DialogPrompt />
       <ConfirmationPrompt />
       <NotificationBar />
-      <DialogPrompt />
     </Box>
   );
 }

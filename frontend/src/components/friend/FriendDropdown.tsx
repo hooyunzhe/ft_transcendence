@@ -1,5 +1,4 @@
 'use client';
-import { useState } from 'react';
 import {
   ListItemButton,
   ListItemIcon,
@@ -15,10 +14,15 @@ import {
   PersonOff,
 } from '@mui/icons-material';
 import FriendList from './FriendList';
+import {
+  useCurrentFriendCategory,
+  useUtilActions,
+} from '@/lib/stores/useUtilStore';
 import { Friend, FriendAction } from '@/types/FriendTypes';
+import { FriendCategory } from '@/types/UtilTypes';
 
 interface FriendDropdownProps {
-  category: string;
+  category: FriendCategory;
   handleAction: (request: Friend, action: FriendAction) => void;
 }
 
@@ -26,30 +30,33 @@ export default function FriendDropdown({
   category,
   handleAction,
 }: FriendDropdownProps) {
-  const [open, setOpen] = useState(category === 'blocked' ? false : true);
-
-  function toggleOpen(): void {
-    setOpen(!open);
-  }
+  const currentFriendCategory = useCurrentFriendCategory();
+  const { setCurrentFriendCategory } = useUtilActions();
 
   return (
     <>
       <Paper elevation={2}>
-        <ListItemButton onClick={toggleOpen}>
+        <ListItemButton
+          onClick={() =>
+            setCurrentFriendCategory(
+              currentFriendCategory === category ? undefined : category,
+            )
+          }
+        >
           <ListItemIcon>
-            {category === 'friends' && <PeopleRounded />}
-            {category === 'pending' && <MoveToInboxRounded />}
-            {category === 'invited' && <OutboxRounded />}
-            {category === 'blocked' && <PersonOff />}
+            {category === FriendCategory.FRIENDS && <PeopleRounded />}
+            {category === FriendCategory.PENDING && <MoveToInboxRounded />}
+            {category === FriendCategory.INVITED && <OutboxRounded />}
+            {category === FriendCategory.BLOCKED && <PersonOff />}
           </ListItemIcon>
           <ListItemText
-            primary={category.charAt(0).toUpperCase() + category.slice(1)}
+            primary={category.charAt(0) + category.toLowerCase().slice(1)}
           ></ListItemText>
-          {open ? <ExpandLess /> : <ExpandMore />}
+          {currentFriendCategory === category ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
       </Paper>
       <FriendList
-        expand={open}
+        expand={currentFriendCategory === category}
         category={category}
         handleAction={handleAction}
       />

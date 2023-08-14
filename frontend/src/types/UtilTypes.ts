@@ -12,3 +12,10 @@ export enum SocialTab {
   FRIEND = 'FRIEND',
   CHANNEL = 'CHANNEL',
 }
+
+export enum FriendCategory {
+  FRIENDS = 'FRIENDS',
+  PENDING = 'PENDING',
+  INVITED = 'INVITED',
+  BLOCKED = 'BLOCKED',
+}

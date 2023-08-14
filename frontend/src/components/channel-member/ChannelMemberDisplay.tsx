@@ -1,7 +1,7 @@
 'use client';
 import { Avatar, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
-import { User } from '@/types/UserTypes';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import { User } from '@/types/UserTypes';
 
 interface ChannelMemberDisplayProps {
   user: User;

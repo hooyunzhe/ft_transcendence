@@ -9,6 +9,7 @@ interface DialogStore {
     children: ReactNode;
     actionButtonText: string;
     backButtonText: string;
+    actionButtonDisabled: boolean;
   };
   triggers: {
     actionClicked: boolean;
@@ -20,8 +21,17 @@ interface DialogStore {
       description: string,
       children: ReactNode,
       actionButtonText: string,
-      backButtonText?: string,
+      actionButtonDisabled?: boolean,
     ) => void;
+    changeDialog: (
+      title: string,
+      description: string,
+      actionButtonText: string,
+      backButtonText: string,
+      actionButtonDisabled?: boolean,
+    ) => void;
+    changeActionText: (actionButtonText: string) => void;
+    setActionButtonDisabled: (disabled: boolean) => void;
     setActionClicked: () => void;
     setBackClicked: () => void;
     resetDialog: () => void;
@@ -39,16 +49,55 @@ function displayDialog(
   description: string,
   children: ReactNode,
   actionButtonText: string,
-  backButtonText?: string,
+  actionButtonDisabled?: boolean,
 ): void {
-  set(({}) => ({
+  set(({ data }) => ({
     data: {
+      ...data,
       display: true,
       title: title,
       description: description,
       children: children,
       actionButtonText: actionButtonText,
-      backButtonText: backButtonText ?? 'Cancel',
+      actionButtonDisabled: actionButtonDisabled ?? true,
+    },
+  }));
+}
+
+function changeDialog(
+  set: StoreSetter,
+  title: string,
+  description: string,
+  actionButtonText: string,
+  backButtonText: string,
+  actionButtonDisabled?: boolean,
+): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      title: title,
+      description: description,
+      actionButtonText: actionButtonText,
+      backButtonText: backButtonText,
+      actionButtonDisabled: actionButtonDisabled ?? false,
+    },
+  }));
+}
+
+function changeActionText(set: StoreSetter, actionButtonText: string): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      actionButtonText: actionButtonText,
+    },
+  }));
+}
+
+function setActionButtonDisabled(set: StoreSetter, disabled: boolean): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      actionButtonDisabled: disabled,
     },
   }));
 }
@@ -73,7 +122,7 @@ function setBackClicked(set: StoreSetter): void {
 
 function resetDialog(set: StoreSetter): void {
   set(({ data }) => ({
-    data: { ...data, display: false },
+    data: { ...data, display: false, actionButtonDisabled: true },
     triggers: { actionClicked: false, backClicked: false },
   }));
 }
@@ -92,6 +141,7 @@ const useDialogStore = create<DialogStore>()((set) => ({
     children: null,
     actionButtonText: '',
     backButtonText: 'Cancel',
+    actionButtonDisabled: true,
   },
   triggers: {
     actionClicked: false,
@@ -103,7 +153,7 @@ const useDialogStore = create<DialogStore>()((set) => ({
       description,
       children,
       actionButtonText,
-      backButtonText,
+      actionButtonDisabled,
     ) =>
       displayDialog(
         set,
@@ -111,8 +161,27 @@ const useDialogStore = create<DialogStore>()((set) => ({
         description,
         children,
         actionButtonText,
-        backButtonText,
+        actionButtonDisabled,
       ),
+    changeDialog: (
+      title,
+      description,
+      actionButtonText,
+      backButtonText,
+      actionButtonDisabled,
+    ) =>
+      changeDialog(
+        set,
+        title,
+        description,
+        actionButtonText,
+        backButtonText,
+        actionButtonDisabled,
+      ),
+    changeActionText: (actionButtonText) =>
+      changeActionText(set, actionButtonText),
+    setActionButtonDisabled: (disabled) =>
+      setActionButtonDisabled(set, disabled),
     setActionClicked: () => setActionClicked(set),
     setBackClicked: () => setBackClicked(set),
     resetDialog: () => resetDialog(set),
@@ -121,6 +190,8 @@ const useDialogStore = create<DialogStore>()((set) => ({
 }));
 
 export const useDialog = () => useDialogStore((state) => state.data);
+export const useDialogActionButtonDisabled = () =>
+  useDialogStore((state) => state.data.actionButtonDisabled);
 export const useDialogTriggers = () =>
   useDialogStore((state) => state.triggers);
 export const useDialogActions = () => useDialogStore((state) => state.actions);

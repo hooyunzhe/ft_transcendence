@@ -1,5 +1,10 @@
-import { TextField } from '@mui/material';
+'use client';
 import { useState } from 'react';
+import { TextField } from '@mui/material';
+import {
+  useDialogActionButtonDisabled,
+  useDialogActions,
+} from '@/lib/stores/useDialogStore';
 
 interface InputFieldProps {
   outlined?: boolean;
@@ -13,11 +18,13 @@ interface InputFieldProps {
 export default function InputField({
   outlined,
   normalMargin,
+  label,
   value,
   onChange,
   onSubmit,
-  label,
 }: InputFieldProps) {
+  const dialogActionButtonDisabled = useDialogActionButtonDisabled();
+  const { setActionButtonDisabled } = useDialogActions();
   const [emptyError, setEmptyError] = useState(false);
 
   return (
@@ -32,9 +39,14 @@ export default function InputField({
       value={value}
       onChange={(event) => {
         setEmptyError(!event.target.value);
+        setActionButtonDisabled(!event.target.value);
         onChange(event.target.value);
       }}
-      onKeyDown={(event) => event.key === 'Enter' && onSubmit()}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' && !dialogActionButtonDisabled) {
+          onSubmit();
+        }
+      }}
       error={emptyError}
       helperText={emptyError ? `${label} cannot be empty` : ''}
     />

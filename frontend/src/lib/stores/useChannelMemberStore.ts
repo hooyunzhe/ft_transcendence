@@ -258,7 +258,7 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
   },
 }));
 
-export const useChannelMember = () =>
+export const useChannelMembers = () =>
   useChannelMemberStore((state) => state.data.channelMembers);
 export const useChannelMemberActions = () =>
   useChannelMemberStore((state) => state.actions);

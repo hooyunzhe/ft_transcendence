@@ -1,47 +1,58 @@
 'use client';
+import { Button, ListItem, Paper, Stack } from '@mui/material';
+import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
+import ChannelMemberDisplay from './ChannelMemberDisplay';
+import ChannelMemberActionMenu from './ChannelMemberActionMenu';
+import { ChannelMemberMutePrompt } from './ChannelMemberMutePrompt';
+import ListHeader from '../utils/ListHeader';
 import callAPI from '@/lib/callAPI';
+import emitToSocket from '@/lib/emitToSocket';
+import {
+  useChannelMemberActions,
+  useChannelMemberChecks,
+  useChannelMembers,
+} from '@/lib/stores/useChannelMemberStore';
+import { useSelectedChannel } from '@/lib/stores/useChannelStore';
+import { useFriendChecks, useFriends } from '@/lib/stores/useFriendStore';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useDialogActions } from '@/lib/stores/useDialogStore';
+import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { FriendStatus } from '@/types/FriendTypes';
 import {
   ChannelMember,
   ChannelMemberAction,
   ChannelMemberRole,
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
-import { Button, ListItem, Paper, Stack } from '@mui/material';
-import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
-import ListHeader from '../utils/ListHeader';
-import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
-import {
-  useChannelMemberActions,
-  useChannelMemberChecks,
-  useChannelMember,
-} from '@/lib/stores/useChannelMemberStore';
-import { useSelectedChannel } from '@/lib/stores/useChannelStore';
-import { useChannelSocket } from '@/lib/stores/useSocketStore';
-import emitToSocket from '@/lib/emitToSocket';
-import { useNotificationActions } from '@/lib/stores/useNotificationStore';
-import { useDialogActions } from '@/lib/stores/useDialogStore';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { ChannelMemberMutePrompt } from './ChannelMemberMutePrompt';
-import ChannelMemberActionMenu from './ChannelMemberActionMenu';
-import ChannelMemberDisplay from './ChannelMemberDisplay';
-import { useFriendChecks } from '@/lib/stores/useFriendStore';
 
 export function ChannelMemberList() {
-  const channelMembers = useChannelMember();
+  const selectedChannel = useSelectedChannel();
+  const currentUser = useCurrentUser();
+  const channelMembers = useChannelMembers();
+  const friends = useFriends();
+  const channelSocket = useChannelSocket();
   const {
-    addChannelMember,
     kickChannelMember,
     changeChannelMemberRole,
     changeChannelMemberStatus,
   } = useChannelMemberActions();
-  const channelSocket = useChannelSocket();
-  const selectedChannel = useSelectedChannel();
-  const currentUser = useCurrentUser();
-  const { displayConfirmation } = useConfirmationActions();
-  const { displayNotification } = useNotificationActions();
-  const { displayDialog } = useDialogActions();
   const { isChannelAdmin, isChannelOwner } = useChannelMemberChecks();
   const { isFriendBlocked } = useFriendChecks();
+  const { displayDialog } = useDialogActions();
+  const { displayConfirmation } = useConfirmationActions();
+  const { displayNotification } = useNotificationActions();
+  const addableFriends = friends.filter(
+    (friend) =>
+      friend.status === FriendStatus.FRIENDS &&
+      channelMembers.every((member) => {
+        return (
+          member.user.id !== friend.incoming_friend.id ||
+          member.channel.id !== selectedChannel?.id
+        );
+      }),
+  );
 
   function getCurrentRole(): ChannelMemberRole {
     if (!selectedChannel?.id) {
@@ -57,24 +68,7 @@ export function ChannelMemberList() {
     }
   }
 
-  const currentRole = getCurrentRole();
-
   // * Helper Function for update locals * //
-
-  //* ignore the above * //
-
-  async function addUser(userID: number, useHash?: string): Promise<void> {
-    const add = await callAPI('POST', 'channel-members', {
-      channel_id: selectedChannel?.id,
-      user_id: userID,
-      role: ChannelMemberRole.MEMBER,
-      hash: useHash,
-    });
-    const newChannelMember: ChannelMember = JSON.parse(add);
-    addChannelMember(newChannelMember);
-    emitToSocket(channelSocket, 'newMember', newChannelMember);
-    displayNotification('success', 'Channel member added');
-  }
 
   async function kickUser(member: ChannelMember): Promise<void> {
     callAPI('DELETE', 'channel-members', { id: member.id });
@@ -127,24 +121,6 @@ export function ChannelMemberList() {
     };
     emitToSocket(channelSocket, 'changeStatus', data);
     displayNotification('success', 'Channel member unmuted');
-  }
-
-  async function muteMember(member: ChannelMember, mutedUntil: string) {
-    callAPI('PATCH', 'channel-members', {
-      id: member.id,
-      status: ChannelMemberStatus.MUTED,
-      muted_until: mutedUntil,
-    });
-    changeChannelMemberStatus(member.id, ChannelMemberStatus.MUTED, mutedUntil);
-    const data = {
-      memberID: member.id,
-      userID: member.user.id,
-      channelID: member.channel.id,
-      newStatus: ChannelMemberStatus.MUTED,
-      mutedUntil: mutedUntil,
-    };
-    emitToSocket(channelSocket, 'changeStatus', data);
-    displayNotification('success', 'Channel member muted');
   }
 
   async function banMember(member: ChannelMember) {
@@ -206,7 +182,6 @@ export function ChannelMemberList() {
     member: ChannelMember,
     action: ChannelMemberAction,
   ) {
-    // * Probably gotta change the testing thingy * //
     switch (action) {
       case ChannelMemberAction.CHOWN:
         return displayConfirmation(
@@ -243,21 +218,14 @@ export function ChannelMemberList() {
           member,
           banMember,
         );
-      case ChannelMemberAction.UNBAN:
-        return displayConfirmation(
-          'Unban ' + member.user.username + '?',
-          'You are unbanning this user from this channel.',
-          member,
-          kickUser,
-        );
       case ChannelMemberAction.MUTE:
         return displayDialog(
           'Mute member',
           'You are muting this user. He would not be able to chat',
-          <ChannelMemberMutePrompt member={member} muteUser={muteMember} />,
+          <ChannelMemberMutePrompt member={member} />,
           'Mute',
+          false,
         );
-
       case ChannelMemberAction.UNMUTE:
         return displayConfirmation(
           'Unmute ' + member.user.username + '?',
@@ -268,30 +236,34 @@ export function ChannelMemberList() {
     }
   }
 
-  return selectedChannel ? (
+  return (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
       <ListHeader title='Members' />
-      <Button
-        variant='contained'
-        onMouseDown={(event) => event.preventDefault()}
-        onClick={() =>
-          displayDialog(
-            'Add Member',
-            'Add members here',
-            <ChannelMemberAddPrompt
-              addUser={addUser}
-              selectedChannel={selectedChannel}
-            />,
-            'Add',
-          )
-        }
-      >
-        Add Member
-      </Button>
+      {selectedChannel && (
+        <Button
+          variant='contained'
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() =>
+            displayDialog(
+              'Add Member',
+              addableFriends.length
+                ? `Add members to ${selectedChannel.name}`
+                : 'No friends to add... why not send someone a friend request first?',
+              <ChannelMemberAddPrompt
+                addableFriends={addableFriends}
+                selectedChannel={selectedChannel}
+              />,
+              'Add',
+            )
+          }
+        >
+          Add Member
+        </Button>
+      )}
       {channelMembers
         .filter(
           (member) =>
-            member.channel.id === selectedChannel.id &&
+            member.channel.id === selectedChannel?.id &&
             member.status !== ChannelMemberStatus.BANNED &&
             !isFriendBlocked(member.user.id),
         )
@@ -306,7 +278,7 @@ export function ChannelMemberList() {
               {member.role !== ChannelMemberRole.OWNER && (
                 <ChannelMemberActionMenu
                   member={member}
-                  currentUserRole={currentRole}
+                  currentUserRole={getCurrentRole()}
                   handleAction={handleDisplayAction}
                 />
               )}
@@ -314,7 +286,5 @@ export function ChannelMemberList() {
           </Paper>
         ))}
     </Stack>
-  ) : (
-    <ListHeader title='Members' />
   );
 }

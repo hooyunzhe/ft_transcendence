@@ -1,31 +1,34 @@
 'use client';
-import { ChannelMember, ChannelMemberStatus } from '@/types/ChannelMemberTypes';
 import { useEffect, useState } from 'react';
 import { ListItemButton, Paper, Stack } from '@mui/material';
+import ChannelMemberDisplay from './ChannelMemberDisplay';
 import callAPI from '@/lib/callAPI';
-import {
-  useChannelMemberActions,
-  useChannelMember,
-} from '@/lib/stores/useChannelMemberStore';
-import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
+import emitToSocket from '@/lib/emitToSocket';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
-import emitToSocket from '@/lib/emitToSocket';
-import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
-import ChannelMemberDisplay from './ChannelMemberDisplay';
+import { ChannelMember } from '@/types/ChannelMemberTypes';
 
-export function ChannelMemberUnbanPrompt() {
-  const channelMembers = useChannelMember();
+interface ChannelMemberUnbanPromptProps {
+  unbannableMembers: ChannelMember[];
+}
+
+export default function ChannelMemberUnbanPrompt({
+  unbannableMembers,
+}: ChannelMemberUnbanPromptProps) {
   const channelSocket = useChannelSocket();
   const { kickChannelMember } = useChannelMemberActions();
-  const { displayConfirmation } = useConfirmationActions();
-  const { resetDialog, resetTriggers } = useDialogActions();
+  const { setActionButtonDisabled, resetDialog, resetTriggers } =
+    useDialogActions();
   const { actionClicked, backClicked } = useDialogTriggers();
+  const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
-  const [selectedMember, setSelectedMember] = useState<
+  const [selectedMemberToUnban, setSelectedMemberToUnban] = useState<
     ChannelMember | undefined
   >();
 
@@ -36,14 +39,10 @@ export function ChannelMemberUnbanPrompt() {
   }
 
   async function handleUnbanMember() {
-    if (!selectedMember) {
-      throw 'Please select a member';
-    }
-
     return displayConfirmation(
-      'Unban ' + selectedMember.user.username + '?',
+      'Unban ' + selectedMemberToUnban?.user.username + '?',
       'You are unbanning this user from this channel.',
-      selectedMember,
+      selectedMemberToUnban,
       kickMember,
     );
   }
@@ -51,13 +50,12 @@ export function ChannelMemberUnbanPrompt() {
   useEffect(() => {
     if (actionClicked) {
       handleUnbanMember()
-        .then(() => resetDialog())
+        .then(resetDialog)
         .catch((error) => {
           resetTriggers();
           displayNotification('error', error);
         });
     }
-
     if (backClicked) {
       resetDialog();
     }
@@ -65,22 +63,21 @@ export function ChannelMemberUnbanPrompt() {
 
   return (
     <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
-      {channelMembers
-        .filter((member) => member.status === ChannelMemberStatus.BANNED)
-        .map((member: ChannelMember, index: number) => (
-          <Paper key={index} elevation={2}>
-            <ListItemButton
-              selected={selectedMember?.id === member.id ?? false}
-              onClick={() =>
-                selectedMember?.id === member.id
-                  ? setSelectedMember(undefined)
-                  : setSelectedMember(member)
-              }
-            >
-              <ChannelMemberDisplay user={member.user} />
-            </ListItemButton>
-          </Paper>
-        ))}
+      {unbannableMembers.map((member: ChannelMember, index: number) => (
+        <Paper key={index} elevation={2}>
+          <ListItemButton
+            selected={selectedMemberToUnban?.id === member.id ?? false}
+            onClick={() => {
+              setSelectedMemberToUnban(
+                member.id === selectedMemberToUnban?.id ? undefined : member,
+              );
+              setActionButtonDisabled(member.id === selectedMemberToUnban?.id);
+            }}
+          >
+            <ChannelMemberDisplay user={member.user} />
+          </ListItemButton>
+        </Paper>
+      ))}
     </Stack>
   );
 }

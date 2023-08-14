@@ -11,28 +11,31 @@ import {
   useChannelChecks,
 } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
-import { User } from '@/types/UserTypes';
-import { Friend, FriendStatus, FriendAction } from '@/types/FriendTypes';
 import { useChannelSocket, useFriendSocket } from '@/lib/stores/useSocketStore';
+import { useDialogActions } from '@/lib/stores/useDialogStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
+import { Friend, FriendStatus, FriendAction } from '@/types/FriendTypes';
+import { User } from '@/types/UserTypes';
 import { ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
-import { useDialogActions } from '@/lib/stores/useDialogStore';
+import { FriendCategory } from '@/types/UtilTypes';
 
 export default function FriendStack() {
   const currentUser = useCurrentUser();
+  const friendSocket = useFriendSocket();
+  const channelSocket = useChannelSocket();
   const { changeFriend, deleteFriend, resetSelectedFriend } =
     useFriendActions();
   const { addChannel, addJoinedChannel, resetSelectedDirectChannel } =
     useChannelActions();
   const { checkChannelExists } = useChannelChecks();
   const { addChannelMember } = useChannelMemberActions();
-  const friendSocket = useFriendSocket();
-  const channelSocket = useChannelSocket();
+  const { displayDialog } = useDialogActions();
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
-  const { displayDialog } = useDialogActions();
+  const { setCurrentFriendCategory } = useUtilActions();
 
   async function callFriendsAPI(
     method: string,
@@ -88,6 +91,7 @@ export default function FriendStack() {
     changeFriend(request, FriendStatus.PENDING, FriendStatus.FRIENDS);
     emitToSocket(friendSocket, 'acceptRequest', request);
     displayNotification('success', 'Request accepted');
+    setCurrentFriendCategory(FriendCategory.FRIENDS);
 
     const directChannelName =
       String(request.incoming_friend.id) + String(currentUser.id) + 'DM';
@@ -194,7 +198,16 @@ export default function FriendStack() {
   }
 
   return (
-    <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
+    <Stack
+      width='100%'
+      direction='column'
+      justifyContent='center'
+      spacing={1}
+      sx={{
+        overflow: 'hidden',
+        '&::-webkit-scrollbar': { display: 'none' },
+      }}
+    >
       <Button
         variant='contained'
         onMouseDown={(event) => event.preventDefault()}
@@ -209,10 +222,22 @@ export default function FriendStack() {
       >
         Add Friend
       </Button>
-      <FriendDropdown category='friends' handleAction={handleAction} />
-      <FriendDropdown category='pending' handleAction={handleAction} />
-      <FriendDropdown category='invited' handleAction={handleAction} />
-      <FriendDropdown category='blocked' handleAction={handleAction} />
+      <Stack
+        spacing={1}
+        sx={{
+          p: '5px 2px',
+          overflow: 'auto',
+          '&::-webkit-scrollbar': { display: 'none' },
+        }}
+      >
+        {Object.keys(FriendCategory).map((category, index) => (
+          <FriendDropdown
+            key={index}
+            category={category as FriendCategory}
+            handleAction={handleAction}
+          />
+        ))}
+      </Stack>
     </Stack>
   );
 }

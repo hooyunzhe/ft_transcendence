@@ -1,51 +1,61 @@
 'use client';
-import { Friend, FriendStatus } from '@/types/FriendTypes';
 import { useEffect, useState } from 'react';
-import { useChannelMember } from '@/lib/stores/useChannelMemberStore';
-import { useFriends } from '@/lib/stores/useFriendStore';
+import { ListItemButton, Paper, Stack } from '@mui/material';
+import ChannelMemberDisplay from './ChannelMemberDisplay';
+import callAPI from '@/lib/callAPI';
+import emitToSocket from '@/lib/emitToSocket';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
-import { ListItemButton, Paper, Stack } from '@mui/material';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { Friend } from '@/types/FriendTypes';
 import { Channel } from '@/types/ChannelTypes';
-import ChannelMemberDisplay from './ChannelMemberDisplay';
+import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
 
 interface ChannelMemberAddPromptProps {
-  addUser: (...args: any) => Promise<void>;
+  addableFriends: Friend[];
   selectedChannel: Channel;
 }
 
 export function ChannelMemberAddPrompt({
-  addUser,
+  addableFriends,
   selectedChannel,
 }: ChannelMemberAddPromptProps) {
-  const channelMembers = useChannelMember();
-  const friends = useFriends();
-  const [selectedFriend, setSelectedFriend] = useState<Friend | undefined>();
+  const channelSocket = useChannelSocket();
+  const { addChannelMember } = useChannelMemberActions();
+  const { setActionButtonDisabled, resetDialog, resetTriggers } =
+    useDialogActions();
   const { actionClicked, backClicked } = useDialogTriggers();
-  const { resetDialog, resetTriggers } = useDialogActions();
   const { displayNotification } = useNotificationActions();
+  const [selectedFriendToJoin, setSelectedFriendToJoin] = useState<
+    Friend | undefined
+  >();
 
   async function handleAddMemberAction(): Promise<void> {
-    if (selectedFriend === undefined) {
-      throw "Friend doesn't exist";
+    if (selectedFriendToJoin) {
+      const newChannelMember = JSON.parse(
+        await callAPI('POST', 'channel-members', {
+          channel_id: selectedChannel?.id,
+          user_id: selectedFriendToJoin.incoming_friend.id,
+          role: ChannelMemberRole.MEMBER,
+          hash: selectedChannel.hash,
+        }),
+      );
+      addChannelMember(newChannelMember);
+      emitToSocket(channelSocket, 'newMember', newChannelMember);
+      displayNotification('success', 'Channel member added');
+    } else {
+      throw 'FATAL ERROR: FAILED TO ADD DUE TO MISSING SELECTED FRIEND TO JOIN';
     }
-    const friendToJoin = friends.find(
-      (friend) => friend.id === selectedFriend.id,
-    );
-
-    if (!friendToJoin) {
-      throw 'Invalid friend name!';
-    }
-    addUser(friendToJoin.incoming_friend.id, selectedChannel.hash);
   }
 
   useEffect(() => {
     if (actionClicked) {
       handleAddMemberAction()
-        .then(() => resetDialog())
+        .then(resetDialog)
         .catch((error) => {
           resetTriggers();
           displayNotification('error', error);
@@ -66,32 +76,21 @@ export function ChannelMemberAddPrompt({
         '&::-webkit-scrollbar': { display: 'none' },
       }}
     >
-      {friends.length > 0 &&
-        friends
-          .filter(
-            (friend) =>
-              friend.status === FriendStatus.FRIENDS &&
-              channelMembers.every((member) => {
-                return (
-                  member.user.id !== friend.incoming_friend.id ||
-                  member.channel.id !== selectedChannel.id
-                );
-              }),
-          )
-          .map((friend: Friend, index: number) => (
-            <Paper key={index} elevation={2}>
-              <ListItemButton
-                selected={selectedFriend?.id === friend.id ?? false}
-                onClick={() =>
-                  selectedFriend?.id === friend.id
-                    ? setSelectedFriend(undefined)
-                    : setSelectedFriend(friend)
-                }
-              >
-                <ChannelMemberDisplay user={friend.incoming_friend} />
-              </ListItemButton>
-            </Paper>
-          ))}
+      {addableFriends.map((friend: Friend, index: number) => (
+        <Paper key={index} elevation={2}>
+          <ListItemButton
+            selected={selectedFriendToJoin?.id === friend.id ?? false}
+            onClick={() => {
+              setSelectedFriendToJoin(
+                friend.id === selectedFriendToJoin?.id ? undefined : friend,
+              );
+              setActionButtonDisabled(friend.id === selectedFriendToJoin?.id);
+            }}
+          >
+            <ChannelMemberDisplay user={friend.incoming_friend} />
+          </ListItemButton>
+        </Paper>
+      ))}
     </Stack>
   );
 }

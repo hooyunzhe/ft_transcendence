@@ -14,11 +14,11 @@ import { useUserStatus } from '@/lib/stores/useUserStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { Friend, FriendAction } from '@/types/FriendTypes';
 import { UserStatus } from '@/types/UserTypes';
-import { View } from '@/types/UtilTypes';
+import { FriendCategory, View } from '@/types/UtilTypes';
 
 interface FriendListProps {
   expand: boolean;
-  category: string;
+  category: FriendCategory;
   handleAction: (request: Friend, action: FriendAction) => void;
 }
 
@@ -30,10 +30,10 @@ export default function FriendList({
   const friends = useFriends();
   const selectedFriend = useSelectedFriend();
   const selectedChannel = useSelectedChannel();
+  const userStatus = useUserStatus();
   const { setSelectedFriend } = useFriendActions();
   const { setSelectedChannel, setSelectedDirectChannel } = useChannelActions();
   const { setCurrentView } = useUtilActions();
-  const userStatus = useUserStatus();
   const sortOrder = {
     [UserStatus.IN_GAME]: 0,
     [UserStatus.ONLINE]: 1,
@@ -41,7 +41,7 @@ export default function FriendList({
   };
 
   function sortFriends(a: Friend, b: Friend): number {
-    if (category === 'friends') {
+    if (category === FriendCategory.FRIENDS) {
       const userStatusA = userStatus[a.incoming_friend.id];
       const userStatusB = userStatus[b.incoming_friend.id];
 
@@ -60,6 +60,11 @@ export default function FriendList({
       }
       timeout='auto'
       unmountOnExit
+      sx={{
+        p: '2px',
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { display: 'none' },
+      }}
     >
       <Stack
         width='100%'
@@ -71,7 +76,7 @@ export default function FriendList({
           .filter((friend) => friend.status === category.toUpperCase())
           .sort(sortFriends)
           .map((friend, index) =>
-            category === 'friends' ? (
+            category === FriendCategory.FRIENDS ? (
               <Paper key={index} elevation={2}>
                 <ListItemButton
                   selected={selectedFriend?.id === friend.id ?? false}
