@@ -1,7 +1,6 @@
 'use client';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
-import { View } from '@/types/UtilTypes';
+import { useEffect, useState } from 'react';
+import { Avatar, Box, Divider, Drawer, Tab, Tabs } from '@mui/material';
 import {
   AssignmentIndRounded,
   ChatRounded,
@@ -10,8 +9,9 @@ import {
   SettingsRounded,
   SportsTennisRounded,
 } from '@mui/icons-material';
-import { Avatar, Box, Divider, Drawer, Tab, Tabs } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
+import { View } from '@/types/UtilTypes';
 
 export default function NavigationHeader() {
   const currentUser = useCurrentUser();
@@ -96,7 +96,6 @@ export default function NavigationHeader() {
           variant='middle'
         />
         <Avatar src={currentUser.avatar_url} />
-        <div>{currentUser.username}</div>
       </Box>
     </Drawer>
   );

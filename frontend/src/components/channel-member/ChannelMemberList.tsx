@@ -1,5 +1,6 @@
 'use client';
-import { Button, ListItem, Paper, Stack } from '@mui/material';
+import { Button, ListItem, ListItemIcon, Paper, Stack } from '@mui/material';
+import { LocalPolice, Shield } from '@mui/icons-material';
 import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
 import ChannelMemberDisplay from './ChannelMemberDisplay';
 import ChannelMemberActionMenu from './ChannelMemberActionMenu';
@@ -270,11 +271,17 @@ export function ChannelMemberList() {
         .map((member: ChannelMember, index: number) => (
           <Paper key={index} elevation={2}>
             <ListItem component='div'>
-              <ChannelMemberDisplay
-                key={index}
-                user={member.user}
-                role={member.role}
-              />
+              <ChannelMemberDisplay key={index} user={member.user} />
+              {member.role === ChannelMemberRole.OWNER && (
+                <ListItemIcon>
+                  <LocalPolice />
+                </ListItemIcon>
+              )}
+              {member.role === ChannelMemberRole.ADMIN && (
+                <ListItemIcon>
+                  <Shield />
+                </ListItemIcon>
+              )}
               {member.role !== ChannelMemberRole.OWNER && (
                 <ChannelMemberActionMenu
                   member={member}

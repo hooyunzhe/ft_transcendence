@@ -86,7 +86,6 @@ export default function FriendStack() {
   }
 
   async function acceptFriendRequest(request: Friend): Promise<void> {
-    console.log('request: ', request);
     await callFriendsAPI('PATCH', request.incoming_friend, FriendAction.ACCEPT);
     changeFriend(request, FriendStatus.PENDING, FriendStatus.FRIENDS);
     emitToSocket(friendSocket, 'acceptRequest', request);

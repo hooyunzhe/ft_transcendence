@@ -1,7 +1,6 @@
 'use client';
 import { Box } from '@mui/material';
 import SocialDrawer from './SocialDrawer';
-import Image from 'next/image';
 import ContentBox from './ContentBox';
 import ChannelMemberDrawer from './ChannelMemberDrawer';
 

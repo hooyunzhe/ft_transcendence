@@ -27,7 +27,7 @@ export default function ChannelJoinPrompt({
   const currentUser = useCurrentUser();
   const channelSocket = useChannelSocket();
   const { addJoinedChannel } = useChannelActions();
-  const { addChannelMember } = useChannelMemberActions();
+  const { addChannelMember, deleteChannelMembers } = useChannelMemberActions();
   const {
     changeDialog,
     changeActionText,
@@ -65,6 +65,7 @@ export default function ChannelJoinPrompt({
         ),
       );
       addJoinedChannel(selectedChannelToJoin.id);
+      deleteChannelMembers(selectedChannelToJoin.id);
       existingChannelMembers.forEach((member: ChannelMember) =>
         addChannelMember(member),
       );

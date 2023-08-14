@@ -1,13 +1,13 @@
 'use client';
-import { Box, Drawer } from '@mui/material';
+import { useEffect } from 'react';
 import Image from 'next/image';
+import { Box, Drawer } from '@mui/material';
 import { ChannelMemberList } from '../channel-member/ChannelMemberList';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import {
   useChannelMemberDrawerToggle,
   useUtilActions,
 } from '@/lib/stores/useUtilStore';
-import { useEffect } from 'react';
 
 export default function ChannelMemberDrawer() {
   const selectedChannel = useSelectedChannel();
@@ -38,12 +38,7 @@ export default function ChannelMemberDrawer() {
       }}
       onMouseLeave={handleDrawerMouseLeave}
     >
-      <Image
-        src='/ball/paddle1.png'
-        width={12}
-        height={110}
-        alt='Paddle 2'
-      ></Image>
+      <Image src='/assets/paddle1.png' width={12} height={110} alt='Paddle 2' />
       <Drawer
         PaperProps={{
           sx: {
@@ -54,13 +49,11 @@ export default function ChannelMemberDrawer() {
             padding: '7px',
             border: 'solid 5px #7209B775',
             borderRadius: '15px 0 0 15px',
-            // background: '#3A0CA375',
           },
         }}
         variant='persistent'
         anchor='right'
-        open
-        // open={channelMemberDrawerToggle ? true : false}
+        open={channelMemberDrawerToggle}
       >
         <ChannelMemberList />
       </Drawer>

@@ -82,10 +82,7 @@ export function ChannelDisplay({
           <ListItemAvatar>
             <Avatar />
           </ListItemAvatar>
-          <ListItemText
-            primary={channelName}
-            secondary={'Channel ID: ' + channelID}
-          />
+          <ListItemText primary={channelName} />
           {channelType === ChannelType.PUBLIC && <AccountCircleRounded />}
           {channelType === ChannelType.PRIVATE && <AdminPanelSettingsRounded />}
           {channelType === ChannelType.PROTECTED && <LockPersonRounded />}
