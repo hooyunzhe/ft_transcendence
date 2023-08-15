@@ -1,5 +1,6 @@
 import { Friend } from '../entities/friend.entity';
 
-export class FriendEmitBodyParams {
-  friendship: Friend;
+export class NewRequestEmitBodyParams {
+  outgoing_request: Friend;
+  incoming_request: Friend;
 }

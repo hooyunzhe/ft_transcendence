@@ -1,110 +1,176 @@
-import { useState } from 'react';
-import DialogPrompt from '../utils/DialogPrompt';
-import { Channel, ChannelType } from '@/types/ChannelTypes';
+'use client';
+import { useEffect, useState } from 'react';
 import { Stack } from '@mui/material';
 import { ChannelDisplay } from './ChannelDisplay';
+import PasswordField from '../utils/PasswordField';
+import callAPI from '@/lib/callAPI';
+import emitToSocket from '@/lib/emitToSocket';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useChannelActions } from '@/lib/stores/useChannelStore';
+import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
+import {
+  useDialogActions,
+  useDialogTriggers,
+} from '@/lib/stores/useDialogStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { Channel, ChannelType } from '@/types/ChannelTypes';
+import { ChannelMember, ChannelMemberRole } from '@/types/ChannelMemberTypes';
 
 interface ChannelJoinPromptProps {
-  channels: Channel[];
-  joinChannel: (...args: any) => Promise<string>;
+  joinableChannels: Channel[];
 }
 
 export default function ChannelJoinPrompt({
-  channels,
-  joinChannel,
+  joinableChannels,
 }: ChannelJoinPromptProps) {
-  const [channelSearch, setChannelSearch] = useState('');
-  const [selectedChannel, setSelectedChannel] = useState<Channel | undefined>();
-  const [channelPass, setChannelPass] = useState('');
+  const currentUser = useCurrentUser();
+  const channelSocket = useChannelSocket();
+  const { addJoinedChannel } = useChannelActions();
+  const { addChannelMember, deleteChannelMembers } = useChannelMemberActions();
+  const {
+    changeDialog,
+    changeActionText,
+    setActionButtonDisabled,
+    resetDialog,
+    resetTriggers,
+  } = useDialogActions();
+  const { actionClicked, backClicked } = useDialogTriggers();
+  const { displayNotification } = useNotificationActions();
   const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
+  const [selectedChannelToJoin, setSelectedChannelToJoin] = useState<
+    Channel | undefined
+  >();
+  const [channelPass, setChannelPass] = useState('');
 
-  function resetDisplay() {
-    setDisplayPasswordPrompt(false);
-  }
+  async function joinChannel(): Promise<void> {
+    if (selectedChannelToJoin) {
+      const joiningChannelMember = JSON.parse(
+        await callAPI('POST', 'channel-members', {
+          channel_id: selectedChannelToJoin.id,
+          user_id: currentUser.id,
+          role: ChannelMemberRole.MEMBER,
+          pass: channelPass,
+        }),
+      );
 
-  function resetState() {
-    setChannelSearch('');
-    setSelectedChannel(undefined);
-    setChannelPass('');
-  }
+      if (joiningChannelMember.statusCode === 403) {
+        throw 'Incorrect password';
+      }
 
-  async function handleJoinChannelAction(): Promise<string> {
-    const channelToJoin = channels.find(
-      (channel) => channel.id === selectedChannel?.id,
-    );
-
-    if (!channelToJoin) {
-      return "Channel doesn't exist";
-    }
-
-    if (channelToJoin.type === ChannelType.PROTECTED) {
-      setDisplayPasswordPrompt(true);
+      const existingChannelMembers = JSON.parse(
+        await callAPI(
+          'GET',
+          `channel-members?search_type=CHANNEL&search_number=${selectedChannelToJoin.id}`,
+        ),
+      );
+      addJoinedChannel(selectedChannelToJoin.id);
+      deleteChannelMembers(selectedChannelToJoin.id);
+      existingChannelMembers.forEach((member: ChannelMember) =>
+        addChannelMember(member),
+      );
+      emitToSocket(channelSocket, 'joinRoom', selectedChannelToJoin.id);
+      emitToSocket(channelSocket, 'newMember', joiningChannelMember);
+      displayNotification('success', 'Channel joined');
     } else {
-      joinChannel(selectedChannel?.id);
-      resetState();
+      throw 'FATAL ERROR: FAILED TO JOIN DUE TO MISSING SELECTED CHANNEL TO JOIN';
     }
-    return '';
   }
+
+  async function handleJoinChannelAction(): Promise<void> {
+    if (selectedChannelToJoin?.type === ChannelType.PROTECTED) {
+      setDisplayPasswordPrompt(true);
+      changeDialog(
+        'Enter Password',
+        `Enter password in order to join ${selectedChannelToJoin.name}`,
+        'Join',
+        'Back',
+        !channelPass,
+      );
+    } else {
+      joinChannel();
+    }
+  }
+
+  async function handleAction(): Promise<void> {
+    if (displayPasswordPrompt) {
+      joinChannel()
+        .then(resetDialog)
+        .catch((error) => {
+          resetTriggers();
+          displayNotification('error', error);
+        });
+    } else {
+      handleJoinChannelAction()
+        .then(() =>
+          selectedChannelToJoin?.type === ChannelType.PROTECTED
+            ? resetTriggers()
+            : resetDialog(),
+        )
+        .catch((error) => {
+          resetTriggers();
+          displayNotification('error', error);
+        });
+    }
+  }
+
+  useEffect(() => {
+    if (actionClicked) {
+      handleAction();
+    }
+    if (backClicked) {
+      if (displayPasswordPrompt) {
+        setDisplayPasswordPrompt(false);
+        changeDialog(
+          'Join Channel',
+          'Find and join a channel to start chatting',
+          'Next',
+          'Cancel',
+        );
+        resetTriggers();
+      } else {
+        resetDialog();
+      }
+    }
+  }, [actionClicked, backClicked]);
 
   return displayPasswordPrompt ? (
-    <DialogPrompt
-      buttonText='Join channel'
-      dialogTitle='Enter channel password'
-      dialogDescription='Join channel using password'
-      labelText='Password'
-      textInput={channelPass}
-      onChangeHandler={(input) => {
-        setChannelPass(input);
-      }}
-      backButtonText='Back'
-      backHandler={resetDisplay}
-      actionButtonText='Join'
-      handleAction={async () => {
-        const res = await joinChannel(selectedChannel?.id, channelPass);
-        if (!res) {
-          resetState();
-          resetDisplay();
-        }
-        return res;
-      }}
+    <PasswordField
+      value={channelPass}
+      onChange={setChannelPass}
+      onSubmit={handleAction}
     />
   ) : (
-    <DialogPrompt
-      buttonText='Join channel'
-      dialogTitle='Search channels'
-      dialogDescription='Find a channel to join'
-      labelText='Channel name'
-      textInput={channelSearch}
-      onChangeHandler={(input) => {
-        setSelectedChannel(undefined);
-        setChannelSearch(input);
+    <Stack
+      maxHeight={200}
+      spacing={1}
+      sx={{
+        p: 1,
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { display: 'none' },
       }}
-      backButtonText='Cancel'
-      backHandler={resetDisplay}
-      actionButtonText={
-        selectedChannel?.type === ChannelType.PROTECTED ? 'Next' : 'Join'
-      }
-      handleAction={handleJoinChannelAction}
     >
-      <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
-        {channels
-          .filter((channel) =>
-            channel.name
-              .toLowerCase()
-              .includes(channelSearch.trim().toLowerCase()),
-          )
-          .map((channel: Channel, index: number) => (
-            <ChannelDisplay
-              key={index}
-              {...channel}
-              selected={selectedChannel?.id ?? 0}
-              selectCurrent={() => {
-                setChannelSearch(channel.name);
-                setSelectedChannel(channel);
-              }}
-            />
-          ))}
-      </Stack>
-    </DialogPrompt>
+      {joinableChannels.map((channel: Channel, index: number) => (
+        <ChannelDisplay
+          key={index}
+          channelID={channel.id}
+          channelName={channel.name}
+          channelType={channel.type}
+          channelHash={channel.hash}
+          isOwner={false}
+          currentChannelMember={undefined}
+          selected={selectedChannelToJoin?.id === channel.id ?? false}
+          selectCurrent={() => {
+            changeActionText(
+              channel.type === ChannelType.PROTECTED ? 'Next' : 'Join',
+            );
+            setSelectedChannelToJoin(
+              channel.id === selectedChannelToJoin?.id ? undefined : channel,
+            );
+            setActionButtonDisabled(channel.id === selectedChannelToJoin?.id);
+          }}
+        />
+      ))}
+    </Stack>
   );
 }

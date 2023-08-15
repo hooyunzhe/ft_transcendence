@@ -1,6 +1,9 @@
 'use client';
-import { gameSocket } from '@/lib/socket';
+import { useGameSocket } from '@/lib/stores/useSocketStore';
 import Phaser, { Scene } from 'phaser';
+
+const gameSocket = useGameSocket();
+
 class Example extends Phaser.Scene {
   constructor() {
     super();
@@ -12,8 +15,9 @@ class Example extends Phaser.Scene {
   private paddle1: Phaser.Physics.Arcade.Sprite;
   private paddle2: Phaser.Physics.Arcade.Sprite;
   private gameState;
+
   preload() {
-    this.load.setBaseURL('http://localhost:3000');
+    this.load.setBaseURL(process.env.NEXT_PUBLIC_HOST_URL + ':3000');
     this.load.multiatlas('ballsprite', '/ball/ballsprite.json', 'ball');
     this.load.image('red', '/ball/bubble.png');
     this.load.image('paddle1', '/ball/paddle1.png');
@@ -86,26 +90,28 @@ class Example extends Phaser.Scene {
     //   bodysize.height,
     // );
 
-    gameSocket.emit('initialize', {
-      paddle1size: { width: this.paddle1.width, height: this.paddle1.height },
-      paddle2size: { width: this.paddle2.width, height: this.paddle2.height },
-    });
-    gameSocket.on(
-      'game',
-      (data: {
-        ball: { x: number; y: number };
-        paddle1: { x: number; y: number };
-        paddle2: { x: number; y: number };
-        score: { player1: number; player2: number };
-      }) => {
-        this.ball.x = data.ball.x;
-        this.ball.y = data.ball.y;
-        this.paddle1.y = data.paddle1.y;
-        this.paddle2.y = data.paddle2.y;
-        this.score.player1 = data.score.player1;
-        this.score.player2 = data.score.player2;
-      },
-    );
+    if (gameSocket) {
+      gameSocket.emit('initialize', {
+        paddle1size: { width: this.paddle1.width, height: this.paddle1.height },
+        paddle2size: { width: this.paddle2.width, height: this.paddle2.height },
+      });
+      gameSocket.on(
+        'game',
+        (data: {
+          ball: { x: number; y: number };
+          paddle1: { x: number; y: number };
+          paddle2: { x: number; y: number };
+          score: { player1: number; player2: number };
+        }) => {
+          this.ball.x = data.ball.x;
+          this.ball.y = data.ball.y;
+          this.paddle1.y = data.paddle1.y;
+          this.paddle2.y = data.paddle2.y;
+          this.score.player1 = data.score.player1;
+          this.score.player2 = data.score.player2;
+        },
+      );
+    }
   }
 
   update() {
@@ -151,16 +157,16 @@ window.addEventListener(
 );
 const keyLoop = () => {
   if (keyState['w']) {
-    gameSocket.emit('Player', 'w');
+    gameSocket?.emit('Player', 'w');
   }
   if (keyState['s']) {
-    gameSocket.emit('Player', 's');
+    gameSocket?.emit('Player', 's');
   }
   if (keyState['i']) {
-    gameSocket.emit('Player', 'up');
+    gameSocket?.emit('Player', 'up');
   }
   if (keyState['k']) {
-    gameSocket.emit('Player', 'down');
+    gameSocket?.emit('Player', 'down');
   }
 };
 const startGame = () => {

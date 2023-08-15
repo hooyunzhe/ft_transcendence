@@ -1,4 +1,9 @@
-import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpStatus,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { TypeORMError } from 'typeorm';
 
@@ -8,8 +13,8 @@ export class TypeORMErrorFilter implements ExceptionFilter {
     const context = host.switchToHttp();
     const response = context.getResponse<Response>();
 
-    response.json({
-      statusCode: 400,
+    response.status(HttpStatus.BAD_REQUEST).json({
+      statusCode: HttpStatus.BAD_REQUEST,
       error: 'Bad Request',
       message: exception.message.split('\n'),
       // for dev

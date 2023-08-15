@@ -12,15 +12,14 @@ import { Socket } from 'socket.io-client';
 import GameMainScene from './scenes/GameMainScene';
 import GameReadyScene from './scenes/GameReadyScene';
 import GameMatchFoundScene from './scenes/GameMatchFoundScene';
+import { useGameSocket } from '@/lib/stores/useSocketStore';
 
 interface GameRenderProps {
-  gameSocket: Socket;
   setGameReady: Dispatch<SetStateAction<boolean>>;
   setSkillState: Dispatch<SetStateAction<boolean[]>>;
 }
 
 export default function GameRender({
-  gameSocket,
   setGameReady,
   setSkillState,
 }: GameRenderProps) {
@@ -32,6 +31,12 @@ export default function GameRender({
   // const ball = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
   // const paddle1 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
   // const paddle2 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
+
+  const gameSocket = useGameSocket();
+
+  if (!gameSocket) {
+    return;
+  }
 
   const mainGame = new GameMainScene(gameSocket);
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { gameSocket } from '@/lib/socket';
+import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 
@@ -6,6 +6,13 @@ export default function GameCoordinate() {
   let ball = { x: 0, y: 0 };
   let paddle1 = 0;
   let paddle2 = 0;
+
+  const gameSocket = useGameSocket();
+
+  if (!gameSocket) {
+    return;
+  }
+
   useEffect(() => {
     gameSocket.on(
       'game',

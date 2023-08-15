@@ -17,16 +17,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      session.user = await fetch(
-        `http://${process.env.NEXT_PUBLIC_HOST_URL}:4242/api/users/token/` +
-          token.refresh_token,
-        {
-          method: 'GET',
-        },
-      )
-        .then((res) => res.text())
-        .then((text) => (text.length ? JSON.parse(text) : null))
-        .catch((error) => console.log(error));
       session.access_token = token.access_token;
       session.refresh_token = token.refresh_token;
       return session;

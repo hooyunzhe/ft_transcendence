@@ -1,6 +1,14 @@
 import { Channel } from './ChannelTypes';
 import { User } from './UserTypes';
 
+export enum ChannelMemberMuteDuration {
+  NONE = 'NONE',
+  MINUTE = 'MINUTE',
+  HOUR = 'HOUR',
+  DAY = 'DAY',
+  LIFETIME = 'LIFETIME',
+}
+
 export enum ChannelMemberAction {
   ADMIN = 'ADMIN',
   UNADMIN = 'UNADMIN',
@@ -24,11 +32,13 @@ export enum ChannelMemberStatus {
   DEFAULT = 'DEFAULT',
 }
 
-export interface ChannelMembers {
+export interface ChannelMember {
   id: number;
   role: ChannelMemberRole;
   status: ChannelMemberStatus;
-  muted_until: Date;
+  muted_until: string;
+  date_of_creation: string;
+  last_updated: string;
   channel: Channel;
   user: User;
 }

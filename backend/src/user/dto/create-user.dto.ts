@@ -8,4 +8,8 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsString()
   refresh_token: string;
+
+  @IsNotEmpty()
+  @IsString()
+  avatar_url: string;
 }

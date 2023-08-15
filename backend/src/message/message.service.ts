@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityNotFoundError, Repository } from 'typeorm';
 import { Message } from './entities/message.entity';
@@ -7,6 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { RemoveMessageDto } from './dto/remove-message.dto';
+import { ChannelMemberService } from 'src/channel-member/channel-member.service';
 
 @Injectable()
 export class MessageService {
@@ -19,9 +20,21 @@ export class MessageService {
 
     @Inject(UserService)
     private readonly userService: UserService,
+
+    @Inject(ChannelMemberService)
+    private readonly channelMemberService: ChannelMemberService,
   ) {}
 
   async create(messageDto: CreateMessageDto): Promise<Message> {
+    const checkMute = await this.channelMemberService.checkMute(
+      messageDto.channel_id,
+      messageDto.user_id,
+    );
+
+    if (checkMute) {
+      throw new ForbiddenException();
+    }
+
     const channelFound = await this.channelService.findOne(
       messageDto.channel_id,
       false,

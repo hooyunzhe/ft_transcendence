@@ -55,7 +55,7 @@ export class ChannelController {
 
   @Patch()
   async update(@Body() channelDto: UpdateChannelDto): Promise<void> {
-    this.channelService.update(channelDto);
+    return this.channelService.update(channelDto);
   }
 
   @Delete()

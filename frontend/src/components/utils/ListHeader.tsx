@@ -4,12 +4,12 @@ import ChatIcon from '@mui/icons-material/Chat';
 
 interface ListHeaderProps {
   title: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export default function ListHeader({ title, children }: ListHeaderProps) {
   return (
-    <Paper elevation={2} sx={{ color: 'blue' }}>
+    <Paper elevation={2} sx={{ color: 'white', background: '#3A0CA375' }}>
       <Toolbar>
         <Box mr={2}>
           <ChatIcon fontSize={'large'} />

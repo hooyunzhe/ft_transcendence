@@ -1,5 +1,5 @@
+import { ChannelMember } from './ChannelMemberTypes';
 import { Message } from './MessageTypes';
-import { User } from './UserTypes';
 
 export enum ChannelType {
   PUBLIC = 'PUBLIC',
@@ -13,7 +13,8 @@ export interface Channel {
   name: string;
   type: ChannelType;
   hash: string;
-  pass: string;
-  channelMembers: User[];
+  date_of_creation: string;
+  last_updated: string;
+  channelMembers: ChannelMember[];
   messages: Message[];
 }

@@ -6,7 +6,6 @@ import {
   ListItemAvatar,
   ListItemText,
 } from '@mui/material';
-import { Friend, FriendAction } from '@/types/FriendTypes';
 import {
   BlockRounded,
   CancelRounded,
@@ -14,9 +13,12 @@ import {
   DeleteRounded,
   RestoreRounded,
 } from '@mui/icons-material';
+import { Friend, FriendAction } from '@/types/FriendTypes';
+import { UserStatus } from '@/types/UserTypes';
+import { FriendCategory } from '@/types/UtilTypes';
 
 interface FriendDisplayProps {
-  category: string;
+  category: FriendCategory;
   friend: Friend;
   status?: string;
   handleAction: (request: Friend, action: FriendAction) => void;
@@ -29,28 +31,34 @@ export default function FriendDisplay({
   handleAction,
 }: FriendDisplayProps) {
   return (
-    <ListItem
-      sx={{
-        ...(category === 'friends' && {
-          opacity: status === 'online' ? '100%' : '20%',
-        }),
-      }}
-    >
-      <ListItemAvatar>
-        <Avatar alt=''></Avatar>
-      </ListItemAvatar>
-      <ListItemText primary={friend.incoming_friend.username} />
-      {category === 'friends' && (
+    <ListItem>
+      <ListItem
+        component='div'
+        sx={{
+          opacity:
+            category === FriendCategory.FRIENDS && status === UserStatus.OFFLINE
+              ? '25%'
+              : '100%',
+        }}
+      >
+        <ListItemAvatar>
+          <Avatar src={friend.incoming_friend.avatar_url} />
+        </ListItemAvatar>
+        <ListItemText primary={friend.incoming_friend.username} />
+      </ListItem>
+      {category === FriendCategory.FRIENDS && (
         <>
           <IconButton
-            onClick={() => {
+            onClick={(event) => {
+              event.stopPropagation();
               handleAction(friend, FriendAction.BLOCK);
             }}
           >
             <BlockRounded />
           </IconButton>
           <IconButton
-            onClick={() => {
+            onClick={(event) => {
+              event.stopPropagation();
               handleAction(friend, FriendAction.UNFRIEND);
             }}
           >
@@ -58,17 +66,19 @@ export default function FriendDisplay({
           </IconButton>
         </>
       )}
-      {category === 'pending' && (
+      {category === FriendCategory.PENDING && (
         <>
           <IconButton
-            onClick={() => {
+            onClick={(event) => {
+              event.stopPropagation();
               handleAction(friend, FriendAction.ACCEPT);
             }}
           >
             <CheckCircleRounded />
           </IconButton>
           <IconButton
-            onClick={() => {
+            onClick={(event) => {
+              event.stopPropagation();
               handleAction(friend, FriendAction.REJECT);
             }}
           >
@@ -76,18 +86,20 @@ export default function FriendDisplay({
           </IconButton>
         </>
       )}
-      {category === 'invited' && (
+      {category === FriendCategory.INVITED && (
         <IconButton
-          onClick={() => {
+          onClick={(event) => {
+            event.stopPropagation();
             handleAction(friend, FriendAction.REMOVE);
           }}
         >
           <DeleteRounded />
         </IconButton>
       )}
-      {category === 'blocked' && (
+      {category === FriendCategory.BLOCKED && (
         <IconButton
-          onClick={() => {
+          onClick={(event) => {
+            event.stopPropagation();
             handleAction(friend, FriendAction.UNBLOCK);
           }}
         >

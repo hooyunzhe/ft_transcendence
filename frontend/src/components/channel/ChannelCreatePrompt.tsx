@@ -1,121 +1,184 @@
-import { useState } from 'react';
+'use client';
+import { useEffect, useState } from 'react';
 import {
   FormControl,
   FormControlLabel,
-  FormLabel,
   Radio,
   RadioGroup,
 } from '@mui/material';
-import DialogPrompt from '../utils/DialogPrompt';
-import { ChannelType } from '@/types/ChannelTypes';
+import PasswordField from '../utils/PasswordField';
+import InputField from '../utils/InputField';
+import callAPI from '@/lib/callAPI';
+import emitToSocket from '@/lib/emitToSocket';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import {
+  useChannelActions,
+  useChannelChecks,
+} from '@/lib/stores/useChannelStore';
+import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
+import {
+  useDialogActions,
+  useDialogTriggers,
+} from '@/lib/stores/useDialogStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { Channel, ChannelType } from '@/types/ChannelTypes';
+import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
 
-interface ChannelCreatePromptProps {
-  checkChannelExists: (name: string) => boolean;
-  checkChannelJoined: (name: string) => boolean;
-  createChannel: (...args: any) => Promise<string>;
-}
-
-export default function ChannelCreatePrompt({
-  checkChannelExists,
-  checkChannelJoined,
-  createChannel,
-}: ChannelCreatePromptProps) {
-  const [channelName, setChannelName] = useState('');
-  const [channelType, setChannelType] = useState<ChannelType>(
-    ChannelType.PUBLIC,
-  );
-  const [channelPass, setChannelPass] = useState('');
+export default function ChannelCreatePrompt() {
+  const currentUser = useCurrentUser();
+  const channelSocket = useChannelSocket();
+  const { addChannel, addJoinedChannel } = useChannelActions();
+  const { checkChannelExists, checkChannelJoined } = useChannelChecks();
+  const { addChannelMember } = useChannelMemberActions();
+  const { actionClicked, backClicked } = useDialogTriggers();
+  const { changeDialog, changeActionText, resetDialog, resetTriggers } =
+    useDialogActions();
+  const { displayNotification } = useNotificationActions();
   const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
+  const [channelName, setChannelName] = useState('');
+  const [channelType, setChannelType] = useState(ChannelType.PUBLIC);
+  const [channelPass, setChannelPass] = useState('');
 
-  function resetDisplay() {
-    setDisplayPasswordPrompt(false);
-  }
+  async function createChannel(): Promise<void> {
+    const newChannel: Channel = JSON.parse(
+      await callAPI('POST', 'channels', {
+        name: channelName.trim(),
+        type: channelType,
+        pass: channelPass,
+      }),
+    );
 
-  function resetState() {
-    setChannelName('');
-    setChannelType(ChannelType.PUBLIC);
-    setChannelPass('');
-  }
+    if (newChannel) {
+      addChannel(newChannel);
+      emitToSocket(channelSocket, 'newChannel', newChannel);
 
-  async function handleCreateChannelAction(): Promise<string> {
-    if (checkChannelExists(channelName)) {
-      return 'Channel already exists';
+      const channelCreator = JSON.parse(
+        await callAPI('POST', 'channel-members', {
+          channel_id: newChannel.id,
+          user_id: currentUser.id,
+          role: ChannelMemberRole.OWNER,
+          pass: channelPass,
+        }),
+      );
+
+      if (channelCreator) {
+        addJoinedChannel(newChannel.id);
+        addChannelMember(channelCreator);
+        emitToSocket(channelSocket, 'joinRoom', newChannel.id);
+        displayNotification('success', 'Channel created');
+      } else {
+        throw 'FATAL ERROR: FAILED TO ADD MEMBER TO NEW CHANNEL IN BACKEND';
+      }
+    } else {
+      throw 'FATAL ERROR: FAILED TO CREATE NEW CHANNEL IN BACKEND';
     }
-    if (checkChannelJoined(channelName)) {
-      return 'Already in channel';
+  }
+
+  async function handleCreateChannelAction(): Promise<void> {
+    if (checkChannelExists(channelName.trim())) {
+      throw 'Channel already exists';
+    }
+    if (checkChannelJoined(channelName.trim())) {
+      throw 'Already in channel';
     }
     if (channelType === ChannelType.PROTECTED) {
       setDisplayPasswordPrompt(true);
+      changeDialog(
+        'Set Password',
+        `Create a good and memorable password for ${channelName}`,
+        'Create',
+        'Back',
+        !channelPass,
+      );
     } else {
-      createChannel(channelName, channelType);
-      resetState();
+      createChannel();
     }
-    return '';
   }
 
+  async function handleAction(): Promise<void> {
+    if (displayPasswordPrompt) {
+      createChannel()
+        .then(resetDialog)
+        .catch((error) => {
+          resetTriggers();
+          displayNotification('error', error);
+        });
+    } else {
+      handleCreateChannelAction()
+        .then(() =>
+          channelType === ChannelType.PROTECTED
+            ? resetTriggers()
+            : resetDialog(),
+        )
+        .catch((error) => {
+          resetTriggers();
+          displayNotification('error', error);
+        });
+    }
+  }
+
+  useEffect(() => {
+    if (actionClicked) {
+      handleAction();
+    }
+    if (backClicked) {
+      if (displayPasswordPrompt) {
+        setDisplayPasswordPrompt(false);
+        changeDialog(
+          'Create Channel',
+          'Choose a name and type to get started',
+          'Next',
+          'Cancel',
+        );
+        resetTriggers();
+      } else {
+        resetDialog();
+      }
+    }
+  }, [actionClicked, backClicked]);
+
   return displayPasswordPrompt ? (
-    <DialogPrompt
-      buttonText='Create channel'
-      dialogTitle='Set channel password'
-      dialogDescription='Enter the channel password of your desire'
-      labelText='Password'
-      textInput={channelPass}
-      onChangeHandler={(input) => {
-        setChannelPass(input);
-      }}
-      backButtonText='Back'
-      backHandler={resetDisplay}
-      actionButtonText='Create'
-      handleAction={async () => {
-        const res = createChannel(channelName, channelType, channelPass);
-        resetState();
-        resetDisplay();
-        return res;
-      }}
+    <PasswordField
+      hasCriteria
+      value={channelPass}
+      onChange={setChannelPass}
+      onSubmit={handleAction}
     />
   ) : (
-    <DialogPrompt
-      buttonText='Create channel'
-      dialogTitle='Channel creation'
-      dialogDescription='Create your channel here'
-      labelText='Name'
-      textInput={channelName}
-      onChangeHandler={(input) => {
-        setChannelName(input);
-      }}
-      actionButtonText={
-        channelType === ChannelType.PROTECTED ? 'Next' : 'Create'
-      }
-      backButtonText='Cancel'
-      backHandler={resetDisplay}
-      handleAction={handleCreateChannelAction}
-    >
-      <FormControl>
-        <FormLabel>Type</FormLabel>
-        <RadioGroup
-          row
-          value={channelType}
-          onChange={(event) => {
-            setChannelType(event.target.value as ChannelType);
-          }}
-        >
-          <FormControlLabel
-            value={ChannelType.PUBLIC}
-            control={<Radio />}
-            label='Public'
-          />
-          <FormControlLabel
-            value={ChannelType.PRIVATE}
-            control={<Radio />}
-            label='Private'
-          />
-          <FormControlLabel
-            value={ChannelType.PROTECTED}
-            control={<Radio />}
-            label='Protected'
-          />
-        </RadioGroup>
-      </FormControl>
-    </DialogPrompt>
+    <FormControl fullWidth>
+      <InputField
+        label='Channel Name'
+        value={channelName}
+        onChange={setChannelName}
+        onSubmit={handleAction}
+      />
+      <RadioGroup
+        row
+        value={channelType}
+        onChange={(event) => {
+          changeActionText(
+            event.target.value === ChannelType.PROTECTED ? 'Next' : 'Create',
+          );
+          setChannelType(event.target.value as ChannelType);
+        }}
+      >
+        <FormControlLabel
+          value={ChannelType.PUBLIC}
+          control={<Radio />}
+          label='Public'
+        />
+        <FormControlLabel
+          value={ChannelType.PRIVATE}
+          control={<Radio />}
+          label='Private'
+        />
+        <FormControlLabel
+          value={ChannelType.PROTECTED}
+          control={<Radio />}
+          label='Protected'
+        />
+      </RadioGroup>
+    </FormControl>
   );
 }

@@ -1,5 +1,11 @@
-export default function signUp(username: string, refresh_token: string) {
-  fetch('http://localhost:4242/api/users', {
+import { User } from '@/types/UserTypes';
+
+export default async function signUp(
+  username: string,
+  refresh_token: string,
+  avatar_url: string,
+): Promise<User> {
+  return await fetch(process.env.NEXT_PUBLIC_HOST_URL + ':4242/api/users', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -7,6 +13,9 @@ export default function signUp(username: string, refresh_token: string) {
     body: JSON.stringify({
       username: username,
       refresh_token: refresh_token,
+      avatar_url: avatar_url,
     }),
-  }).catch((error) => console.log(error));
+  })
+    .then((res) => res.json())
+    .catch((error) => console.log(error));
 }
