@@ -112,7 +112,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
             value={username}
             onChange={setUsername}
             onSubmit={() =>
-              signUp(username, session.refresh_token, avatarUrl).then(
+              signUp(username, session.refresh_token, largeAvatarUrl).then(
                 (newUser) => setCurrentUser(newUser),
               )
             }

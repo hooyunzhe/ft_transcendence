@@ -4,6 +4,7 @@ import ChatBox from '../chat/ChatBox';
 import { useEffect, useState } from 'react';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
+import ProfileBox from '../profile/ProfileBox';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
@@ -14,10 +15,10 @@ export default function ContentBox() {
   >();
 
   useEffect(() => {
+    clearTimeout(toggleTimeoutID);
     if (currentView) {
       if (open) {
         setOpen(false);
-        clearTimeout(toggleTimeoutID);
         setToggleTimeoutID(
           setTimeout(() => {
             setLocalView(currentView);
@@ -30,7 +31,6 @@ export default function ContentBox() {
       }
     } else {
       setOpen(false);
-      clearTimeout(toggleTimeoutID);
     }
   }, [currentView]);
 
@@ -54,6 +54,7 @@ export default function ContentBox() {
       open={open}
     >
       {localView === View.CHAT && <ChatBox />}
+      {localView === View.PROFILE && <ProfileBox />}
     </Drawer>
   );
 }

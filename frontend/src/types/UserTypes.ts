@@ -9,5 +9,5 @@ export interface User {
   username: string;
   refresh_token: string;
   avatar_url: string;
-  date_of_creation: Date;
+  date_of_creation: string;
 }
