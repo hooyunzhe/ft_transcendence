@@ -10,7 +10,7 @@ export default function ProfileBox() {
       display='flex'
       height='100%'
       flexDirection='column'
-      // justifyContent='space-between'
+      justifyContent='space-between'
       gap='1vh'
     >
       <ProfileHeader />

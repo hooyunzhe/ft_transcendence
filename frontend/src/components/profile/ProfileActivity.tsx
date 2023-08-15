@@ -4,14 +4,9 @@ import ProfileMatchHistory from './ProfileMatchHistory';
 
 export default function ProfileActivity() {
   return (
-    <Box
-      height='40vh'
-      marginTop='auto'
-      display='flex'
-      justifyContent='space-between'
-    >
+    <Box display='flex' justifyContent='space-between'>
       <ProfileMatchHistory />
-      <ProfileMatchHistory />
+      {/* <ProfileMatchHistory /> */}
     </Box>
   );
 }
