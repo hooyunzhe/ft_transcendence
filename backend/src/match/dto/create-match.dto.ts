@@ -11,6 +11,10 @@ export class CreateMatchDto {
 
   @IsNotEmpty()
   @IsNumber()
+  winner_id: number;
+
+  @IsNotEmpty()
+  @IsNumber()
   p1_score: number;
 
   @IsNotEmpty()
@@ -19,5 +23,21 @@ export class CreateMatchDto {
 
   @IsNotEmpty()
   @IsNumber()
-  winner_id: number;
+  skill1_id: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  skill2_id: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  skill3_id: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  skill4_id: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  skill5_id: number;
 }

@@ -13,6 +13,7 @@ import { Achievement } from 'src/achievement/entities/achievement.entity';
 import { Channel } from 'src/channel/entities/channel.entity';
 import { Match } from 'src/match/entities/match.entity';
 import { Message } from 'src/message/entities/message.entity';
+import { Statistic } from 'src/statistic/entities/statistic.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RemoveUserDto } from './dto/remove-user.dto';
@@ -32,7 +33,14 @@ export class UserController {
     @Query()
     queryParams: UserGetQueryParams,
   ): Promise<
-    Achievement[] | Channel[] | Match[] | Message[] | User[] | User | null
+    | Achievement[]
+    | Channel[]
+    | Match[]
+    | Message[]
+    | Statistic
+    | User[]
+    | User
+    | null
   > {
     queryParams.load_relations ??= false;
     switch (queryParams.search_type) {

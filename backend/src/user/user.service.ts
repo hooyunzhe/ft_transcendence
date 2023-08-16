@@ -2,15 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityNotFoundError, ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { Achievement } from 'src/achievement/entities/achievement.entity';
+import { Statistic } from 'src/statistic/entities/statistic.entity';
 import { Channel } from 'src/channel/entities/channel.entity';
+import { Message } from 'src/message/entities/message.entity';
+import { Achievement } from 'src/achievement/entities/achievement.entity';
 import { FriendStatus } from 'src/friend/entities/friend.entity';
+import { Match } from 'src/match/entities/match.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RemoveUserDto } from './dto/remove-user.dto';
 import { UserRelation } from './params/get-query-params';
-import { Message } from 'src/message/entities/message.entity';
-import { Match } from 'src/match/entities/match.entity';
 import { EntityAlreadyExistsError } from 'src/app.error';
 
 @Injectable()
@@ -21,6 +22,7 @@ export class UserService {
   ) {}
 
   getRelationsToLoad(loadRelations: boolean): {
+    statistic: boolean;
     channelMembers: boolean;
     messages: boolean;
     userAchievements: boolean;
@@ -29,6 +31,7 @@ export class UserService {
     matchesAsPlayerTwo: boolean;
   } {
     return {
+      statistic: loadRelations,
       channelMembers: loadRelations,
       messages: loadRelations,
       userAchievements: loadRelations,
@@ -103,8 +106,12 @@ export class UserService {
   async getRelations(
     id: number,
     relation: UserRelation,
-  ): Promise<Channel[] | Message[] | Achievement[] | User[] | Match[]> {
+  ): Promise<
+    Statistic | Channel[] | Message[] | Achievement[] | User[] | Match[]
+  > {
     switch (relation) {
+      case UserRelation.STATISTIC:
+        return this.getStatistic(id);
       case UserRelation.CHANNELS:
         return this.getChannels(id);
       case UserRelation.MESSAGES:
@@ -116,6 +123,12 @@ export class UserService {
       case UserRelation.MATCHES:
         return this.getMatches(id);
     }
+  }
+
+  async getStatistic(id: number): Promise<Statistic> {
+    const currentUser = await this.findOne(id, true);
+
+    return currentUser.statistic;
   }
 
   async getChannels(id: number): Promise<Channel[]> {
