@@ -11,7 +11,8 @@ import {
   useSelectedChannel,
 } from '@/lib/stores/useChannelStore';
 import { useUserStatus } from '@/lib/stores/useUserStore';
-import { useUtilActions } from '@/lib/stores/useUtilStore';
+import { useProfileActions } from '@/lib/stores/useProfileStore';
+import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { Friend, FriendAction } from '@/types/FriendTypes';
 import { UserStatus } from '@/types/UserTypes';
 import { FriendCategory, View } from '@/types/UtilTypes';
@@ -31,8 +32,10 @@ export default function FriendList({
   const selectedFriend = useSelectedFriend();
   const selectedChannel = useSelectedChannel();
   const userStatus = useUserStatus();
+  const currentView = useCurrentView();
   const { setSelectedFriend } = useFriendActions();
   const { setSelectedChannel, setSelectedDirectChannel } = useChannelActions();
+  const { setSelectedStatistic } = useProfileActions();
   const { setCurrentView } = useUtilActions();
   const sortOrder = {
     [UserStatus.IN_GAME]: 0,
@@ -84,12 +87,14 @@ export default function FriendList({
                     if (selectedFriend?.id === friend.id) {
                       setSelectedFriend(undefined);
                       setSelectedChannel(undefined);
+                      setSelectedStatistic(undefined);
                     } else {
                       setSelectedFriend(friend);
-                      if (selectedChannel === undefined) {
+                      if (!currentView) {
                         setCurrentView(View.CHAT);
                       }
                       setSelectedDirectChannel(friend.incoming_friend.id);
+                      setSelectedStatistic(friend.incoming_friend.id);
                     }
                   }}
                 >

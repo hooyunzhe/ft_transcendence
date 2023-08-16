@@ -40,6 +40,6 @@ export class MatchController {
 
   @Delete()
   async remove(@Body() matchDto: RemoveMatchDto): Promise<void> {
-    this.matchService.remove(matchDto);
+    return this.matchService.remove(matchDto);
   }
 }

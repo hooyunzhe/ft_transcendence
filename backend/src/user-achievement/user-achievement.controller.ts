@@ -50,6 +50,6 @@ export class UserAchievementController {
   async remove(
     @Body() userAchievementDto: RemoveUserAchievementDto,
   ): Promise<void> {
-    this.userAchievementService.remove(userAchievementDto);
+    return this.userAchievementService.remove(userAchievementDto);
   }
 }

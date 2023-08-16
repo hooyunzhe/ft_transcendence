@@ -20,6 +20,7 @@ import {
 } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useChatActions } from '@/lib/stores/useChatStore';
+import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 
@@ -37,6 +38,7 @@ export default function Cyberpong() {
     useChannelMemberActions();
   const joinedChannels = useJoinedChannels();
   const { getChatData, setupChatSocketEvents } = useChatActions();
+  const { getProfileData } = useProfileActions();
   const { setupNotificationSocketEvents } = useNotificationActions();
   const { setupUtilSocketEvents } = useUtilActions();
 
@@ -46,6 +48,7 @@ export default function Cyberpong() {
     getChannelData(currentUser.id);
     getChannelMemberData();
     getChatData();
+    getProfileData();
 
     return () => {
       resetSockets();

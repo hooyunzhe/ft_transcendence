@@ -89,21 +89,21 @@ export class StatisticService {
       newMatch.skill4_id,
       newMatch.skill5_id,
     ];
-    const strength_skills = skills.filter(
+    const strengthSkills = skills.filter(
       (skill) => skill >= 1 && skill <= 5,
     ).length;
-    const speed_skills = skills.filter(
+    const speedSkills = skills.filter(
       (skill) => skill >= 6 && skill <= 10,
     ).length;
-    const tech_skills = skills.filter(
+    const techSkills = skills.filter(
       (skill) => skill >= 11 && skill <= 15,
     ).length;
-    const skill_counts = [strength_skills, speed_skills, tech_skills];
-    const top_path = skill_counts.indexOf(Math.max(...skill_counts));
+    const skillCounts = [strengthSkills, speedSkills, techSkills];
+    const topPath = skillCounts.indexOf(Math.max(...skillCounts));
 
-    if (top_path === 0) {
+    if (topPath === 0) {
       currentStatistic.strength_count++;
-    } else if (top_path === 1) {
+    } else if (topPath === 1) {
       currentStatistic.speed_count++;
     } else {
       currentStatistic.tech_count++;

@@ -71,11 +71,11 @@ export class UserController {
 
   @Patch()
   async update(@Body() userDto: UpdateUserDto): Promise<void> {
-    this.userService.update(userDto);
+    return this.userService.update(userDto);
   }
 
   @Delete()
   async remove(@Body() userDto: RemoveUserDto): Promise<void> {
-    this.userService.remove(userDto);
+    return this.userService.remove(userDto);
   }
 }

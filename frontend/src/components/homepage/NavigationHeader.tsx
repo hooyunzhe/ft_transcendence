@@ -11,12 +11,14 @@ import {
 } from '@mui/icons-material';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
+import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { View } from '@/types/UtilTypes';
 
 export default function NavigationHeader() {
   const currentUser = useCurrentUser();
   const currentView = useCurrentView();
-  const { changeCurrentView } = useUtilActions();
+  const { setSelectedStatistic } = useProfileActions();
+  const { setCurrentView, changeCurrentView } = useUtilActions();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -95,12 +97,19 @@ export default function NavigationHeader() {
           orientation='vertical'
           variant='middle'
         />
-        <Avatar
-          src={currentUser.avatar_url}
-          sx={{
-            border: 'solid 1px black',
+        <Box
+          onClick={() => {
+            setSelectedStatistic(currentUser.id);
+            setCurrentView(View.PROFILE);
           }}
-        />
+        >
+          <Avatar
+            src={currentUser.avatar_url}
+            sx={{
+              border: 'solid 1px black',
+            }}
+          />
+        </Box>
       </Box>
     </Drawer>
   );

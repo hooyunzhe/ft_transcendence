@@ -42,11 +42,11 @@ export class StatisticController {
 
   @Patch()
   async update(@Body() statisticDto: UpdateStatisticDto): Promise<void> {
-    this.statisticService.update(statisticDto);
+    return this.statisticService.update(statisticDto);
   }
 
   @Delete()
   async remove(@Body() statisticDto: RemoveStatisticDto): Promise<void> {
-    this.statisticService.remove(statisticDto);
+    return this.statisticService.remove(statisticDto);
   }
 }
