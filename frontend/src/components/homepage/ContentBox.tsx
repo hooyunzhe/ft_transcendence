@@ -4,6 +4,7 @@ import ChatBox from '../chat/ChatBox';
 import { useEffect, useState } from 'react';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
+import AchievementGrid from '../achievement/AchievementGrid';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
@@ -54,6 +55,7 @@ export default function ContentBox() {
       open={open}
     >
       {localView === View.CHAT && <ChatBox />}
+      {localView === View.ACHIEVEMENTS && <AchievementGrid />}
     </Drawer>
   );
 }
