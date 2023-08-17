@@ -38,11 +38,8 @@ export class MatchService {
       winner_id: matchDto.winner_id,
       p1_score: matchDto.p1_score,
       p2_score: matchDto.p2_score,
-      skill1_id: matchDto.skill1_id,
-      skill2_id: matchDto.skill2_id,
-      skill3_id: matchDto.skill3_id,
-      skill4_id: matchDto.skill4_id,
-      skill5_id: matchDto.skill5_id,
+      p1_skills: matchDto.p1_skills,
+      p2_skills: matchDto.p2_skills,
       player_one: playerOneFound,
       player_two: playerTwoFound,
     });

@@ -82,20 +82,18 @@ export class StatisticService {
       currentStatistic.current_winstreak = 0;
     }
 
-    const skills = [
-      newMatch.skill1_id,
-      newMatch.skill2_id,
-      newMatch.skill3_id,
-      newMatch.skill4_id,
-      newMatch.skill5_id,
-    ];
-    const strengthSkills = skills.filter(
+    const skills =
+      newMatch.player_one.id === statisticDto.user_id
+        ? newMatch.p1_skills
+        : newMatch.p2_skills;
+    const skillIDS = skills.split('|').map((skillID) => Number(skillID));
+    const strengthSkills = skillIDS.filter(
       (skill) => skill >= 1 && skill <= 5,
     ).length;
-    const speedSkills = skills.filter(
+    const speedSkills = skillIDS.filter(
       (skill) => skill >= 6 && skill <= 10,
     ).length;
-    const techSkills = skills.filter(
+    const techSkills = skillIDS.filter(
       (skill) => skill >= 11 && skill <= 15,
     ).length;
     const skillCounts = [strengthSkills, speedSkills, techSkills];

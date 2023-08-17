@@ -21,6 +21,7 @@ import {
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useChatActions } from '@/lib/stores/useChatStore';
 import { useProfileActions } from '@/lib/stores/useProfileStore';
+import { useGameActions } from '@/lib/stores/useGameStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 
@@ -39,6 +40,7 @@ export default function Cyberpong() {
   const joinedChannels = useJoinedChannels();
   const { getChatData, setupChatSocketEvents } = useChatActions();
   const { getProfileData } = useProfileActions();
+  const { getGameData } = useGameActions();
   const { setupNotificationSocketEvents } = useNotificationActions();
   const { setupUtilSocketEvents } = useUtilActions();
 
@@ -49,6 +51,7 @@ export default function Cyberpong() {
     getChannelMemberData();
     getChatData();
     getProfileData();
+    getGameData();
 
     return () => {
       resetSockets();

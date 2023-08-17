@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateMatchDto {
   @IsNotEmpty()
@@ -22,22 +22,10 @@ export class CreateMatchDto {
   p2_score: number;
 
   @IsNotEmpty()
-  @IsNumber()
-  skill1_id: number;
+  @IsString()
+  p1_skills: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  skill2_id: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  skill3_id: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  skill4_id: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  skill5_id: number;
+  @IsString()
+  p2_skills: string;
 }
