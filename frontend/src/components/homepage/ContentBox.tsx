@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
 import AchievementGrid from '../achievement/AchievementGrid';
+import AchievementBox from '../achievement/AchievementBox';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
@@ -55,7 +56,7 @@ export default function ContentBox() {
       open={open}
     >
       {localView === View.CHAT && <ChatBox />}
-      {localView === View.ACHIEVEMENTS && <AchievementGrid />}
+      {localView === View.ACHIEVEMENTS && <AchievementBox />}
     </Drawer>
   );
 }
