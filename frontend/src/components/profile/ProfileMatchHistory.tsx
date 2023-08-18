@@ -23,8 +23,9 @@ export default function ProfileMatchHistory() {
     >
       {selectedStatistic &&
       selectedStatistic.wins + selectedStatistic.losses > 0 ? (
-        getRecentMatchHistory(selectedStatistic.user.id).map((match) => (
+        getRecentMatchHistory(selectedStatistic.user.id).map((match, index) => (
           <ProfileMatchDisplay
+            key={index}
             match={match}
             currentPlayer={selectedStatistic.user}
           />

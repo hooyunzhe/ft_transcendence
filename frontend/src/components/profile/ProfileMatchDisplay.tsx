@@ -53,8 +53,8 @@ export default function ProfileMatchDisplay({
           {getPathName(getMatchPath(match, currentPlayer.id))}
         </Typography>
         <Box>
-          {getMatchSkills(match, currentPlayer.id).map((skillID) => (
-            <ProfileSkillIcon skillID={skillID} />
+          {getMatchSkills(match, currentPlayer.id).map((skillID, index) => (
+            <ProfileSkillIcon key={index} skillID={skillID} />
           ))}
         </Box>
       </Box>
