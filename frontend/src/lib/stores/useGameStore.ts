@@ -3,45 +3,64 @@ import callAPI from '../callAPI';
 import { Match, SkillPath } from '@/types/MatchTypes';
 import { User } from '@/types/UserTypes';
 
+type RecentMatchesDictionary = { [userID: number]: Match[] };
+
 interface GameStore {
   data: {
     matches: Match[];
+    matchesPlayed: Match[];
+    recentMatches: RecentMatchesDictionary;
   };
   actions: {
-    getGameData: () => void;
-    getMatchHistory: (userID: number) => Match[];
-    getRecentMatchHistory: (userID: number) => Match[];
+    getGameData: (userID: number) => void;
     getMatchOpponent: (match: Match, userID: number) => User;
     getMatchScore: (match: Match, userID: number) => string;
     getMatchSkills: (match: Match, userID: number) => number[];
     getMatchPath: (match: Match, userID: number) => SkillPath;
     getPathName: (path: SkillPath) => string;
-    addMatch: (newMatch: Match) => void;
+    addMatch: (newMatch: Match, currentUserID: number) => void;
   };
 }
 
 type StoreSetter = (helper: (state: GameStore) => Partial<GameStore>) => void;
-type StoreGetter = () => GameStore;
 
-async function getGameData(set: StoreSetter): Promise<void> {
+async function getGameData(set: StoreSetter, userID: number): Promise<void> {
   const matchData = JSON.parse(await callAPI('GET', 'matches?search_type=ALL'));
+  const matchesPlayed: Match[] = [];
+  const recentMatches: RecentMatchesDictionary = {};
+
+  matchData.forEach((match: Match) => {
+    if (match.player_one.id === userID || match.player_two.id === userID) {
+      matchesPlayed.push(match);
+    }
+    if (!recentMatches[match.player_one.id]) {
+      recentMatches[match.player_one.id] = [];
+    }
+    if (!recentMatches[match.player_two.id]) {
+      recentMatches[match.player_two.id] = [];
+    }
+    recentMatches[match.player_one.id] = [
+      ...recentMatches[match.player_one.id],
+      match,
+    ];
+    recentMatches[match.player_two.id] = [
+      ...recentMatches[match.player_two.id],
+      match,
+    ];
+  });
+
+  for (const userID in recentMatches) {
+    recentMatches[userID] = recentMatches[userID].slice(-5).reverse();
+  }
 
   set(({ data }) => ({
     data: {
       ...data,
       matches: matchData,
+      matchesPlayed: matchesPlayed,
+      recentMatches: recentMatches,
     },
   }));
-}
-
-function getMatchHistory(get: StoreGetter, userID: number): Match[] {
-  return get().data.matches.filter(
-    (match) => match.player_one.id === userID || match.player_two.id === userID,
-  );
-}
-
-function getRecentMatchHistory(get: StoreGetter, userID: number): Match[] {
-  return getMatchHistory(get, userID).slice(-5).reverse();
 }
 
 function getMatchOpponent(match: Match, userID: number): User {
@@ -98,11 +117,23 @@ function getPathName(path: SkillPath): string {
   }
 }
 
-function addMatch(set: StoreSetter, newMatch: Match): void {
+function addMatch(
+  set: StoreSetter,
+  newMatch: Match,
+  currentUserID: number,
+): void {
   set(({ data }) => ({
     data: {
       ...data,
       matches: [...data.matches, newMatch],
+      matchesPlayed: [...data.matchesPlayed, newMatch],
+      recentMatches: {
+        ...data.recentMatches,
+        [currentUserID]: [
+          newMatch,
+          ...data.recentMatches[currentUserID].slice(0, -1),
+        ],
+      },
     },
   }));
 }
@@ -110,19 +141,24 @@ function addMatch(set: StoreSetter, newMatch: Match): void {
 const useGameStore = create<GameStore>()((set, get) => ({
   data: {
     matches: [],
+    matchesPlayed: [],
+    recentMatches: {},
   },
   actions: {
-    getGameData: () => getGameData(set),
-    getMatchHistory: (userID) => getMatchHistory(get, userID),
-    getRecentMatchHistory: (userID) => getRecentMatchHistory(get, userID),
+    getGameData: (userID) => getGameData(set, userID),
     getMatchOpponent: (match, userID) => getMatchOpponent(match, userID),
     getMatchScore: (match, userID) => getMatchScore(match, userID),
     getMatchSkills: (match, userID) => getMatchSkills(match, userID),
     getMatchPath: (match, userID) => getMatchPath(match, userID),
     getPathName: (path) => getPathName(path),
-    addMatch: (newMatch) => addMatch(set, newMatch),
+    addMatch: (newMatch, currentUserID) =>
+      addMatch(set, newMatch, currentUserID),
   },
 }));
 
 export const useMatches = () => useGameStore((state) => state.data.matches);
+export const useMatchesPlayed = () =>
+  useGameStore((state) => state.data.matchesPlayed);
+export const useRecentMatches = () =>
+  useGameStore((state) => state.data.recentMatches);
 export const useGameActions = () => useGameStore((state) => state.actions);

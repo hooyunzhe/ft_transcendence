@@ -1,6 +1,6 @@
 'use client';
 import { Box, Typography } from '@mui/material';
-import { useGameActions } from '@/lib/stores/useGameStore';
+import { useRecentMatches } from '@/lib/stores/useGameStore';
 import ProfileMatchDisplay from './ProfileMatchDisplay';
 import { Statistic } from '@/types/StatisticTypes';
 
@@ -11,7 +11,7 @@ interface ProfileMatchHistoryProps {
 export default function ProfileMatchHistory({
   statistic,
 }: ProfileMatchHistoryProps) {
-  const { getRecentMatchHistory } = useGameActions();
+  const recentMatches = useRecentMatches();
 
   return (
     <Box
@@ -28,7 +28,7 @@ export default function ProfileMatchHistory({
       bgcolor='#a291d275'
     >
       {statistic.wins + statistic.losses > 0 ? (
-        getRecentMatchHistory(statistic.user.id).map((match, index) => (
+        recentMatches[statistic.user.id].map((match, index) => (
           <ProfileMatchDisplay
             key={index}
             match={match}

@@ -3,8 +3,8 @@ import callAPI from '../callAPI';
 import { Achievement } from '@/types/AchievementTypes';
 import { UserAchievement } from '@/types/UserAchievementTypes';
 
-type AchievementsEarnedDictionary = { [achievement_id: number]: boolean };
-type RecentAchievementsDictionary = { [user_id: number]: UserAchievement[] };
+type AchievementsEarnedDictionary = { [achievementID: number]: boolean };
+type RecentAchievementsDictionary = { [userID: number]: UserAchievement[] };
 
 interface AchievementStore {
   data: {
@@ -13,7 +13,7 @@ interface AchievementStore {
     recentAchievements: RecentAchievementsDictionary;
   };
   actions: {
-    getAchievementData: () => Promise<void>;
+    getAchievementData: (userID: number) => Promise<void>;
   };
 }
 
@@ -21,37 +21,42 @@ type StoreSetter = (
   helper: (state: AchievementStore) => Partial<AchievementStore>,
 ) => void;
 
-async function getAchievementData(set: StoreSetter): Promise<void> {
+async function getAchievementData(
+  set: StoreSetter,
+  userID: number,
+): Promise<void> {
   const achievementData = JSON.parse(
     await callAPI('GET', 'achievements?search_type=ALL'),
   );
   const userAchievementData = JSON.parse(
     await callAPI('GET', 'user-achievements?search_type=ALL'),
   );
-  const achievementsEarnedData: AchievementsEarnedDictionary = {};
-  const recentAchievementsData: RecentAchievementsDictionary = {};
+  const achievementsEarned: AchievementsEarnedDictionary = {};
+  const recentAchievements: RecentAchievementsDictionary = {};
 
   userAchievementData.forEach((userAchievement: UserAchievement) => {
-    achievementsEarnedData[userAchievement.achievement.id] = true;
-    if (!recentAchievementsData[userAchievement.user.id]) {
-      recentAchievementsData[userAchievement.user.id] = [];
+    if (userAchievement.user.id === userID) {
+      achievementsEarned[userAchievement.achievement.id] = true;
     }
-    recentAchievementsData[userAchievement.user.id] = [
-      ...recentAchievementsData[userAchievement.user.id],
+    if (!recentAchievements[userAchievement.user.id]) {
+      recentAchievements[userAchievement.user.id] = [];
+    }
+    recentAchievements[userAchievement.user.id] = [
+      ...recentAchievements[userAchievement.user.id],
       userAchievement,
     ];
   });
 
-  for (const userID in recentAchievementsData) {
-    recentAchievementsData[userID] = recentAchievementsData[userID].slice(-5);
+  for (const userID in recentAchievements) {
+    recentAchievements[userID] = recentAchievements[userID].slice(-4).reverse();
   }
 
   set(({ data }) => ({
     data: {
       ...data,
       achievements: achievementData,
-      achievementsEarned: achievementsEarnedData,
-      recentAchievements: recentAchievementsData,
+      achievementsEarned: achievementsEarned,
+      recentAchievements: recentAchievements,
     },
   }));
 }
@@ -63,7 +68,7 @@ const useAchievementStore = create<AchievementStore>()((set, get) => ({
     recentAchievements: {},
   },
   actions: {
-    getAchievementData: () => getAchievementData(set),
+    getAchievementData: (userID) => getAchievementData(set, userID),
   },
 }));
 
