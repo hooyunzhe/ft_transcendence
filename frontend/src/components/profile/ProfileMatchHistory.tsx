@@ -1,11 +1,16 @@
 'use client';
 import { Box, Typography } from '@mui/material';
-import { useSelectedStatistic } from '@/lib/stores/useProfileStore';
 import { useGameActions } from '@/lib/stores/useGameStore';
 import ProfileMatchDisplay from './ProfileMatchDisplay';
+import { Statistic } from '@/types/StatisticTypes';
 
-export default function ProfileMatchHistory() {
-  const selectedStatistic = useSelectedStatistic();
+interface ProfileMatchHistoryProps {
+  statistic: Statistic;
+}
+
+export default function ProfileMatchHistory({
+  statistic,
+}: ProfileMatchHistoryProps) {
   const { getRecentMatchHistory } = useGameActions();
 
   return (
@@ -15,19 +20,19 @@ export default function ProfileMatchHistory() {
       display='flex'
       flexDirection='column'
       justifyContent='flex-start'
+      alignItems='center'
       padding='5px'
       gap='1vh'
       border='solid 5px #7209B775'
       borderRadius='10px'
       bgcolor='#a291d275'
     >
-      {selectedStatistic &&
-      selectedStatistic.wins + selectedStatistic.losses > 0 ? (
-        getRecentMatchHistory(selectedStatistic.user.id).map((match, index) => (
+      {statistic.wins + statistic.losses > 0 ? (
+        getRecentMatchHistory(statistic.user.id).map((match, index) => (
           <ProfileMatchDisplay
             key={index}
             match={match}
-            currentPlayer={selectedStatistic.user}
+            currentPlayer={statistic.user}
           />
         ))
       ) : (
@@ -36,7 +41,6 @@ export default function ProfileMatchHistory() {
             opacity: '50%',
           }}
           variant='h5'
-          align='center'
           marginTop='16vh'
         >
           No matches played

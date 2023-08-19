@@ -1,35 +1,17 @@
 'use client';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import ProfileAchievementDisplay from './ProfileAchievementDisplay';
+import { useRecentAchievements } from '@/lib/stores/useAchievementStore';
+import { Statistic } from '@/types/StatisticTypes';
 
-export default function ProfileAchievementShowcase() {
-  const tempData = [
-    {
-      name: 'My First Game!',
-      description: 'Play one game of Cyberpong™',
-      date_of_creation: new Date().toISOString(),
-    },
-    {
-      name: 'Aint lonely no more',
-      description: 'Make a friend',
-      date_of_creation: new Date().toISOString(),
-    },
-    {
-      name: 'Wai you so pro',
-      description: 'Have a 5 winstreak',
-      date_of_creation: new Date().toISOString(),
-    },
-    {
-      name: `I don't love you, like I did, yesterday`,
-      description: 'Have a 5 winstreak',
-      date_of_creation: new Date().toISOString(),
-    },
-    // {
-    //   name: 'Off the plank you go',
-    //   description: 'Have a 5 winstreak',
-    //   date_of_creation: new Date().toISOString(),
-    // },
-  ];
+interface ProfileAchievementShowcaseProps {
+  statistic: Statistic;
+}
+
+export default function ProfileAchievementShowcase({
+  statistic,
+}: ProfileAchievementShowcaseProps) {
+  const recentAchievements = useRecentAchievements();
 
   return (
     <Box
@@ -46,9 +28,26 @@ export default function ProfileAchievementShowcase() {
       borderRadius='10px'
       bgcolor='#a291d275'
     >
-      {tempData.map((data, index) => (
-        <ProfileAchievementDisplay key={index} {...data} />
-      ))}
+      {recentAchievements[statistic.user.id] ? (
+        recentAchievements[statistic.user.id].map((userAchievement, index) => (
+          <ProfileAchievementDisplay
+            key={index}
+            achievement={userAchievement.achievement}
+            dateEarned={userAchievement.date_of_creation}
+          />
+        ))
+      ) : (
+        <Typography
+          sx={{
+            opacity: '50%',
+          }}
+          variant='h5'
+          marginTop='16vh'
+          marginLeft='7vw'
+        >
+          No achievements earned
+        </Typography>
+      )}
     </Box>
   );
 }

@@ -1,9 +1,14 @@
 'use client';
 import { Avatar, Box, Typography } from '@mui/material';
-import { useSelectedStatistic } from '@/lib/stores/useProfileStore';
+import { useRecentAchievements } from '@/lib/stores/useAchievementStore';
+import { Statistic } from '@/types/StatisticTypes';
 
-export default function ProfileHeader() {
-  const selectedStatistic = useSelectedStatistic();
+interface ProfileHeaderProps {
+  statistic: Statistic;
+}
+
+export default function ProfileHeader({ statistic }: ProfileHeaderProps) {
+  const recentAchievements = useRecentAchievements();
 
   return (
     <Box
@@ -22,7 +27,7 @@ export default function ProfileHeader() {
         gap='2vw'
       >
         <Avatar
-          src={selectedStatistic?.user.avatar_url}
+          src={statistic.user.avatar_url}
           sx={{
             width: '100px',
             height: '100px',
@@ -30,13 +35,11 @@ export default function ProfileHeader() {
           }}
         />
         <Box>
-          <Typography variant='h4'>
-            {selectedStatistic?.user.username}
-          </Typography>
+          <Typography variant='h4'>{statistic.user.username}</Typography>
           <Typography variant='body2' color='rgba(0, 0, 0, 0.6)'>
             {'Joined ' +
               new Date(
-                selectedStatistic?.user.date_of_creation ?? '',
+                statistic.user.date_of_creation ?? '',
               ).toLocaleDateString()}
           </Typography>
         </Box>
@@ -50,16 +53,18 @@ export default function ProfileHeader() {
         </Box>
         <Box>
           <Typography variant='h4'>
-            {selectedStatistic
-              ? selectedStatistic.wins + selectedStatistic.losses
-              : 0}
+            {statistic.wins + statistic.losses}
           </Typography>
           <Typography variant='body2' color='rgba(0, 0, 0, 0.6)'>
             Matches Played
           </Typography>
         </Box>
         <Box>
-          <Typography variant='h4'>3</Typography>
+          <Typography variant='h4'>
+            {recentAchievements[statistic.user.id]
+              ? recentAchievements[statistic.user.id].length
+              : 0}
+          </Typography>
           <Typography variant='body2' color='rgba(0, 0, 0, 0.6)'>
             Achievements Earned
           </Typography>

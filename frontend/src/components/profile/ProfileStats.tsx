@@ -1,16 +1,18 @@
 'use client';
 import { Box } from '@mui/material';
 import ProfileStatCard from './ProfileStatCard';
-import { useSelectedStatistic } from '@/lib/stores/useProfileStore';
+import { Statistic } from '@/types/StatisticTypes';
 
-export default function ProfileStats() {
-  const selectedStatistic = useSelectedStatistic();
+interface ProfileStatsProps {
+  statistic: Statistic;
+}
 
+export default function ProfileStats({ statistic }: ProfileStatsProps) {
   function getFavoritePath(): string {
     const pathCounts = [
-      selectedStatistic?.strength_count ?? 0,
-      selectedStatistic?.speed_count ?? 0,
-      selectedStatistic?.tech_count ?? 0,
+      statistic.strength_count ?? 0,
+      statistic.speed_count ?? 0,
+      statistic.tech_count ?? 0,
     ];
 
     if (pathCounts.every((count) => count === 0)) {
@@ -32,11 +34,11 @@ export default function ProfileStats() {
     <Box display='flex' justifyContent='space-between' alignItems='center'>
       <ProfileStatCard
         description='Wins / Losses'
-        stats={`${selectedStatistic?.wins} / ${selectedStatistic?.losses}`}
+        stats={`${statistic.wins} / ${statistic.losses}`}
       />
       <ProfileStatCard
         description='Highest Winstreak'
-        stats={`${selectedStatistic?.highest_winstreak}`}
+        stats={`${statistic.highest_winstreak}`}
       />
       <ProfileStatCard description='Favorite Path' stats={getFavoritePath()} />
       <ProfileStatCard description='Punching Bag' stats='N/A' />

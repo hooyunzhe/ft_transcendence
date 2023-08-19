@@ -24,6 +24,7 @@ export default function ProfileMatchDisplay({
 
   return (
     <Box
+      width='100%'
       height='6vh'
       display='flex'
       justifyContent='space-evenly'
@@ -43,7 +44,6 @@ export default function ProfileMatchDisplay({
         </Typography>
       </Box>
       <Box
-        width='8vw'
         display='flex'
         flexDirection='column'
         justifyContent='space-around'

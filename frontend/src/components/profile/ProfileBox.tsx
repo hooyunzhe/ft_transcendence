@@ -18,9 +18,9 @@ export default function ProfileBox() {
     >
       {selectedStatistic ? (
         <>
-          <ProfileHeader />
-          <ProfileStats />
-          <ProfileActivity />
+          <ProfileHeader statistic={selectedStatistic} />
+          <ProfileStats statistic={selectedStatistic} />
+          <ProfileActivity statistic={selectedStatistic} />
         </>
       ) : (
         <Typography
