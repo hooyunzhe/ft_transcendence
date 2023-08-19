@@ -4,7 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
+import { Statistic } from 'src/statistic/entities/statistic.entity';
 import { ChannelMember } from 'src/channel-member/entities/channel-member.entity';
 import { Message } from 'src/message/entities/message.entity';
 import { UserAchievement } from 'src/user-achievement/entities/user-achievement.entity';
@@ -33,6 +35,9 @@ export class User {
 
   @CreateDateColumn({ type: 'timestamptz' })
   date_of_creation: Date;
+
+  @OneToOne(() => Statistic, (statistic) => statistic.user)
+  statistic: Statistic;
 
   @OneToMany(() => ChannelMember, (channelMember) => channelMember.user)
   channelMembers: ChannelMember[];

@@ -17,6 +17,7 @@ export enum UserSearchType {
 }
 
 export enum UserRelation {
+  STATISTIC = 'STATISTIC',
   CHANNELS = 'CHANNELS',
   MESSAGES = 'MESSAGES',
   ACHIEVEMENTS = 'ACHIEVEMENTS',

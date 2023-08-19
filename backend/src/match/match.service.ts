@@ -38,6 +38,8 @@ export class MatchService {
       winner_id: matchDto.winner_id,
       p1_score: matchDto.p1_score,
       p2_score: matchDto.p2_score,
+      p1_skills: matchDto.p1_skills,
+      p2_skills: matchDto.p2_skills,
       player_one: playerOneFound,
       player_two: playerTwoFound,
     });

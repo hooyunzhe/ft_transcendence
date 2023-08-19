@@ -60,6 +60,6 @@ export class ChannelController {
 
   @Delete()
   async remove(@Body() channelDto: RemoveChannelDto): Promise<void> {
-    this.channelService.remove(channelDto);
+    return this.channelService.remove(channelDto);
   }
 }

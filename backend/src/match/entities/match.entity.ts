@@ -21,6 +21,12 @@ export class Match {
   @Column()
   p2_score: number;
 
+  @Column()
+  p1_skills: string;
+
+  @Column()
+  p2_skills: string;
+
   @CreateDateColumn({ type: 'timestamptz' })
   date_of_creation: Date;
 

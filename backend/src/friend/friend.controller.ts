@@ -48,11 +48,11 @@ export class FriendController {
 
   @Patch()
   async update(@Body() friendDto: UpdateFriendDto): Promise<void> {
-    this.friendService.update(friendDto);
+    return this.friendService.update(friendDto);
   }
 
   @Delete()
   async remove(@Body() friendDto: RemoveFriendDto): Promise<void> {
-    this.friendService.remove(friendDto);
+    return this.friendService.remove(friendDto);
   }
 }
