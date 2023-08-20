@@ -5,7 +5,7 @@ import {
   AssignmentIndRounded,
   ChatRounded,
   EmojiEventsRounded,
-  MilitaryTechRounded,
+  LeaderboardRounded,
   SettingsRounded,
   SportsTennisRounded,
 } from '@mui/icons-material';
@@ -73,7 +73,7 @@ export default function NavigationHeader() {
             onClick={() => changeCurrentView(View.PROFILE)}
           />
           <Tab
-            icon={<MilitaryTechRounded />}
+            icon={<LeaderboardRounded />}
             value={View.LEADERBOARD}
             onClick={() => changeCurrentView(View.LEADERBOARD)}
           />

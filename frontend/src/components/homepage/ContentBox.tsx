@@ -1,10 +1,11 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { Drawer } from '@mui/material';
 import ChatBox from '../chat/ChatBox';
-import { useEffect, useState } from 'react';
+import ProfileBox from '../profile/ProfileBox';
+import LeaderboardBox from '../leaderboard/LeaderboardBox';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
-import ProfileBox from '../profile/ProfileBox';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
@@ -55,6 +56,7 @@ export default function ContentBox() {
     >
       {localView === View.CHAT && <ChatBox />}
       {localView === View.PROFILE && <ProfileBox />}
+      {localView === View.LEADERBOARD && <LeaderboardBox />}
     </Drawer>
   );
 }

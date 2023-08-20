@@ -10,7 +10,7 @@ import {
   useSocialDrawerToggle,
   useUtilActions,
 } from '@/lib/stores/useUtilStore';
-import { SocialTab } from '@/types/UtilTypes';
+import { ListHeaderIcon, SocialTab } from '@/types/UtilTypes';
 
 export default function SocialDrawer() {
   const currentSocialTab = useCurrentSocialTab();
@@ -43,7 +43,7 @@ export default function SocialDrawer() {
         anchor='left'
         open={socialDrawerToggle}
       >
-        <ListHeader title='Social' />
+        <ListHeader title='Social' icon={ListHeaderIcon.SOCIAL} />
         <Tabs
           sx={{
             margin: '3px',

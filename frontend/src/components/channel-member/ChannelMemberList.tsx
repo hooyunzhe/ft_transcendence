@@ -27,6 +27,7 @@ import {
   ChannelMemberRole,
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
+import { ListHeaderIcon } from '@/types/UtilTypes';
 
 export function ChannelMemberList() {
   const selectedChannel = useSelectedChannel();
@@ -239,7 +240,7 @@ export function ChannelMemberList() {
 
   return (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
-      <ListHeader title='Members' />
+      <ListHeader title='Members' icon={ListHeaderIcon.SOCIAL} />
       {selectedChannel && (
         <Button
           variant='contained'

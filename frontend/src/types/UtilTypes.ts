@@ -8,6 +8,13 @@ export enum View {
   SETTINGS = 'SETTINGS',
 }
 
+export enum ListHeaderIcon {
+  NONE = 'NONE',
+  SOCIAL = 'SOCIAL',
+  ACHIEVEMENTS = 'ACHIEVEMENTS',
+  LEADERBOARD = 'LEADERBOARD',
+}
+
 export enum SocialTab {
   FRIEND = 'FRIEND',
   CHANNEL = 'CHANNEL',

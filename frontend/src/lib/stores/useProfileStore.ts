@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import callAPI from '../callAPI';
 import { Statistic } from '@/types/StatisticTypes';
-import { Match } from '@/types/MatchTypes';
+import { Match, SkillPath } from '@/types/MatchTypes';
 
 interface ProfileStore {
   data: {
@@ -10,6 +10,7 @@ interface ProfileStore {
   };
   actions: {
     getProfileData: () => void;
+    getFavoritePath: (statistic: Statistic) => SkillPath | null;
     updateStatistic: (userID: number, newMatch: Match) => void;
     setSelectedStatistic: (userID: number | undefined) => void;
   };
@@ -30,6 +31,29 @@ async function getProfileData(set: StoreSetter): Promise<void> {
       statistics: statisticData,
     },
   }));
+}
+
+function getFavoritePath(statistic: Statistic): SkillPath | null {
+  const pathCounts = [
+    statistic.strength_count ?? 0,
+    statistic.speed_count ?? 0,
+    statistic.tech_count ?? 0,
+  ];
+
+  if (pathCounts.every((count) => count === 0)) {
+    return null;
+  }
+
+  switch (pathCounts.indexOf(Math.max(...pathCounts))) {
+    case 0:
+      return SkillPath.STRENGTH;
+    case 1:
+      return SkillPath.SPEED;
+    case 2:
+      return SkillPath.TECH;
+    default:
+      return null;
+  }
 }
 
 function getUpdatedStatistic(
@@ -115,6 +139,7 @@ const useProfileStore = create<ProfileStore>()((set) => ({
   },
   actions: {
     getProfileData: () => getProfileData(set),
+    getFavoritePath: (statistic) => getFavoritePath(statistic),
     updateStatistic: (userID, newMatch) =>
       updateStatistic(set, userID, newMatch),
     setSelectedStatistic: (userID) => setSelectedStatistic(set, userID),

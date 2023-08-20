@@ -1,6 +1,8 @@
 'use client';
 import { Box } from '@mui/material';
 import ProfileStatCard from './ProfileStatCard';
+import { useProfileActions } from '@/lib/stores/useProfileStore';
+import { useGameActions } from '@/lib/stores/useGameStore';
 import { Statistic } from '@/types/StatisticTypes';
 
 interface ProfileStatsProps {
@@ -8,27 +10,8 @@ interface ProfileStatsProps {
 }
 
 export default function ProfileStats({ statistic }: ProfileStatsProps) {
-  function getFavoritePath(): string {
-    const pathCounts = [
-      statistic.strength_count ?? 0,
-      statistic.speed_count ?? 0,
-      statistic.tech_count ?? 0,
-    ];
-
-    if (pathCounts.every((count) => count === 0)) {
-      return 'N/A';
-    }
-
-    switch (pathCounts.indexOf(Math.max(...pathCounts))) {
-      case 0:
-        return 'Kratos';
-      case 1:
-        return 'Chronos';
-      case 2:
-        return 'Qosmos';
-    }
-    return 'N/A';
-  }
+  const { getFavoritePath } = useProfileActions();
+  const { getPathName } = useGameActions();
 
   return (
     <Box display='flex' justifyContent='space-between' alignItems='center'>
@@ -40,7 +23,10 @@ export default function ProfileStats({ statistic }: ProfileStatsProps) {
         description='Highest Winstreak'
         stats={`${statistic.highest_winstreak}`}
       />
-      <ProfileStatCard description='Favorite Path' stats={getFavoritePath()} />
+      <ProfileStatCard
+        description='Favorite Path'
+        stats={getPathName(getFavoritePath(statistic))}
+      />
       <ProfileStatCard description='Punching Bag' stats='N/A' />
       <ProfileStatCard description='Archenemy' stats='EL' />
     </Box>

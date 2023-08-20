@@ -18,11 +18,11 @@ import {
   useChannelActions,
   useJoinedChannels,
 } from '@/lib/stores/useChannelStore';
+import { useGameActions } from '@/lib/stores/useGameStore';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useChatActions } from '@/lib/stores/useChatStore';
 import { useProfileActions } from '@/lib/stores/useProfileStore';
-import { useGameActions } from '@/lib/stores/useGameStore';
-import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 
@@ -50,11 +50,11 @@ export default function Cyberpong() {
     initSockets(currentUser.id);
     getFriendData(currentUser.id);
     getChannelData(currentUser.id);
+    getGameData(currentUser.id);
+    getAchievementData(currentUser.id);
     getChannelMemberData();
     getChatData();
     getProfileData();
-    getGameData();
-    getAchievementData();
 
     return () => {
       resetSockets();
