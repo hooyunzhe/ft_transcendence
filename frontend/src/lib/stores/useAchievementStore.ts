@@ -2,6 +2,7 @@ import { UserAchievement } from '@/types/UserAchievementTypes';
 import { create } from 'zustand';
 import callAPI from '../callAPI';
 import { Achievement } from '@/types/AchievementTypes';
+import { AlertColor } from '@mui/material';
 
 type AchievementsEarnedDictionary = { [achievement_id: number]: boolean };
 type RecentAchievementsDictionary = { [user_id: number]: Achievement[] };
@@ -14,13 +15,19 @@ interface AchievementStore {
   };
   actions: {
     getAchievementData: () => Promise<void>;
+    addAchievementsEarned: (achievementID: number) => void;
+    handleAchievementsEarned: (
+      currentUserID: number,
+      achievementID: number,
+      displayNotification: (type: AlertColor, message: string) => void,
+    ) => Promise<boolean>;
     // getUserAchievementData: () => Promise<void>;
     // getUserAchieved: (userID: number) => void;
     // getAchievementsByUser: (userID: number) => Promise<Achievement>;
   };
-  // checks: {
-  //   isAchieved: (userID: number, achievementID: number) => boolean;
-  // };
+  checks: {
+    isAchieved: (userID: number, achievementID: number) => boolean;
+  };
 }
 
 type StoreSetter = (
@@ -64,6 +71,50 @@ async function getAchievementData(set: StoreSetter): Promise<void> {
   }));
 }
 
+async function handleAchievementsEarned(
+  get: StoreGetter,
+  currentUserID: number,
+  achievementID: number,
+  displayNotification: (
+    type: AlertColor,
+    message: string,
+    isAchievement?: boolean,
+  ) => void,
+): Promise<boolean> {
+  if (get().data.achievementsEarned[achievementID] === undefined) {
+    await callAPI('POST', 'user-achievements', {
+      user_id: currentUserID,
+      achievement_id: achievementID,
+    });
+    const achievementFound = get().data.achievements.find(
+      (achievement) => achievement.id === achievementID,
+    );
+
+    if (achievementFound) {
+      displayNotification(
+        'info',
+        `Achievement Earned: ${achievementFound.name}`,
+        true,
+      );
+      get().actions.addAchievementsEarned(achievementID);
+    }
+    return true;
+  }
+  return false;
+}
+
+function addAchievementsEarned(set: StoreSetter, achievementID: number): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      achievementsEarned: {
+        ...data.achievementsEarned,
+        [achievementID]: true,
+      },
+    },
+  }));
+}
+
 async function getAchievementsByUser(userID: number): Promise<UserAchievement> {
   const userAchievementData = JSON.parse(
     await callAPI(
@@ -75,16 +126,15 @@ async function getAchievementsByUser(userID: number): Promise<UserAchievement> {
   return userAchievementData;
 }
 
-// function isAchieved(
-//   get: StoreGetter,
-//   userID: number,
-//   achievementID: number,
-// ): boolean {
-//   return get().data..some(
-//     (obtained) =>
-//       obtained.user.id === userID && obtained.user.id === achievementID,
-//   );
-// }
+function isAchieved(
+  get: StoreGetter,
+  userID: number,
+  achievementID: number,
+): boolean {
+  return get().data.achievements.some(
+    (obtained) => obtained.id === achievementID,
+  );
+}
 
 // async function getUserbyAchievements(
 //   achievementID: number,
@@ -116,13 +166,25 @@ const useAchievementStore = create<AchievementStore>()((set, get) => ({
   },
   actions: {
     // getUserAchievementData: () => getUserAchievementData(set),
+    addAchievementsEarned: (achievementID: number) =>
+      addAchievementsEarned(set, achievementID),
     getAchievementData: () => getAchievementData(set),
-    // getAchievementsByUser: (userID: number) => getAchievementsByUser(userID),
+    handleAchievementsEarned: (
+      currentUserID: number,
+      achievementID: number,
+      displayNotification: (type: AlertColor, message: string) => void,
+    ) =>
+      handleAchievementsEarned(
+        get,
+        currentUserID,
+        achievementID,
+        displayNotification,
+      ),
   },
-  // checks: {
-  // isAchieved: (userID: number, achievementID: number) =>
-  //   isAchieved(get, userID, achievementID),
-  // },
+  checks: {
+    isAchieved: (userID: number, achievementID: number) =>
+      isAchieved(get, userID, achievementID),
+  },
 }));
 
 export const useAchievements = () =>
@@ -133,5 +195,5 @@ export const useRecentAchievements = () =>
   useAchievementStore((state) => state.data.recentAchievements);
 export const useAchievementActions = () =>
   useAchievementStore((state) => state.actions);
-// export const useUserAchievementChecks = () =>
-// useAchievementStore((state) => state.checks);
+export const useUserAchievementChecks = () =>
+  useAchievementStore((state) => state.checks);

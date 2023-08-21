@@ -4,14 +4,17 @@ import callAPI from '../callAPI';
 import { Message, MessageType } from '@/types/MessageTypes';
 import { ChannelMember } from '@/types/ChannelMemberTypes';
 
+type MessagesSentDictionary = { [channelID: number]: number };
+
 interface ChatStore {
   data: {
     messages: Message[];
+    messagesSent: MessagesSentDictionary;
     selectedMessage: Message | undefined;
     typingMembers: ChannelMember[];
   };
   actions: {
-    getChatData: () => void;
+    getChatData: (userID: number) => void;
     addMessage: (newMessage: Message) => void;
     editMessage: (messageID: number, newContent: string) => void;
     deleteMessage: (messageID: number) => void;
@@ -22,22 +25,41 @@ interface ChatStore {
 
 type StoreSetter = (helper: (state: ChatStore) => Partial<ChatStore>) => void;
 
-async function getChatData(set: StoreSetter): Promise<void> {
+async function getChatData(set: StoreSetter, userID: number): Promise<void> {
   const messageData = JSON.parse(
     await callAPI('GET', 'messages?search_type=ALL'),
   );
+  const messagesSentData: MessagesSentDictionary = {};
 
+  messageData.forEach((messageData: Message) => {
+    if (messageData.user.id === userID) {
+      if (!messagesSentData[messageData.channel.id]) {
+        messagesSentData[messageData.channel.id] = 0;
+        console.log('inside chatstore', messageData.channel.id);
+      }
+      messagesSentData[messageData.channel.id]++;
+      console.log(messagesSentData[messageData.channel.id]);
+    }
+  });
   set(({ data }) => ({
     data: {
       ...data,
       messages: messageData,
+      messagesSent: messagesSentData,
     },
   }));
 }
 
 function addMessage(set: StoreSetter, newMessage: Message): void {
   set(({ data }) => ({
-    data: { ...data, messages: [...data.messages, newMessage] },
+    data: {
+      ...data,
+      messages: [...data.messages, newMessage],
+      messagesSent: {
+        ...data.messagesSent,
+        [newMessage.channel.id]: data.messagesSent[newMessage.channel.id] + 1,
+      },
+    },
   }));
 }
 
@@ -130,11 +152,12 @@ function setupChatSocketEvents(set: StoreSetter, channelSocket: Socket): void {
 const useChatStore = create<ChatStore>()((set) => ({
   data: {
     messages: [],
+    messagesSent: {},
     selectedMessage: undefined,
     typingMembers: [],
   },
   actions: {
-    getChatData: () => getChatData(set),
+    getChatData: (userID: number) => getChatData(set, userID),
     addMessage: (newMessage) => addMessage(set, newMessage),
     editMessage: (messageID, newContent) =>
       editMessage(set, messageID, newContent),
@@ -146,6 +169,8 @@ const useChatStore = create<ChatStore>()((set) => ({
 }));
 
 export const useMessages = () => useChatStore((state) => state.data.messages);
+export const useSentMessages = () =>
+  useChatStore((state) => state.data.messagesSent);
 export const useSelectedMessage = () =>
   useChatStore((state) => state.data.selectedMessage);
 export const useTypingMembers = () =>

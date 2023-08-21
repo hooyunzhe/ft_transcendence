@@ -16,12 +16,40 @@ export class SeedService {
     }
     const achievementsToSeed = [
       {
-        name: 'My First Game!',
-        description: 'Play 1 game of pong',
+        // done
+        name: 'Dont wanna be lonely no more',
+        description: 'Send a friend request',
       },
       {
-        name: 'Aint lonely no more',
-        description: 'Make a friend',
+        // done
+        name: 'I dont love you, like I did, yesterday.',
+        description: 'Delete a friend',
+      },
+      {
+        // done
+        name: 'Off the plank you go',
+        description: 'Boot a person off a channel',
+      },
+      {
+        // done
+        name: 'Chatterbox',
+        description: 'Message 20 times in the same channel.',
+      },
+      {
+        name: 'Being a boss',
+        description: 'Make a channel',
+      },
+      {
+        name: 'Societal cog',
+        description: 'Join a channel',
+      },
+      {
+        name: 'My First Game!',
+        description: 'Play a game of pong',
+      },
+      {
+        name: 'Master sergeant shooter person',
+        description: 'Max a skill tree',
       },
       {
         name: 'Wai you so pro',
@@ -30,30 +58,6 @@ export class SeedService {
       {
         name: 'Showing the Inner Ding',
         description: 'Achieved a flawless victory',
-      },
-      {
-        name: 'Chatterbox',
-        description: 'Message 20 times.',
-      },
-      {
-        name: 'Community Manager',
-        description: 'Own 5 channels',
-      },
-      {
-        name: 'Community Member',
-        description: 'Be in 10 channels',
-      },
-      {
-        name: 'I dont love you, like I did, yesterday.',
-        description: 'Delete a friend',
-      },
-      {
-        name: 'Off the plank you go',
-        description: 'Boot a person off a channel',
-      },
-      {
-        name: 'Master sergeant shooter person',
-        description: 'Max a skill tree',
       },
       {
         name: 'Hidden',

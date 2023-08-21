@@ -47,7 +47,7 @@ export default function Cyberpong() {
     getFriendData(currentUser.id);
     getChannelData(currentUser.id);
     getChannelMemberData();
-    getChatData();
+    getChatData(currentUser.id);
     getAchievementData();
 
     return () => {

@@ -8,9 +8,14 @@ interface NotificationStore {
     display: boolean;
     level: AlertColor;
     message: string;
+    isAchievement?: boolean;
   };
   actions: {
-    displayNotification: (level: AlertColor, message: string) => void;
+    displayNotification: (
+      level: AlertColor,
+      message: string,
+      isAchievement?: boolean,
+    ) => void;
     resetNotification: () => void;
     setupNotificationSocketEvents: (friendSocket: Socket) => void;
   };
@@ -24,8 +29,9 @@ function displayNotification(
   set: StoreSetter,
   level: AlertColor,
   message: string,
+  isAchievement?: boolean,
 ): void {
-  set(({}) => ({ data: { display: true, level, message } }));
+  set(({}) => ({ data: { display: true, level, message, isAchievement } }));
 }
 
 function resetNotification(set: StoreSetter): void {
@@ -60,10 +66,11 @@ const useNotificationStore = create<NotificationStore>()((set) => ({
     display: false,
     level: 'success',
     message: '',
+    isAchievement: false,
   },
   actions: {
-    displayNotification: (level, message) =>
-      displayNotification(set, level, message),
+    displayNotification: (level, message, isAchievement) =>
+      displayNotification(set, level, message, isAchievement),
     resetNotification: () => resetNotification(set),
     setupNotificationSocketEvents: (friendSocket) =>
       setupNotificationSocketEvents(set, friendSocket),
