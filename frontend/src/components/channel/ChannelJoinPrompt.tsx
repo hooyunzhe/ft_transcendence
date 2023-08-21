@@ -75,7 +75,7 @@ export default function ChannelJoinPrompt({
       emitToSocket(channelSocket, 'newMember', joiningChannelMember);
       const joinChannelAchievement = await handleAchievementsEarned(
         currentUser.id,
-        6,
+        7,
         displayNotification,
       );
       if (!joinChannelAchievement)

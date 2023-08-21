@@ -16,22 +16,22 @@ export class SeedService {
     }
     const achievementsToSeed = [
       {
-        // done
         name: 'Dont wanna be lonely no more',
         description: 'Send a friend request',
       },
       {
-        // done
         name: 'I dont love you, like I did, yesterday.',
         description: 'Delete a friend',
       },
       {
-        // done
+        name: 'Welcome on board matey',
+        description: 'Add a channel member',
+      },
+      {
         name: 'Off the plank you go',
         description: 'Boot a person off a channel',
       },
       {
-        // done
         name: 'Chatterbox',
         description: 'Message 20 times in the same channel.',
       },

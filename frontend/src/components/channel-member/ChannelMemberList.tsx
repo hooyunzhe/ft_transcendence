@@ -81,7 +81,7 @@ export function ChannelMemberList() {
     emitToSocket(channelSocket, 'kickMember', member);
     const kickMemberAchievement = await handleAchievementsEarned(
       currentUser.id,
-      3,
+      4,
       displayNotification,
     );
     if (!kickMemberAchievement)

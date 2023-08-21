@@ -71,7 +71,7 @@ export default function ChannelCreatePrompt() {
 
         const createChannelAchievement = await handleAchievementsEarned(
           currentUser.id,
-          5,
+          6,
           displayNotification,
         );
         if (!createChannelAchievement) {
