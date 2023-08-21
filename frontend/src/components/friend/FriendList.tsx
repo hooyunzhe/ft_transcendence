@@ -6,12 +6,13 @@ import {
   useFriends,
   useSelectedFriend,
 } from '@/lib/stores/useFriendStore';
-import {
-  useChannelActions,
-  useSelectedChannel,
-} from '@/lib/stores/useChannelStore';
+import { useChannelActions } from '@/lib/stores/useChannelStore';
 import { useUserStatus } from '@/lib/stores/useUserStore';
-import { useUtilActions } from '@/lib/stores/useUtilStore';
+import {
+  useProfileActions,
+  useSelectedStatistic,
+} from '@/lib/stores/useProfileStore';
+import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { Friend, FriendAction } from '@/types/FriendTypes';
 import { UserStatus } from '@/types/UserTypes';
 import { FriendCategory, View } from '@/types/UtilTypes';
@@ -29,10 +30,12 @@ export default function FriendList({
 }: FriendListProps) {
   const friends = useFriends();
   const selectedFriend = useSelectedFriend();
-  const selectedChannel = useSelectedChannel();
+  const selectedStatistic = useSelectedStatistic();
   const userStatus = useUserStatus();
+  const currentView = useCurrentView();
   const { setSelectedFriend } = useFriendActions();
   const { setSelectedChannel, setSelectedDirectChannel } = useChannelActions();
+  const { setSelectedStatistic } = useProfileActions();
   const { setCurrentView } = useUtilActions();
   const sortOrder = {
     [UserStatus.IN_GAME]: 0,
@@ -50,6 +53,24 @@ export default function FriendList({
       }
     }
     return a.incoming_friend.username.localeCompare(b.incoming_friend.username);
+  }
+
+  function handleFriendSelect(friend: Friend): void {
+    if (
+      selectedFriend?.id === friend.id &&
+      selectedStatistic?.id === friend.incoming_friend.id
+    ) {
+      setSelectedFriend(undefined);
+      setSelectedChannel(undefined);
+      setSelectedStatistic(undefined);
+    } else {
+      setSelectedFriend(friend);
+      if (!currentView) {
+        setCurrentView(View.CHAT);
+      }
+      setSelectedDirectChannel(friend.incoming_friend.id);
+      setSelectedStatistic(friend.incoming_friend.id);
+    }
   }
 
   return (
@@ -80,18 +101,7 @@ export default function FriendList({
               <Paper key={index} elevation={2}>
                 <ListItemButton
                   selected={selectedFriend?.id === friend.id ?? false}
-                  onClick={() => {
-                    if (selectedFriend?.id === friend.id) {
-                      setSelectedFriend(undefined);
-                      setSelectedChannel(undefined);
-                    } else {
-                      setSelectedFriend(friend);
-                      if (selectedChannel === undefined) {
-                        setCurrentView(View.CHAT);
-                      }
-                      setSelectedDirectChannel(friend.incoming_friend.id);
-                    }
-                  }}
+                  onClick={() => handleFriendSelect(friend)}
                 >
                   <FriendDisplay
                     category={category}

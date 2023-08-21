@@ -49,11 +49,11 @@ export class MessageController {
 
   @Patch()
   async update(@Body() messageDto: UpdateMessageDto): Promise<void> {
-    this.messageService.update(messageDto);
+    return this.messageService.update(messageDto);
   }
 
   @Delete()
   async remove(@Body() messageDto: RemoveMessageDto): Promise<void> {
-    this.messageService.remove(messageDto);
+    return this.messageService.remove(messageDto);
   }
 }

@@ -56,11 +56,11 @@ export class AchievementController {
 
   @Patch()
   async update(@Body() achievementDto: UpdateAchievementDto): Promise<void> {
-    this.achievementService.update(achievementDto);
+    return this.achievementService.update(achievementDto);
   }
 
   @Delete()
   async remove(@Body() achievementDto: RemoveAchievementDto): Promise<void> {
-    this.achievementService.remove(achievementDto);
+    return this.achievementService.remove(achievementDto);
   }
 }

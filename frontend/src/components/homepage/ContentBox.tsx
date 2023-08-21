@@ -4,8 +4,8 @@ import ChatBox from '../chat/ChatBox';
 import { useEffect, useState } from 'react';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
-import AchievementGrid from '../achievement/AchievementGrid';
 import AchievementBox from '../achievement/AchievementBox';
+import ProfileBox from '../profile/ProfileBox';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
@@ -16,10 +16,10 @@ export default function ContentBox() {
   >();
 
   useEffect(() => {
+    clearTimeout(toggleTimeoutID);
     if (currentView) {
       if (open) {
         setOpen(false);
-        clearTimeout(toggleTimeoutID);
         setToggleTimeoutID(
           setTimeout(() => {
             setLocalView(currentView);
@@ -32,7 +32,6 @@ export default function ContentBox() {
       }
     } else {
       setOpen(false);
-      clearTimeout(toggleTimeoutID);
     }
   }, [currentView]);
 
@@ -57,6 +56,7 @@ export default function ContentBox() {
     >
       {localView === View.CHAT && <ChatBox />}
       {localView === View.ACHIEVEMENTS && <AchievementBox />}
+      {localView === View.PROFILE && <ProfileBox />}
     </Drawer>
   );
 }

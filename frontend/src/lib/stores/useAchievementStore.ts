@@ -1,11 +1,11 @@
-import { UserAchievement } from '@/types/UserAchievementTypes';
 import { create } from 'zustand';
+import { AlertColor } from '@mui/material';
 import callAPI from '../callAPI';
 import { Achievement } from '@/types/AchievementTypes';
-import { AlertColor } from '@mui/material';
+import { UserAchievement } from '@/types/UserAchievementTypes';
 
-type AchievementsEarnedDictionary = { [achievement_id: number]: boolean };
-type RecentAchievementsDictionary = { [user_id: number]: Achievement[] };
+type AchievementsEarnedDictionary = { [achievementID: number]: boolean };
+type RecentAchievementsDictionary = { [userID: number]: UserAchievement[] };
 
 interface AchievementStore {
   data: {
@@ -14,59 +14,57 @@ interface AchievementStore {
     recentAchievements: RecentAchievementsDictionary;
   };
   actions: {
-    getAchievementData: () => Promise<void>;
+    getAchievementData: (userID: number) => Promise<void>;
     addAchievementsEarned: (achievementID: number) => void;
     handleAchievementsEarned: (
       currentUserID: number,
       achievementID: number,
       displayNotification: (type: AlertColor, message: string) => void,
     ) => Promise<boolean>;
-    // getUserAchievementData: () => Promise<void>;
-    // getUserAchieved: (userID: number) => void;
-    // getAchievementsByUser: (userID: number) => Promise<Achievement>;
-  };
-  checks: {
-    isAchieved: (userID: number, achievementID: number) => boolean;
   };
 }
 
 type StoreSetter = (
   helper: (state: AchievementStore) => Partial<AchievementStore>,
 ) => void;
-
 type StoreGetter = () => AchievementStore;
 
-async function getAchievementData(set: StoreSetter): Promise<void> {
+async function getAchievementData(
+  set: StoreSetter,
+  userID: number,
+): Promise<void> {
   const achievementData = JSON.parse(
     await callAPI('GET', 'achievements?search_type=ALL'),
   );
   const userAchievementData = JSON.parse(
     await callAPI('GET', 'user-achievements?search_type=ALL'),
   );
-  const achievementsEarnedData: AchievementsEarnedDictionary = {};
-  const recentAchievementsData: RecentAchievementsDictionary = {};
+  const achievementsEarned: AchievementsEarnedDictionary = {};
+  const recentAchievements: RecentAchievementsDictionary = {};
 
   userAchievementData.forEach((userAchievement: UserAchievement) => {
-    achievementsEarnedData[userAchievement.achievement.id] = true;
-    if (!recentAchievementsData[userAchievement.user.id]) {
-      recentAchievementsData[userAchievement.user.id] = [];
+    if (userAchievement.user.id === userID) {
+      achievementsEarned[userAchievement.achievement.id] = true;
     }
-    recentAchievementsData[userAchievement.user.id] = [
-      ...recentAchievementsData[userAchievement.user.id],
-      userAchievement.achievement,
+    if (!recentAchievements[userAchievement.user.id]) {
+      recentAchievements[userAchievement.user.id] = [];
+    }
+    recentAchievements[userAchievement.user.id] = [
+      ...recentAchievements[userAchievement.user.id],
+      userAchievement,
     ];
   });
 
-  for (const userID in recentAchievementsData) {
-    recentAchievementsData[userID] = recentAchievementsData[userID].slice(-5);
+  for (const userID in recentAchievements) {
+    recentAchievements[userID] = recentAchievements[userID].slice(-4).reverse();
   }
 
   set(({ data }) => ({
     data: {
       ...data,
       achievements: achievementData,
-      achievementsEarned: achievementsEarnedData,
-      recentAchievements: recentAchievementsData,
+      achievementsEarned: achievementsEarned,
+      recentAchievements: recentAchievements,
     },
   }));
 }
@@ -115,49 +113,6 @@ function addAchievementsEarned(set: StoreSetter, achievementID: number): void {
   }));
 }
 
-async function getAchievementsByUser(userID: number): Promise<UserAchievement> {
-  const userAchievementData = JSON.parse(
-    await callAPI(
-      'GET',
-      'user-achievements?search_type=USER&search_number=' + userID,
-    ),
-  );
-  console.log(userAchievementData);
-  return userAchievementData;
-}
-
-function isAchieved(
-  get: StoreGetter,
-  userID: number,
-  achievementID: number,
-): boolean {
-  return get().data.achievements.some(
-    (obtained) => obtained.id === achievementID,
-  );
-}
-
-// async function getUserbyAchievements(
-//   achievementID: number,
-// ): Promise<UserAchievement> {
-//   const userAchievementData = JSON.parse(
-//     await callAPI(
-//       'GET',
-//       'user-achievements?search_type=USER&search_number=' + achievementID,
-//     ),
-//   );
-//   console.log(userAchievementData);
-//   return userAchievementData;
-// }
-
-// function addAchievementsToUser(set: StoreSetter, userID: number): void {
-//   set(({ data }) => ({
-//     data: {
-//       ...data,
-//       userAchievement : [...data.channelMembers, channelMember],
-//     },
-//   }));
-// }
-
 const useAchievementStore = create<AchievementStore>()((set, get) => ({
   data: {
     achievements: [],
@@ -165,10 +120,9 @@ const useAchievementStore = create<AchievementStore>()((set, get) => ({
     recentAchievements: {},
   },
   actions: {
-    // getUserAchievementData: () => getUserAchievementData(set),
+    getAchievementData: (userID) => getAchievementData(set, userID),
     addAchievementsEarned: (achievementID: number) =>
       addAchievementsEarned(set, achievementID),
-    getAchievementData: () => getAchievementData(set),
     handleAchievementsEarned: (
       currentUserID: number,
       achievementID: number,
@@ -181,10 +135,6 @@ const useAchievementStore = create<AchievementStore>()((set, get) => ({
         displayNotification,
       ),
   },
-  checks: {
-    isAchieved: (userID: number, achievementID: number) =>
-      isAchieved(get, userID, achievementID),
-  },
 }));
 
 export const useAchievements = () =>
@@ -195,5 +145,3 @@ export const useRecentAchievements = () =>
   useAchievementStore((state) => state.data.recentAchievements);
 export const useAchievementActions = () =>
   useAchievementStore((state) => state.actions);
-export const useUserAchievementChecks = () =>
-  useAchievementStore((state) => state.checks);

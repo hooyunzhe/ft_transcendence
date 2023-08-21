@@ -55,13 +55,13 @@ export class ChannelMemberController {
   async update(
     @Body() channelMemberDto: UpdateChannelMemberDto,
   ): Promise<void> {
-    this.channelMemberService.update(channelMemberDto);
+    return this.channelMemberService.update(channelMemberDto);
   }
 
   @Delete()
   async remove(
     @Body() channelMemberDto: RemoveChannelMemberDto,
   ): Promise<void> {
-    this.channelMemberService.remove(channelMemberDto);
+    return this.channelMemberService.remove(channelMemberDto);
   }
 }

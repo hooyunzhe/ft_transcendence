@@ -5,17 +5,32 @@ export default async function signUp(
   refresh_token: string,
   avatar_url: string,
 ): Promise<User> {
-  return await fetch(process.env.NEXT_PUBLIC_HOST_URL + ':4242/api/users', {
+  const newUser = await fetch(
+    process.env.NEXT_PUBLIC_HOST_URL + ':4242/api/users',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username,
+        refresh_token: refresh_token,
+        avatar_url: avatar_url,
+      }),
+    },
+  )
+    .then((res) => res.json())
+    .catch((error) => console.log(error));
+
+  await fetch(process.env.NEXT_PUBLIC_HOST_URL + ':4242/api/statistics', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      username: username,
-      refresh_token: refresh_token,
-      avatar_url: avatar_url,
+      user_id: newUser.id,
     }),
-  })
-    .then((res) => res.json())
-    .catch((error) => console.log(error));
+  }).catch((error) => console.log(error));
+
+  return newUser;
 }
