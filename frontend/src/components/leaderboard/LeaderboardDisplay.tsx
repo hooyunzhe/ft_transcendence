@@ -1,10 +1,6 @@
 'use client';
 import { Avatar, Box, Typography } from '@mui/material';
-import {
-  ArrowCircleDown,
-  ArrowCircleUp,
-  EmojiEvents,
-} from '@mui/icons-material';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { useGameActions } from '@/lib/stores/useGameStore';
 import { Statistic } from '@/types/StatisticTypes';
@@ -18,6 +14,7 @@ export default function LeaderboardDisplay({
   rank,
   statistic,
 }: LeaderboardDisplayProps) {
+  const currentUser = useCurrentUser();
   const { getFavoritePath } = useProfileActions();
   const { getPathName } = useGameActions();
 
@@ -53,7 +50,9 @@ export default function LeaderboardDisplay({
       justifyContent='space-between'
       alignItems='center'
       padding='1vw'
-      border='solid 2px #a291d2'
+      border={`${
+        statistic.user.id === currentUser.id ? 'dashed' : 'solid'
+      } 2px black`}
       borderRadius='10px'
       bgcolor='#a291d290'
     >
@@ -63,23 +62,7 @@ export default function LeaderboardDisplay({
         alignItems='center'
         gap='1vw'
       >
-        <Box
-          width='3vw'
-          display='flex'
-          justifyContent='space-around'
-          alignItems='center'
-        >
-          {rank === 0 ? (
-            <EmojiEvents />
-          ) : (
-            <Typography variant='h6'>{`#${rank + 1}`}</Typography>
-          )}
-          {rank % 2 == 0 ? (
-            <ArrowCircleUp sx={{ color: '#00C5AD' }} />
-          ) : (
-            <ArrowCircleDown sx={{ color: '#EB370095' }} />
-          )}
-        </Box>
+        <Typography variant='h6'>{`#${rank + 1}`}</Typography>
         <Avatar
           src={statistic.user.avatar_url}
           sx={{ border: 'solid 1px black' }}

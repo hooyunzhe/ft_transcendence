@@ -50,7 +50,7 @@ async function getGameData(set: StoreSetter, userID: number): Promise<void> {
   });
 
   for (const userID in recentMatches) {
-    recentMatches[userID] = recentMatches[userID].slice(-5).reverse();
+    recentMatches[userID] = recentMatches[userID].slice(-4).reverse();
   }
 
   set(({ data }) => ({
@@ -140,7 +140,7 @@ function addMatch(
   }));
 }
 
-const useGameStore = create<GameStore>()((set, get) => ({
+const useGameStore = create<GameStore>()((set) => ({
   data: {
     matches: [],
     matchesPlayed: [],

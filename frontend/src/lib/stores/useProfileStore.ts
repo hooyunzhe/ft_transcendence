@@ -7,6 +7,7 @@ interface ProfileStore {
   data: {
     statistics: Statistic[];
     selectedStatistic: Statistic | undefined;
+    selectedStatisticIndex: number | undefined;
   };
   actions: {
     getProfileData: () => void;
@@ -21,14 +22,19 @@ type StoreSetter = (
 ) => void;
 
 async function getProfileData(set: StoreSetter): Promise<void> {
-  const statisticData = JSON.parse(
+  const statisticData: Statistic[] = JSON.parse(
     await callAPI('GET', 'statistics?search_type=ALL'),
   );
 
   set(({ data }) => ({
     data: {
       ...data,
-      statistics: statisticData,
+      statistics: statisticData.sort(
+        (a, b) =>
+          b.wins - a.wins ||
+          a.losses - b.losses ||
+          b.highest_winstreak - a.highest_winstreak,
+      ),
     },
   }));
 }
@@ -109,11 +115,18 @@ function updateStatistic(
   set(({ data }) => ({
     data: {
       ...data,
-      statistics: data.statistics.map((statistic) =>
-        statistic.user.id === userID
-          ? getUpdatedStatistic(statistic, newMatch)
-          : statistic,
-      ),
+      statistics: data.statistics
+        .map((statistic) =>
+          statistic.user.id === userID
+            ? getUpdatedStatistic(statistic, newMatch)
+            : statistic,
+        )
+        .sort(
+          (a, b) =>
+            b.wins - a.wins ||
+            a.losses - b.losses ||
+            b.highest_winstreak - a.highest_winstreak,
+        ),
     },
   }));
 }
@@ -128,6 +141,9 @@ function setSelectedStatistic(
       selectedStatistic: data.statistics.find(
         (statistic) => statistic.user.id === userID,
       ),
+      selectedStatisticIndex: data.statistics.findIndex(
+        (statistic) => statistic.user.id === userID,
+      ),
     },
   }));
 }
@@ -136,6 +152,7 @@ const useProfileStore = create<ProfileStore>()((set) => ({
   data: {
     statistics: [],
     selectedStatistic: undefined,
+    selectedStatisticIndex: undefined,
   },
   actions: {
     getProfileData: () => getProfileData(set),
@@ -150,5 +167,7 @@ export const useStatistics = () =>
   useProfileStore((state) => state.data.statistics);
 export const useSelectedStatistic = () =>
   useProfileStore((state) => state.data.selectedStatistic);
+export const useSelectedStatisticIndex = () =>
+  useProfileStore((state) => state.data.selectedStatisticIndex);
 export const useProfileActions = () =>
   useProfileStore((state) => state.actions);

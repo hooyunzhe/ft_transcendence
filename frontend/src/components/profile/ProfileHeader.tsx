@@ -1,5 +1,6 @@
 'use client';
 import { Avatar, Box, Typography } from '@mui/material';
+import { useSelectedStatisticIndex } from '@/lib/stores/useProfileStore';
 import { useRecentAchievements } from '@/lib/stores/useAchievementStore';
 import { Statistic } from '@/types/StatisticTypes';
 
@@ -8,6 +9,7 @@ interface ProfileHeaderProps {
 }
 
 export default function ProfileHeader({ statistic }: ProfileHeaderProps) {
+  const selectedStatisticIndex = useSelectedStatisticIndex();
   const recentAchievements = useRecentAchievements();
 
   return (
@@ -35,7 +37,9 @@ export default function ProfileHeader({ statistic }: ProfileHeaderProps) {
           }}
         />
         <Box>
-          <Typography variant='h4'>{statistic.user.username}</Typography>
+          <Typography variant='h4' sx={{ wordBreak: 'break-word' }}>
+            {statistic.user.username}
+          </Typography>
           <Typography variant='body2' color='rgba(0, 0, 0, 0.6)'>
             {'Joined ' +
               new Date(
@@ -46,7 +50,11 @@ export default function ProfileHeader({ statistic }: ProfileHeaderProps) {
       </Box>
       <Box width='30vw' display='flex' gap='5vw'>
         <Box>
-          <Typography variant='h4'>#7</Typography>
+          <Typography variant='h4'>
+            {selectedStatisticIndex === undefined
+              ? 'N/A'
+              : '#' + (selectedStatisticIndex + 1)}
+          </Typography>
           <Typography variant='body2' color='rgba(0, 0, 0, 0.6)'>
             Current Ranking
           </Typography>

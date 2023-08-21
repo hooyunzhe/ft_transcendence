@@ -17,16 +17,9 @@ export default function LeaderboardList() {
       padding='1vh'
       gap='1vh'
     >
-      {statistics
-        .sort(
-          (a, b) =>
-            b.wins - a.wins ||
-            a.losses - b.losses ||
-            b.highest_winstreak - a.highest_winstreak,
-        )
-        .map((statistic, index) => (
-          <LeaderboardDisplay key={index} rank={index} statistic={statistic} />
-        ))}
+      {statistics.map((statistic, index) => (
+        <LeaderboardDisplay key={index} rank={index} statistic={statistic} />
+      ))}
     </Box>
   );
 }
