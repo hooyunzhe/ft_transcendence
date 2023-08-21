@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import callAPI from '../callAPI';
 import { Match, SkillPath } from '@/types/MatchTypes';
 import { User } from '@/types/UserTypes';
+import { MatchState } from '@/types/GameTypes';
 
 type RecentMatchesDictionary = { [userID: number]: Match[] };
 
@@ -10,6 +11,7 @@ interface GameStore {
     matches: Match[];
     matchesPlayed: Match[];
     recentMatches: RecentMatchesDictionary;
+    matchState: MatchState;
   };
   actions: {
     getGameData: (userID: number) => void;
@@ -19,6 +21,7 @@ interface GameStore {
     getMatchPath: (match: Match, userID: number) => SkillPath;
     getPathName: (path: SkillPath) => string;
     addMatch: (newMatch: Match, currentUserID: number) => void;
+    setMatchState: (matchState: MatchState) => void;
   };
 }
 
@@ -138,6 +141,10 @@ function addMatch(
   }));
 }
 
+function setMatchState(matchState: MatchState) {
+  matchState = matchState;
+  return;
+}
 const useGameStore = create<GameStore>()((set, get) => ({
   data: {
     matches: [],
@@ -162,3 +169,4 @@ export const useMatchesPlayed = () =>
 export const useRecentMatches = () =>
   useGameStore((state) => state.data.recentMatches);
 export const useGameActions = () => useGameStore((state) => state.actions);
+export const useFindingMatch = () => useGameStore((state) => state.actions);
