@@ -14,6 +14,8 @@ import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { Friend } from '@/types/FriendTypes';
 import { Channel } from '@/types/ChannelTypes';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
 
 interface ChannelMemberAddPromptProps {
   addableFriends: Friend[];
@@ -24,6 +26,7 @@ export function ChannelMemberAddPrompt({
   addableFriends,
   selectedChannel,
 }: ChannelMemberAddPromptProps) {
+  const currentUser = useCurrentUser();
   const channelSocket = useChannelSocket();
   const { addChannelMember } = useChannelMemberActions();
   const { setActionButtonDisabled, resetDialog, resetTriggers } =
@@ -33,6 +36,7 @@ export function ChannelMemberAddPrompt({
   const [selectedFriendToJoin, setSelectedFriendToJoin] = useState<
     Friend | undefined
   >();
+  const { handleAchievementsEarned } = useAchievementActions();
 
   async function handleAddMemberAction(): Promise<void> {
     if (selectedFriendToJoin) {
@@ -46,7 +50,13 @@ export function ChannelMemberAddPrompt({
       );
       addChannelMember(newChannelMember);
       emitToSocket(channelSocket, 'newMember', newChannelMember);
-      displayNotification('success', 'Channel member added');
+      const addMemberAchievement = await handleAchievementsEarned(
+        currentUser.id,
+        3,
+        displayNotification,
+      );
+      if (addMemberAchievement)
+        displayNotification('success', 'Channel member added');
     } else {
       throw 'FATAL ERROR: FAILED TO ADD DUE TO MISSING SELECTED FRIEND TO JOIN';
     }

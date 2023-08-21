@@ -11,14 +11,13 @@ import {
 } from '@/lib/stores/useChannelStore';
 import { useSelectedFriend } from '@/lib/stores/useFriendStore';
 import { useCurrentSocialTab } from '@/lib/stores/useUtilStore';
-import {
-  useChannelMemberActions,
-  useChannelMemberChecks,
-} from '@/lib/stores/useChannelMemberStore';
-import { useChatActions } from '@/lib/stores/useChatStore';
+import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
+import { useChatActions, useSentMessages } from '@/lib/stores/useChatStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import { MessageType } from '@/types/MessageTypes';
 import { ChannelType } from '@/types/ChannelTypes';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 export default function ChatBar() {
   const currentUser = useCurrentUser();
@@ -31,6 +30,9 @@ export default function ChatBar() {
   const { updateRecentChannelActivity } = useChannelActions();
   const channelSocket = useChannelSocket();
   const [unsentMessages, setUnsentMessages] = useState<string[]>([]);
+  const { handleAchievementsEarned } = useAchievementActions();
+  const sentMessages = useSentMessages();
+  const { displayNotification } = useNotificationActions();
   const [typingTimeoutID, setTypingTimeoutID] = useState<
     NodeJS.Timeout | undefined
   >();
@@ -102,6 +104,12 @@ export default function ChatBar() {
           return updatedUnsentMessages;
         });
         addMessage(newMessage);
+        if (sentMessages[selectedChannel.id] >= 20) {
+          console.log('Achievements achieved\n');
+          handleAchievementsEarned(currentUser.id, 4, displayNotification);
+        }
+        console.log('Message sent\n');
+        console.log(sentMessages[selectedChannel.id]);
         updateRecentChannelActivity(selectedChannel.id);
         emitToSocket(channelSocket, 'newMessage', newMessage);
       }
