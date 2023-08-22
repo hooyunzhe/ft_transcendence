@@ -13,19 +13,17 @@ export default function AchievementGrid() {
 
   return (
     <Box
-      sx={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        padding: '20px 30px',
-        overflow: 'auto',
-        '&::-webkit-scrollbar': { display: 'none' },
-      }}
+      height='100%'
+      display='flex'
+      flexWrap='wrap'
+      padding='0.5vh 0.5vw'
+      sx={{ overflow: 'auto', '&::-webkit-scrollbar': { display: 'none' } }}
     >
       {achievements.map((achievement: Achievement, index: number) => (
         <AchievementDisplay
           key={index}
           achievement={achievement}
-          isEarned={achievementsEarned[achievement.id]}
+          dateAchieved={achievementsEarned[achievement.id]}
         />
       ))}
     </Box>

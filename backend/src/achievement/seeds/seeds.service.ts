@@ -20,33 +20,21 @@ export class SeedService {
         description: 'Send a friend request',
       },
       {
-        name: 'I dont love you, like I did, yesterday.',
+        name: "I don't love you, like I did, yesterday",
         description: 'Delete a friend',
       },
-      {
-        name: 'Welcome on board matey',
-        description: 'Add a channel member',
-      },
+      { name: 'Welcome on board matey', description: 'Add a channel member' },
       {
         name: 'Off the plank you go',
         description: 'Boot a person off a channel',
       },
       {
         name: 'Chatterbox',
-        description: 'Message 20 times in the same channel.',
+        description: 'Message 20 times in the same channel',
       },
-      {
-        name: 'Being a boss',
-        description: 'Create a channel',
-      },
-      {
-        name: 'Societal cog',
-        description: 'Join a channel',
-      },
-      {
-        name: 'My First Game!',
-        description: 'Play a game of pong',
-      },
+      { name: 'Being a boss', description: 'Create a channel' },
+      { name: 'Societal cog', description: 'Join a channel' },
+      { name: 'My First Game!', description: 'Play a game of pong' },
       {
         name: 'Master sergeant shooter person',
         description: 'Max a skill tree',
@@ -56,7 +44,7 @@ export class SeedService {
         description: 'Have a 5 win streak',
       },
       {
-        name: 'Showing the Inner Ding',
+        name: 'Showing the Inner Ding Hang',
         description: 'Achieved a flawless victory',
       },
       {

@@ -4,7 +4,7 @@ import callAPI from '../callAPI';
 import { Achievement } from '@/types/AchievementTypes';
 import { UserAchievement } from '@/types/UserAchievementTypes';
 
-type AchievementsEarnedDictionary = { [achievementID: number]: boolean };
+type AchievementsEarnedDictionary = { [achievementID: number]: string };
 type RecentAchievementsDictionary = { [userID: number]: UserAchievement[] };
 
 interface AchievementStore {
@@ -36,8 +36,6 @@ async function getAchievementData(
   const achievementData = JSON.parse(
     await callAPI('GET', 'achievements?search_type=ALL'),
   );
-  console.log(achievementData);
-
   const userAchievementData = JSON.parse(
     await callAPI('GET', 'user-achievements?search_type=ALL'),
   );
@@ -46,7 +44,9 @@ async function getAchievementData(
 
   userAchievementData.forEach((userAchievement: UserAchievement) => {
     if (userAchievement.user.id === userID) {
-      achievementsEarned[userAchievement.achievement.id] = true;
+      achievementsEarned[userAchievement.achievement.id] = new Date(
+        Date.now(),
+      ).toLocaleDateString();
     }
     if (!recentAchievements[userAchievement.user.id]) {
       recentAchievements[userAchievement.user.id] = [];
@@ -108,7 +108,7 @@ function addAchievementsEarned(set: StoreSetter, achievementID: number): void {
       ...data,
       achievementsEarned: {
         ...data.achievementsEarned,
-        [achievementID]: true,
+        [achievementID]: new Date(Date.now()).toLocaleDateString(),
       },
     },
   }));
@@ -117,6 +117,7 @@ function addAchievementsEarned(set: StoreSetter, achievementID: number): void {
 const useAchievementStore = create<AchievementStore>()((set, get) => ({
   data: {
     achievements: [],
+    userAchievements: [],
     achievementsEarned: {},
     recentAchievements: {},
   },
