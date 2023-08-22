@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { Button, ToggleButton } from '@mui/material';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import GameRender from '@/components/game/GameRender';
+import { useMatchState } from '@/lib/stores/useGameStore';
 
 // export default function GameMenu() {
 //   // const [session, setSession] = useState(useSession());
@@ -16,78 +17,78 @@ import GameRender from '@/components/game/GameRender';
 //   // // const [roomid, setRoomid] = useState('');
 //   // const socketRef = useRef();
 
-//   useEffect(() => {
-//     // matchSocket.on('match', (data: string) => {
-//     //   matchSocket.sendBuffer = [];
-//     //   setRoomid(data);
-//     //   setMatchFound(true);
-//     //   // matchSocket.disconnect();
-//     // });
-//     gameSocket.on('match', () => {
-//       setMatchFound(true);
-//     }),
-//       gameSocket.on('disc', () => {
-//         gameSocket.disconnect();
-//       });
-//     gameSocket.on('connect', () => {
-//       gameSocket.sendBuffer = [];
-//       gameSocket.emit('init', session?.user?.id);
-//     });
-//     gameSocket.on('disconnect', () => {
-//       gameSocket.sendBuffer = [];
-//       console.log('game socket disconnected');
-//       setsearching(false);
-//       setMatchFound(false);
-//       setGameReady(false);
-//     });
-//     return () => {
-//       gameSocket.off('connect');
-//       gameSocket.off('disconnect');
-//       gameSocket.off('match');
-//       gameSocket.off('disc');
-//     };
-//   }, []);
+  useEffect(() => {
+    // matchSocket.on('match', (data: string) => {
+    //   matchSocket.sendBuffer = [];
+    //   setRoomid(data);
+    //   setMatchFound(true);
+    //   // matchSocket.disconnect();
+    // });
+    gameSocket.on('match', () => {
+      setMatchFound(true);
+    }),
+      gameSocket.on('disc', () => {
+        gameSocket.disconnect();
+      });
+    gameSocket.on('connect', () => {
+      gameSocket.sendBuffer = [];
+      gameSocket.emit('init', session?.user?.id);
+    });
+    gameSocket.on('disconnect', () => {
+      gameSocket.sendBuffer = [];
+      console.log('game socket disconnected');
+      setsearching(false);
+      setMatchFound(false);
+      setGameReady(false);
+    });
+    return () => {
+      gameSocket.off('connect');
+      gameSocket.off('disconnect');
+      gameSocket.off('match');
+      gameSocket.off('disc');
+    };
+  }, []);
 
-//   const findMatch = () => {
-//     gameSocket.connect();
-//     setsearching(true);
-//   };
+  const findMatch = () => {
+    gameSocket.connect();
+    setsearching(true);
+  };
 
-//   // const CheckStatus = () => {
-//   //   matchSocket.emit('check');
-//   // };
-//   // console.log(session);
-//   // // session.data?.user;
+  // const CheckStatus = () => {
+  //   matchSocket.emit('check');
+  // };
+  // console.log(session);
+  // // session.data?.user;
 
-//   const startGame = () => {
-//     // if (gameSocket.disconnected) gameSocket.connect();
-//     // console.log('Starting game');
-//     // console.log(gameSocket.connected);
-//     gameSocket.emit('ready');
-//   };
+  const startGame = () => {
+    // if (gameSocket.disconnected) gameSocket.connect();
+    // console.log('Starting game');
+    // console.log(gameSocket.connected);
+    gameSocket.emit('ready');
+  };
 
-//   // const joinGame = () => {
-//   //   console.log('Joinin game');
-//   //   gameSocket.emit('join');
-//   //   setMatchFound(false);
-//   // };
+  // const joinGame = () => {
+  //   console.log('Joinin game');
+  //   gameSocket.emit('join');
+  //   setMatchFound(false);
+  // };
 
-//   // const rejectGame = () => {
-//   //   gameSocket.emit('reject');
-//   //   setMatchFound(false);
-//   // };
+  // const rejectGame = () => {
+  //   gameSocket.emit('reject');
+  //   setMatchFound(false);
+  // };
 
-//   const disconnectGame = () => {
-//     gameSocket.disconnect();
-//     setsearching(false);
-//   };
+  const disconnectGame = () => {
+    gameSocket.disconnect();
+    setsearching(false);
+  };
 
-//   const resetGame = () => {
-//     gameSocket.emit('reset');
-//     setGameReady(false);
-//     gameSocket.disconnect();
-//     // setRoomid('');
-//   };
+  const resetGame = () => {
+    gameSocket.emit('reset');
+    setGameReady(false);
+    gameSocket.disconnect();
+    // setRoomid('');
+  };
 
 //   return (
 //     <div>
@@ -130,4 +131,79 @@ import GameRender from '@/components/game/GameRender';
 //   );
 // }
 
-export default function gameMenu() {}
+export default function gameMenu() {
+
+  const gameSocket = useGameSocket();
+  if (!gameSocket) return;
+  const matchState = useMatchState();
+
+  useEffect(() => {
+    // matchSocket.on('match', (data: string) => {
+    //   matchSocket.sendBuffer = [];
+    //   setRoomid(data);
+    //   setMatchFound(true);
+    //   // matchSocket.disconnect();
+    // });
+    gameSocket.on('match', () => {
+      setMatchState
+    }),
+      gameSocket.on('disc', () => {
+        gameSocket.disconnect();
+      });
+    gameSocket.on('connect', () => {
+      gameSocket.sendBuffer = [];
+      gameSocket.emit('init', session?.user?.id);
+    });
+    gameSocket.on('disconnect', () => {
+      gameSocket.sendBuffer = [];
+      console.log('game socket disconnected');
+    });
+    return () => {
+      gameSocket.off('connect');
+      gameSocket.off('disconnect');
+      gameSocket.off('match');
+      gameSocket.off('disc');
+    };
+  }, []);
+
+  const findMatch = () => {
+    gameSocket.connect();
+    setsearching(true);
+  };
+
+  // const CheckStatus = () => {
+  //   matchSocket.emit('check');
+  // };
+  // console.log(session);
+  // // session.data?.user;
+
+  const startGame = () => {
+    // if (gameSocket.disconnected) gameSocket.connect();
+    // console.log('Starting game');
+    // console.log(gameSocket.connected);
+    gameSocket.emit('ready');
+  };
+
+  // const joinGame = () => {
+  //   console.log('Joinin game');
+  //   gameSocket.emit('join');
+  //   setMatchFound(false);
+  // };
+
+  // const rejectGame = () => {
+  //   gameSocket.emit('reject');
+  //   setMatchFound(false);
+  // };
+
+  const disconnectGame = () => {
+    gameSocket.disconnect();
+    setsearching(false);
+  };
+
+  const resetGame = () => {
+    gameSocket.emit('reset');
+    setGameReady(false);
+    gameSocket.disconnect();
+    // setRoomid('');
+  };
+}

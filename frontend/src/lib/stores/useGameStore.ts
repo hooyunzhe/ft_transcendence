@@ -141,15 +141,20 @@ function addMatch(
   }));
 }
 
-function setMatchState(matchState: MatchState) {
-  matchState = matchState;
-  return;
+function setMatchState(set: StoreSetter, matchState: MatchState): void {
+  set((state) => ({
+    data: {
+      ...state.data,
+      matchState: matchState,
+    },
+  }));
 }
 const useGameStore = create<GameStore>()((set, get) => ({
   data: {
     matches: [],
     matchesPlayed: [],
     recentMatches: {},
+    matchState: 'IDLE',
   },
   actions: {
     getGameData: (userID) => getGameData(set, userID),
@@ -160,6 +165,7 @@ const useGameStore = create<GameStore>()((set, get) => ({
     getPathName: (path) => getPathName(path),
     addMatch: (newMatch, currentUserID) =>
       addMatch(set, newMatch, currentUserID),
+    setMatchState: (MatchState) => setMatchState(set, MatchState), 
   },
 }));
 
@@ -169,4 +175,4 @@ export const useMatchesPlayed = () =>
 export const useRecentMatches = () =>
   useGameStore((state) => state.data.recentMatches);
 export const useGameActions = () => useGameStore((state) => state.actions);
-export const useFindingMatch = () => useGameStore((state) => state.actions);
+export const useMatchState = () => useGameStore((state) => state.data.matchState);
