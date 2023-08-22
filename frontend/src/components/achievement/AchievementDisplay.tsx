@@ -1,51 +1,57 @@
-// import { useUserAchievementChecks } from '@/lib/stores/useAchievementStore';
 import { Achievement } from '@/types/AchievementTypes';
 import { Avatar, Box, Paper, Typography } from '@mui/material';
+import AchievementIconAvatar from './AchievementIconAvatar';
 
 interface AchievementDisplayProps {
   achievement: Achievement;
-  isEarned: boolean;
+  dateAchieved: string;
 }
 
 export default function AchievementDisplay({
   achievement,
-  isEarned,
+  dateAchieved,
 }: AchievementDisplayProps) {
   return (
-    <Box
-      sx={{
-        width: '50%',
-        display: 'flex',
-        alignContent: 'center',
-        justifyContent: 'center',
-      }}
-    >
+    <Box width='50%' display='flex'>
       <Paper
         sx={{
-          margin: '10px',
-          padding: '20px',
-          width: '90%',
+          display: 'flex',
+          margin: '5px',
+          padding: '1vh',
+          width: '100%',
           boxSizing: 'border-box',
         }}
       >
         <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            opacity: isEarned ? '1' : '0.3',
-          }}
+          width='100%'
+          display='flex'
+          alignItems='center'
+          sx={{ opacity: dateAchieved ? '1' : '0.3' }}
         >
-          <Avatar>W</Avatar>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              margin: '0 0 0 10px',
-            }}
+          <Avatar
+            variant='square'
+            sx={{ width: '50px', height: '50px', bgcolor: 'black' }}
           >
-            <Typography>{achievement.name}</Typography>
-            <Typography fontSize={15}>{achievement.description}</Typography>
+            <AchievementIconAvatar achievementID={achievement.id} />
+          </Avatar>
+          <Box
+            width='100%'
+            display='flex'
+            justifyContent='flex-start'
+            alignItems='center'
+            margin='0 0 0 10px'
+          >
+            <Box>
+              <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
+                {achievement.name}
+              </Typography>
+              <Typography>{achievement.description}</Typography>
+            </Box>
+            {dateAchieved && (
+              <Typography marginLeft='auto'>
+                {'Earned ' + dateAchieved}
+              </Typography>
+            )}
           </Box>
         </Box>
       </Paper>
