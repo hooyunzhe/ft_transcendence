@@ -36,6 +36,8 @@ async function getAchievementData(
   const achievementData = JSON.parse(
     await callAPI('GET', 'achievements?search_type=ALL'),
   );
+  console.log(achievementData);
+
   const userAchievementData = JSON.parse(
     await callAPI('GET', 'user-achievements?search_type=ALL'),
   );
@@ -58,7 +60,6 @@ async function getAchievementData(
   for (const userID in recentAchievements) {
     recentAchievements[userID] = recentAchievements[userID].slice(-4).reverse();
   }
-
   set(({ data }) => ({
     data: {
       ...data,

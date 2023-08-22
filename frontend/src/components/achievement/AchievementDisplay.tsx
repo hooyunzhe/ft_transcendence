@@ -11,6 +11,7 @@ export default function AchievementDisplay({
   achievement,
   isEarned,
 }: AchievementDisplayProps) {
+  console.log(achievement);
   return (
     <Box
       sx={{

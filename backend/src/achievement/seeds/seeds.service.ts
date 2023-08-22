@@ -37,7 +37,7 @@ export class SeedService {
       },
       {
         name: 'Being a boss',
-        description: 'Make a channel',
+        description: 'Create a channel',
       },
       {
         name: 'Societal cog',

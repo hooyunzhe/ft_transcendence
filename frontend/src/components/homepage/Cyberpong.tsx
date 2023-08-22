@@ -53,6 +53,8 @@ export default function Cyberpong() {
     getChannelMemberData();
     getChatData(currentUser.id);
     getProfileData();
+    getGameData(currentUser.id);
+    getAchievementData(currentUser.id);
 
     return () => {
       resetSockets();
