@@ -73,13 +73,14 @@ export default function ChannelJoinPrompt({
       );
       emitToSocket(channelSocket, 'joinRoom', selectedChannelToJoin.id);
       emitToSocket(channelSocket, 'newMember', joiningChannelMember);
-      const joinChannelAchievement = await handleAchievementsEarned(
+      const achievementAlreadyEarned = await handleAchievementsEarned(
         currentUser.id,
         7,
         displayNotification,
       );
-      if (!joinChannelAchievement)
+      if (achievementAlreadyEarned) {
         displayNotification('success', 'Channel joined');
+      }
     } else {
       throw 'FATAL ERROR: FAILED TO JOIN DUE TO MISSING SELECTED CHANNEL TO JOIN';
     }

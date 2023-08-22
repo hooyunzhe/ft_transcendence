@@ -5,7 +5,7 @@ import {
   AssignmentIndRounded,
   ChatRounded,
   EmojiEventsRounded,
-  MilitaryTechRounded,
+  LeaderboardRounded,
   SettingsRounded,
   SportsTennisRounded,
 } from '@mui/icons-material';
@@ -53,7 +53,11 @@ export default function NavigationHeader() {
         paddingLeft='0.5vw'
         paddingRight='0.5vw'
       >
-        <Tabs value={currentView} variant='scrollable'>
+        <Tabs
+          value={currentView}
+          variant='scrollable'
+          onMouseDown={(event) => event.preventDefault()}
+        >
           <Tab
             sx={{
               color: 'green',
@@ -73,7 +77,7 @@ export default function NavigationHeader() {
             onClick={() => changeCurrentView(View.PROFILE)}
           />
           <Tab
-            icon={<MilitaryTechRounded />}
+            icon={<LeaderboardRounded />}
             value={View.LEADERBOARD}
             onClick={() => changeCurrentView(View.LEADERBOARD)}
           />

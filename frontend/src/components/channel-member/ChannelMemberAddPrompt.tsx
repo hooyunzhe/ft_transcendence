@@ -50,13 +50,14 @@ export function ChannelMemberAddPrompt({
       );
       addChannelMember(newChannelMember);
       emitToSocket(channelSocket, 'newMember', newChannelMember);
-      const addMemberAchievement = await handleAchievementsEarned(
+      const achievementAlreadyEarned = await handleAchievementsEarned(
         currentUser.id,
         3,
         displayNotification,
       );
-      if (addMemberAchievement)
+      if (achievementAlreadyEarned) {
         displayNotification('success', 'Channel member added');
+      }
     } else {
       throw 'FATAL ERROR: FAILED TO ADD DUE TO MISSING SELECTED FRIEND TO JOIN';
     }

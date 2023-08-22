@@ -79,13 +79,14 @@ export function ChannelMemberList() {
     callAPI('DELETE', 'channel-members', { id: member.id });
     kickChannelMember(member.id);
     emitToSocket(channelSocket, 'kickMember', member);
-    const kickMemberAchievement = await handleAchievementsEarned(
+    const achievementAlreadyEarned = await handleAchievementsEarned(
       currentUser.id,
       4,
       displayNotification,
     );
-    if (!kickMemberAchievement)
+    if (achievementAlreadyEarned) {
       displayNotification('success', 'Channel member kicked');
+    }
   }
 
   async function changeToAdmin(member: ChannelMember) {
@@ -249,7 +250,7 @@ export function ChannelMemberList() {
 
   return (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
-      <ListHeader title='Members' icon={ListHeaderIcon.NONE} />
+      <ListHeader title='Members' icon={ListHeaderIcon.SOCIAL} />
       {selectedChannel && (
         <Button
           variant='contained'

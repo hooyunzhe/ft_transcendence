@@ -69,12 +69,12 @@ export default function ChannelCreatePrompt() {
         addChannelMember(channelCreator);
         emitToSocket(channelSocket, 'joinRoom', newChannel.id);
 
-        const createChannelAchievement = await handleAchievementsEarned(
+        const achievementAlreadyEarned = await handleAchievementsEarned(
           currentUser.id,
           6,
           displayNotification,
         );
-        if (!createChannelAchievement) {
+        if (achievementAlreadyEarned) {
           displayNotification('success', 'Channel created');
         }
       } else {

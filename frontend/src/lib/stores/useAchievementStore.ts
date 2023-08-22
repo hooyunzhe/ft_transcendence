@@ -97,9 +97,9 @@ async function handleAchievementsEarned(
       );
       get().actions.addAchievementsEarned(achievementID);
     }
-    return true;
+    return false;
   }
-  return false;
+  return true;
 }
 
 function addAchievementsEarned(set: StoreSetter, achievementID: number): void {

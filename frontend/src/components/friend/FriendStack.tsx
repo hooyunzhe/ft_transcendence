@@ -147,12 +147,12 @@ export default function FriendStack() {
     await callFriendsAPI('DELETE', friendship.incoming_friend);
     deleteFriend(friendship);
     emitToSocket(friendSocket, 'deleteFriend', friendship);
-    const deleteFriendAchievement = await handleAchievementsEarned(
+    const achievementAlreadyEarned = await handleAchievementsEarned(
       currentUser.id,
       2,
       displayNotification,
     );
-    if (!deleteFriendAchievement)
+    if (achievementAlreadyEarned)
       displayNotification(
         'error',
         'Unfriended ' + friendship.incoming_friend.username,

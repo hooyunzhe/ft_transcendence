@@ -1,11 +1,12 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { Drawer } from '@mui/material';
 import ChatBox from '../chat/ChatBox';
-import { useEffect, useState } from 'react';
+import ProfileBox from '../profile/ProfileBox';
+import LeaderboardBox from '../leaderboard/LeaderboardBox';
+import AchievementBox from '../achievement/AchievementBox';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
-import AchievementBox from '../achievement/AchievementBox';
-import ProfileBox from '../profile/ProfileBox';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
@@ -55,8 +56,9 @@ export default function ContentBox() {
       open={open}
     >
       {localView === View.CHAT && <ChatBox />}
-      {localView === View.ACHIEVEMENTS && <AchievementBox />}
       {localView === View.PROFILE && <ProfileBox />}
+      {localView === View.LEADERBOARD && <LeaderboardBox />}
+      {localView === View.ACHIEVEMENTS && <AchievementBox />}
     </Drawer>
   );
 }

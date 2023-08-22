@@ -29,23 +29,21 @@ async function getChatData(set: StoreSetter, userID: number): Promise<void> {
   const messageData = JSON.parse(
     await callAPI('GET', 'messages?search_type=ALL'),
   );
-  const messagesSentData: MessagesSentDictionary = {};
+  const messagesSent: MessagesSentDictionary = {};
 
   messageData.forEach((messageData: Message) => {
     if (messageData.user.id === userID) {
-      if (!messagesSentData[messageData.channel.id]) {
-        messagesSentData[messageData.channel.id] = 0;
-        console.log('inside chatstore', messageData.channel.id);
+      if (!messagesSent[messageData.channel.id]) {
+        messagesSent[messageData.channel.id] = 0;
       }
-      messagesSentData[messageData.channel.id]++;
-      console.log(messagesSentData[messageData.channel.id]);
+      messagesSent[messageData.channel.id]++;
     }
   });
   set(({ data }) => ({
     data: {
       ...data,
       messages: messageData,
-      messagesSent: messagesSentData,
+      messagesSent: messagesSent,
     },
   }));
 }
@@ -57,7 +55,8 @@ function addMessage(set: StoreSetter, newMessage: Message): void {
       messages: [...data.messages, newMessage],
       messagesSent: {
         ...data.messagesSent,
-        [newMessage.channel.id]: data.messagesSent[newMessage.channel.id] + 1,
+        [newMessage.channel.id]:
+          (data.messagesSent[newMessage.channel.id] ?? 0) + 1,
       },
     },
   }));
@@ -169,7 +168,7 @@ const useChatStore = create<ChatStore>()((set) => ({
 }));
 
 export const useMessages = () => useChatStore((state) => state.data.messages);
-export const useSentMessages = () =>
+export const useMessagesSent = () =>
   useChatStore((state) => state.data.messagesSent);
 export const useSelectedMessage = () =>
   useChatStore((state) => state.data.selectedMessage);

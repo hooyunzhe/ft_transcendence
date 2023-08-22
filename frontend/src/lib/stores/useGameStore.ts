@@ -17,7 +17,7 @@ interface GameStore {
     getMatchScore: (match: Match, userID: number) => string;
     getMatchSkills: (match: Match, userID: number) => number[];
     getMatchPath: (match: Match, userID: number) => SkillPath;
-    getPathName: (path: SkillPath) => string;
+    getPathName: (path: SkillPath | null) => string;
     addMatch: (newMatch: Match, currentUserID: number) => void;
   };
 }
@@ -50,7 +50,7 @@ async function getGameData(set: StoreSetter, userID: number): Promise<void> {
   });
 
   for (const userID in recentMatches) {
-    recentMatches[userID] = recentMatches[userID].slice(-5).reverse();
+    recentMatches[userID] = recentMatches[userID].slice(-4).reverse();
   }
 
   set(({ data }) => ({
@@ -106,7 +106,7 @@ function getMatchPath(match: Match, userID: number): SkillPath {
   }
 }
 
-function getPathName(path: SkillPath): string {
+function getPathName(path: SkillPath | null): string {
   switch (path) {
     case SkillPath.STRENGTH:
       return 'Kratos';
@@ -114,6 +114,8 @@ function getPathName(path: SkillPath): string {
       return 'Chronos';
     case SkillPath.TECH:
       return 'Qosmos';
+    case null:
+      return 'N/A';
   }
 }
 
@@ -138,7 +140,7 @@ function addMatch(
   }));
 }
 
-const useGameStore = create<GameStore>()((set, get) => ({
+const useGameStore = create<GameStore>()((set) => ({
   data: {
     matches: [],
     matchesPlayed: [],

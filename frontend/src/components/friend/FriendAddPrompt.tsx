@@ -87,12 +87,12 @@ export default function FriendAddPrompt() {
       outgoing_request: newRequests[0],
       incoming_request: newRequests[1],
     });
-    const addFriendAchievement = await handleAchievementsEarned(
+    const achievementAlreadyEarned = await handleAchievementsEarned(
       currentUser.id,
       1,
       displayNotification,
     );
-    if (!addFriendAchievement) {
+    if (achievementAlreadyEarned) {
       displayNotification('success', 'Request sent');
     }
     setCurrentFriendCategory(FriendCategory.INVITED);

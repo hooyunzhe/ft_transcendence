@@ -15,7 +15,7 @@ export default function ProfileMatchHistory({
 
   return (
     <Box
-      width='28vw'
+      width='28.5vw'
       height='36vh'
       display='flex'
       flexDirection='column'
