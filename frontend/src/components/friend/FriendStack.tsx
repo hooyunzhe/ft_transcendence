@@ -21,6 +21,7 @@ import { User } from '@/types/UserTypes';
 import { ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
 import { FriendCategory } from '@/types/UtilTypes';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 
 export default function FriendStack() {
   const currentUser = useCurrentUser();
@@ -36,6 +37,7 @@ export default function FriendStack() {
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
   const { setCurrentFriendCategory } = useUtilActions();
+  const { handleAchievementsEarned } = useAchievementActions();
 
   async function callFriendsAPI(
     method: string,
@@ -145,10 +147,16 @@ export default function FriendStack() {
     await callFriendsAPI('DELETE', friendship.incoming_friend);
     deleteFriend(friendship);
     emitToSocket(friendSocket, 'deleteFriend', friendship);
-    displayNotification(
-      'error',
-      'Unfriended ' + friendship.incoming_friend.username,
+    const achievementAlreadyEarned = await handleAchievementsEarned(
+      currentUser.id,
+      2,
+      displayNotification,
     );
+    if (achievementAlreadyEarned)
+      displayNotification(
+        'error',
+        'Unfriended ' + friendship.incoming_friend.username,
+      );
   }
 
   function handleAction(request: Friend, action: FriendAction): void {

@@ -28,6 +28,7 @@ import {
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
 import { ListHeaderIcon } from '@/types/UtilTypes';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 
 export function ChannelMemberList() {
   const selectedChannel = useSelectedChannel();
@@ -45,6 +46,8 @@ export function ChannelMemberList() {
   const { displayDialog } = useDialogActions();
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
+  const { handleAchievementsEarned } = useAchievementActions();
+
   const addableFriends = friends.filter(
     (friend) =>
       friend.status === FriendStatus.FRIENDS &&
@@ -76,7 +79,14 @@ export function ChannelMemberList() {
     callAPI('DELETE', 'channel-members', { id: member.id });
     kickChannelMember(member.id);
     emitToSocket(channelSocket, 'kickMember', member);
-    displayNotification('success', 'Channel member kicked');
+    const achievementAlreadyEarned = await handleAchievementsEarned(
+      currentUser.id,
+      4,
+      displayNotification,
+    );
+    if (achievementAlreadyEarned) {
+      displayNotification('success', 'Channel member kicked');
+    }
   }
 
   async function changeToAdmin(member: ChannelMember) {

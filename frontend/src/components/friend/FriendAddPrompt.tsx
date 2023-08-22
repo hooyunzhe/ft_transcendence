@@ -15,6 +15,7 @@ import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { User } from '@/types/UserTypes';
 import { Friend, FriendStatus } from '@/types/FriendTypes';
 import { FriendCategory } from '@/types/UtilTypes';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 
 export default function FriendAddPrompt() {
   const currentUser = useCurrentUser();
@@ -26,6 +27,7 @@ export default function FriendAddPrompt() {
   const { displayNotification } = useNotificationActions();
   const { setCurrentFriendCategory } = useUtilActions();
   const [usernameToSearch, setUsernameToSearch] = useState('');
+  const { handleAchievementsEarned } = useAchievementActions();
 
   async function getUserByName(name: string): Promise<User | null> {
     return fetch(
@@ -85,7 +87,14 @@ export default function FriendAddPrompt() {
       outgoing_request: newRequests[0],
       incoming_request: newRequests[1],
     });
-    displayNotification('success', 'Request sent');
+    const achievementAlreadyEarned = await handleAchievementsEarned(
+      currentUser.id,
+      1,
+      displayNotification,
+    );
+    if (achievementAlreadyEarned) {
+      displayNotification('success', 'Request sent');
+    }
     setCurrentFriendCategory(FriendCategory.INVITED);
   }
 

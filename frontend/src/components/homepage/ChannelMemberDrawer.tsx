@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Box, Drawer } from '@mui/material';
 import { ChannelMemberList } from '../channel-member/ChannelMemberList';
@@ -15,12 +15,16 @@ export default function ChannelMemberDrawer() {
   const { handleDrawerMouseLeave, handleDrawerMouseOver } = useUtilActions();
   const { setChannelMemberDrawerOpen, setChannelMemberDrawerClose } =
     useUtilActions();
+  const [toggleTimeoutID, setToggleTimeoutID] = useState<
+    NodeJS.Timeout | undefined
+  >();
 
   useEffect(() => {
+    clearTimeout(toggleTimeoutID);
     if (selectedChannel) {
       if (channelMemberDrawerToggle) {
         setChannelMemberDrawerClose();
-        setTimeout(() => setChannelMemberDrawerOpen(), 500);
+        setToggleTimeoutID(setTimeout(() => setChannelMemberDrawerOpen(), 500));
       } else {
         setChannelMemberDrawerOpen();
       }

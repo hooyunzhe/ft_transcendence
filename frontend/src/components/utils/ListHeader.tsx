@@ -15,11 +15,11 @@ export default function ListHeader({ title, icon, children }: ListHeaderProps) {
       <Toolbar>
         <Box mr={2}>
           {icon === ListHeaderIcon.SOCIAL && <Groups fontSize='large' />}
-          {icon === ListHeaderIcon.ACHIEVEMENTS && (
-            <EmojiEvents fontSize='large' />
-          )}
           {icon === ListHeaderIcon.LEADERBOARD && (
             <LeaderboardRounded fontSize='large' />
+          )}
+          {icon === ListHeaderIcon.ACHIEVEMENTS && (
+            <EmojiEvents fontSize='large' />
           )}
         </Box>
         <Typography variant='h6'>{title}</Typography>

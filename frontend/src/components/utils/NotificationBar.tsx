@@ -12,6 +12,9 @@ export default function NotificationBar() {
     <Snackbar
       open={notification.display}
       autoHideDuration={3000}
+      {...(notification.isAchievement && {
+        anchorOrigin: { vertical: 'top', horizontal: 'center' },
+      })}
       onClose={(event, reason) => {
         if (reason !== 'clickaway') {
           resetNotification();

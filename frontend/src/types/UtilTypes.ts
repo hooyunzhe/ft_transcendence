@@ -11,8 +11,8 @@ export enum View {
 export enum ListHeaderIcon {
   NONE = 'NONE',
   SOCIAL = 'SOCIAL',
-  ACHIEVEMENTS = 'ACHIEVEMENTS',
   LEADERBOARD = 'LEADERBOARD',
+  ACHIEVEMENTS = 'ACHIEVEMENTS',
 }
 
 export enum SocialTab {

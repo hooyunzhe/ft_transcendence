@@ -53,7 +53,11 @@ export default function NavigationHeader() {
         paddingLeft='0.5vw'
         paddingRight='0.5vw'
       >
-        <Tabs value={currentView} variant='scrollable'>
+        <Tabs
+          value={currentView}
+          variant='scrollable'
+          onMouseDown={(event) => event.preventDefault()}
+        >
           <Tab
             sx={{
               color: 'green',

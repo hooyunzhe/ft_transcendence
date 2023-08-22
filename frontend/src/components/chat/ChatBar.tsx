@@ -1,6 +1,6 @@
 'use client';
 import { TextField } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
@@ -11,14 +11,13 @@ import {
 } from '@/lib/stores/useChannelStore';
 import { useSelectedFriend } from '@/lib/stores/useFriendStore';
 import { useCurrentSocialTab } from '@/lib/stores/useUtilStore';
-import {
-  useChannelMemberActions,
-  useChannelMemberChecks,
-} from '@/lib/stores/useChannelMemberStore';
-import { useChatActions } from '@/lib/stores/useChatStore';
+import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
+import { useChatActions, useMessagesSent } from '@/lib/stores/useChatStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import { MessageType } from '@/types/MessageTypes';
 import { ChannelType } from '@/types/ChannelTypes';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 export default function ChatBar() {
   const currentUser = useCurrentUser();
@@ -26,14 +25,18 @@ export default function ChatBar() {
   const selectedChannelMuted = useSelectedChannelMuted();
   const selectedFriend = useSelectedFriend();
   const currentSocialTab = useCurrentSocialTab();
+  const channelSocket = useChannelSocket();
+  const messagesSent = useMessagesSent();
   const { getChannelMember } = useChannelMemberActions();
   const { addMessage } = useChatActions();
   const { updateRecentChannelActivity } = useChannelActions();
-  const channelSocket = useChannelSocket();
   const [unsentMessages, setUnsentMessages] = useState<string[]>([]);
+  const { handleAchievementsEarned } = useAchievementActions();
+  const { displayNotification } = useNotificationActions();
   const [typingTimeoutID, setTypingTimeoutID] = useState<
     NodeJS.Timeout | undefined
   >();
+  const chatBar = useRef<HTMLInputElement | null>(null);
 
   function handleInputChange(input: string): void {
     if (selectedChannel) {
@@ -102,6 +105,9 @@ export default function ChatBar() {
           return updatedUnsentMessages;
         });
         addMessage(newMessage);
+        if (messagesSent[selectedChannel.id] === 19) {
+          handleAchievementsEarned(currentUser.id, 5, displayNotification);
+        }
         updateRecentChannelActivity(selectedChannel.id);
         emitToSocket(channelSocket, 'newMessage', newMessage);
       }
@@ -110,12 +116,20 @@ export default function ChatBar() {
     }
   }
 
+  useEffect(() => {
+    if (chatBar.current) {
+      chatBar.current.focus();
+    }
+  }, [selectedChannel]);
+
   return (
     <TextField
       sx={{
         background: '#4CC9F075',
       }}
       fullWidth
+      autoFocus
+      inputRef={chatBar}
       autoComplete='off'
       disabled={selectedChannel === undefined || selectedChannelMuted}
       onChange={(event) => handleInputChange(event.target.value)}
