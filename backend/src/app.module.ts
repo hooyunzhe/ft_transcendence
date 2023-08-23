@@ -10,6 +10,7 @@ import { MessageModule } from './message/message.module';
 import { StatisticModule } from './statistic/statistic.module';
 import { UserModule } from './user/user.module';
 import { UserAchievementModule } from './user-achievement/user-achievement.module';
+import { TwoFactorModule } from './two-factor/two-factor.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UserAchievementModule } from './user-achievement/user-achievement.modul
     StatisticModule,
     UserModule,
     UserAchievementModule,
+    TwoFactorModule,
   ],
   controllers: [],
 })

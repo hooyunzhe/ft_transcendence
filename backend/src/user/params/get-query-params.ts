@@ -17,6 +17,7 @@ export enum UserSearchType {
 }
 
 export enum UserRelation {
+  TWO_FACTOR = 'TWO_FACTOR',
   STATISTIC = 'STATISTIC',
   CHANNELS = 'CHANNELS',
   MESSAGES = 'MESSAGES',

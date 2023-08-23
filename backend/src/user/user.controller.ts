@@ -14,6 +14,7 @@ import { Channel } from 'src/channel/entities/channel.entity';
 import { Match } from 'src/match/entities/match.entity';
 import { Message } from 'src/message/entities/message.entity';
 import { Statistic } from 'src/statistic/entities/statistic.entity';
+import { TwoFactor } from 'src/two-factor/entities/two-factor.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RemoveUserDto } from './dto/remove-user.dto';
@@ -38,6 +39,7 @@ export class UserController {
     | Match[]
     | Message[]
     | Statistic
+    | TwoFactor
     | User[]
     | User
     | null
