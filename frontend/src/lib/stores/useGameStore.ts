@@ -12,6 +12,7 @@ interface GameStore {
     matchesPlayed: Match[];
     recentMatches: RecentMatchesDictionary;
     matchState: MatchState;
+    keyState: { [key: string]: boolean};
   };
   actions: {
     getGameData: (userID: number) => void;
@@ -22,6 +23,7 @@ interface GameStore {
     getPathName: (path: SkillPath) => string;
     addMatch: (newMatch: Match, currentUserID: number) => void;
     setMatchState: (matchState: MatchState) => void;
+    setKeyState: (key: string, isPressed: boolean) => void;
   };
 }
 
@@ -62,6 +64,18 @@ async function getGameData(set: StoreSetter, userID: number): Promise<void> {
       matches: matchData,
       matchesPlayed: matchesPlayed,
       recentMatches: recentMatches,
+    },
+  }));
+}
+
+function setKeyState(set: StoreSetter, key: string, isPressed: boolean): void {
+  set((state) => ({
+    data: {
+      ...state.data,
+      keyState: {
+        ...state.data.keyState,
+        [key]: isPressed,
+      },
     },
   }));
 }
@@ -155,6 +169,7 @@ const useGameStore = create<GameStore>()((set, get) => ({
     matchesPlayed: [],
     recentMatches: {},
     matchState: 'IDLE',
+    keyState: {},
   },
   actions: {
     getGameData: (userID) => getGameData(set, userID),
@@ -166,6 +181,7 @@ const useGameStore = create<GameStore>()((set, get) => ({
     addMatch: (newMatch, currentUserID) =>
       addMatch(set, newMatch, currentUserID),
     setMatchState: (MatchState) => setMatchState(set, MatchState), 
+    setKeyState: (key, isPressed) => setKeyState(set, key, isPressed),
   },
 }));
 

@@ -13,6 +13,7 @@ import GameMainScene from './scenes/GameMainScene';
 import GameReadyScene from './scenes/GameReadyScene';
 import GameMatchFoundScene from './scenes/GameMatchFoundScene';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
+import { useGameActions } from '@/lib/stores/useGameStore';
 
 interface GameRenderProps {
   setGameReady: Dispatch<SetStateAction<boolean>>;
@@ -32,6 +33,7 @@ export default function GameRender({
   // const paddle1 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
   // const paddle2 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
 
+  const gameAction = useGameActions();
   const gameSocket = useGameSocket();
 
   if (!gameSocket) {
@@ -86,16 +88,16 @@ export default function GameRender({
   //     },
   //   );
 
-  //   function setKeyStateFalse(event: KeyboardEvent) {
-  //     keyState[event.key] = false;
-  //   }
-
-  //   function setKeyStateTrue(event: KeyboardEvent) {
-  //     keyState[event.key] = true;
-  //   }
-  //   window.addEventListener('keyup', setKeyStateFalse, true);
-
-  //   window.addEventListener('keydown', setKeyStateTrue, true);
+  function setKeyStateFalse(event: KeyboardEvent) {
+    gameAction.setKeyState(event.key, false);
+  }
+  
+  function setKeyStateTrue(event: KeyboardEvent) {
+    gameAction.setKeyState(event.key, true);
+  }
+  
+  window.addEventListener('keyup', setKeyStateFalse, true);
+  window.addEventListener('keydown', setKeyStateTrue, true);
   //   return () => {
   //     gameSocket.off('game');
   //     window.removeEventListener('keyup', setKeyStateFalse);
