@@ -18,6 +18,8 @@ import emitToSocket from '@/lib/emitToSocket';
 import { useChatActions, useSelectedMessage } from '@/lib/stores/useChatStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import { Message, MessageType } from '@/types/MessageTypes';
+import { useChannelMemberChecks } from '@/lib/stores/useChannelMemberStore';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
 
 interface ChatDisplayProps {
   message: Message;
@@ -28,6 +30,8 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
   const { editMessage, setSelectedMessage } = useChatActions();
   const channelSocket = useChannelSocket();
   const [input, setInput] = useState(message.content);
+  const { isMessageDeletable } = useChannelMemberChecks();
+  const currentUser = useCurrentUser();
 
   async function handleEdit(): Promise<void> {
     await callAPI('PATCH', 'messages', {
@@ -107,6 +111,12 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
             <ChatMenu
               message={message}
               toggleEdit={() => setSelectedMessage(message)}
+              isDeletable={isMessageDeletable(
+                currentUser.id,
+                message.user.id,
+                message.channel.id,
+              )}
+              isCurrentUser={currentUser.id === message.user.id}
             />
           )}
         </ListItem>

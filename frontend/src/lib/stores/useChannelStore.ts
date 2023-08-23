@@ -44,7 +44,6 @@ interface ChannelStore {
   checks: {
     checkChannelExists: (channelName: string) => boolean;
     checkChannelJoined: (channelName: string) => boolean;
-    // checkOwnerAmount: (userID: number) => boolean;
   };
 }
 

@@ -17,9 +17,16 @@ import { Message, MessageType } from '@/types/MessageTypes';
 interface ChatMenuProps {
   message: Message;
   toggleEdit: () => void;
+  isDeletable: boolean;
+  isCurrentUser: boolean;
 }
 
-export default function ChatMenu({ message, toggleEdit }: ChatMenuProps) {
+export default function ChatMenu({
+  message,
+  toggleEdit,
+  isDeletable,
+  isCurrentUser,
+}: ChatMenuProps) {
   const { deleteMessage } = useChatActions();
   const channelSocket = useChannelSocket();
   const [anchorElement, setAnchorElement] = useState<HTMLElement | undefined>();
@@ -42,7 +49,7 @@ export default function ChatMenu({ message, toggleEdit }: ChatMenuProps) {
     <>
       <IconButton
         edge='end'
-        disabled={message.type === MessageType.DELETED}
+        disabled={!isDeletable || message.type === MessageType.DELETED}
         onClick={(event) => setAnchorElement(event.currentTarget)}
       >
         <MoreVert />
@@ -56,24 +63,28 @@ export default function ChatMenu({ message, toggleEdit }: ChatMenuProps) {
           horizontal: 'left',
         }}
       >
-        <MenuItem
-          dense
-          onClick={() => {
-            toggleEdit();
-            handleClose();
-          }}
-        >
-          <ListItemIcon>
-            <Edit fontSize='small' />
-          </ListItemIcon>
-          <ListItemText>Edit</ListItemText>
-        </MenuItem>
-        <MenuItem dense onClick={handleDelete}>
-          <ListItemIcon>
-            <Delete fontSize='small' />
-          </ListItemIcon>
-          <ListItemText>Delete</ListItemText>
-        </MenuItem>
+        {isCurrentUser && (
+          <MenuItem
+            dense
+            onClick={() => {
+              toggleEdit();
+              handleClose();
+            }}
+          >
+            <ListItemIcon>
+              <Edit fontSize='small' />
+            </ListItemIcon>
+            <ListItemText>Edit</ListItemText>
+          </MenuItem>
+        )}
+        {isDeletable && (
+          <MenuItem dense onClick={handleDelete}>
+            <ListItemIcon>
+              <Delete fontSize='small' />
+            </ListItemIcon>
+            <ListItemText>Delete</ListItemText>
+          </MenuItem>
+        )}
       </Menu>
     </>
   );

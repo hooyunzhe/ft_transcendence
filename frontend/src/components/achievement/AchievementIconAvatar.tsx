@@ -13,13 +13,13 @@ import {
   VolunteerActivism,
 } from '@mui/icons-material';
 
-interface AchievementIconAvatarProp {
+interface AchievementIconProp {
   achievementID: number;
 }
 
-export default function AchievementIconAvatar({
+export default function AchievementIcon({
   achievementID,
-}: AchievementIconAvatarProp) {
+}: AchievementIconProp) {
   switch (achievementID) {
     case 1:
       return <VolunteerActivism />;
