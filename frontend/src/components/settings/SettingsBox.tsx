@@ -1,10 +1,10 @@
 'use client';
 import { Box } from '@mui/material';
 import ListHeader from '../utils/ListHeader';
+import SettingsAccountSection from './SettingsAccountSection';
 import { ListHeaderIcon } from '@/types/UtilTypes';
-import LeaderboardList from './LeaderboardList';
 
-export default function LeaderboardBox() {
+export default function SettingsBox() {
   return (
     <Box
       height='100%'
@@ -12,8 +12,8 @@ export default function LeaderboardBox() {
       flexDirection='column'
       justifyContent='space-between'
     >
-      <ListHeader title='Leaderboard' icon={ListHeaderIcon.LEADERBOARD} />
-      <LeaderboardList />
+      <ListHeader title='Settings' icon={ListHeaderIcon.SETTINGS} />
+      <SettingsAccountSection />
     </Box>
   );
 }

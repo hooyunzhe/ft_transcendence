@@ -5,6 +5,7 @@ import ChatBox from '../chat/ChatBox';
 import ProfileBox from '../profile/ProfileBox';
 import LeaderboardBox from '../leaderboard/LeaderboardBox';
 import AchievementBox from '../achievement/AchievementBox';
+import SettingsBox from '../settings/SettingsBox';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
 
@@ -59,6 +60,7 @@ export default function ContentBox() {
       {localView === View.PROFILE && <ProfileBox />}
       {localView === View.LEADERBOARD && <LeaderboardBox />}
       {localView === View.ACHIEVEMENTS && <AchievementBox />}
+      {localView === View.SETTINGS && <SettingsBox />}
     </Drawer>
   );
 }

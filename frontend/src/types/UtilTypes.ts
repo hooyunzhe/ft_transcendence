@@ -4,7 +4,6 @@ export enum View {
   PROFILE = 'PROFILE',
   LEADERBOARD = 'LEADERBOARD',
   ACHIEVEMENTS = 'ACHIEVEMENTS',
-  ABOUT_US = 'ABOUT_US',
   SETTINGS = 'SETTINGS',
 }
 
@@ -13,6 +12,7 @@ export enum ListHeaderIcon {
   SOCIAL = 'SOCIAL',
   LEADERBOARD = 'LEADERBOARD',
   ACHIEVEMENTS = 'ACHIEVEMENTS',
+  SETTINGS = 'SETTINGS',
 }
 
 export enum SocialTab {
