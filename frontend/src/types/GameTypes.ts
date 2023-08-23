@@ -6,4 +6,3 @@
 
 
 export type MatchState = 'IDLE' | 'SEARCHING' | 'FOUND';
-}
