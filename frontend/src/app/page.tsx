@@ -51,7 +51,10 @@ export default function Home() {
     >
       {session === null && <Login />}
       {session && user === null && <FirstTimeSetup session={session} />}
-      {session && user && user.id !== 0 && <Cyberpong />}
+      {session && user && user.id !== 0 && gameSession != 'INGAME' && (
+        <Cyberpong />
+      )}
+      {gameSession === 'INGAME' && <GameRender />}
     </Box>
   );
 }
