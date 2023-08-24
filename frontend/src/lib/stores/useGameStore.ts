@@ -12,7 +12,9 @@ interface GameStore {
     matchesPlayed: Match[];
     recentMatches: RecentMatchesDictionary;
     matchState: MatchState;
-    keyState: { [key: string]: boolean};
+    keyState: { [key: string]: boolean };
+    gameReady: boolean;
+    skillState: boolean[];
   };
   actions: {
     getGameData: (userID: number) => void;
@@ -24,6 +26,8 @@ interface GameStore {
     addMatch: (newMatch: Match, currentUserID: number) => void;
     setMatchState: (matchState: MatchState) => void;
     setKeyState: (key: string, isPressed: boolean) => void;
+    setGameReady: (ready: boolean) => void;
+    setSkillState: (skillState: boolean[]) => void;
   };
 }
 
@@ -163,6 +167,25 @@ function setMatchState(set: StoreSetter, matchState: MatchState): void {
     },
   }));
 }
+
+function setGameReady(set: StoreSetter, ready: boolean): void {
+  set((state) => ({
+    data: {
+      ...state.data,
+      gameReady: ready,
+    },
+  }));
+}
+
+function setSkillState(set: StoreSetter, skillState: boolean[]): void {
+  set((state) => ({
+    data: {
+      ...state.data,
+      skillState: skillState,
+    },
+  }));
+}
+
 const useGameStore = create<GameStore>()((set, get) => ({
   data: {
     matches: [],
@@ -170,6 +193,8 @@ const useGameStore = create<GameStore>()((set, get) => ({
     recentMatches: {},
     matchState: 'IDLE',
     keyState: {},
+    gameReady: false,
+    skillState: [],
   },
   actions: {
     getGameData: (userID) => getGameData(set, userID),
@@ -180,8 +205,10 @@ const useGameStore = create<GameStore>()((set, get) => ({
     getPathName: (path) => getPathName(path),
     addMatch: (newMatch, currentUserID) =>
       addMatch(set, newMatch, currentUserID),
-    setMatchState: (MatchState) => setMatchState(set, MatchState), 
+    setMatchState: (MatchState) => setMatchState(set, MatchState),
     setKeyState: (key, isPressed) => setKeyState(set, key, isPressed),
+    setGameReady: (ready) => setGameReady(set, ready),
+    setSkillState: (skillState) => setSkillState(set, skillState),
   },
 }));
 
@@ -191,4 +218,5 @@ export const useMatchesPlayed = () =>
 export const useRecentMatches = () =>
   useGameStore((state) => state.data.recentMatches);
 export const useGameActions = () => useGameStore((state) => state.actions);
-export const useMatchState = () => useGameStore((state) => state.data.matchState);
+export const useMatchState = () =>
+  useGameStore((state) => state.data.matchState);

@@ -4,5 +4,4 @@
 //   IDLE = 'IDLE',
 // }
 
-
-export type MatchState = 'IDLE' | 'SEARCHING' | 'FOUND';
+export type MatchState = 'IDLE' | 'SEARCHING' | 'FOUND' | 'INGAME';

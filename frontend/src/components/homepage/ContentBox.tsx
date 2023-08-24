@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
 import ProfileBox from '../profile/ProfileBox';
+import GameMenu from '../game/GameMenu';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
@@ -55,6 +56,7 @@ export default function ContentBox() {
     >
       {localView === View.CHAT && <ChatBox />}
       {localView === View.PROFILE && <ProfileBox />}
+      {localView === View.GAME && <GameMenu />}
     </Drawer>
   );
 }

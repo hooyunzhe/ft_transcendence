@@ -20,10 +20,7 @@ interface GameRenderProps {
   setSkillState: Dispatch<SetStateAction<boolean[]>>;
 }
 
-export default function GameRender({
-  setGameReady,
-  setSkillState,
-}: GameRenderProps) {
+export default function GameRender() {
   const score = {
     player1: 0,
     player2: 0,
@@ -37,7 +34,7 @@ export default function GameRender({
   const gameSocket = useGameSocket();
 
   if (!gameSocket) {
-    return;
+    return null;
   }
 
   const mainGame = new GameMainScene(gameSocket);
@@ -91,11 +88,11 @@ export default function GameRender({
   function setKeyStateFalse(event: KeyboardEvent) {
     gameAction.setKeyState(event.key, false);
   }
-  
+
   function setKeyStateTrue(event: KeyboardEvent) {
     gameAction.setKeyState(event.key, true);
   }
-  
+
   window.addEventListener('keyup', setKeyStateFalse, true);
   window.addEventListener('keydown', setKeyStateTrue, true);
   //   return () => {

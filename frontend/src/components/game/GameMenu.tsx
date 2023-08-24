@@ -1,117 +1,40 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { io } from 'socket.io-client';
 import { useSession } from 'next-auth/react';
-import { Button, ToggleButton } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import GameRender from '@/components/game/GameRender';
 import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
+import ConfirmationPrompt from '../utils/ConfirmationPrompt';
+import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 
-// // export default function GameMenu() {
-// //   // const [session, setSession] = useState(useSession());
-// //   // const { data: session } = useSession();
-// //   // const [skillState, setSkillState] = useState<boolean[]>([]);
-// //   // const [searching, setsearching] = useState(false);
-// //   // const [matchFound, setMatchFound] = useState(false);
-// //   // const [gameReady, setGameReady] = useState(false);
-// //   // // const [roomid, setRoomid] = useState('');
-// //   // const socketRef = useRef();
-
-//   useEffect(() => {
-//     // matchSocket.on('match', (data: string) => {
-//     //   matchSocket.sendBuffer = [];
-//     //   setRoomid(data);
-//     //   setMatchFound(true);
-//     //   // matchSocket.disconnect();
-//     // });
-//     gameSocket.on('match', () => {
-//       setMatchFound(true);
-//     }),
-//       gameSocket.on('disc', () => {
-//         gameSocket.disconnect();
-//       });
-//     gameSocket.on('connect', () => {
-//       gameSocket.sendBuffer = [];
-//       gameSocket.emit('init', session?.user?.id);
-//     });
-//     gameSocket.on('disconnect', () => {
-//       gameSocket.sendBuffer = [];
-//       console.log('game socket disconnected');
-//       setsearching(false);
-//       setMatchFound(false);
-//       setGameReady(false);
-//     });
-//     return () => {
-//       gameSocket.off('connect');
-//       gameSocket.off('disconnect');
-//       gameSocket.off('match');
-//       gameSocket.off('disc');
-//     };
-//   }, []);
-
-//   const findMatch = () => {
-//     gameSocket.connect();
-//     setsearching(true);
-//   };
-
-//   // const CheckStatus = () => {
-//   //   matchSocket.emit('check');
-//   // };
-//   // console.log(session);
-//   // // session.data?.user;
-
-//   const startGame = () => {
-//     // if (gameSocket.disconnected) gameSocket.connect();
-//     // console.log('Starting game');
-//     // console.log(gameSocket.connected);
-//     gameSocket.emit('ready');
-//   };
-
-//   // const joinGame = () => {
-//   //   console.log('Joinin game');
-//   //   gameSocket.emit('join');
-//   //   setMatchFound(false);
-//   // };
-
-//   // const rejectGame = () => {
-//   //   gameSocket.emit('reject');
-//   //   setMatchFound(false);
-//   // };
-
-//   const disconnectGame = () => {
-//     gameSocket.disconnect();
-//     setsearching(false);
-//   };
-
-//   const resetGame = () => {
-//     gameSocket.emit('reset');
-//     setGameReady(false);
-//     gameSocket.disconnect();
-//     // setRoomid('');
-//   };
-
- 
-
-export default function gameMenu() {
-
-  const { data: session } = useSession();
-  if (!session) return;
+export default function GameMenu() {
   const gameSocket = useGameSocket();
-  if (!gameSocket) return;
   const matchState = useMatchState();
   const gameAction = useGameActions();
+  const userId = useCurrentUser();
+  const { displayConfirmation } = useConfirmationActions();
 
   useEffect(() => {
-
+    if (!gameSocket) return;
     gameSocket.on('match', () => {
       gameAction.setMatchState('FOUND');
+      console.log('match found');
+      displayConfirmation(
+        'Match Found',
+        'Would you like to accept the match?',
+        null,
+        joinGame,
+        rejectGame,
+      );
     }),
       gameSocket.on('disc', () => {
         gameSocket.disconnect();
       });
     gameSocket.on('connect', () => {
       gameSocket.sendBuffer = [];
-      gameSocket.emit('init', session?.user?.id);
+      gameSocket.emit('init', userId.id);
     });
     gameSocket.on('disconnect', () => {
       gameSocket.sendBuffer = [];
@@ -122,69 +45,88 @@ export default function gameMenu() {
       gameSocket.off('disconnect');
       gameSocket.off('match');
       gameSocket.off('disc');
+
+      gameSocket.disconnect();
     };
   }, []);
 
   const findMatch = () => {
+    if (!gameSocket) return;
     gameSocket.connect();
     gameAction.setMatchState('SEARCHING');
+    console.log(matchState);
   };
 
-
   const startGame = () => {
-    // if (gameSocket.disconnected) gameSocket.connect();
-    // console.log('Starting game');
-    // console.log(gameSocket.connected);
+    if (!gameSocket) return;
     gameSocket.emit('ready');
   };
 
-
   const disconnectGame = () => {
+    if (!gameSocket) return;
     gameSocket.disconnect();
     gameAction.setMatchState('IDLE');
   };
 
   const resetGame = () => {
+    if (!gameSocket) return;
     gameSocket.emit('reset');
     gameSocket.disconnect();
   };
+
+  const joinGame = () => {
+    console.log('Joinin game');
+    if (gameSocket) gameSocket.emit('join');
+    gameAction.setMatchState('INGAME');
+  };
+
+  const rejectGame = () => {
+    if (gameSocket) gameSocket.emit('reject');
+    gameAction.setMatchState('IDLE');
+  };
   return (
-    <div>
-      <ToggleButton value={matchState === 'SEARCHING'} onChange={findMatch} disabled={matchState === 'SEARCHING'}>
+    <Box
+      height='100%'
+      display='flex'
+      justifyContent='center'
+      alignItems='center'
+    >
+      <Button
+        variant='contained'
+        onClick={findMatch}
+        disabled={matchState === 'SEARCHING'}
+      >
         Find Match
-      </ToggleButton>
+      </Button>
       {/* <Button onClick={CheckStatus}>Check Status </Button> */}
-      <ToggleButton
-        value={matchState === 'FOUND'}
-        onChange={startGame}
+      <Button
+        variant='contained'
+        onClick={startGame}
         disabled={matchState != 'FOUND'}
       >
-      </ToggleButton>
+        Start Game
+      </Button>
       {/* <ConfirmationPrompt
-        open={matchFound}
+        open={isMatchFound}
         onCloseHandler={rejectGame}
         promptTitle={'Match Found!'}
         promptDescription={'Accept this match?'}
         actionHandler={joinGame}
       ></ConfirmationPrompt> */}
-      <ToggleButton
-        value={matchState === 'FOUND'}
-        onChange={resetGame}
-        disabled={matchState != 'FOUND'}
+      <Button
+        variant='contained'
+        onClick={resetGame}
+        // disabled={matchState != 'FOUND'}
       >
         Reset
-      </ToggleButton>
+      </Button>
+
       <Button onClick={disconnectGame}>Disconnect</Button>
       {matchState === 'FOUND' && (
         <div>
-          <GameRender
-            gameSocket={gameSocket}
-            setGameReady={setGameReady}
-            setSkillState={setSkillState}
-          ></GameRender>
+          <GameRender />
         </div>
       )}
-    </div>
+    </Box>
   );
-
 }

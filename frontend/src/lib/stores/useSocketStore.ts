@@ -29,6 +29,7 @@ function initSockets(set: StoreSetter, userID: number): void {
   );
   const gameSocket = io(
     process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/game',
+    { autoConnect: false },
   );
 
   userSocket.emit('initConnection', userID);
