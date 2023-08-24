@@ -8,11 +8,14 @@ import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
+import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
+import { View } from '@/types/UtilTypes';
 
 export default function GameMenu() {
   const gameSocket = useGameSocket();
   const matchState = useMatchState();
   const gameAction = useGameActions();
+  const viewAction = useUtilActions();
   const userId = useCurrentUser();
   const { displayConfirmation } = useConfirmationActions();
 
@@ -51,9 +54,12 @@ export default function GameMenu() {
   }, []);
 
   const findMatch = () => {
-    if (!gameSocket) return;
-    gameSocket.connect();
-    gameAction.setMatchState('SEARCHING');
+    if (gameSocket) {
+      gameSocket.connect();
+      gameAction.setMatchState('SEARCHING');
+      gameSocket.sendBuffer = [];
+      gameSocket.emit('init', userId.id);
+    }
     console.log(matchState);
   };
 
@@ -78,6 +84,7 @@ export default function GameMenu() {
     console.log('Joinin game');
     if (gameSocket) gameSocket.emit('join');
     gameAction.setMatchState('INGAME');
+    viewAction.setCurrentView(View.PHASER);
   };
 
   const rejectGame = () => {
@@ -106,13 +113,6 @@ export default function GameMenu() {
       >
         Start Game
       </Button>
-      {/* <ConfirmationPrompt
-        open={isMatchFound}
-        onCloseHandler={rejectGame}
-        promptTitle={'Match Found!'}
-        promptDescription={'Accept this match?'}
-        actionHandler={joinGame}
-      ></ConfirmationPrompt> */}
       <Button
         variant='contained'
         onClick={resetGame}
@@ -122,11 +122,9 @@ export default function GameMenu() {
       </Button>
 
       <Button onClick={disconnectGame}>Disconnect</Button>
-      {matchState === 'FOUND' && (
-        <div>
-          <GameRender />
-        </div>
-      )}
+      {/* {matchState === 'FOUND' && ( */}
+
+      {/* )} */}
     </Box>
   );
 }

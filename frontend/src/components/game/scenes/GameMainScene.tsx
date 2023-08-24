@@ -21,10 +21,6 @@ export default class GameMainScene extends Phaser.Scene {
     this.paddle2 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
     this.keyState = {};
   }
-  // const score = {
-  //   player1: 0,
-  //   player2: 0,
-  // };
 
   private keyState: { [key: string]: boolean };
   preload() {
@@ -65,9 +61,6 @@ export default class GameMainScene extends Phaser.Scene {
     this.paddle2.current = game.physics.add.sprite(785, 300, 'paddle2');
 
     const keyState: { [key: string]: boolean } = {};
-    // const paddle1 = game.add.graphics();
-    // const paddle1 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
-    // const paddle2 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
 
     const handleCollision1 = () => {
       if (!this.paddle1.current) return;

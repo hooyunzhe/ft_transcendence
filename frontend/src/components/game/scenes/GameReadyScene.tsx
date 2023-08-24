@@ -53,35 +53,6 @@ export default class GameReadyScene extends Phaser.Scene {
       emitReady,
       emitUnready,
     );
-
-    // const skillNodes1 = new SkillNodes(
-    //   100,
-    //   100,
-    //   'skillframe',
-    //   'template_skill',
-    //   'do this and that',
-    //   this,
-    // );
-    // const skillTree1 = new SkillTree(
-    //   [
-    //     { skillframe: 'skillframe', skills: ['SKILL1', 'DO 1'] },
-    //     { skillframe: 'skillframe', skills: ['SKILL2', 'DO 2'] },
-    //     { skillframe: 'skillframe', skills: ['SKILL3', 'DO 3'] },
-    //     { skillframe: 'skillframe', skills: ['SKILL4', 'DO 4'] },
-    //   ],
-    //   this,
-    //   { x: 100, y: 100 },
-    // );
-    // const skillTree2 = new SkillTree(
-    //   [
-    //     { skillframe: 'skillframe', skills: ['SKILL1', 'DO 1'] },
-    //     { skillframe: 'skillframe', skills: ['SKILL2', 'DO 2'] },
-    //     { skillframe: 'skillframe', skills: ['SKILL3', 'DO 3'] },
-    //     { skillframe: 'skillframe', skills: ['SKILL4', 'DO 4'] },
-    //   ],
-    //   this,
-    //   { x: 300, y: 100 },
-    // );
     const setSkillState = (
       classType: classType,
       level: number,

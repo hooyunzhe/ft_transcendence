@@ -1,4 +1,5 @@
 export enum View {
+  PHASER = 'PHASER',
   GAME = 'GAME',
   CHAT = 'CHAT',
   PROFILE = 'PROFILE',

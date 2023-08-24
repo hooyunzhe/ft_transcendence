@@ -6,6 +6,7 @@ import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
 import ProfileBox from '../profile/ProfileBox';
 import GameMenu from '../game/GameMenu';
+import GameRender from '../game/GameRender';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
@@ -57,6 +58,7 @@ export default function ContentBox() {
       {localView === View.CHAT && <ChatBox />}
       {localView === View.PROFILE && <ProfileBox />}
       {localView === View.GAME && <GameMenu />}
+      {localView === View.PHASER && <GameRender />}
     </Drawer>
   );
 }
