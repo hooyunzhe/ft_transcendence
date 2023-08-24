@@ -7,16 +7,19 @@ import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import Login from '@/components/user/Login';
 import FirstTimeSetup from '@/components/user/FirstTimeSetup';
 import Cyberpong from '@/components/homepage/Cyberpong';
+import GameRender from '@/components/game/GameRender';
+import { useMatchState } from '@/lib/stores/useGameStore';
 
 export default function Home() {
   const [session, setSession] = useState<Session | null | undefined>();
   const user = useCurrentUser();
   const { setCurrentUser } = useUserActions();
-
+  const gameSession = useMatchState();
   useEffect(() => {
     async function getData() {
       const currentSession = await getSession();
 
+      const gameSession = useMatchState();
       setSession(currentSession);
       if (currentSession) {
         fetch(
@@ -43,7 +46,6 @@ export default function Home() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100vh',
         background: '#4361EE',
       }}
     >

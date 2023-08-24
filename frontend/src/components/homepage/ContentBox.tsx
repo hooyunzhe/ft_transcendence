@@ -59,7 +59,7 @@ export default function ContentBox() {
       {localView === View.PROFILE && <ProfileBox />}
       {localView === View.GAME && <GameMenu />}
       {localView === View.PHASER && (
-        <Box height='50vh'>
+        <Box height='0'>
           <GameRender />
         </Box>
       )}

@@ -18,7 +18,7 @@ export default function GameRender() {
       },
       scale: {
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.Center.CENTER_VERTICALLY,
+        autoCenter: Phaser.Scale.Center.CENTER_BOTH,
       },
       scene: [new GameMatchFoundScene()],
     };
@@ -30,5 +30,17 @@ export default function GameRender() {
     };
   }, []);
 
+  <div
+    style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      zIndex: 999,
+    }}
+  >
+    {' '}
+  </div>;
   return null;
 }
