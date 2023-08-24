@@ -1,5 +1,5 @@
 'use client';
-import { Drawer } from '@mui/material';
+import { Box, Drawer } from '@mui/material';
 import ChatBox from '../chat/ChatBox';
 import { useEffect, useState } from 'react';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
@@ -58,7 +58,11 @@ export default function ContentBox() {
       {localView === View.CHAT && <ChatBox />}
       {localView === View.PROFILE && <ProfileBox />}
       {localView === View.GAME && <GameMenu />}
-      {localView === View.PHASER && <GameRender />}
+      {localView === View.PHASER && (
+        <Box height='50vh'>
+          <GameRender />
+        </Box>
+      )}
     </Drawer>
   );
 }

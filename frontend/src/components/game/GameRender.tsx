@@ -8,12 +8,6 @@ import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions } from '@/lib/stores/useGameStore';
 
 export default function GameRender() {
-  const score = {
-    player1: 0,
-    player2: 0,
-  };
-
-  // const gameSocket = useGameSocket();
   useEffect(() => {
     const config = {
       type: Phaser.AUTO,
@@ -24,7 +18,7 @@ export default function GameRender() {
       },
       scale: {
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
+        autoCenter: Phaser.Scale.Center.CENTER_VERTICALLY,
       },
       scene: [new GameMatchFoundScene()],
     };
