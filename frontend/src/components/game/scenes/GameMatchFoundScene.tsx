@@ -72,7 +72,7 @@ export default class GameMatchFoundScene extends Phaser.Scene {
       ease: 'Bounce.easeOut',
     });
     particle1.startFollow(Vtext);
-    // setTimeout(() => this.scene.start('GameReadyScene'), 3000);
+    setTimeout(() => this.scene.start('MainScene'), 3000);
   }
 
   update() {}

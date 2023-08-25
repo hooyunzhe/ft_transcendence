@@ -1,6 +1,6 @@
 'use client';
 import Phaser from 'phaser';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import GameMainScene from './scenes/GameMainScene';
 import GameReadyScene from './scenes/GameReadyScene';
 import GameMatchFoundScene from './scenes/GameMatchFoundScene';
@@ -8,6 +8,8 @@ import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions } from '@/lib/stores/useGameStore';
 
 export default function GameRender() {
+  const gameSocket = useGameSocket();
+  if(!gameSocket) return;
   useEffect(() => {
     const config = {
       type: Phaser.AUTO,
@@ -20,7 +22,9 @@ export default function GameRender() {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.Center.CENTER_BOTH,
       },
-      scene: [new GameMatchFoundScene()],
+      parent: "maingame",
+
+      scene: [new GameMatchFoundScene(), new GameMainScene(gameSocket )],
     };
 
     const gameSession = new Phaser.Game(config);
@@ -29,18 +33,17 @@ export default function GameRender() {
       gameSession.destroy(true, true);
     };
   }, []);
-
-  <div
+  return (
+    <div id="maingame"
     style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      zIndex: 999,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: '100vw',   // 100% of the viewport width
+      height: '100vh',  // 100% of the viewport height
     }}
   >
-    {' '}
-  </div>;
-  return null;
-}
+      {/* The Phaser canvas will be automatically added here */}
+    </div>
+  );
+};

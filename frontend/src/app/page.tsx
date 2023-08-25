@@ -14,12 +14,9 @@ export default function Home() {
   const [session, setSession] = useState<Session | null | undefined>();
   const user = useCurrentUser();
   const { setCurrentUser } = useUserActions();
-  const gameSession = useMatchState();
   useEffect(() => {
     async function getData() {
       const currentSession = await getSession();
-
-      const gameSession = useMatchState();
       setSession(currentSession);
       if (currentSession) {
         fetch(
@@ -46,15 +43,15 @@ export default function Home() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        height: '100vh',
         background: '#4361EE',
       }}
     >
       {session === null && <Login />}
       {session && user === null && <FirstTimeSetup session={session} />}
-      {session && user && user.id !== 0 && gameSession != 'INGAME' && (
+      {session && user && user.id !== 0 && (
         <Cyberpong />
       )}
-      {gameSession === 'INGAME' && <GameRender />}
     </Box>
   );
 }

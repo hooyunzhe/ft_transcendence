@@ -1,9 +1,12 @@
 'use client';
 import GameRender from '@/components/game/GameRender';
 
-export default function gamePage() {
+
+export default function GamePage() {
   return (
-    <div style={{ height: '50vh' }}>
+    <div style={{ 
+      height: '100vh', 
+    }}>
       <GameRender />
     </div>
   );
