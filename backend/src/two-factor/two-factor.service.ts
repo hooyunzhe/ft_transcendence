@@ -3,11 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityNotFoundError, Repository } from 'typeorm';
 import { authenticator } from 'otplib';
 import { TwoFactor } from './entities/two-factor.entity';
+import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { CreateTwoFactorDto } from './dto/create-two-factor.dto';
 import { SetupTwoFactorDto } from './dto/setup-two-factor.dto';
 import { VerifyTwoFactorDto } from './dto/verify-two-factor.dto';
 import { RemoveTwoFactorDto } from './dto/remove-two-factor.dto';
+import { EntityAlreadyExistsError } from 'src/app.error';
 
 @Injectable()
 export class TwoFactorService {
@@ -39,21 +41,30 @@ export class TwoFactorService {
     };
   }
 
-  async save(twoFactorDto: SetupTwoFactorDto): Promise<TwoFactor> {
-    const userFound = await this.userService.findOne(
-      twoFactorDto.user_id,
-      false,
-    );
-
+  async save(secret_key: string, user: User): Promise<TwoFactor> {
     return await this.twoFactorRepository.save({
-      secret_key: twoFactorDto.secret_key,
-      user: userFound,
+      secret_key: secret_key,
+      user: user,
     });
   }
 
   async setup(twoFactorDto: SetupTwoFactorDto): Promise<TwoFactor | null> {
+    const userFound = await this.userService.findOne(
+      twoFactorDto.user_id,
+      false,
+    );
+    const twoFactorFound = await this.twoFactorRepository.findOneBy({
+      user: { id: userFound.id },
+    });
+
+    if (twoFactorFound) {
+      throw new EntityAlreadyExistsError(
+        'TwoFactor',
+        'user_id = ' + userFound.id,
+      );
+    }
     if (authenticator.check(twoFactorDto.token, twoFactorDto.secret_key)) {
-      return this.save(twoFactorDto);
+      return this.save(twoFactorDto.secret_key, userFound);
     } else {
       throw new ForbiddenException();
     }
