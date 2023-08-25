@@ -44,6 +44,10 @@ export class UserService {
     };
   }
 
+  async setTwoFactorEnabled(id: number, enabled: boolean): Promise<void> {
+    await this.userRepository.update(id, { two_factor_enabled: enabled });
+  }
+
   async create(userDto: CreateUserDto): Promise<User> {
     const userExists = await this.userRepository.findOneBy({
       username: userDto.username,

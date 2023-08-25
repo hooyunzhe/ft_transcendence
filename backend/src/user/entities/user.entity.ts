@@ -34,6 +34,9 @@ export class User {
   @Column()
   avatar_url: string;
 
+  @Column({ default: false })
+  two_factor_enabled: boolean;
+
   @CreateDateColumn({ type: 'timestamptz' })
   date_of_creation: Date;
 

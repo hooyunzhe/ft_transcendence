@@ -64,6 +64,7 @@ export class TwoFactorService {
       );
     }
     if (authenticator.check(twoFactorDto.token, twoFactorDto.secret_key)) {
+      this.userService.setTwoFactorEnabled(userFound.id, true);
       return this.save(twoFactorDto.secret_key, userFound);
     } else {
       throw new ForbiddenException();
@@ -103,6 +104,7 @@ export class TwoFactorService {
   }
 
   async remove(twoFactorDto: RemoveTwoFactorDto): Promise<void> {
+    this.userService.setTwoFactorEnabled(twoFactorDto.user_id, false);
     await this.twoFactorRepository.delete({
       user: { id: twoFactorDto.user_id },
     });
