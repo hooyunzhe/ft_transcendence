@@ -2,23 +2,15 @@ import { MutableRefObject, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 
 export default class GameMainScene extends Phaser.Scene {
-  private ball: MutableRefObject<
-    Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined
-  >;
-  private paddle1: MutableRefObject<
-    Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined
-  >;
-  private paddle2: MutableRefObject<
-    Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined
-  >;
+  private ball: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
+  private paddle1: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
+  private paddle2: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
 
-  private Socket: Socket;
-  constructor(gameSocket: Socket) {
+  private Socket: Socket | null;
+  constructor(gameSocket: Socket | null) {
     super({ key: 'MainScene' });
     this.Socket = gameSocket;
-    this.ball = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
-    this.paddle1 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
-    this.paddle2 = useRef<Phaser.Types.Physics.Arcade.SpriteWithDynamicBody>();
+
     this.keyState = {};
   }
 
@@ -48,23 +40,23 @@ export default class GameMainScene extends Phaser.Scene {
     particles.setFrequency(50, 1);
 
     // if (!ball) return;
-    this.ball.current = game.physics.add.sprite(
+    this.ball = game.physics.add.sprite(
       400,
       300,
       'ballsprite',
       '0.png',
     );
-    particles.startFollow(this.ball.current);
+    particles.startFollow(this.ball);
     const gameState = game.add.text(400, 50, '', { align: 'center' });
     gameState.setOrigin(0.5);
-    this.paddle1.current = game.physics.add.sprite(15, 300, 'paddle1');
-    this.paddle2.current = game.physics.add.sprite(785, 300, 'paddle2');
+    this.paddle1 = game.physics.add.sprite(15, 300, 'paddle1');
+    this.paddle2 = game.physics.add.sprite(785, 300, 'paddle2');
 
     const keyState: { [key: string]: boolean } = {};
 
     const handleCollision1 = () => {
-      if (!this.paddle1.current) return;
-      const paddlebloom1 = this.paddle1.current.postFX.addBloom(
+      if (!this.paddle1) return;
+      const paddlebloom1 = this.paddle1.postFX.addBloom(
         0xffffff,
         0.8,
         0.8,
@@ -75,39 +67,39 @@ export default class GameMainScene extends Phaser.Scene {
       game.time.addEvent({
         delay: 150,
         callback: () => {
-          this.paddle1.current?.postFX.remove(paddlebloom1);
+          this.paddle1?.postFX.remove(paddlebloom1);
           paddlebloom1.destroy();
         },
       });
     };
     const handleCollision2 = () => {
       {
-        if (!this.paddle2.current) return;
-        const paddlebloom2 = this.paddle2.current.postFX.addBloom(
+        if (!this.paddle2) return;
+        const paddlebloom2 = this.paddle2.postFX.addBloom(
           0xffffff,
           0.8,
           0.8,
           1,
           3,
         );
-        // const effect = this.paddle1.current.postFX.addDisplacement('red', this.paddle1.current.x + this.paddle1.current.width / 2, this.ball.current.y)
+        // const effect = this.paddle1.postFX.addDisplacement('red', this.paddle1.x + this.paddle1.width / 2, this.ball.y)
         game.time.addEvent({
           delay: 150,
           callback: () => {
-            this.paddle2.current?.postFX.remove(paddlebloom2);
+            this.paddle2?.postFX.remove(paddlebloom2);
             paddlebloom2.destroy();
           },
         });
       }
     };
     game.physics.add.collider(
-      this.ball.current,
-      this.paddle1.current,
+      this.ball,
+      this.paddle1,
       handleCollision1,
     );
     game.physics.add.collider(
-      this.ball.current,
-      this.paddle2.current,
+      this.ball,
+      this.paddle2,
       handleCollision2,
     );
 
@@ -125,9 +117,10 @@ export default class GameMainScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    this.ball.current.anims.play('ballPulse', true);
+    this.ball.anims.play('ballPulse', true);
 
     //   // useEffect(() => {
+    if (this.Socket)
     this.Socket.on(
       'game',
       (data: {
@@ -137,17 +130,18 @@ export default class GameMainScene extends Phaser.Scene {
         score: { player1: number; player2: number };
       }) => {
         // GameCoordinateProps = ball;
-        if (this.ball.current) {
-          this.ball.current.x = data.ball.x;
-          this.ball.current.y = data.ball.y;
+        if (this.ball) {
+          this.ball.x = data.ball.x;
+          this.ball.y = data.ball.y;
         }
-        if (this.paddle1.current) this.paddle1.current.y = data.paddle1.y;
-        if (this.paddle2.current) this.paddle2.current.y = data.paddle2.y;
+        if (this.paddle1) this.paddle1.y = data.paddle1.y;
+        if (this.paddle2) this.paddle2.y = data.paddle2.y;
         // score.player1 = data.score.player1;
         // score.player2 = data.score.player2;
       },
     );
     return () => {
+      if (this.Socket)
       this.Socket.off('game');
     };
   }
@@ -156,9 +150,11 @@ export default class GameMainScene extends Phaser.Scene {
   }
   keyLoop = () => {
     if (this.keyState['w']) {
+      if (this.Socket)
       this.Socket.emit('Player', 'w');
     }
     if (this.keyState['s']) {
+      if (this.Socket)
       this.Socket.emit('Player', 's');
     }
   };

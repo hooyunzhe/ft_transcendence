@@ -9,7 +9,6 @@ import { useGameActions } from '@/lib/stores/useGameStore';
 
 export default function GameRender() {
   const gameSocket = useGameSocket();
-  if(!gameSocket) return;
   useEffect(() => {
     const config = {
       type: Phaser.AUTO,
@@ -24,7 +23,7 @@ export default function GameRender() {
       },
       parent: "maingame",
 
-      scene: [new GameMatchFoundScene(), new GameMainScene(gameSocket )],
+      scene: [new GameMatchFoundScene(), new GameMainScene(gameSocket)],
     };
 
     const gameSession = new Phaser.Game(config);
@@ -32,15 +31,12 @@ export default function GameRender() {
     return () => {
       gameSession.destroy(true, true);
     };
-  }, []);
+  }, [gameSocket]);
   return (
     <div id="maingame"
     style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: '100vw',   // 100% of the viewport width
-      height: '100vh',  // 100% of the viewport height
+
+   
     }}
   >
       {/* The Phaser canvas will be automatically added here */}

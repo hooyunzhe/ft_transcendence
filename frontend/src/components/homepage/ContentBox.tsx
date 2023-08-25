@@ -16,6 +16,15 @@ export default function ContentBox() {
     NodeJS.Timeout | undefined
   >();
 
+  const [drawerStyles, setDrawerStyles] = useState({
+    width: '60vw',
+    height: '70vh',
+    left: '20vw',
+    bottom: '15vh',
+    border: 'solid 5px #363636',
+    borderRadius: '15px',
+    background: '#3A0CA375',
+  });
   useEffect(() => {
     clearTimeout(toggleTimeoutID);
     if (currentView) {
@@ -34,21 +43,17 @@ export default function ContentBox() {
     } else {
       setOpen(false);
     }
-  }, [currentView]);
+    const newStyles = localView === View.PHASER
+    ? { width: '70vw', height: '80vh', left: '15vw', bottom: '5vh'}
+    : { width: '60vw', height: '70vh', left: '20vw',
+    bottom: '15vh'};
+  setDrawerStyles((prevStyles) => ({ ...prevStyles, ...newStyles }))
+  }, [currentView, localView]);
 
   return (
     <Drawer
       PaperProps={{
-        sx: {
-          boxSizing: 'border-box',
-          width: '60vw',
-          height: '70vh',
-          left: '20vw',
-          bottom: '15vh',
-          border: 'solid 5px #363636',
-          borderRadius: '15px',
-          background: '#3A0CA375',
-        },
+        sx: drawerStyles,
       }}
       variant='persistent'
       anchor='bottom'
@@ -59,9 +64,7 @@ export default function ContentBox() {
       {localView === View.PROFILE && <ProfileBox />}
       {localView === View.GAME && <GameMenu />}
       {localView === View.PHASER && (
-        <Box height='0'>
           <GameRender />
-        </Box>
       )}
     </Drawer>
   );
