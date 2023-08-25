@@ -11,6 +11,7 @@ interface UserStore {
   };
   actions: {
     setCurrentUser: (currentUser: User) => void;
+    changeCurrentUsername: (newUsername: string) => void;
     addUserStatus: (userSocket: Socket, userIDs: number[]) => void;
     changeUserStatus: (userID: number, newStatus: UserStatus) => void;
     setupUserSocketEvents: (userSocket: Socket) => void;
@@ -24,6 +25,15 @@ function setCurrentUser(set: StoreSetter, currentUser: User): void {
     data: {
       ...data,
       currentUser: currentUser,
+    },
+  }));
+}
+
+function changeCurrentUsername(set: StoreSetter, newUsername: string): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      currentUser: { ...data.currentUser, username: newUsername },
     },
   }));
 }
@@ -77,6 +87,8 @@ const useUserStore = create<UserStore>()((set) => ({
   },
   actions: {
     setCurrentUser: (currentUser) => setCurrentUser(set, currentUser),
+    changeCurrentUsername: (newUsername) =>
+      changeCurrentUsername(set, newUsername),
     addUserStatus: (userSocket, userIDs) =>
       addUserStatus(set, userSocket, userIDs),
     changeUserStatus: (userID, newStatus) =>

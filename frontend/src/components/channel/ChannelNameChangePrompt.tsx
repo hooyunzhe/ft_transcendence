@@ -11,13 +11,13 @@ import {
 } from '@/lib/stores/useDialogStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
-interface ChannelNameChangeProps {
+interface ChannelNameChangePromptProps {
   channelID: number;
 }
 
 export default function ChannelNameChangePrompt({
   channelID,
-}: ChannelNameChangeProps) {
+}: ChannelNameChangePromptProps) {
   const channelSocket = useChannelSocket();
   const { changeChannelName } = useChannelActions();
   const { resetDialog } = useDialogActions();
@@ -25,14 +25,16 @@ export default function ChannelNameChangePrompt({
   const { displayNotification } = useNotificationActions();
   const [newName, setNewName] = useState('');
 
-  async function handleNameChange() {
-    const data = {
+  async function handleNameChange(): Promise<void> {
+    await callAPI('PATCH', 'channels', {
+      id: channelID,
+      name: newName,
+    });
+    changeChannelName(channelID, newName);
+    emitToSocket(channelSocket, 'changeChannelName', {
       id: channelID,
       newName: newName,
-    };
-    await callAPI('PATCH', 'channels', data);
-    changeChannelName(channelID, newName);
-    emitToSocket(channelSocket, 'changeChannelName', data);
+    });
     displayNotification('success', 'Channel name changed');
   }
 

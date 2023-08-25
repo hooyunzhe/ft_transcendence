@@ -38,7 +38,7 @@ export default function ChannelMemberUnbanPrompt({
     emitToSocket(channelSocket, 'kickMember', member);
   }
 
-  async function handleUnbanMember() {
+  async function handleUnbanMember(): Promise<void> {
     return displayConfirmation(
       'Unban ' + selectedMemberToUnban?.user.username + '?',
       'You are unbanning this user from this channel.',

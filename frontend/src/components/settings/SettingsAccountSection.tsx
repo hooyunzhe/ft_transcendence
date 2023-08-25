@@ -1,9 +1,12 @@
 'use client';
-import { Avatar, Box, Button, Typography } from '@mui/material';
+import { Avatar, Box, Button, Switch, Typography } from '@mui/material';
+import SettingsUsernameChangePrompt from './SettingsUsernameChangePrompt';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useDialogActions } from '@/lib/stores/useDialogStore';
 
 export default function SettingsAccountSection() {
   const currentUser = useCurrentUser();
+  const { displayDialog } = useDialogActions();
 
   return (
     <Box
@@ -32,7 +35,20 @@ export default function SettingsAccountSection() {
         <Typography>Username</Typography>
         <Box width='100%' display='flex' justifyContent='space-between'>
           <Typography variant='h5'>{currentUser.username}</Typography>
-          <Button variant='contained'>Change</Button>
+          <Button
+            variant='contained'
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() =>
+              displayDialog(
+                'Change Username',
+                'Enter your new username',
+                <SettingsUsernameChangePrompt currentUserID={currentUser.id} />,
+                'Change',
+              )
+            }
+          >
+            Change
+          </Button>
         </Box>
       </Box>
       <Box width='100%'>
@@ -45,15 +61,15 @@ export default function SettingsAccountSection() {
       <Box width='100%' display='flex' justifyContent='space-between'>
         <Box>
           <Typography variant='h6'>Music</Typography>
-          <Button variant='contained'>Off</Button>
+          <Switch defaultChecked />
         </Box>
         <Box>
           <Typography variant='h6'>Animations</Typography>
-          <Button variant='contained'>Off</Button>
+          <Switch defaultChecked />
         </Box>
         <Box>
           <Typography variant='h6'>Light Mode</Typography>
-          <Button variant='contained'>On</Button>
+          <Switch />
         </Box>
       </Box>
       <Box

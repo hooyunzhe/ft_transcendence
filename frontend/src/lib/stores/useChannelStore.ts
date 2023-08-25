@@ -5,6 +5,7 @@ import { Socket } from 'socket.io-client';
 import { ChannelMemberStatus, ChannelMember } from '@/types/ChannelMemberTypes';
 import { Message } from '@/types/MessageTypes';
 import emitToSocket from '../emitToSocket';
+
 interface ChannelStore {
   data: {
     channels: Channel[];
@@ -128,6 +129,10 @@ function changeChannelName(
         }
         return channel;
       }),
+      selectedChannel:
+        data.selectedChannel?.id === channelID
+          ? { ...data.selectedChannel, name: newName }
+          : data.selectedChannel,
     },
   }));
   updateRecentChannelActivity(set, channelID);
