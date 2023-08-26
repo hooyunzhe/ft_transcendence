@@ -13,6 +13,7 @@ import { View } from '@/types/UtilTypes';
 import { MatchInfo, MatchState } from '@/types/GameTypes';
 import callAPI from '@/lib/callAPI';
 import GameMatchFound from './GameMatchFound';
+import LoopingVideo from './class/VideoLoop';
 
 export default function GameMenu() {
   const gameSocket = useGameSocket();
@@ -157,6 +158,20 @@ export default function GameMenu() {
       justifyContent='center'
       alignItems='center'
     >
+      <video
+        width='100%'
+        height='100%'
+        autoPlay
+        muted
+        loop
+        style={{
+          position: 'absolute',
+          zIndex: -1,
+          objectFit: 'cover',
+        }}
+      >
+        <source src='/assets/mainmenu.mp4' type='video/mp4' />
+      </video>
       <Button
         variant='contained'
         onClick={findMatch}
@@ -167,19 +182,20 @@ export default function GameMenu() {
       <Backdrop
         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={matchState === MatchState.SEARCHING}
-        onClick={cancelFindMatch} 
+        onClick={cancelFindMatch}
       >
-        <CircularProgress color="inherit" />
+        <CircularProgress color='inherit' />
         <Box sx={{ ml: 2 }}>
-          <Typography variant="h6">Searching Match...</Typography>
+          <Typography variant='h6'>Searching Match...</Typography>
           <Typography>Time elapsed: {searchTime} seconds</Typography>
         </Box>
       </Backdrop>
       <Backdrop
-         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-         open={matchState === MatchState.FOUND}>
-          < GameMatchFound />
-         </Backdrop>
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={matchState === MatchState.FOUND}
+      >
+        <GameMatchFound />
+      </Backdrop>
       {/* <Button onClick={CheckStatus}>Check Status </Button> */}
       <Button
         variant='contained'
