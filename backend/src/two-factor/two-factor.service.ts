@@ -41,9 +41,9 @@ export class TwoFactorService {
     };
   }
 
-  async save(secret_key: string, user: User): Promise<TwoFactor> {
+  async save(secretKey: string, user: User): Promise<TwoFactor> {
     return await this.twoFactorRepository.save({
-      secret_key: secret_key,
+      secret_key: secretKey,
       user: user,
     });
   }

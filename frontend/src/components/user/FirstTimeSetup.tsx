@@ -17,7 +17,6 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
   const { setCurrentUser } = useUserActions();
   const { displayNotification } = useNotificationActions();
   const [username, setUsername] = useState('');
-  const [intraID, setIntraID] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [largeAvatarUrl, setLargeAvatarUrl] = useState('');
   const [isHover, setIsHover] = useState(false);
@@ -26,14 +25,13 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
   useEffect(() => {
     async function getData() {
       const userData = await fetch(
-        `https://api.intra.42.fr/v2/me?access_token=${session.access_token}`,
+        `https://api.intra.42.fr/v2/me?access_token=${session.accessToken}`,
         {
           cache: 'no-store',
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         },
       ).then((res) => (res.ok ? res.json() : signOut()));
-      setIntraID(userData.login);
       setAvatarUrl(userData.image.versions.small);
       setLargeAvatarUrl(userData.image.versions.large);
     }
@@ -46,7 +44,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
       const formData = new FormData();
 
       formData.set('avatarFile', avatarFile);
-      formData.set('intraID', intraID);
+      formData.set('intraID', session.intraID);
       formData.set('oldAvatarPath', avatarUrl);
 
       const res = await fetch('/api/upload-avatar', {
@@ -118,7 +116,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
             value={username}
             onChange={setUsername}
             onSubmit={() =>
-              signUp(username, session.refresh_token, avatarUrl)
+              signUp(session.intraID, username, session.refreshToken, avatarUrl)
                 .then((newUser) => setCurrentUser(newUser))
                 .catch((error) => {
                   displayNotification('error', error);

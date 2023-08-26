@@ -49,14 +49,23 @@ export class UserService {
   }
 
   async create(userDto: CreateUserDto): Promise<User> {
-    const userExists = await this.userRepository.findOneBy({
+    const usernameExists = await this.userRepository.findOneBy({
       username: userDto.username,
     });
+    const intraIDExists = await this.userRepository.findOneBy({
+      intra_id: userDto.intra_id,
+    });
 
-    if (userExists) {
+    if (usernameExists) {
       throw new EntityAlreadyExistsError(
         'User',
         'username = ' + userDto.username,
+      );
+    }
+    if (intraIDExists) {
+      throw new EntityAlreadyExistsError(
+        'User',
+        'intra_id = ' + userDto.intra_id,
       );
     }
     return await this.userRepository.save(userDto);
@@ -80,6 +89,21 @@ export class UserService {
     return found;
   }
 
+  async findByIntraID(
+    intraID: string,
+    loadRelations: boolean,
+  ): Promise<User | null> {
+    const found = await this.userRepository.findOne({
+      relations: this.getRelationsToLoad(loadRelations),
+      where: { intra_id: intraID },
+    });
+
+    if (!found) {
+      throw new EntityNotFoundError(User, 'intra_id = ' + intraID);
+    }
+    return found;
+  }
+
   async findByUsername(
     username: string,
     loadRelations: boolean,
@@ -96,16 +120,16 @@ export class UserService {
   }
 
   async findByToken(
-    refresh_token: string,
+    refreshToken: string,
     loadRelations: boolean,
   ): Promise<User | null> {
     const found = await this.userRepository.findOne({
       relations: this.getRelationsToLoad(loadRelations),
-      where: { refresh_token },
+      where: { refresh_token: refreshToken },
     });
 
     if (!found) {
-      throw new EntityNotFoundError(User, 'refresh_token = ' + refresh_token);
+      throw new EntityNotFoundError(User, 'refresh_token = ' + refreshToken);
     }
     return found;
   }
@@ -196,8 +220,10 @@ export class UserService {
 
   async update(userDto: UpdateUserDto): Promise<void> {
     await this.userRepository.update(userDto.id, {
+      ...(userDto.intra_id && { intra_id: userDto.intra_id }),
       ...(userDto.username && { username: userDto.username }),
       ...(userDto.refresh_token && { refresh_token: userDto.refresh_token }),
+      ...(userDto.avatar_url && { avatar_url: userDto.avatar_url }),
     });
   }
 

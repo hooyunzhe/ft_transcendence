@@ -1,9 +1,10 @@
 import { User } from '@/types/UserTypes';
 
 export default async function signUp(
+  intraID: string,
   username: string,
-  refresh_token: string,
-  avatar_url: string,
+  refreshToken: string,
+  avatarUrl: string,
 ): Promise<User> {
   if (username.length > 16) {
     throw 'Username cannot be more than 16 characters long';
@@ -17,9 +18,10 @@ export default async function signUp(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        intra_id: intraID,
         username: username,
-        refresh_token: refresh_token,
-        avatar_url: avatar_url,
+        refresh_token: refreshToken,
+        avatar_url: avatarUrl,
       }),
     },
   ).then((res) => {

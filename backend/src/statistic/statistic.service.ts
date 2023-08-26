@@ -64,13 +64,13 @@ export class StatisticService {
     return found;
   }
 
-  async findByUser(user_id: number): Promise<Statistic | null> {
+  async findByUser(userID: number): Promise<Statistic | null> {
     const found = await this.statisticRepository.findOneBy({
-      user: { id: user_id },
+      user: { id: userID },
     });
 
     if (!found) {
-      throw new EntityNotFoundError(Statistic, 'user_id = ' + user_id);
+      throw new EntityNotFoundError(Statistic, 'user_id = ' + userID);
     }
     return found;
   }

@@ -26,6 +26,9 @@ export class User {
   id: number;
 
   @Column({ unique: true })
+  intra_id: string;
+
+  @Column({ unique: true })
   username: string;
 
   @Column()

@@ -53,6 +53,11 @@ export class UserController {
           queryParams.search_number,
           queryParams.load_relations,
         );
+      case UserSearchType.INTRA:
+        return this.userService.findByIntraID(
+          queryParams.search_string,
+          queryParams.load_relations,
+        );
       case UserSearchType.NAME:
         return this.userService.findByUsername(
           queryParams.search_string,

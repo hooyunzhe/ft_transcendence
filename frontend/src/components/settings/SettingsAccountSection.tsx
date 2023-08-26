@@ -1,4 +1,5 @@
 'use client';
+import { signOut } from 'next-auth/react';
 import { Avatar, Box, Button, Switch, Typography } from '@mui/material';
 import SettingsUsernameChangePrompt from './SettingsUsernameChangePrompt';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
@@ -88,7 +89,7 @@ export default function SettingsAccountSection() {
         justifyContent='space-between'
         gap='1vh'
       >
-        <Button variant='contained' color='warning'>
+        <Button variant='contained' color='warning' onClick={() => signOut()}>
           Log out
         </Button>
         <Button variant='contained' color='error'>

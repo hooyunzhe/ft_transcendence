@@ -21,7 +21,7 @@ export default function Home() {
       if (currentSession) {
         fetch(
           process.env.NEXT_PUBLIC_HOST_URL +
-            `:4242/api/users?search_type=TOKEN&search_string=${currentSession.refresh_token}`,
+            `:4242/api/users?search_type=INTRA&search_string=${currentSession.intraID}`,
           {
             cache: 'no-store',
             method: 'GET',
