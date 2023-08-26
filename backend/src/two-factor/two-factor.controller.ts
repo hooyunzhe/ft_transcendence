@@ -30,7 +30,9 @@ export class TwoFactorController {
   }
 
   @Post('verify')
-  async verify(@Body() twoFactorDto: VerifyTwoFactorDto): Promise<boolean> {
+  async verify(
+    @Body() twoFactorDto: VerifyTwoFactorDto,
+  ): Promise<{ verified: boolean }> {
     return this.twoFactorService.verify(twoFactorDto);
   }
 

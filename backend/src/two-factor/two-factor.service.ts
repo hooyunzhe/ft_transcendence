@@ -71,10 +71,17 @@ export class TwoFactorService {
     }
   }
 
-  async verify(twoFactorDto: VerifyTwoFactorDto): Promise<boolean> {
+  async verify(
+    twoFactorDto: VerifyTwoFactorDto,
+  ): Promise<{ verified: boolean }> {
     const twoFactorFound = await this.findByUser(twoFactorDto.user_id);
 
-    return authenticator.check(twoFactorDto.token, twoFactorFound.secret_key);
+    return {
+      verified: authenticator.check(
+        twoFactorDto.token,
+        twoFactorFound.secret_key,
+      ),
+    };
   }
 
   async findAll(): Promise<TwoFactor[]> {

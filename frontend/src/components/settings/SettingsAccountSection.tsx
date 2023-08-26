@@ -2,11 +2,11 @@
 import { Avatar, Box, Button, Switch, Typography } from '@mui/material';
 import SettingsUsernameChangePrompt from './SettingsUsernameChangePrompt';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { useDialogActions } from '@/lib/stores/useDialogStore';
+import { useTwoFactorActions } from '@/lib/stores/useTwoFactorStore';
 
 export default function SettingsAccountSection() {
   const currentUser = useCurrentUser();
-  const { displayDialog } = useDialogActions();
+  const { displayTwoFactor } = useTwoFactorActions();
 
   return (
     <Box
@@ -18,7 +18,6 @@ export default function SettingsAccountSection() {
       justifyContent='space-between'
       alignItems='center'
       padding='1.5vw'
-      gap='4vh'
       border='solid 5px #7209B775'
       borderRadius='10px'
       bgcolor='#a291d275'
@@ -33,13 +32,18 @@ export default function SettingsAccountSection() {
       />
       <Box width='100%'>
         <Typography>Username</Typography>
-        <Box width='100%' display='flex' justifyContent='space-between'>
+        <Box
+          width='100%'
+          display='flex'
+          justifyContent='space-between'
+          alignItems='center'
+        >
           <Typography variant='h5'>{currentUser.username}</Typography>
           <Button
             variant='contained'
             onMouseDown={(event) => event.preventDefault()}
             onClick={() =>
-              displayDialog(
+              displayTwoFactor(
                 'Change Username',
                 'Enter your new username',
                 <SettingsUsernameChangePrompt currentUserID={currentUser.id} />,
@@ -53,7 +57,12 @@ export default function SettingsAccountSection() {
       </Box>
       <Box width='100%'>
         <Typography>Two-factor Authentication</Typography>
-        <Box width='100%' display='flex' justifyContent='space-between'>
+        <Box
+          width='100%'
+          display='flex'
+          justifyContent='space-between'
+          alignItems='center'
+        >
           <Typography variant='h5'>Not Enabled</Typography>
           <Button variant='contained'>Enable</Button>
         </Box>
