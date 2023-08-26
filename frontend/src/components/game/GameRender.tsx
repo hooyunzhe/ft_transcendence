@@ -2,13 +2,14 @@
 import Phaser from 'phaser';
 import { useEffect, useRef, useState } from 'react';
 import GameMainScene from './scenes/GameMainScene';
-import GameMatchFoundScene from './scenes/GameMatchFoundScene';
+import GameMatchFoundScene from './scenes/GameVictory';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions } from '@/lib/stores/useGameStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
 import { Backdrop, Box, Typography } from '@mui/material';
+import GameVictoryScene from './scenes/GameVictory';
 
 export default function GameRender() {
   const gameSocket = useGameSocket();
@@ -59,7 +60,7 @@ export default function GameRender() {
       },
       parent: "maingame",
 
-      scene: [game],
+      scene: [game, new GameVictoryScene()],
     };
 
 

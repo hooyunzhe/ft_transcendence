@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { filter } from 'rxjs';
 import { Server } from 'socket.io';
 
 interface Coor {
@@ -192,8 +193,12 @@ export class GameService {
     }, 16);
   }
   gameHandleVictory(player: number) {
-    if (player === 1) this.score.player1++;
-    else this.score.player2++;
+    this.score[`player${player}`]++;
+    if (this.score[`player${player}`] >= 3)
+    {
+      this.server.to(this.roomid).emit('victory', player);
+      // this.server.to(this.roomid).disconnectSockets;
+    }
     this.ServingPaddle = player;
     console.log(
       'Player 1: ',
@@ -237,4 +242,12 @@ export class GameService {
       obj1.bottom() >= obj2.top()
     );
   }
+  // async sendVictory(player: number){
+  //   const clients = await this.server.in(this.roomid).fetchSockets();
+  //   clients.forEach(client => {
+  //     if (client.data.player === player) {
+  //       client.emit('victory', player);
+  //     }
+  //   });
+  // }
 }

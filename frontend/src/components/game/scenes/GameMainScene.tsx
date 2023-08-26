@@ -131,17 +131,18 @@ export default class GameMainScene extends Phaser.Scene {
         paddle2: { x: number; y: number };
         score: { player1: number; player2: number };
       }) => {
-        // GameCoordinateProps = ball;
+  
         if (this.ball) {
           this.ball.x = data.ball.x;
           this.ball.y = data.ball.y;
         }
         if (this.paddle1) this.paddle1.y = data.paddle1.y;
         if (this.paddle2) this.paddle2.y = data.paddle2.y;
-        // score.player1 = data.score.player1;
-        // score.player2 = data.score.player2;
       },
     );
+    this.Socket?.on('victory', (player: number) => {
+      this.scene.start('victory', { player: player})
+    })
     return () => {
       if (this.Socket)
       this.Socket.off('game');
