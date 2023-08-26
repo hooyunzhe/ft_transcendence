@@ -17,7 +17,7 @@ export default function GameLoadingScreen() {
         if (prevProgress === 100) {
           viewAction.setCurrentView(View.PHASER);
         }
-        const diff = Math.random() * 10;
+        const diff = Math.random() * 20;
         return Math.min(prevProgress + diff, 100);
       });
       setDots((prevDots) => (prevDots + 1)  % 4);
@@ -39,8 +39,8 @@ export default function GameLoadingScreen() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        height: '100vh', // Center the content vertically
-        backgroundColor: '#0e0e2a', // Neon purple background color
+        height: '100vh',
+        backgroundColor: '#0e0e2a',
       }}
     >
       <p style={{ color: 'white', fontSize: '24px', marginBottom: '20px' }}>
@@ -50,7 +50,7 @@ export default function GameLoadingScreen() {
         sx={{ width: '50%', height: '20px', borderRadius: '10px' }}
         variant="determinate"
         value={progress}
-        color="secondary" // Use the secondary color for neon purple
+        color="secondary"
       />
     </Box>
   );

@@ -51,7 +51,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.roomid = uniquekey;
       client.leave('');
       client.join(uniquekey);
-      client.emit('match');
+      client.emit('match', { player1: clients[0].data.user_id, player2: clients[1].data.user_id});
     });
     console.log(
       'client found a match, joining room:',

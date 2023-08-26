@@ -15,15 +15,10 @@ export default function GameRender() {
     if (gameAction.getKeyState('w')) {
       if (gameSocket)
       gameSocket.emit('Player', 'w');
-    console.log('w');
     }
     if (gameAction.getKeyState('s')) {
       if (gameSocket)
       gameSocket.emit('Player', 's');
-    }
-    if (gameAction.getKeyState(' ')) {
-      if (gameSocket)
-      gameSocket.emit('ready');
     }
   };
   useEffect(() => {
@@ -36,10 +31,10 @@ export default function GameRender() {
         default: 'arcade',
       },
       scale: {
-        mode: Phaser.Scale.FIT,
+        mode: Phaser.Scale.AUTO,
         autoCenter: Phaser.Scale.Center.CENTER_BOTH,
-        width: '100%',
-    height: '100%',
+    //     width: '100%',
+    // height: '100%',
       },
       parent: "maingame",
 

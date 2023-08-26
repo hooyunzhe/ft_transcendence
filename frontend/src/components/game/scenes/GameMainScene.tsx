@@ -24,6 +24,9 @@ export default class GameMainScene extends Phaser.Scene {
   }
 
   create() {
+
+    this.scale.displaySize.setAspectRatio( window.innerWidth/window.innerHeight);
+    this.scale.refresh();
     const game = this;
 
     const particles = game.add.particles(0, 0, 'test', {

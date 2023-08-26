@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import callAPI from '../callAPI';
 import { Match, SkillPath } from '@/types/MatchTypes';
 import { User } from '@/types/UserTypes';
-import { MatchState } from '@/types/GameTypes';
+import { MatchState, MatchInfo } from '@/types/GameTypes';
 
 
 type RecentMatchesDictionary = { [userID: number]: Match[] };
@@ -14,6 +14,7 @@ interface GameStore {
     recentMatches: RecentMatchesDictionary;
     matchState: MatchState;
     keyState: { [key: string]: boolean };
+    matchInfo: MatchInfo | null;
     gameReady: boolean;
     skillState: boolean[];
   };
@@ -28,6 +29,7 @@ interface GameStore {
     addMatch: (newMatch: Match, currentUserID: number) => void;
     setMatchState: (matchState: MatchState) => void;
     setKeyState: (key: string, isPressed: boolean) => void;
+    setMatchInfo: (matchinfo: MatchInfo) => void;
     setGameReady: (ready: boolean) => void;
     setSkillState: (skillState: boolean[]) => void;
   };
@@ -193,6 +195,15 @@ function setSkillState(set: StoreSetter, skillState: boolean[]): void {
   }));
 }
 
+function setMatchInfo(set: StoreSetter, matchInfo: MatchInfo): void {
+  set((state) => ({
+    data: {
+      ...state.data,
+      matchInfo: matchInfo,
+    },
+  }));
+}
+
 const useGameStore = create<GameStore>()((set, get) => ({
   data: {
     matches: [],
@@ -201,6 +212,7 @@ const useGameStore = create<GameStore>()((set, get) => ({
     matchState: MatchState.IDLE,
     keyState: {},
     gameReady: false,
+    matchInfo: null,
     skillState: [],
   },
   actions: {
@@ -215,6 +227,7 @@ const useGameStore = create<GameStore>()((set, get) => ({
       addMatch(set, newMatch, currentUserID),
     setMatchState: (MatchState) => setMatchState(set, MatchState),
     setKeyState: (key, isPressed) => setKeyState(set, key, isPressed),
+    setMatchInfo: (matchInfo) => setMatchInfo(set, matchInfo),
     setGameReady: (ready) => setGameReady(set, ready),
     setSkillState: (skillState) => setSkillState(set, skillState),
   },
@@ -228,3 +241,5 @@ export const useRecentMatches = () =>
 export const useGameActions = () => useGameStore((state) => state.actions);
 export const useMatchState = () =>
   useGameStore((state) => state.data.matchState);
+  export const useMatchInfo = () =>
+  useGameStore((state) => state.data.matchInfo);
