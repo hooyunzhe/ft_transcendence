@@ -26,7 +26,7 @@ export default function GameRender() {
     }
     if (gameAction.getKeyState(' ')) {
       if (gameSocket)
-      gameSocket.emit('ready');
+      gameSocket.emit('Player', ' ');
     }
   };
   useEffect(() => {

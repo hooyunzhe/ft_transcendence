@@ -78,9 +78,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (players.every((player) => player.data.ready)) {
       players.forEach((player) => player.emit('start'));
       console.log('Game is starting in room :', client.data.roomid);
-      this.roomlist.get(client.data.roomid).gameStart();
+      this.roomlist.get(client.data.roomid).gameUpdate();
     }
   }
+
 
   @SubscribeMessage('join')
   async createRoom(@ConnectedSocket() client: Socket) {
@@ -146,6 +147,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.roomlist
         .get(client.data.roomid)
         .gameSetPaddlePosition(client.data.player, 1);
+    if (movement === ' ')
+      this.roomlist.get(client.data.roomid).gameStart(client.data.player);
   }
 
   @SubscribeMessage('end')

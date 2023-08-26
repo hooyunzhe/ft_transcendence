@@ -1,6 +1,5 @@
-import { useGameActions, useMatchState } from "@/lib/stores/useGameStore";
+import { useMatchState } from "@/lib/stores/useGameStore";
 import { MatchState } from "@/types/GameTypes";
-import { useEffect } from "react";
 import GameLoadingScreen from "./GameLoadingScreen";
 import GameReady from "./GameReady";
 

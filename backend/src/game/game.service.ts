@@ -49,9 +49,10 @@ export class GameService {
   score: { player1: number; player2: number };
   roomid: string;
   server: Server;
-  intervalID: NodeJS.Timer;
-
+  intervalID: NodeJS.Timer = null;
+  ServingPaddle:Number = 1;
   refreshMilisec: number = 16;
+  started: boolean = false;
 
   constructor(roomid: string, server: Server) {
     this.windowSize = {
@@ -84,17 +85,37 @@ export class GameService {
     this.server = server;
   }
 
-  gameStart() {
-    // const heading = Math.random() * Math.PI * 2;
-    this.direction = {
-      x: 1,
-      y: 0,
-    };
-    this.gameUpdate();
+  gameStart(player: number) {
+
+    if (!this.started)
+    {
+      if (player === this.ServingPaddle)
+      {
+      this.direction = {
+        x: 1,
+        y: 0,
+       
+      };
+      this.started = true;
+    }
   }
+}
 
   gameReset() {
-    this.Ball.x = this.windowSize.x / 2;
+    switch (this.ServingPaddle) {
+      case 1:
+        this.Ball.x = 1 + this.Paddle1.right() + this.Ball.width / 2;
+        break;
+    
+      case 2:
+        this.Ball.x = +this.Paddle2.left() - this.Ball.width / 2 - 1
+        break;
+      default:
+        this.Ball.x = this.windowSize.x / 2;
+      break;
+    }
+
+    this.started = false;
     this.Ball.y = this.windowSize.y / 2;
     this.Paddle1.y = this.windowSize.y / 2;
     this.Paddle2.y = this.windowSize.y / 2;
@@ -111,7 +132,7 @@ export class GameService {
       paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
       score: this.score,
     });
-    clearInterval(this.intervalID);
+    // clearInterval(this.intervalID);
   }
 
   gamePaddleConstruct(
@@ -173,6 +194,7 @@ export class GameService {
   gameHandleVictory(player: number) {
     if (player === 1) this.score.player1++;
     else this.score.player2++;
+    this.ServingPaddle = player;
     console.log(
       'Player 1: ',
       this.score.player1,
