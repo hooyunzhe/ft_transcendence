@@ -16,6 +16,7 @@ export default class GameMainScene extends Phaser.Scene {
 
   preload() {
     const game = this;
+    game.load.video('background', '/assets/background1.mp4', true);
     game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
     game.load.image('red', '/assets/bubble.png');
     game.load.image('test', '/assets/test3.png');
@@ -25,8 +26,13 @@ export default class GameMainScene extends Phaser.Scene {
 
   create() {
 
+
+    const videoSprite = this.add.video(Number(this.game.config.width) /2 , Number(this.game.config.height) /2, 'background');
+
     this.scale.displaySize.setAspectRatio( window.innerWidth/window.innerHeight);
     this.scale.refresh();
+    videoSprite.setScale(Number(this.game.config.width) / 3840, Number(this.game.config.height) / 2160);
+    videoSprite.play(true);
     const game = this;
 
     const particles = game.add.particles(0, 0, 'test', {
@@ -54,7 +60,6 @@ export default class GameMainScene extends Phaser.Scene {
     this.paddle1 = game.physics.add.sprite(15, 300, 'paddle1');
     this.paddle2 = game.physics.add.sprite(785, 300, 'paddle2');
 
-    const keyState: { [key: string]: boolean } = {};
 
     const handleCollision1 = () => {
       if (!this.paddle1) return;
