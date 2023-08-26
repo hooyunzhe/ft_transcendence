@@ -1,5 +1,5 @@
 import { useGameSocket } from "@/lib/stores/useSocketStore";
-import { Box, ToggleButton } from "@mui/material";
+import { Box, Button, ToggleButton } from "@mui/material";
 import { useEffect, useState } from "react";
 
 export default function GameReady() {
@@ -7,10 +7,6 @@ export default function GameReady() {
   const [cooldown, setCooldown] = useState(false);
   const gameSocket = useGameSocket();
   
-  // useEffect(() => {
-    
-  //  })
-
 
    const getReady = () =>{
       if (!cooldown)
@@ -27,13 +23,6 @@ export default function GameReady() {
       })
     
    }
-   const getText = () =>
-   {
-    if (ready)
-      return ("Unready");
-    else
-      return ("Ready");
-   }
    return (
     <Box
       sx={{
@@ -48,13 +37,28 @@ export default function GameReady() {
       <p style={{ color: 'white', fontSize: '24px', marginBottom: '20px' }}>
         GET READY
       </p>
-      <ToggleButton
-      value={ready}
-      selected={!ready}
-      onChange={getReady}
-    >
-      {getText()}
-    </ToggleButton>
+      <Button
+        variant='contained'
+        onClick={getReady}
+  sx={{
+    backgroundColor: ready ? 'red' : 'green',
+    color: 'white',
+    fontSize: '18px',
+    padding: '10px 20px',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s', 
+    '&:hover': {
+      backgroundColor: ready ? 'darkred' :'darkgreen', 
+    },
+    '&:active': {
+      backgroundColor: ready ? 'red' :'green' 
+    },
+  }}
+>
+  READY
+</Button>
     </Box>
   );
 }
