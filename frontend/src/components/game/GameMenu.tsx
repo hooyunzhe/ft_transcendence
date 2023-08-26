@@ -66,7 +66,7 @@ export default function GameMenu() {
     if (matchState === MatchState.FOUND)
     {
       const matchFoundtimer = setTimeout(() =>{
-        gameAction.setMatchState(MatchState.INGAME);
+        // gameAction.setMatchState(MatchState.INGAME);
         viewAction.setCurrentView(View.LOADING);
     }, 3000);
     return () => {

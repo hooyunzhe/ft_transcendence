@@ -9,6 +9,7 @@ import GameMenu from '../game/GameMenu';
 import GameRender from '../game/GameRender';
 import GameLoadingScreen from '../game/GameLoadingScreen';
 import GameReady from '../game/GameReady';
+import GameTransition from '../game/GameTransition';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
@@ -65,7 +66,7 @@ export default function ContentBox() {
       {localView === View.CHAT && <ChatBox />}
       {localView === View.PROFILE && <ProfileBox />}
       {localView === View.GAME && <GameMenu />}
-      {localView === View.LOADING && <GameReady />}
+      {localView === View.LOADING && <GameTransition />}
       {localView === View.PHASER && (
           <GameRender />
       )}
