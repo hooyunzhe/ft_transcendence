@@ -17,12 +17,15 @@ export default function SettingsUsernameChangePrompt({
   currentUserID,
 }: SettingsUsernameChangePromptProps) {
   const { changeCurrentUsername } = useUserActions();
-  const { resetDialog } = useDialogActions();
+  const { resetDialog, resetTriggers } = useDialogActions();
   const { actionClicked, backClicked } = useDialogTriggers();
   const { displayNotification } = useNotificationActions();
   const [newUsername, setNewUsername] = useState('');
 
   async function handleUsernameChange(): Promise<void> {
+    if (newUsername.length > 16) {
+      throw 'Username cannot be more than 16 characters long';
+    }
     await callAPI('PATCH', 'users', {
       id: currentUserID,
       username: newUsername,
@@ -33,7 +36,12 @@ export default function SettingsUsernameChangePrompt({
   }
 
   async function handleAction(): Promise<void> {
-    handleUsernameChange().then(resetDialog);
+    handleUsernameChange()
+      .then(resetDialog)
+      .catch((error) => {
+        resetTriggers();
+        displayNotification('error', error);
+      });
   }
 
   useEffect(() => {

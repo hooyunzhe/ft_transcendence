@@ -1,11 +1,13 @@
 'use client';
 import { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
-import { Avatar, Box, Grow, Slide, Typography } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+import { Avatar, Box, Grow, Slide, Typography } from '@mui/material';
 import InputField from '../utils/InputField';
+import NotificationBar from '../utils/NotificationBar';
 import signUp from '@/lib/signUp';
 import { useUserActions } from '@/lib/stores/useUserStore';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 interface FirstTimeSetupProps {
   session: Session;
@@ -13,6 +15,7 @@ interface FirstTimeSetupProps {
 
 export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
   const { setCurrentUser } = useUserActions();
+  const { displayNotification } = useNotificationActions();
   const [username, setUsername] = useState('');
   const [intraID, setIntraID] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -93,6 +96,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
             sx={{
               width: 250,
               height: 250,
+              border: 'solid 1px black',
               opacity: isHover ? 0.5 : 1,
               transition: 'opacity 0.25s',
             }}
@@ -101,10 +105,12 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
       </Grow>
       <Slide direction='up' in timeout={2500}>
         <Box
-          sx={{
-            maxWidth: '30vw',
-            marginLeft: '15vw',
-          }}
+          maxWidth='30vw'
+          marginLeft='15vw'
+          padding='1vh'
+          border='solid 3px #363636'
+          borderRadius='15px'
+          bgcolor='#4CC9F090'
         >
           <InputField
             outlined
@@ -112,13 +118,16 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
             value={username}
             onChange={setUsername}
             onSubmit={() =>
-              signUp(username, session.refresh_token, avatarUrl).then(
-                (newUser) => setCurrentUser(newUser),
-              )
+              signUp(username, session.refresh_token, avatarUrl)
+                .then((newUser) => setCurrentUser(newUser))
+                .catch((error) => {
+                  displayNotification('error', error);
+                })
             }
           />
         </Box>
       </Slide>
+      <NotificationBar />
     </Box>
   );
 }
