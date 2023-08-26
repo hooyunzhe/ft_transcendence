@@ -7,14 +7,13 @@ export default class GameMainScene extends Phaser.Scene {
   private paddle2: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
 
   private Socket: Socket | null;
-  constructor(gameSocket: Socket | null) {
+  private keyloop: () => void
+  constructor(gameSocket: Socket | null, keyloop:  () => void) {
     super({ key: 'MainScene' });
     this.Socket = gameSocket;
-
-    this.keyState = {};
+    this.keyloop = keyloop;
   }
 
-  private keyState: { [key: string]: boolean };
   preload() {
     const game = this;
     game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
@@ -146,16 +145,10 @@ export default class GameMainScene extends Phaser.Scene {
     };
   }
   update() {
-    this.keyLoop();
+    this.keyloop();
   }
-  keyLoop = () => {
-    if (this.keyState['w']) {
-      if (this.Socket)
-      this.Socket.emit('Player', 'w');
-    }
-    if (this.keyState['s']) {
-      if (this.Socket)
-      this.Socket.emit('Player', 's');
-    }
-  };
+
+
+  
+  
 }

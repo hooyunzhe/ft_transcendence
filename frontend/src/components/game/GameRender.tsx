@@ -2,14 +2,32 @@
 import Phaser from 'phaser';
 import { useEffect, useRef } from 'react';
 import GameMainScene from './scenes/GameMainScene';
-import GameReadyScene from './scenes/GameReadyScene';
 import GameMatchFoundScene from './scenes/GameMatchFoundScene';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions } from '@/lib/stores/useGameStore';
 
 export default function GameRender() {
   const gameSocket = useGameSocket();
+  const gameAction = useGameActions();
+ 
+
+  const   keyLoop = () => {
+    if (gameAction.getKeyState('w')) {
+      if (gameSocket)
+      gameSocket.emit('Player', 'w');
+    console.log('w');
+    }
+    if (gameAction.getKeyState('s')) {
+      if (gameSocket)
+      gameSocket.emit('Player', 's');
+    }
+    if (gameAction.getKeyState(' ')) {
+      if (gameSocket)
+      gameSocket.emit('ready');
+    }
+  };
   useEffect(() => {
+    const game = new GameMainScene(gameSocket, keyLoop);
     const config = {
       type: Phaser.AUTO,
       width: 800,
@@ -20,18 +38,39 @@ export default function GameRender() {
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.Center.CENTER_BOTH,
+        width: '100%',
+    height: '100%',
       },
       parent: "maingame",
 
-      scene: [new GameMatchFoundScene(), new GameMainScene(gameSocket)],
+      scene: [game],
     };
+
+
+  
+    window.addEventListener('keyup', setKeyStateFalse, true);
+    window.addEventListener('keydown', setKeyStateTrue, true);
 
     const gameSession = new Phaser.Game(config);
 
     return () => {
       gameSession.destroy(true, true);
+      gameSocket?.disconnect();
+      window.removeEventListener('keyup', setKeyStateFalse, true);
+      window.removeEventListener('keydown', setKeyStateTrue, true);
     };
-  }, [gameSocket]);
+  }, []);
+
+  function setKeyStateFalse(event: KeyboardEvent) {
+    gameAction.setKeyState(event.key, false);
+    
+  }
+  
+  function setKeyStateTrue(event: KeyboardEvent) {
+    gameAction.setKeyState(event.key, true);
+  }
+
+
   return (
     <div id="maingame"
     style={{

@@ -4,6 +4,7 @@ import { Match, SkillPath } from '@/types/MatchTypes';
 import { User } from '@/types/UserTypes';
 import { MatchState } from '@/types/GameTypes';
 
+
 type RecentMatchesDictionary = { [userID: number]: Match[] };
 
 interface GameStore {
@@ -23,6 +24,7 @@ interface GameStore {
     getMatchSkills: (match: Match, userID: number) => number[];
     getMatchPath: (match: Match, userID: number) => SkillPath;
     getPathName: (path: SkillPath) => string;
+    getKeyState: (key: string) => boolean;
     addMatch: (newMatch: Match, currentUserID: number) => void;
     setMatchState: (matchState: MatchState) => void;
     setKeyState: (key: string, isPressed: boolean) => void;
@@ -32,7 +34,7 @@ interface GameStore {
 }
 
 type StoreSetter = (helper: (state: GameStore) => Partial<GameStore>) => void;
-
+type StoreGetter = () => GameStore;
 async function getGameData(set: StoreSetter, userID: number): Promise<void> {
   const matchData = JSON.parse(await callAPI('GET', 'matches?search_type=ALL'));
   const matchesPlayed: Match[] = [];
@@ -138,6 +140,11 @@ function getPathName(path: SkillPath): string {
   }
 }
 
+function getKeyState(key: string, get: StoreGetter) {
+  const keyState = get().data.keyState;
+  return !!keyState[key];
+}
+
 function addMatch(
   set: StoreSetter,
   newMatch: Match,
@@ -191,7 +198,7 @@ const useGameStore = create<GameStore>()((set, get) => ({
     matches: [],
     matchesPlayed: [],
     recentMatches: {},
-    matchState: 'IDLE',
+    matchState: MatchState.IDLE,
     keyState: {},
     gameReady: false,
     skillState: [],
@@ -203,6 +210,7 @@ const useGameStore = create<GameStore>()((set, get) => ({
     getMatchSkills: (match, userID) => getMatchSkills(match, userID),
     getMatchPath: (match, userID) => getMatchPath(match, userID),
     getPathName: (path) => getPathName(path),
+    getKeyState: (key) => getKeyState(key, get),
     addMatch: (newMatch, currentUserID) =>
       addMatch(set, newMatch, currentUserID),
     setMatchState: (MatchState) => setMatchState(set, MatchState),

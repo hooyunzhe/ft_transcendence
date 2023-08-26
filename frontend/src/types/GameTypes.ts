@@ -4,4 +4,14 @@
 //   IDLE = 'IDLE',
 // }
 
-export type MatchState = 'IDLE' | 'SEARCHING' | 'FOUND' | 'INGAME';
+// export type MatchState = 'IDLE' | 'SEARCHING' | 'FOUND' | 'INGAME';
+
+
+export enum MatchState {
+  IDLE = 'IDLE',
+  SEARCHING = 'SEARCHING',
+  FOUND = 'FOUND',
+  INGAME = 'INGAME',
+  SPECTATE = 'SPECTATE',
+
+}

@@ -7,6 +7,7 @@ import { View } from '@/types/UtilTypes';
 import ProfileBox from '../profile/ProfileBox';
 import GameMenu from '../game/GameMenu';
 import GameRender from '../game/GameRender';
+import GameLoadingScreen from '../game/GameLoadingScreen';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
@@ -43,7 +44,7 @@ export default function ContentBox() {
     } else {
       setOpen(false);
     }
-    const newStyles = localView === View.PHASER
+    const newStyles = localView === (View.PHASER || View.LOADING)
     ? { width: '70vw', height: '80vh', left: '15vw', bottom: '5vh'}
     : { width: '60vw', height: '70vh', left: '20vw',
     bottom: '15vh'};
@@ -63,6 +64,7 @@ export default function ContentBox() {
       {localView === View.CHAT && <ChatBox />}
       {localView === View.PROFILE && <ProfileBox />}
       {localView === View.GAME && <GameMenu />}
+      {localView === View.LOADING && <GameLoadingScreen />}
       {localView === View.PHASER && (
           <GameRender />
       )}

@@ -10,6 +10,7 @@ import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
+import { MatchState } from '@/types/GameTypes';
 
 export default function GameMenu() {
   const gameSocket = useGameSocket();
@@ -22,7 +23,7 @@ export default function GameMenu() {
   useEffect(() => {
     if (!gameSocket) return;
     gameSocket.on('match', () => {
-      gameAction.setMatchState('FOUND');
+      gameAction.setMatchState(MatchState.FOUND);
       console.log('match found');
       displayConfirmation(
         'Match Found',
@@ -49,17 +50,17 @@ export default function GameMenu() {
       gameSocket.off('match');
       gameSocket.off('disc');
 
-      gameSocket.disconnect();
     };
   }, []);
 
   const findMatch = () => {
     if (gameSocket) {
       gameSocket.connect();
-      gameAction.setMatchState('SEARCHING');
+      gameAction.setMatchState(MatchState.SEARCHING);
       gameSocket.sendBuffer = [];
       gameSocket.emit('init', userId.id);
     }
+    // viewAction.setCurrentView(View.LOADING);
     console.log(matchState);
   };
 
@@ -71,7 +72,7 @@ export default function GameMenu() {
   const disconnectGame = () => {
     if (!gameSocket) return;
     gameSocket.disconnect();
-    gameAction.setMatchState('IDLE');
+    gameAction.setMatchState(MatchState.IDLE);
   };
 
   const resetGame = () => {
@@ -83,13 +84,13 @@ export default function GameMenu() {
   const joinGame = () => {
     console.log('Joinin game');
     if (gameSocket) gameSocket.emit('join');
-    gameAction.setMatchState('INGAME');
-    viewAction.setCurrentView(View.PHASER);
+    gameAction.setMatchState(MatchState.INGAME);
+    viewAction.setCurrentView(View.LOADING);
   };
 
   const rejectGame = () => {
     if (gameSocket) gameSocket.emit('reject');
-    gameAction.setMatchState('IDLE');
+    gameAction.setMatchState(MatchState.IDLE);
   };
   return (
     <Box
@@ -101,7 +102,7 @@ export default function GameMenu() {
       <Button
         variant='contained'
         onClick={findMatch}
-        disabled={matchState === 'SEARCHING'}
+        disabled={matchState === MatchState.SEARCHING}
       >
         Find Match
       </Button>
@@ -109,14 +110,14 @@ export default function GameMenu() {
       <Button
         variant='contained'
         onClick={startGame}
-        disabled={matchState != 'FOUND'}
+        disabled={matchState != MatchState.FOUND}
       >
         Start Game
       </Button>
       <Button
         variant='contained'
         onClick={resetGame}
-        // disabled={matchState != 'FOUND'}
+        // disabled={matchState != MatchState.FOUND}
       >
         Reset
       </Button>
