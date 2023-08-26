@@ -68,7 +68,7 @@ export class GameService {
       40,
       40,
     );
-    this.velocity = 7;
+    this.velocity = 1;
     this.score = {
       player1: 0,
       player2: 0,

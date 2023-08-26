@@ -1,16 +1,20 @@
 'use client';
 import Phaser from 'phaser';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import GameMainScene from './scenes/GameMainScene';
 import GameMatchFoundScene from './scenes/GameMatchFoundScene';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions } from '@/lib/stores/useGameStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
+import { MatchState } from '@/types/GameTypes';
+import { View } from '@/types/UtilTypes';
+import { Backdrop, Box, Typography } from '@mui/material';
 
 export default function GameRender() {
   const gameSocket = useGameSocket();
   const gameAction = useGameActions();
- 
-
+  const viewAction = useUtilActions();
+  const [disconnected, setDisconnected] = useState(false);
   const   keyLoop = () => {
     if (gameAction.getKeyState('w')) {
       if (gameSocket)
@@ -20,8 +24,25 @@ export default function GameRender() {
       if (gameSocket)
       gameSocket.emit('Player', 's');
     }
+    if (gameAction.getKeyState(' ')) {
+      if (gameSocket)
+      gameSocket.emit('ready');
+    }
   };
   useEffect(() => {
+
+    if (gameSocket)
+      gameSocket.on("disc", () => {
+        setDisconnected(true);
+      const timer = setTimeout(() => {
+        gameAction.setMatchState(MatchState.IDLE);
+        viewAction.setCurrentView(View.GAME);
+        gameSocket.disconnect();
+      }, 3000)
+      return () =>{
+        clearTimeout(timer);
+      }
+    })
     const game = new GameMainScene(gameSocket, keyLoop);
     const config = {
       type: Phaser.AUTO,
@@ -73,6 +94,15 @@ export default function GameRender() {
    
     }}
   >
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={disconnected}
+      >
+        <Box sx={{ ml: 2 }}>
+          <Typography variant="h6">Opponent disconnected, returning to main menu...</Typography>
+          {/* <Typography>Time elapsed: {searchTime} seconds</Typography> */}
+        </Box>
+      </Backdrop>
       {/* The Phaser canvas will be automatically added here */}
     </div>
   );

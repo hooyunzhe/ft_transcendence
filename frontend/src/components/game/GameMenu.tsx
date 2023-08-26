@@ -40,9 +40,6 @@ export default function GameMenu() {
       gameAction.setMatchInfo(matchInfo);
 
     }),
-      gameSocket.on('disc', () => {
-        gameSocket.disconnect();
-      });
     gameSocket.on('connect', () => {
       gameSocket.sendBuffer = [];
       gameSocket.emit('init', userId.id);
@@ -55,7 +52,6 @@ export default function GameMenu() {
       gameSocket.off('connect');
       gameSocket.off('disconnect');
       gameSocket.off('match');
-      gameSocket.off('disc');
 
     };
   }, []);
