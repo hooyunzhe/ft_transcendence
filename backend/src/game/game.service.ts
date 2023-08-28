@@ -17,11 +17,11 @@ export class GameService {
     private readonly matchService: MatchService,
   ) {}
 
-  createGame(matchinfo: MatchInfo, server: Server ){
-    const newGame = new GameClass(matchinfo, server, this.compileMatchScore);
+  createGame(matchinfo: MatchInfo, socketHandler: (roomid: string, message: string, data: any) => void){
+    const newGame = new GameClass(matchinfo, socketHandler, this.matchHandler);
     return newGame;
   }
-  compileMatchScore = (matchDto: CreateMatchDto) => { 
+  matchHandler = (matchDto: CreateMatchDto) => { 
     this.matchService.create(matchDto);
 
   } 

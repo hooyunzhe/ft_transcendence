@@ -45,7 +45,8 @@ class RectObj {
 
 
 export class GameClass{
-  matchCompiler: (matchDto: CreateMatchDto)=> void;
+  matchHandler: (matchDto: CreateMatchDto)=> void;
+  socketHandler: (roomid: string, message: string, data: any) => void
   windowSize: Coor;
   direction: Coor;
   Ball: RectObj;
@@ -60,7 +61,7 @@ export class GameClass{
   refreshMilisec: number = 16;
   started: boolean = false;
 
-  constructor(matchinfo: MatchInfo, server: Server, matchCompile: (matchDto: CreateMatchDto) => void) {
+  constructor(matchinfo: MatchInfo, socketHandler: (roomid: string, message: string, data: any) => void, matchHandler: (matchDto: CreateMatchDto) => void) {
     this.windowSize = {
       x: 800,
       y: 600,
@@ -88,8 +89,8 @@ export class GameClass{
       80,
     );
     this.matchinfo = matchinfo;
-    this.server = server;
-    this.matchCompiler = matchCompile;
+    this.socketHandler = socketHandler;
+    this.matchHandler = matchHandler;
   }
 
   gameStart(player: number) {
@@ -130,7 +131,7 @@ export class GameClass{
       x: 0,
       y: 0,
     };
-    this.server.to(this.matchinfo.roomid).emit('game', {
+    this.socketHandler(this.matchinfo.roomid, 'game', {
       ball: {
         x: this.Ball.x,
         y: this.Ball.y,
@@ -139,7 +140,6 @@ export class GameClass{
       paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
       score: this.score,
     });
-    // clearInterval(this.intervalID);
   }
 
   gamePaddleConstruct(
@@ -177,7 +177,7 @@ export class GameClass{
     ) {
       this.direction.x *= -1;
     }
-    this.server.to(this.matchinfo.roomid).emit('game', {
+    this.socketHandler(this.matchinfo.roomid, 'game', {
       ball: {
         x: this.Ball.x,
         y: this.Ball.y,
@@ -202,9 +202,9 @@ export class GameClass{
     this.score[`player${player}`]++;
     if (this.score[`player${player}`] >= 3)
     {
-      this.server.to(this.matchinfo.roomid).emit('victory', player);
+      this.socketHandler(this.matchinfo.roomid, 'victory', player);
       // console.log({p1_id: this.matchinfo.player1, p2_id: this.matchinfo.player2, winner_id: this.matchinfo[`player${player}`], p1_score: this.score.player1, p2_score: this.score.player2, p1_skills: "1231", p2_skills: "1231"})
-      this.matchCompiler({p1_id: this.matchinfo.player1, p2_id: this.matchinfo.player2, winner_id: this.matchinfo[`player${player}`], p1_score: this.score.player1, p2_score: this.score.player2, p1_skills: "1231", p2_skills: "1231"});
+      this.matchHandler({p1_id: this.matchinfo.player1, p2_id: this.matchinfo.player2, winner_id: this.matchinfo[`player${player}`], p1_score: this.score.player1, p2_score: this.score.player2, p1_skills: "1231", p2_skills: "1231"});
     }
     this.ServingPaddle = player;
     console.log(

@@ -163,4 +163,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async fetchPlayerCount(roomid: string) {
     return (await this.fetchPlayer(roomid)).length;
   }
+
+  socketEmission = (roomid: string, message: string, data: any) => {
+    this.server.to(roomid).emit(message, data);
+  }
 }
