@@ -99,6 +99,7 @@ export default class GameMainScene extends Phaser.Scene {
 
     const dx = this.prevDirectionX !== undefined ? this.prevDirectionX : 0;
     const dy = this.prevDirectionY !== undefined ? this.prevDirectionY : 0;
+
     const particles = game.add.particles(0, 0, 'red', {
       quantity: 20,
       speed: { min: -100, max: 100 },
@@ -112,6 +113,17 @@ export default class GameMainScene extends Phaser.Scene {
       rotate: { min: -180, max: 180 },
     });
 
+    // const wisp = this.add.particles(0, 0, 'red', {
+    //   frame: 'white',
+    //   color: [0x96e0da, 0x937ef3],
+    //   colorEase: 'quart.out',
+    //   lifespan: 1500,
+    //   angle: { min: 1 * angle, max: 0.8 * angle },
+    //   scale: { start: 1, end: 0, ease: 'sine.in' },
+    //   speed: { min: 250, max: 350 },
+    //   advance: 2000,
+    //   blendMode: 'ADD',
+    // });
     this.soundEffect = this.sound.add('laser');
     // if (!ball) return;
     this.ball = game.physics.add
@@ -123,7 +135,7 @@ export default class GameMainScene extends Phaser.Scene {
       )
       .setScale(1.5, 1.5);
     particles.startFollow(this.ball);
-
+    // wisp.startFollow(this.ball);
     this.paddle1 = game.physics.add
       .sprite(
         this.windowsize.width * 0.05,

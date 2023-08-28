@@ -5,7 +5,7 @@ import GameMainScene from './scenes/GameMainScene';
 import GameMatchFoundScene from './scenes/GameVictory';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions } from '@/lib/stores/useGameStore';
-import { useUtilActions } from '@/lib/stores/useUtilStore';
+import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
 import { Backdrop, Box, Typography } from '@mui/material';
@@ -23,6 +23,7 @@ export default function GameRender() {
   const gameSocket = useGameSocket();
   const gameAction = useGameActions();
   const viewAction = useUtilActions();
+  const currentView = useCurrentView();
   const [disconnected, setDisconnected] = useState(false);
   const [gameSession, setGameSession] = useState<Phaser.Game | null>(null);
   let gameInfo: gameData;
@@ -50,6 +51,7 @@ export default function GameRender() {
         timestamp: number;
       }) => {
         gameInfo = data;
+        console.log(data);
       },
     );
 
@@ -104,7 +106,7 @@ export default function GameRender() {
       window.removeEventListener('keyup', setKeyStateFalse, true);
       window.removeEventListener('keydown', setKeyStateTrue, true);
     };
-  }, [gameSession]);
+  }, [currentView]);
 
   function setKeyStateFalse(event: KeyboardEvent) {
     gameAction.setKeyState(event.key, false);
