@@ -21,6 +21,7 @@ export default class GameMainScene extends Phaser.Scene {
 
   preload() {
     const game = this;
+    game.load.audio('banger', '/assets/bgm0.mp3');
     game.load.video('background', '/assets/background1.mp4', true);
     game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
     game.load.image('red', '/assets/bubble.png');
@@ -40,7 +41,8 @@ export default class GameMainScene extends Phaser.Scene {
     videoSprite.setScale(Number(this.game.config.width) / 1920, Number(this.game.config.height) / 1080);
     videoSprite.play(true);
     const game = this;
-  
+    const music = this.sound.add('banger', {loop: true});
+    music.play();
     this.p1scoretext = game.add.bitmapText(this.windowsize.width * 0.45, this.windowsize.height * 0.05, 'font', '00', 64).setOrigin(0.5).setTint(0xFFFFFF);
     this.p2scoretext = game.add.bitmapText(this.windowsize.width * 0.55, this.windowsize.height * 0.05, 'font', '00', 64).setOrigin(0.5).setTint(0xFFFFFF);
     // text.setTint(0xff0000)
