@@ -24,6 +24,7 @@ export default function GameRender() {
   const gameAction = useGameActions();
   const viewAction = useUtilActions();
   const [disconnected, setDisconnected] = useState(false);
+  const [gameSession, setGameSession] = useState<Phaser.Game | null>(null);
   let gameInfo: gameData;
   const keyLoop = () => {
     if (gameAction.getKeyState('w')) {
@@ -92,18 +93,18 @@ export default function GameRender() {
       scene: [game, new GameVictoryScene(endGame)],
     };
 
+    if (!gameSession) setGameSession(new Phaser.Game(config));
+
     window.addEventListener('keyup', setKeyStateFalse, true);
     window.addEventListener('keydown', setKeyStateTrue, true);
 
-    const gameSession = new Phaser.Game(config);
-
     return () => {
-      gameSession.destroy(true, true);
+      if (gameSession) gameSession.destroy(true, true);
       gameSocket?.disconnect();
       window.removeEventListener('keyup', setKeyStateFalse, true);
       window.removeEventListener('keydown', setKeyStateTrue, true);
     };
-  }, []);
+  }, [gameSession, gameSocket]);
 
   function setKeyStateFalse(event: KeyboardEvent) {
     gameAction.setKeyState(event.key, false);

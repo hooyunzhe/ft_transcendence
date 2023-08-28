@@ -16,6 +16,12 @@ export default class GameMainScene extends Phaser.Scene {
   private windowsize: { width: number; height: number };
   private Socket: Socket | null;
   private prevDirectionX: number | undefined;
+  private prevDirectionY: number | undefined;
+  private soundEffect:
+    | Phaser.Sound.NoAudioSound
+    | Phaser.Sound.HTML5AudioSound
+    | Phaser.Sound.WebAudioSound
+    | undefined;
   private keyloop: () => void;
   private prediction: (timestamp: number) => gameData;
   constructor(
@@ -33,10 +39,11 @@ export default class GameMainScene extends Phaser.Scene {
 
   preload() {
     const game = this;
+    game.load.audio('laser', '/assets/collision.ogg');
     game.load.audio('banger', '/assets/bgm0.mp3');
     game.load.video('background', '/assets/background1.mp4', true);
     game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
-    game.load.image('red', '/assets/bubble.png');
+    game.load.image('red', '/assets/neonpurple.png');
     game.load.image('test', '/assets/test3.png');
     game.load.bitmapFont(
       'font',
@@ -67,7 +74,7 @@ export default class GameMainScene extends Phaser.Scene {
     );
     videoSprite.play(true);
     const game = this;
-    const music = this.sound.add('banger', { loop: true });
+    const music = this.sound.add('banger', { loop: true }).setVolume(0.5);
     music.play();
     this.p1scoretext = game.add
       .bitmapText(
@@ -90,18 +97,22 @@ export default class GameMainScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setTint(0xffffff);
 
-    const particles = game.add.particles(0, 0, 'test', {
+    const dx = this.prevDirectionX !== undefined ? this.prevDirectionX : 0;
+    const dy = this.prevDirectionY !== undefined ? this.prevDirectionY : 0;
+    const particles = game.add.particles(0, 0, 'red', {
+      quantity: 20,
       speed: { min: -100, max: 100 },
-      scale: { start: 0.01, end: 0 },
-      lifespan: 2000,
+      accelerationY: 1000 * dy,
+      accelerationX: 1000 * dx,
+      scale: { start: 1, end: 0.1 },
+      lifespan: { min: 300, max: 1000 },
       blendMode: 'ADD',
-
+      frequency: 50,
       followOffset: { x: 0, y: 0 },
       rotate: { min: -180, max: 180 },
     });
 
-    particles.setFrequency(50, 1);
-
+    this.soundEffect = this.sound.add('laser');
     // if (!ball) return;
     this.ball = game.physics.add
       .sprite(
@@ -203,8 +214,8 @@ export default class GameMainScene extends Phaser.Scene {
   }
 
   handleCollision1 = () => {
-    console.log('collided with paddle1');
     if (!this.paddle1) return;
+    if (this.soundEffect) this.soundEffect.play();
     const paddlebloom1 = this.paddle1.postFX.addBloom(0xffffff, 0.8, 0.8, 1, 3);
     // const effect = this.paddle1.current.postFX.addDisplacement('red', this.paddle1.current.x + this.paddle1.current.width / 2, this.ball.current.y)
     this.time.addEvent({
@@ -217,8 +228,8 @@ export default class GameMainScene extends Phaser.Scene {
   };
   handleCollision2 = () => {
     {
-      console.log('collided with paddle2');
       if (!this.paddle2) return;
+      if (this.soundEffect) this.soundEffect.play();
       const paddlebloom2 = this.paddle2.postFX.addBloom(
         0xffffff,
         0.8,
@@ -251,18 +262,13 @@ export default class GameMainScene extends Phaser.Scene {
       if (this.paddle1) this.paddle1.y = data.paddle1.y;
       if (this.paddle2) this.paddle2.y = data.paddle2.y;
       if (this.prevDirectionX) {
-        console.log(
-          'prev direct:',
-          this.prevDirectionX,
-          ' current direct:',
-          data.balldirection.x,
-        );
         if (this.prevDirectionX < 0 && data.balldirection.x > 0)
           this.handleCollision1();
         else if (this.prevDirectionX > 0 && data.balldirection.x < 0)
           this.handleCollision2();
       }
       this.prevDirectionX = data.balldirection.x;
+      this.prevDirectionY = data.balldirection.y;
       this.score = data.score;
     }
   };
