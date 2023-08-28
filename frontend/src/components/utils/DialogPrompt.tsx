@@ -14,7 +14,17 @@ export default function DialogPrompt() {
   const { setActionClicked, setBackClicked, resetDialog } = useDialogActions();
 
   return (
-    <Dialog open={dialog.display} onClose={resetDialog} maxWidth='xs' fullWidth>
+    <Dialog
+      fullWidth
+      maxWidth='xs'
+      open={dialog.display}
+      onClose={resetDialog}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          setActionClicked();
+        }
+      }}
+    >
       <DialogTitle>{dialog.title}</DialogTitle>
       <DialogContent>
         <DialogContentText>{dialog.description}</DialogContentText>

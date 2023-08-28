@@ -22,10 +22,15 @@ export default function ConfirmationPrompt() {
 
   return (
     <Dialog
+      fullWidth
+      maxWidth='xs'
       open={confirmation.required}
       onClose={resetConfirmation}
-      maxWidth='xs'
-      fullWidth
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          handleConfirmation();
+        }
+      }}
     >
       <DialogTitle>{confirmation.title}</DialogTitle>
       <DialogContent>
