@@ -5,13 +5,18 @@ export default class GameMainScene extends Phaser.Scene {
   private ball: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
   private paddle1: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
   private paddle2: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
-
+  private p1scoretext: Phaser.GameObjects.BitmapText | undefined;
+  private p2scoretext: Phaser.GameObjects.BitmapText | undefined;
+  private score: {player1: number, player2: number};
+  private windowsize: {width : number, height: number};
   private Socket: Socket | null;
   private keyloop: () => void
   constructor(gameSocket: Socket | null, keyloop:  () => void) {
     super({ key: 'MainScene' });
     this.Socket = gameSocket;
     this.keyloop = keyloop;
+    this.score = {player1: 0, player2: 0};
+    this.windowsize = {width: 0, height: 0};
   }
 
   preload() {
@@ -20,20 +25,38 @@ export default class GameMainScene extends Phaser.Scene {
     game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
     game.load.image('red', '/assets/bubble.png');
     game.load.image('test', '/assets/test3.png');
+    game.load.bitmapFont('font', '/assets/scorefont_0.png', '/assets/scorefont.fnt');
     game.load.image('paddle1', '/assets/paddle1.png');
     game.load.image('paddle2', '/assets/paddle2.png');
   }
 
   create() {
 
-
-    const videoSprite = this.add.video(Number(this.game.config.width) /2 , Number(this.game.config.height) /2, 'background');
+    this.windowsize = {width: Number(this.game.config.width), height: Number(this.game.config.height)};
+    // const videoSprite = this.add.video(Number(this.game.config.width) /2 , Number(this.game.config.height) /2, 'background');
 
     this.scale.displaySize.setAspectRatio( window.innerWidth/window.innerHeight);
     this.scale.refresh();
-    videoSprite.setScale(Number(this.game.config.width) / 1920, Number(this.game.config.height) / 1080);
-    videoSprite.play(true);
+    // videoSprite.setScale(Number(this.game.config.width) / 1920, Number(this.game.config.height) / 1080);
+    // videoSprite.play(true);
     const game = this;
+
+    let number = 0;
+
+    const inreaseNumber = () => {
+      number++;
+      if (number >= 100)
+        number = 0;
+    }
+
+    const updateScore = () => {
+      
+    }
+  
+    this.p1scoretext = game.add.bitmapText(this.windowsize.width * 0.45, this.windowsize.height * 0.1, 'font', '00  ').setOrigin(0.5).setTint(0xFFFFFF);
+    this.p2scoretext = game.add.bitmapText(this.windowsize.width * 0.55, this.windowsize.height * 0.1, 'font', '00').setOrigin(0.5).setTint(0xFFFFFF);
+    // text.setTint(0xff0000)
+
 
     const particles = game.add.particles(0, 0, 'test', {
       speed: { min: -100, max: 100 },
@@ -143,6 +166,7 @@ export default class GameMainScene extends Phaser.Scene {
         }
         if (this.paddle1) this.paddle1.y = data.paddle1.y;
         if (this.paddle2) this.paddle2.y = data.paddle2.y;
+        this.score = data.score;
       },
     );
     this.Socket?.on('victory', (player: number) => {
@@ -153,8 +177,21 @@ export default class GameMainScene extends Phaser.Scene {
       this.Socket.off('game');
     };
   }
+  scoreNumber = (score: number) => {
+    if (score < 10)
+      return '0'+ score;
+    else
+      return `${score}`;
+  }
+  updateScore = () => {
+    if (this.p1scoretext)
+      this.p1scoretext.setText(this.scoreNumber(this.score.player1));
+    if (this.p2scoretext)
+      this.p2scoretext.setText(this.scoreNumber(this.score.player2));
+  }
   update() {
     this.keyloop();
+    this.updateScore();
   }
 
 

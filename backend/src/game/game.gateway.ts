@@ -63,7 +63,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     clients[0].data.player = 1;
     clients[1].data.player = 2;
     console.log('event: createroom: ', uniquekey);
-    this.roomlist.set(uniquekey, this.gameService.createGame({roomid: uniquekey, player1: clients[0].data.user_id, player2: clients[1].data.user_id}, this.server));
+    this.roomlist.set(uniquekey, this.gameService.createGame({roomid: uniquekey, player1: clients[0].data.user_id, player2: clients[1].data.user_id}, this.socketHandler));
     console.log('room size : ', this.roomlist.size);
   }
 
@@ -111,7 +111,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log('event: createroom: ', client.data.roomid);
       this.roomlist.set(
         client.data.roomid,
-        this.gameService.createGame(client.data.roomid, this.server),
+        this.gameService.createGame(client.data.roomid, this.socketHandler),
       );
       console.log('room size : ', this.roomlist.size);
     }
@@ -164,7 +164,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return (await this.fetchPlayer(roomid)).length;
   }
 
-  socketEmission = (roomid: string, message: string, data: any) => {
+  socketHandler = (roomid: string, message: string, data: any) => {
     this.server.to(roomid).emit(message, data);
   }
 }
