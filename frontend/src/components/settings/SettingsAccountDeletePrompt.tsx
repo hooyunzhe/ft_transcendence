@@ -1,17 +1,17 @@
 'use client';
+import { signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import InputField from '../utils/InputField';
 import callAPI from '@/lib/callAPI';
-import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
 import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
-export default function SettingsTwoFactorRemovePrompt() {
+export default function SettingsAccountDeletePrompt() {
   const currentUser = useCurrentUser();
-  const { setCurrentUserTwoFactorEnabled } = useUserActions();
   const [confirmPhrase, setConfirmPhrase] = useState('');
   const { actionClicked, backClicked } = useDialogTriggers();
   const { setActionButtonDisabled, resetTriggers, resetDialog } =
@@ -20,21 +20,18 @@ export default function SettingsTwoFactorRemovePrompt() {
 
   function handleConfirmation(phrase: string): void {
     setConfirmPhrase(phrase);
-    setActionButtonDisabled(
-      phrase !== 'Remove two-factor authentication for me',
-    );
+    setActionButtonDisabled(phrase !== 'Delete my account for me');
   }
 
-  async function handleTwoFactorRemoval(): Promise<void> {
-    callAPI('DELETE', 'two-factor', {
-      user_id: currentUser.id,
+  async function handleAccountDeletion(): Promise<void> {
+    callAPI('DELETE', 'users', {
+      id: currentUser.id,
     });
-    setCurrentUserTwoFactorEnabled(false);
   }
 
   async function handleAction(): Promise<void> {
-    handleTwoFactorRemoval()
-      .then(resetDialog)
+    handleAccountDeletion()
+      .then(() => signOut())
       .catch((error) => {
         resetTriggers();
         displayNotification('error', error);
@@ -52,7 +49,7 @@ export default function SettingsTwoFactorRemovePrompt() {
 
   return (
     <InputField
-      label='Confirm Removal Phrase'
+      label='Confirm Deletion Phrase'
       value={confirmPhrase}
       onChange={handleConfirmation}
       onSubmit={handleAction}

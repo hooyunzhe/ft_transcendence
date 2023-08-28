@@ -7,8 +7,7 @@ interface TwoFactorStore {
     handleAction: () => void;
   };
   actions: {
-    setupTwoFactor: () => void;
-    displayTwoFactor: (handleAction: () => void) => void;
+    displayTwoFactor: (handleAction: () => void, setup?: boolean) => void;
     resetTwoFactor: () => void;
   };
 }
@@ -17,23 +16,17 @@ type StoreSetter = (
   helper: (state: TwoFactorStore) => Partial<TwoFactorStore>,
 ) => void;
 
-function setupTwoFactor(set: StoreSetter): void {
+function displayTwoFactor(
+  set: StoreSetter,
+  handleAction: () => void,
+  setup?: boolean,
+): void {
+  console.log(setup);
   set(({ data }) => ({
     data: {
       ...data,
       display: true,
-      setup: true,
-      handleAction: () => null,
-    },
-  }));
-}
-
-function displayTwoFactor(set: StoreSetter, handleAction: () => void): void {
-  set(({ data }) => ({
-    data: {
-      ...data,
-      display: true,
-      setup: false,
+      setup: setup ?? false,
       handleAction: handleAction,
     },
   }));
@@ -52,8 +45,8 @@ const useTwoFactorStore = create<TwoFactorStore>()((set) => ({
     handleAction: () => null,
   },
   actions: {
-    setupTwoFactor: () => setupTwoFactor(set),
-    displayTwoFactor: (handleAction) => displayTwoFactor(set, handleAction),
+    displayTwoFactor: (handleAction, setup) =>
+      displayTwoFactor(set, handleAction, setup),
     resetTwoFactor: () => resetTwoFactor(set),
   },
 }));
