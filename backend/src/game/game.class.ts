@@ -63,8 +63,8 @@ export class GameClass{
 
   constructor(matchinfo: MatchInfo, socketHandler: (roomid: string, message: string, data: any) => void, matchHandler: (matchDto: CreateMatchDto) => void) {
     this.windowSize = {
-      x: 800,
-      y: 600,
+      x: 1920,
+      y: 1080,
     };
     this.direction = {
       x: 0,
@@ -81,12 +81,12 @@ export class GameClass{
       player1: 0,
       player2: 0,
     };
-    this.Paddle1 = new RectObj(15, this.windowSize.y / 2, 10, 80);
+    this.Paddle1 = new RectObj(this.windowSize.x * 0.05, this.windowSize.y / 2, 20, 160);
     this.Paddle2 = new RectObj(
-      this.windowSize.x - 15,
+      this.windowSize.x * 0.05,
       this.windowSize.y / 2,
-      10,
-      80,
+      20,
+      160,
     );
     this.matchinfo = matchinfo;
     this.socketHandler = socketHandler;

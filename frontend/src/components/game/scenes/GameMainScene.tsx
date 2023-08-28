@@ -26,35 +26,23 @@ export default class GameMainScene extends Phaser.Scene {
     game.load.image('red', '/assets/bubble.png');
     game.load.image('test', '/assets/test3.png');
     game.load.bitmapFont('font', '/assets/scorefont_0.png', '/assets/scorefont.fnt');
-    game.load.image('paddle1', '/assets/paddle1.png');
-    game.load.image('paddle2', '/assets/paddle2.png');
+    game.load.image('paddle1', '/assets/redpaddle.png');
+    game.load.image('paddle2', '/assets/bluepaddle.png');
   }
 
   create() {
 
     this.windowsize = {width: Number(this.game.config.width), height: Number(this.game.config.height)};
-    // const videoSprite = this.add.video(Number(this.game.config.width) /2 , Number(this.game.config.height) /2, 'background');
+    const videoSprite = this.add.video(this.windowsize.width * 0.5 , this.windowsize.height * 0.5, 'background');
 
     this.scale.displaySize.setAspectRatio( window.innerWidth/window.innerHeight);
-    this.scale.refresh();
-    // videoSprite.setScale(Number(this.game.config.width) / 1920, Number(this.game.config.height) / 1080);
-    // videoSprite.play(true);
+    // this.scale.refresh();
+    videoSprite.setScale(Number(this.game.config.width) / 1920, Number(this.game.config.height) / 1080);
+    videoSprite.play(true);
     const game = this;
-
-    let number = 0;
-
-    const inreaseNumber = () => {
-      number++;
-      if (number >= 100)
-        number = 0;
-    }
-
-    const updateScore = () => {
-      
-    }
   
-    this.p1scoretext = game.add.bitmapText(this.windowsize.width * 0.45, this.windowsize.height * 0.1, 'font', '00  ').setOrigin(0.5).setTint(0xFFFFFF);
-    this.p2scoretext = game.add.bitmapText(this.windowsize.width * 0.55, this.windowsize.height * 0.1, 'font', '00').setOrigin(0.5).setTint(0xFFFFFF);
+    this.p1scoretext = game.add.bitmapText(this.windowsize.width * 0.45, this.windowsize.height * 0.05, 'font', '00', 64).setOrigin(0.5).setTint(0xFFFFFF);
+    this.p2scoretext = game.add.bitmapText(this.windowsize.width * 0.55, this.windowsize.height * 0.05, 'font', '00', 64).setOrigin(0.5).setTint(0xFFFFFF);
     // text.setTint(0xff0000)
 
 
@@ -72,18 +60,34 @@ export default class GameMainScene extends Phaser.Scene {
 
     // if (!ball) return;
     this.ball = game.physics.add.sprite(
-      400,
-      300,
+      this.windowsize.width * 0.5,
+      this.windowsize.height * 0.5,
       'ballsprite',
       '0.png',
-    );
+    ).setScale(1.5, 1.5);
     particles.startFollow(this.ball);
-    const gameState = game.add.text(400, 50, '', { align: 'center' });
-    gameState.setOrigin(0.5);
-    this.paddle1 = game.physics.add.sprite(15, 300, 'paddle1');
-    this.paddle2 = game.physics.add.sprite(785, 300, 'paddle2');
 
+    this.paddle1 = game.physics.add.sprite(this.windowsize.width * 0.05, this.windowsize.height * 0.5, 'paddle1').setScale(2, 2);
+    this.paddle2 = game.physics.add.sprite(this.windowsize.width * 0.95, this.windowsize.height * 0.5, 'paddle2').setScale(2, 2);
 
+    const redglow = this.paddle1.preFX?.addGlow(0xff4444, 0, 0, false, 0.1, 3);
+     const blueglow = this.paddle2.preFX?.addGlow(0x34646ff
+, 0, 0, false, 0.1, 3);
+
+    this.tweens.add({
+      targets: blueglow,
+      outerStrength: 2,
+      yoyo: true,
+      loop: -1,
+      ease: 'sine.inout'
+  });
+  this.tweens.add({
+    targets: redglow,
+    outerStrength: 2,
+    yoyo: true,
+    loop: -1,
+    ease: 'sine.inout'
+});
     const handleCollision1 = () => {
       if (!this.paddle1) return;
       const paddlebloom1 = this.paddle1.postFX.addBloom(
