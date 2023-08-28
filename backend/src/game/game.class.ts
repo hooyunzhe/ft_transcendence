@@ -35,6 +35,7 @@ class RectObj {
   bottom() {
     return this.y + this.height / 2;
   }
+  
   x: number;
   y: number;
   width: number;
@@ -73,8 +74,8 @@ export class GameClass{
     this.Ball = new RectObj(
       this.windowSize.x / 2,
       this.windowSize.y / 2,
-      40,
-      40,
+      60,
+      60,
     );
     this.velocity = 5;
     this.score = {
@@ -83,7 +84,7 @@ export class GameClass{
     };
     this.Paddle1 = new RectObj(this.windowSize.x * 0.05, this.windowSize.y / 2, 20, 160);
     this.Paddle2 = new RectObj(
-      this.windowSize.x * 0.05,
+      this.windowSize.x * 0.95,
       this.windowSize.y / 2,
       20,
       160,
@@ -111,15 +112,11 @@ export class GameClass{
 
   gameReset() {
     switch (this.ServingPaddle) {
-      case 1:
-        this.Ball.x = 1 + this.Paddle1.right() + this.Ball.width / 2;
-        break;
-    
       case 2:
-        this.Ball.x = +this.Paddle2.left() - this.Ball.width / 2 - 1
+        this.Ball.x = (this.Paddle2.left() - this.Ball.width / 2) - 10
         break;
       default:
-        this.Ball.x = this.windowSize.x / 2;
+        this.Ball.x = 10 + (this.Paddle1.right() + this.Ball.width / 2);
       break;
     }
 
@@ -183,8 +180,8 @@ export class GameClass{
         y: this.Ball.y,
       },
       balldirection : {
-        x: this.Ball.velocityX / (this.refreshMilisec / 1000),
-        y: this.Ball.velocityY / (this.refreshMilisec / 1000),
+        x: this.direction.x,
+        y: this.direction.y,
       },
       timestamp : Date.now(),
       paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
@@ -215,6 +212,8 @@ export class GameClass{
     );
     this.gameReset();
   }
+
+  sticky
 
   gameSetPosition(x: number, y: number) {
     this.Ball.x = x;
