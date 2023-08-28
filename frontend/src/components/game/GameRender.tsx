@@ -99,12 +99,12 @@ export default function GameRender() {
     window.addEventListener('keydown', setKeyStateTrue, true);
 
     return () => {
-      if (gameSession) gameSession.destroy(true, true);
+      if (gameSession) gameSession.destroy(true, false);
       gameSocket?.disconnect();
       window.removeEventListener('keyup', setKeyStateFalse, true);
       window.removeEventListener('keydown', setKeyStateTrue, true);
     };
-  }, [gameSession, gameSocket]);
+  }, [gameSession]);
 
   function setKeyStateFalse(event: KeyboardEvent) {
     gameAction.setKeyState(event.key, false);
