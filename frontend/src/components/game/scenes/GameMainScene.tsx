@@ -31,7 +31,7 @@ export default class GameMainScene extends Phaser.Scene {
 
     this.scale.displaySize.setAspectRatio( window.innerWidth/window.innerHeight);
     this.scale.refresh();
-    videoSprite.setScale(Number(this.game.config.width) / 3840, Number(this.game.config.height) / 2160);
+    videoSprite.setScale(Number(this.game.config.width) / 1920, Number(this.game.config.height) / 1080);
     videoSprite.play(true);
     const game = this;
 

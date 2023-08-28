@@ -1,7 +1,9 @@
 export default class GameVictoryScene extends Phaser.Scene {
   private winner: number = 0;
-  constructor() {
+  private callback: () => void;
+  constructor(callback: () => void) {
     super({ key: 'victory' });
+    this.callback = callback;
   }
 
   preload() {
@@ -76,7 +78,18 @@ export default class GameVictoryScene extends Phaser.Scene {
       ease: 'Bounce.easeOut',
     });
     particle1.startFollow(Player);
+    const timer = setTimeout(() => {
+      this.callback();
+    }, 3000);
+
+    return (() => {
+      clearTimeout(timer);
+    })
+
   }
 
-  update() {}
+  update() {
+
+    
+  }
 }

@@ -30,6 +30,12 @@ export default function GameRender() {
       gameSocket.emit('Player', ' ');
     }
   };
+
+  const endGame = () => {
+      viewAction.setCurrentView(View.GAME);
+  }
+
+
   useEffect(() => {
 
     if (gameSocket)
@@ -60,7 +66,7 @@ export default function GameRender() {
       },
       parent: "maingame",
 
-      scene: [game, new GameVictoryScene()],
+      scene: [game, new GameVictoryScene(endGame)],
     };
 
 

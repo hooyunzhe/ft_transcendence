@@ -13,7 +13,6 @@ import { View } from '@/types/UtilTypes';
 import { MatchInfo, MatchState } from '@/types/GameTypes';
 import callAPI from '@/lib/callAPI';
 import GameMatchFound from './GameMatchFound';
-import LoopingVideo from './class/VideoLoop';
 
 export default function GameMenu() {
   const gameSocket = useGameSocket();
@@ -22,7 +21,6 @@ export default function GameMenu() {
   const viewAction = useUtilActions();
   const userId = useCurrentUser();
   const [searchTime, setSearchTime] = useState(0);
-  const { displayConfirmation } = useConfirmationActions();
 
 
   useEffect(() => {
@@ -30,13 +28,6 @@ export default function GameMenu() {
     gameSocket.on('match', async (data: {player1: string, player2: string}) => {
       gameAction.setMatchState(MatchState.FOUND);
       console.log('match found');
-      // displayConfirmation(
-      //   'Match Found',
-      //   'Would you like to accept the match?',
-      //   null,
-      //   joinGame,
-      //   rejectGame,
-      // );
       const matchInfo = await getPlayerData(data);
       gameAction.setMatchInfo(matchInfo);
 
