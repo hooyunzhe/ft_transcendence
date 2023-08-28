@@ -89,6 +89,9 @@ export default function ChannelCreatePrompt() {
     if (checkChannelExists(channelName.trim())) {
       throw 'Channel already exists';
     }
+    if (channelName.trim().length === 0) {
+      throw 'Cannot change name into just spaces.';
+    }
     if (checkChannelJoined(channelName.trim())) {
       throw 'Already in channel';
     }

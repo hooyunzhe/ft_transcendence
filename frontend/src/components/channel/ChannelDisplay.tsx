@@ -82,7 +82,7 @@ export function ChannelDisplay({
           <ListItemAvatar>
             <Avatar />
           </ListItemAvatar>
-          <ListItemText primary={channelName} />
+          <ListItemText primary={channelName} sx={{ wordBreak: 'break-all' }} />
           {channelType === ChannelType.PUBLIC && <AccountCircleRounded />}
           {channelType === ChannelType.PRIVATE && <AdminPanelSettingsRounded />}
           {channelType === ChannelType.PROTECTED && <LockPersonRounded />}

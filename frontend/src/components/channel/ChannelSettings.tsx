@@ -61,7 +61,10 @@ export default function ChannelSettings({
             displayDialog(
               'Change Channel Name',
               'Please provide the name you want to change to',
-              <ChannelNameChangePrompt channelID={channelID} />,
+              <ChannelNameChangePrompt
+                channelID={channelID}
+                channelName={channelName}
+              />,
               'Change',
             );
             setAnchorElement(undefined);

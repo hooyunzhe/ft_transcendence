@@ -61,7 +61,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: ChangeChannelNameEmitBodyParams,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.id)).emit('changeChangeName', data);
+    client.to(String(data.id)).emit('changeChannelName', data);
   }
 
   @SubscribeMessage('changeChannelType')
@@ -69,7 +69,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: ChangeChannelTypeEmitBodyParams,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.id)).emit('changeChangeType', data);
+    client.to(String(data.id)).emit('changeChannelType', data);
   }
 
   @SubscribeMessage('deleteChannel')
