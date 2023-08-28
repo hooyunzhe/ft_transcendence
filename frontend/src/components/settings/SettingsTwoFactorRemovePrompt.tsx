@@ -9,29 +9,31 @@ import {
 } from '@/lib/stores/useDialogStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
-export default function SettingsUsernameChangePrompt() {
+export default function SettingsTwoFactorRemovePrompt() {
   const currentUser = useCurrentUser();
-  const { changeCurrentUsername } = useUserActions();
-  const { resetDialog, resetTriggers } = useDialogActions();
+  const { setCurrentUserTwoFactorEnabled } = useUserActions();
+  const [removeConfirm, setRemoveConfirm] = useState('');
   const { actionClicked, backClicked } = useDialogTriggers();
+  const { setActionButtonDisabled, resetTriggers, resetDialog } =
+    useDialogActions();
   const { displayNotification } = useNotificationActions();
-  const [newUsername, setNewUsername] = useState('');
 
-  async function handleUsernameChange(): Promise<void> {
-    if (newUsername.length > 16) {
-      throw 'Username cannot be more than 16 characters long';
-    }
-    await callAPI('PATCH', 'users', {
-      id: currentUser.id,
-      username: newUsername,
+  function handleConfirmation(removeConfirm: string): void {
+    setRemoveConfirm(removeConfirm);
+    setActionButtonDisabled(
+      removeConfirm !== 'Remove two-factor authentication for me',
+    );
+  }
+
+  async function handleTwoFactorRemoval(): Promise<void> {
+    callAPI('DELETE', 'two-factor', {
+      user_id: currentUser.id,
     });
-    changeCurrentUsername(newUsername);
-    displayNotification('success', 'Username changed');
-    location.reload();
+    setCurrentUserTwoFactorEnabled(false);
   }
 
   async function handleAction(): Promise<void> {
-    handleUsernameChange()
+    handleTwoFactorRemoval()
       .then(resetDialog)
       .catch((error) => {
         resetTriggers();
@@ -50,9 +52,9 @@ export default function SettingsUsernameChangePrompt() {
 
   return (
     <InputField
-      label='Username'
-      value={newUsername}
-      onChange={setNewUsername}
+      label='Confirm Removal Phrase'
+      value={removeConfirm}
+      onChange={handleConfirmation}
       onSubmit={handleAction}
     />
   );

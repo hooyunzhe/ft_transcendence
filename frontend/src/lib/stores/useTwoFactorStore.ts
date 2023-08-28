@@ -1,21 +1,14 @@
-import { ReactNode } from 'react';
 import { create } from 'zustand';
 
 interface TwoFactorStore {
   data: {
     display: boolean;
-    title: string;
-    description: string;
-    children: ReactNode;
-    actionButtonText: string;
+    setup: boolean;
+    handleAction: () => void;
   };
   actions: {
-    displayTwoFactor: (
-      title: string,
-      description: string,
-      children: ReactNode,
-      actionButtonText: string,
-    ) => void;
+    setupTwoFactor: () => void;
+    displayTwoFactor: (handleAction: () => void) => void;
     resetTwoFactor: () => void;
   };
 }
@@ -24,21 +17,24 @@ type StoreSetter = (
   helper: (state: TwoFactorStore) => Partial<TwoFactorStore>,
 ) => void;
 
-function displayTwoFactor(
-  set: StoreSetter,
-  title: string,
-  description: string,
-  children: ReactNode,
-  actionButtonText: string,
-): void {
+function setupTwoFactor(set: StoreSetter): void {
   set(({ data }) => ({
     data: {
       ...data,
       display: true,
-      title: title,
-      description: description,
-      children: children,
-      actionButtonText: actionButtonText,
+      setup: true,
+      handleAction: () => null,
+    },
+  }));
+}
+
+function displayTwoFactor(set: StoreSetter, handleAction: () => void): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      display: true,
+      setup: false,
+      handleAction: handleAction,
     },
   }));
 }
@@ -52,14 +48,12 @@ function resetTwoFactor(set: StoreSetter): void {
 const useTwoFactorStore = create<TwoFactorStore>()((set) => ({
   data: {
     display: false,
-    title: '',
-    description: '',
-    children: null,
-    actionButtonText: '',
+    setup: false,
+    handleAction: () => null,
   },
   actions: {
-    displayTwoFactor: (title, description, children, actionButtonText) =>
-      displayTwoFactor(set, title, description, children, actionButtonText),
+    setupTwoFactor: () => setupTwoFactor(set),
+    displayTwoFactor: (handleAction) => displayTwoFactor(set, handleAction),
     resetTwoFactor: () => resetTwoFactor(set),
   },
 }));

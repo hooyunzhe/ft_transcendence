@@ -12,6 +12,7 @@ interface UserStore {
   actions: {
     setCurrentUser: (currentUser: User) => void;
     changeCurrentUsername: (newUsername: string) => void;
+    setCurrentUserTwoFactorEnabled: (enabled: boolean) => void;
     addUserStatus: (userSocket: Socket, userIDs: number[]) => void;
     changeUserStatus: (userID: number, newStatus: UserStatus) => void;
     setupUserSocketEvents: (userSocket: Socket) => void;
@@ -34,6 +35,18 @@ function changeCurrentUsername(set: StoreSetter, newUsername: string): void {
     data: {
       ...data,
       currentUser: { ...data.currentUser, username: newUsername },
+    },
+  }));
+}
+
+function setCurrentUserTwoFactorEnabled(
+  set: StoreSetter,
+  enabled: boolean,
+): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      currentUser: { ...data.currentUser, two_factor_enabled: enabled },
     },
   }));
 }
@@ -78,9 +91,11 @@ const useUserStore = create<UserStore>()((set) => ({
   data: {
     currentUser: {
       id: 0,
+      intra_id: '',
       username: '',
       refresh_token: '',
       avatar_url: '',
+      two_factor_enabled: false,
       date_of_creation: '',
     },
     userStatus: {},
@@ -89,6 +104,8 @@ const useUserStore = create<UserStore>()((set) => ({
     setCurrentUser: (currentUser) => setCurrentUser(set, currentUser),
     changeCurrentUsername: (newUsername) =>
       changeCurrentUsername(set, newUsername),
+    setCurrentUserTwoFactorEnabled: (enabled) =>
+      setCurrentUserTwoFactorEnabled(set, enabled),
     addUserStatus: (userSocket, userIDs) =>
       addUserStatus(set, userSocket, userIDs),
     changeUserStatus: (userID, newStatus) =>

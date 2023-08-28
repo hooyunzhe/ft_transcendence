@@ -2,12 +2,15 @@
 import { signOut } from 'next-auth/react';
 import { Avatar, Box, Button, Switch, Typography } from '@mui/material';
 import SettingsUsernameChangePrompt from './SettingsUsernameChangePrompt';
+import SettingsTwoFactorRemovePrompt from './SettingsTwoFactorRemovePrompt';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useTwoFactorActions } from '@/lib/stores/useTwoFactorStore';
+import { useDialogActions } from '@/lib/stores/useDialogStore';
 
 export default function SettingsAccountSection() {
   const currentUser = useCurrentUser();
-  const { displayTwoFactor } = useTwoFactorActions();
+  const { setupTwoFactor, displayTwoFactor } = useTwoFactorActions();
+  const { displayDialog } = useDialogActions();
 
   return (
     <Box
@@ -44,11 +47,13 @@ export default function SettingsAccountSection() {
             variant='contained'
             onMouseDown={(event) => event.preventDefault()}
             onClick={() =>
-              displayTwoFactor(
-                'Change Username',
-                'Enter your new username',
-                <SettingsUsernameChangePrompt currentUserID={currentUser.id} />,
-                'Change',
+              displayTwoFactor(() =>
+                displayDialog(
+                  'Change Username',
+                  'Enter your new username',
+                  <SettingsUsernameChangePrompt />,
+                  'Change',
+                ),
               )
             }
           >
@@ -64,8 +69,33 @@ export default function SettingsAccountSection() {
           justifyContent='space-between'
           alignItems='center'
         >
-          <Typography variant='h5'>Not Enabled</Typography>
-          <Button variant='contained'>Enable</Button>
+          <Typography
+            variant='h5'
+            color={currentUser.two_factor_enabled ? 'chartreuse' : 'firebrick'}
+          >
+            {currentUser.two_factor_enabled ? '' : 'Not'} Enabled
+          </Typography>
+          <Button
+            variant='contained'
+            color={currentUser.two_factor_enabled ? 'error' : 'success'}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              if (currentUser.two_factor_enabled) {
+                displayTwoFactor(() => {
+                  displayDialog(
+                    'Remove Two-factor Authentication',
+                    'Enter the following phrase to confirm removal: "Remove two-factor authentication for me"',
+                    <SettingsTwoFactorRemovePrompt />,
+                    'Remove',
+                  );
+                });
+              } else {
+                setupTwoFactor();
+              }
+            }}
+          >
+            {currentUser.two_factor_enabled ? 'Remove' : 'Enable'}
+          </Button>
         </Box>
       </Box>
       <Box width='100%' display='flex' justifyContent='space-between'>

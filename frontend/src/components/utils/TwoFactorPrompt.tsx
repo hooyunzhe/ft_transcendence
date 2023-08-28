@@ -1,6 +1,8 @@
 'use client';
+import { toDataURL } from 'qrcode';
 import { useEffect, useRef, useState } from 'react';
 import {
+  Avatar,
   Box,
   Dialog,
   DialogContent,
@@ -13,18 +15,55 @@ import {
   useTwoFactor,
   useTwoFactorActions,
 } from '@/lib/stores/useTwoFactorStore';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { useDialogActions } from '@/lib/stores/useDialogStore';
+import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 export default function TwoFactorPrompt() {
   const twoFactor = useTwoFactor();
   const currentUser = useCurrentUser();
+  const { setCurrentUserTwoFactorEnabled } = useUserActions();
   const { resetTwoFactor } = useTwoFactorActions();
-  const { displayDialog } = useDialogActions();
   const { displayNotification } = useNotificationActions();
+  const [twoFactorSecret, setTwoFactorSecret] = useState('');
+  const [twoFactorUrl, setTwoFactorUrl] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+  async function getTwoFactor(): Promise<void> {
+    callAPI('POST', 'two-factor', {
+      user_id: currentUser.id,
+    }).then((res) => {
+      const newTwoFactor = JSON.parse(res);
+
+      setTwoFactorSecret(newTwoFactor.secretKey);
+      toDataURL(newTwoFactor.otpAuthUrl, (error, imageUrl) => {
+        if (error) {
+          console.log('Error with QR');
+          return;
+        }
+        setTwoFactorUrl(imageUrl);
+      });
+    });
+  }
+
+  async function setupTwoFactor(lastDigit: string): Promise<void> {
+    callAPI('POST', 'two-factor/setup', {
+      user_id: currentUser.id,
+      secret_key: twoFactorSecret,
+      token: twoFactorCode + lastDigit,
+    }).then((res) => {
+      const result = JSON.parse(res);
+
+      if (result.statusCode === 403) {
+        displayNotification('error', 'Invalid code');
+      } else {
+        resetTwoFactor();
+        setTwoFactorCode('');
+        setCurrentUserTwoFactorEnabled(true);
+        displayNotification('success', 'Two-factor authentication enabled!');
+      }
+    });
+  }
 
   async function verifyCode(lastDigit: string): Promise<void> {
     callAPI('POST', 'two-factor/verify', {
@@ -36,12 +75,7 @@ export default function TwoFactorPrompt() {
       if (result.verified) {
         resetTwoFactor();
         setTwoFactorCode('');
-        displayDialog(
-          twoFactor.title,
-          twoFactor.description,
-          twoFactor.children,
-          twoFactor.actionButtonText,
-        );
+        twoFactor.handleAction();
       } else {
         displayNotification('error', 'Invalid Code');
       }
@@ -54,30 +88,33 @@ export default function TwoFactorPrompt() {
         (twoFactorCode) =>
           twoFactorCode.slice(0, index) + key + twoFactorCode.slice(index + 1),
       );
-      inputRefs.current[index + 1]?.focus();
-      if (twoFactorCode.length === 5) {
-        verifyCode(key);
+      inputRefs.current[
+        index === twoFactorCode.length
+          ? twoFactorCode.length + 1
+          : twoFactorCode.length
+      ]?.focus();
+      if (index === twoFactorCode.length && twoFactorCode.length === 5) {
+        if (twoFactor.setup) {
+          setupTwoFactor(key);
+        } else {
+          verifyCode(key);
+        }
       }
     }
     if (key === 'Backspace') {
-      const offset = twoFactorCode.length === 6 ? 0 : 1;
-
-      setTwoFactorCode((twoFactorCode) =>
-        twoFactorCode.slice(0, index - offset),
-      );
-      inputRefs.current[index - offset]?.focus();
+      setTwoFactorCode((twoFactorCode) => twoFactorCode.slice(0, -1));
+      inputRefs.current[twoFactorCode.length - 1]?.focus();
     }
   }
 
   useEffect(() => {
-    if (twoFactor.display && !currentUser.two_factor_enabled) {
-      resetTwoFactor();
-      displayDialog(
-        twoFactor.title,
-        twoFactor.description,
-        twoFactor.children,
-        twoFactor.actionButtonText,
-      );
+    if (twoFactor.display) {
+      if (twoFactor.setup) {
+        getTwoFactor();
+      } else if (!currentUser.two_factor_enabled) {
+        resetTwoFactor();
+        twoFactor.handleAction();
+      }
     }
   }, [twoFactor.display]);
 
@@ -91,11 +128,33 @@ export default function TwoFactorPrompt() {
       maxWidth='xs'
       fullWidth
     >
-      <DialogTitle>Two Factor Authentication</DialogTitle>
+      <DialogTitle>
+        {twoFactor.setup ? 'Setup' : ''} Two-factor Authentication
+      </DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          Enter the 6 digit code from your authenticator app
-        </DialogContentText>
+        {twoFactor.setup ? (
+          <Box>
+            <DialogContentText>
+              1. Download an authenticator app
+            </DialogContentText>
+            <DialogContentText variant='body2'>
+              (Google Authenticator/Authy)
+            </DialogContentText>
+            <DialogContentText>2. Scan the QR code</DialogContentText>
+            <DialogContentText>
+              3. Enter the 6 digit code from the authenticator app
+            </DialogContentText>
+            <Avatar
+              variant='square'
+              src={twoFactorUrl}
+              sx={{ width: '100%', height: '100%' }}
+            />
+          </Box>
+        ) : (
+          <DialogContentText>
+            Enter the 6 digit code from your authenticator app
+          </DialogContentText>
+        )}
         <Box
           width='100%'
           margin='2vh 0'
