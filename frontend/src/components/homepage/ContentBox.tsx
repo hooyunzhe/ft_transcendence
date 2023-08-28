@@ -1,14 +1,14 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { Box, Drawer } from '@mui/material';
 import ChatBox from '../chat/ChatBox';
-import { useEffect, useState } from 'react';
+import ProfileBox from '../profile/ProfileBox';
+import LeaderboardBox from '../leaderboard/LeaderboardBox';
+import AchievementBox from '../achievement/AchievementBox';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
-import ProfileBox from '../profile/ProfileBox';
 import GameMenu from '../game/GameMenu';
 import GameRender from '../game/GameRender';
-import GameLoadingScreen from '../game/GameLoadingScreen';
-import GameReady from '../game/GameReady';
 import GameTransition from '../game/GameTransition';
 
 export default function ContentBox() {
@@ -70,6 +70,8 @@ export default function ContentBox() {
       {localView === View.PHASER && (
           <GameRender />
       )}
+      {localView === View.LEADERBOARD && <LeaderboardBox />}
+      {localView === View.ACHIEVEMENTS && <AchievementBox />}
     </Drawer>
   );
 }

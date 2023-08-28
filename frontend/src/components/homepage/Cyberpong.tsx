@@ -13,16 +13,16 @@ import {
   useSocketActions,
   useUserSocket,
 } from '@/lib/stores/useSocketStore';
+import { useGameActions } from '@/lib/stores/useGameStore';
 import { useFriendActions, useFriends } from '@/lib/stores/useFriendStore';
 import {
   useChannelActions,
   useJoinedChannels,
 } from '@/lib/stores/useChannelStore';
-import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useChatActions } from '@/lib/stores/useChatStore';
-import { useProfileActions } from '@/lib/stores/useProfileStore';
-import { useGameActions } from '@/lib/stores/useGameStore';
 import { useAchievementActions } from '@/lib/stores/useAchievementStore';
+import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
+import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 
@@ -31,29 +31,30 @@ export default function Cyberpong() {
   const userSocket = useUserSocket();
   const friendSocket = useFriendSocket();
   const channelSocket = useChannelSocket();
-  const { initSockets, resetSockets } = useSocketActions();
-  const { addUserStatus, setupUserSocketEvents } = useUserActions();
   const friends = useFriends();
+  const joinedChannels = useJoinedChannels();
+  const { initSockets, resetSockets } = useSocketActions();
+  const { getGameData } = useGameActions();
   const { getFriendData, setupFriendSocketEvents } = useFriendActions();
   const { getChannelData, setupChannelSocketEvents } = useChannelActions();
+  const { getChatData, setupChatSocketEvents } = useChatActions();
+  const { getAchievementData } = useAchievementActions();
   const { getChannelMemberData, setupChannelMemberSocketEvents } =
     useChannelMemberActions();
-  const joinedChannels = useJoinedChannels();
-  const { getChatData, setupChatSocketEvents } = useChatActions();
   const { getProfileData } = useProfileActions();
-  const { getGameData } = useGameActions();
-  const { getAchievementData } = useAchievementActions();
+  const { addUserStatus, setupUserSocketEvents } = useUserActions();
   const { setupNotificationSocketEvents } = useNotificationActions();
   const { setupUtilSocketEvents } = useUtilActions();
 
   useEffect(() => {
     initSockets(currentUser.id);
+    getGameData(currentUser.id);
     getFriendData(currentUser.id);
     getChannelData(currentUser.id);
     getGameData(currentUser.id);
+    getChatData(currentUser.id);
     getAchievementData(currentUser.id);
     getChannelMemberData();
-    getChatData();
     getProfileData();
 
     return () => {

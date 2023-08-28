@@ -5,7 +5,6 @@ import { Socket } from 'socket.io-client';
 import { ChannelMemberStatus, ChannelMember } from '@/types/ChannelMemberTypes';
 import { Message } from '@/types/MessageTypes';
 import emitToSocket from '../emitToSocket';
-
 interface ChannelStore {
   data: {
     channels: Channel[];
@@ -45,6 +44,7 @@ interface ChannelStore {
   checks: {
     checkChannelExists: (channelName: string) => boolean;
     checkChannelJoined: (channelName: string) => boolean;
+    // checkOwnerAmount: (userID: number) => boolean;
   };
 }
 

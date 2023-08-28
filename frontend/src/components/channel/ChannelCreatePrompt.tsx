@@ -24,6 +24,7 @@ import {
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 
 export default function ChannelCreatePrompt() {
   const currentUser = useCurrentUser();
@@ -39,6 +40,7 @@ export default function ChannelCreatePrompt() {
   const [channelName, setChannelName] = useState('');
   const [channelType, setChannelType] = useState(ChannelType.PUBLIC);
   const [channelPass, setChannelPass] = useState('');
+  const { handleAchievementsEarned } = useAchievementActions();
 
   async function createChannel(): Promise<void> {
     const newChannel: Channel = JSON.parse(
@@ -66,7 +68,15 @@ export default function ChannelCreatePrompt() {
         addJoinedChannel(newChannel.id);
         addChannelMember(channelCreator);
         emitToSocket(channelSocket, 'joinRoom', newChannel.id);
-        displayNotification('success', 'Channel created');
+
+        const achievementAlreadyEarned = await handleAchievementsEarned(
+          currentUser.id,
+          6,
+          displayNotification,
+        );
+        if (achievementAlreadyEarned) {
+          displayNotification('success', 'Channel created');
+        }
       } else {
         throw 'FATAL ERROR: FAILED TO ADD MEMBER TO NEW CHANNEL IN BACKEND';
       }

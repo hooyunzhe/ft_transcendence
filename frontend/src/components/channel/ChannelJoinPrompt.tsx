@@ -16,6 +16,7 @@ import {
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { ChannelMember, ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 
 interface ChannelJoinPromptProps {
   joinableChannels: Channel[];
@@ -42,6 +43,7 @@ export default function ChannelJoinPrompt({
     Channel | undefined
   >();
   const [channelPass, setChannelPass] = useState('');
+  const { handleAchievementsEarned } = useAchievementActions();
 
   async function joinChannel(): Promise<void> {
     if (selectedChannelToJoin) {
@@ -71,7 +73,14 @@ export default function ChannelJoinPrompt({
       );
       emitToSocket(channelSocket, 'joinRoom', selectedChannelToJoin.id);
       emitToSocket(channelSocket, 'newMember', joiningChannelMember);
-      displayNotification('success', 'Channel joined');
+      const achievementAlreadyEarned = await handleAchievementsEarned(
+        currentUser.id,
+        7,
+        displayNotification,
+      );
+      if (achievementAlreadyEarned) {
+        displayNotification('success', 'Channel joined');
+      }
     } else {
       throw 'FATAL ERROR: FAILED TO JOIN DUE TO MISSING SELECTED CHANNEL TO JOIN';
     }

@@ -1,5 +1,5 @@
 'use client';
-import { Box, Typography } from '@mui/material';
+import { Avatar, Box, Typography } from '@mui/material';
 import { useGameActions } from '@/lib/stores/useGameStore';
 import { Match } from '@/types/MatchTypes';
 import { User } from '@/types/UserTypes';
@@ -25,7 +25,7 @@ export default function ProfileMatchDisplay({
   return (
     <Box
       width='100%'
-      height='6vh'
+      height='7.9vh'
       display='flex'
       justifyContent='space-evenly'
       alignItems='center'
@@ -35,8 +35,18 @@ export default function ProfileMatchDisplay({
       borderRadius='10px'
       bgcolor={match.winner_id === currentPlayer.id ? '#00C5AD' : '#EB370085'}
     >
+      <Avatar
+        src={
+          match.player_one.id === currentPlayer.id
+            ? match.player_two.avatar_url
+            : match.player_one.avatar_url
+        }
+        sx={{
+          border: 'solid 1px black',
+        }}
+      />
       <Box width='10vw'>
-        <Typography variant='h5'>
+        <Typography variant='h6' sx={{ wordBreak: 'break-word' }}>
           {getMatchOpponent(match, currentPlayer.id).username}
         </Typography>
         <Typography variant='body2' color='rgba(0, 0, 0, 0.6)'>
@@ -58,7 +68,7 @@ export default function ProfileMatchDisplay({
           ))}
         </Box>
       </Box>
-      <Typography width='4vw' variant='h6' align='right'>
+      <Typography minWidth='5vw' variant='h6' align='right'>
         {getMatchScore(match, currentPlayer.id)}
       </Typography>
     </Box>
