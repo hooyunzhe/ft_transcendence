@@ -25,6 +25,9 @@ export default class GameMainScene extends Phaser.Scene {
     | Phaser.Sound.HTML5AudioSound
     | Phaser.Sound.WebAudioSound
     | undefined;
+  private outofboundEffect:
+    | Phaser.GameObjects.Particles.ParticleEmitter
+    | undefined;
   private keyloop: () => void;
   private prediction: (timestamp: number) => gameData;
   constructor(
@@ -50,7 +53,7 @@ export default class GameMainScene extends Phaser.Scene {
     game.load.video('background', '/assets/background1.mp4', true);
     game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
     game.load.image('red', '/assets/neonpurple.png');
-    game.load.image('test', '/assets/test3.png');
+    game.load.image('star', '/assets/star.png');
     game.load.bitmapFont(
       'font',
       '/assets/scorefont_0.png',
@@ -65,15 +68,7 @@ export default class GameMainScene extends Phaser.Scene {
     game.load.image('paddle1', '/assets/redpaddle.png');
     game.load.image('paddle2', '/assets/bluepaddle.png');
     game.load.image('frametest', '/assets/testframe.png');
-    game.load.svg('frame1', '/assets/vsred.svg', {
-      width: Number(this.game.config.width) * 0.1,
-      height: Number(this.game.config.height) * 0.1,
-    });
-    game.load.svg('frame2', '/assets/vsblue.svg', {
-      width: Number(this.game.config.width) * 0.1,
-      height: Number(this.game.config.height) * 0.1,
-    });
-    game.load.image('glowframe', '/assets/namebox_glow.png');
+    game.load.image('glowframe', '/assets/namebox.png');
     game.load.image('normalframe', '/assets/namebox_normal.png');
   }
 
@@ -131,7 +126,7 @@ export default class GameMainScene extends Phaser.Scene {
       scale: { start: 1, end: 0.1 },
       lifespan: { min: 300, max: 1000 },
       blendMode: 'ADD',
-      frequency: 50,
+      frequency: 150,
       followOffset: { x: 0, y: 0 },
       rotate: { min: -180, max: 180 },
     });
@@ -157,8 +152,8 @@ export default class GameMainScene extends Phaser.Scene {
       .setDisplaySize(this.windowsize.width * 0.4, this.windowsize.height * 0.2)
       .setFlipX(true);
 
-    // const p1glow = player1frame.preFX?.addGlow(0x9500ff, 1, 0, false, 0.1, 3);
-    // const p2glow = player2frame.preFX?.addGlow(0x9500ff, 1, 0, false, 0.1, 3);
+    const p1glow = player1frame.postFX.addShine(0.2, 0.2, 5);
+    const p2glow = player2frame.postFX.addShine(0.2, 0.2, 5);
 
     // this.tweens.add({
     //   targets: p1glow,
@@ -194,21 +189,11 @@ export default class GameMainScene extends Phaser.Scene {
       // },
     };
     const p1text = this.add
-      .text(
-        player1frame.x,
-        player1frame.y,
-        this.trimName(this.p1name),
-        textstyle,
-      )
+      .text(player1frame.x, player1frame.y, this.trimName('DONG'), textstyle)
       .setOrigin(0.5, 0.5);
 
     const p2text = this.add
-      .text(
-        player2frame.x,
-        player2frame.y,
-        this.trimName(this.p2name),
-        textstyle,
-      )
+      .text(player2frame.x, player2frame.y, this.trimName('BEEEEEE'), textstyle)
       .setOrigin(0.5, 0.5);
     // const player2 = this.add
     //   .image(
@@ -332,6 +317,19 @@ export default class GameMainScene extends Phaser.Scene {
 
     this.ball.anims.play('ballPulse', true);
 
+    this.outofboundEffect = this.add.particles(0, 0, 'star', {
+      quantity: 10,
+      speed: 100,
+      scale: { start: 1, end: 0.0 },
+      lifespan: 300,
+      blendMode: 'ADD',
+      frequency: 50,
+      followOffset: { x: 0, y: 0 },
+      rotate: { min: -180, max: 180 },
+      active: false,
+    });
+
+    this.outofboundEffect.startFollow(this.ball);
     // Add text inside the rhombus
 
     // Add text inside the rhombus
@@ -352,6 +350,20 @@ export default class GameMainScene extends Phaser.Scene {
     if (name.length >= 10) return (name.substring(0, 9) + '..').toUpperCase();
     else return name.toUpperCase();
   }
+
+  outofboundEffectTrigger = () => {
+    if (this.outofboundEffect) {
+      this.outofboundEffect.active = true;
+      this.outofboundEffect.start();
+      setTimeout(() => {
+        if (this.outofboundEffect) {
+          this.outofboundEffect.active = false;
+          this.outofboundEffect.stop();
+        }
+      }, 1000);
+    }
+  };
+
   handleCollision1 = () => {
     if (!this.paddle1) return;
     if (this.soundEffect) this.soundEffect.play();
@@ -395,6 +407,8 @@ export default class GameMainScene extends Phaser.Scene {
     const data = this.prediction(Date.now());
     if (data) {
       if (this.ball) {
+        if (data.ball.x <= 0 || data.ball.x >= this.windowsize.width)
+          this.outofboundEffectTrigger();
         this.ball.x = data.ball.x;
         this.ball.y = data.ball.y;
       }
