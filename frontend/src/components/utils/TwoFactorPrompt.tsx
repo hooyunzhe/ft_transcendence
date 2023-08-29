@@ -120,7 +120,9 @@ export default function TwoFactorPrompt() {
 
   return (
     <Dialog
-      open={twoFactor.display}
+      open={
+        twoFactor.display && (twoFactor.setup || currentUser.two_factor_enabled)
+      }
       onClose={() => {
         resetTwoFactor();
         setTwoFactorCode('');

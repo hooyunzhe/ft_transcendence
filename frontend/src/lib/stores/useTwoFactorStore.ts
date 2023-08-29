@@ -21,7 +21,6 @@ function displayTwoFactor(
   handleAction: () => void,
   setup?: boolean,
 ): void {
-  console.log(setup);
   set(({ data }) => ({
     data: {
       ...data,

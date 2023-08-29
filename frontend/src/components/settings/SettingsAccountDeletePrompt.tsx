@@ -24,9 +24,10 @@ export default function SettingsAccountDeletePrompt() {
   }
 
   async function handleAccountDeletion(): Promise<void> {
-    callAPI('DELETE', 'users', {
+    await callAPI('DELETE', 'users', {
       id: currentUser.id,
     });
+    displayNotification('error', 'Account deleted, goodbye...');
   }
 
   async function handleAction(): Promise<void> {

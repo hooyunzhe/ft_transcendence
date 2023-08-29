@@ -12,6 +12,7 @@ interface UserStore {
   actions: {
     setCurrentUser: (currentUser: User) => void;
     changeCurrentUsername: (newUsername: string) => void;
+    changeCurrentUserAvatar: (newAvatarUrl: string) => void;
     setCurrentUserTwoFactorEnabled: (enabled: boolean) => void;
     addUserStatus: (userSocket: Socket, userIDs: number[]) => void;
     changeUserStatus: (userID: number, newStatus: UserStatus) => void;
@@ -35,6 +36,15 @@ function changeCurrentUsername(set: StoreSetter, newUsername: string): void {
     data: {
       ...data,
       currentUser: { ...data.currentUser, username: newUsername },
+    },
+  }));
+}
+
+function changeCurrentUserAvatar(set: StoreSetter, newAvatarUrl: string): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      currentUser: { ...data.currentUser, avatar_url: newAvatarUrl },
     },
   }));
 }
@@ -104,6 +114,8 @@ const useUserStore = create<UserStore>()((set) => ({
     setCurrentUser: (currentUser) => setCurrentUser(set, currentUser),
     changeCurrentUsername: (newUsername) =>
       changeCurrentUsername(set, newUsername),
+    changeCurrentUserAvatar: (newAvatarUrl) =>
+      changeCurrentUserAvatar(set, newAvatarUrl),
     setCurrentUserTwoFactorEnabled: (enabled) =>
       setCurrentUserTwoFactorEnabled(set, enabled),
     addUserStatus: (userSocket, userIDs) =>

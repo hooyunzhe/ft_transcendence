@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Avatar, Box, Grow, Slide, Typography } from '@mui/material';
 import InputField from '../utils/InputField';
 import NotificationBar from '../utils/NotificationBar';
+import uploadAvatar from '@/lib/uploadAvatar';
 import signUp from '@/lib/signUp';
 import { useUserActions } from '@/lib/stores/useUserStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
@@ -39,26 +40,15 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
     getData();
   }, []);
 
-  async function uploadAvatar(avatarFile: File | undefined): Promise<void> {
+  async function handleAvatarUpload(
+    avatarFile: File | undefined,
+  ): Promise<void> {
     if (avatarFile) {
-      const formData = new FormData();
+      const res = await uploadAvatar(avatarFile, session.intraID, avatarUrl);
 
-      formData.set('avatarFile', avatarFile);
-      formData.set('intraID', session.intraID);
-      formData.set('oldAvatarPath', avatarUrl);
-
-      const res = await fetch('/api/upload-avatar', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (res.ok) {
-        const body = await res.json();
-
-        setAvatarUrl(body['path']);
-        setLargeAvatarUrl(body['path']);
-      } else {
-        console.log(await res.text());
+      if (res.status === 200) {
+        setAvatarUrl(res.body['path']);
+        setLargeAvatarUrl(res.body['path']);
       }
     }
   }
@@ -87,7 +77,8 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
             hidden
             type='file'
             ref={uploadRef}
-            onChange={(event) => uploadAvatar(event.target.files?.[0])}
+            onChange={(event) => handleAvatarUpload(event.target.files?.[0])}
+            onClick={(event) => event.stopPropagation()}
           />
           <Avatar
             src={largeAvatarUrl}

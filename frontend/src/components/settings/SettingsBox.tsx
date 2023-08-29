@@ -1,16 +1,14 @@
 'use client';
-import { Avatar, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import ListHeader from '../utils/ListHeader';
+import SettingsAvatarSegment from './SettingsAvatarSegment';
 import SettingsUsernameSegment from './SettingsUsernameSegment';
 import SettingsTwoFactorSegment from './SettingsTwoFactorSegment';
 import SettingsPersonalPreferences from './SettingsPersonalPreferences';
 import SettingsAccountDangerZone from './SettingsAccountDangerZone';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { ListHeaderIcon } from '@/types/UtilTypes';
 
 export default function SettingsBox() {
-  const currentUser = useCurrentUser();
-
   return (
     <Box
       height='100%'
@@ -32,14 +30,7 @@ export default function SettingsBox() {
         borderRadius='10px'
         bgcolor='#a291d275'
       >
-        <Avatar
-          src={currentUser.avatar_url}
-          sx={{
-            width: '125px',
-            height: '125px',
-            border: 'solid 1px black',
-          }}
-        />
+        <SettingsAvatarSegment />
         <SettingsUsernameSegment />
         <SettingsTwoFactorSegment />
         <SettingsPersonalPreferences />

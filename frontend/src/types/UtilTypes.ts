@@ -26,3 +26,8 @@ export enum FriendCategory {
   INVITED = 'INVITED',
   BLOCKED = 'BLOCKED',
 }
+
+export interface APIResponse {
+  status: number;
+  body: any;
+}

@@ -26,7 +26,7 @@ export default function SettingsUsernameChangePrompt() {
       username: newUsername,
     });
     changeCurrentUsername(newUsername);
-    displayNotification('success', 'Username changed');
+    displayNotification('success', 'Username changed, refreshing...');
     location.reload();
   }
 

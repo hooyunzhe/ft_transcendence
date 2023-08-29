@@ -26,10 +26,11 @@ export default function SettingsTwoFactorRemovePrompt() {
   }
 
   async function handleTwoFactorRemoval(): Promise<void> {
-    callAPI('DELETE', 'two-factor', {
+    await callAPI('DELETE', 'two-factor', {
       user_id: currentUser.id,
     });
     setCurrentUserTwoFactorEnabled(false);
+    displayNotification('error', 'Two-factor authentication removed!');
   }
 
   async function handleAction(): Promise<void> {
