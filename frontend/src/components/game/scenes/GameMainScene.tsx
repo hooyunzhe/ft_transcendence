@@ -11,8 +11,8 @@ export default class GameMainScene extends Phaser.Scene {
   private paddle2:
     | Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
     | undefined;
-  private p1data: { nickname: string; avatar: string };
-  private p2data: { nickname: string; avatar: string };
+  private p1name: string;
+  private p2name: string;
   private p1scoretext: Phaser.GameObjects.BitmapText | undefined;
   private p2scoretext: Phaser.GameObjects.BitmapText | undefined;
   private score: { player1: number; player2: number };
@@ -39,10 +39,8 @@ export default class GameMainScene extends Phaser.Scene {
     this.prediction = prediction;
     this.score = { player1: 0, player2: 0 };
     this.windowsize = { width: 0, height: 0 };
-    if (matchInfo) {
-      this.p1data = matchInfo.player1;
-      this.p2data = matchInfo.player2;
-    }
+    this.p1name = matchInfo ? matchInfo.player1.nickname : '';
+    this.p2name = matchInfo ? matchInfo.player2.nickname : '';
   }
 
   preload() {
@@ -66,8 +64,7 @@ export default class GameMainScene extends Phaser.Scene {
     );
     game.load.image('paddle1', '/assets/redpaddle.png');
     game.load.image('paddle2', '/assets/bluepaddle.png');
-    // game.load.image('player1avatar', this.p1data.avatar);
-    // game.load.image('player2avatar', this.p2data.avatar);
+    game.load.image('frametest', '/assets/testframe.png');
     game.load.svg('frame1', '/assets/vsred.svg', {
       width: Number(this.game.config.width) * 0.1,
       height: Number(this.game.config.height) * 0.1,
@@ -76,8 +73,8 @@ export default class GameMainScene extends Phaser.Scene {
       width: Number(this.game.config.width) * 0.1,
       height: Number(this.game.config.height) * 0.1,
     });
-    game.load.image('redframe', '/assets/redneoncircle.png');
-    game.load.image('blueframe', '/assets/blueneoncircle.png');
+    game.load.image('glowframe', '/assets/namebox_glow.png');
+    game.load.image('normalframe', '/assets/namebox_normal.png');
   }
 
   create() {
@@ -104,7 +101,7 @@ export default class GameMainScene extends Phaser.Scene {
     music.play();
     this.p1scoretext = game.add
       .bitmapText(
-        this.windowsize.width * 0.45,
+        this.windowsize.width * 0.48,
         this.windowsize.height * 0.05,
         'font',
         '00',
@@ -114,7 +111,7 @@ export default class GameMainScene extends Phaser.Scene {
       .setTint(0xffffff);
     this.p2scoretext = game.add
       .bitmapText(
-        this.windowsize.width * 0.55,
+        this.windowsize.width * 0.52,
         this.windowsize.height * 0.05,
         'font',
         '00',
@@ -139,81 +136,112 @@ export default class GameMainScene extends Phaser.Scene {
       rotate: { min: -180, max: 180 },
     });
 
-    const player1 = this.add
+    const player1frame = this.add
       .image(
-        this.windowsize.width * 0.05,
+        this.windowsize.width * 0.35,
         this.windowsize.height * 0.05,
-        'frame1',
+        'glowframe',
       )
-      .setOrigin(0.5, 0.5);
+      .setOrigin(0.5, 0.5)
+      .setDisplaySize(
+        this.windowsize.width * 0.4,
+        this.windowsize.height * 0.2,
+      );
+    const player2frame = this.add
+      .image(
+        this.windowsize.width * 0.65,
+        this.windowsize.height * 0.05,
+        'glowframe',
+      )
+      .setOrigin(0.5, 0.5)
+      .setDisplaySize(this.windowsize.width * 0.4, this.windowsize.height * 0.2)
+      .setFlipX(true);
 
-    // const p1text = this.add
-    //   .bitmapText(
-    //     this.windowsize.width * 0.05,
-    //     this.windowsize.height * 0.05,
-    //     'cyberware',
-    //     'P1',
-    //     96,
-    //   )
-    //   .setOrigin(0.5, 0.5)
-    //   .setTint(0xff0000, 0);
+    // const p1glow = player1frame.preFX?.addGlow(0x9500ff, 1, 0, false, 0.1, 3);
+    // const p2glow = player2frame.preFX?.addGlow(0x9500ff, 1, 0, false, 0.1, 3);
 
+    // this.tweens.add({
+    //   targets: p1glow,
+    //   outerStrength: 2,
+    //   yoyo: true,
+    //   loop: -1,
+    //   ease: 'sine.inout',
+    // });
+
+    // this.tweens.add({
+    //   targets: p2glow,
+    //   outerStrength: 2,
+    //   yoyo: true,
+    //   loop: -1,
+    //   ease: 'sine.inout',
+    // });
+
+    const textstyle = {
+      fontFamily: 'Arial',
+      fontSize: 32,
+      color: '#d3d3d3', // Text color in hexadecimal
+      backgroundColor: 'transparent', // Background color (transparent in this case)
+      align: 'center', // Text alignment: 'left', 'center', 'right'
+      stroke: '#5114ed', // Stroke color
+      strokeThickness: 2, // Stroke thickness in pixels
+      // shadow: {
+      //   offsetX: 2,
+      //   offsetY: 2,
+      //   color: '#2b38ed',
+      //   blur: 5,
+      //   stroke: true,
+      //   fill: true,
+      // },
+    };
     const p1text = this.add
       .text(
-        this.windowsize.width * 0.045,
-        this.windowsize.height * 0.05,
-        'P1',
-        {
-          fontFamily: 'Arial',
-          fontSize: 96,
-          color: '#ffffff', // Text color in hexadecimal
-          backgroundColor: 'transparent', // Background color (transparent in this case)
-          align: 'left', // Text alignment: 'left', 'center', 'right'
-          stroke: '#ff0000', // Stroke color
-          strokeThickness: 5, // Stroke thickness in pixels
-          shadow: {
-            offsetX: 2,
-            offsetY: 2,
-            color: '#ff0000',
-            blur: 5,
-            stroke: true,
-            fill: true,
-          },
-        },
-      )
-      .setOrigin(0.5, 0.5);
-    const player2 = this.add
-      .image(
-        this.windowsize.width * 0.95,
-        this.windowsize.height * 0.05,
-        'frame2',
+        player1frame.x,
+        player1frame.y,
+        this.trimName(this.p1name),
+        textstyle,
       )
       .setOrigin(0.5, 0.5);
 
     const p2text = this.add
       .text(
-        this.windowsize.width * 0.955,
-        this.windowsize.height * 0.05,
-        'P2',
-        {
-          fontFamily: 'Arial',
-          fontSize: 96,
-          color: '#ffffff', // Text color in hexadecimal
-          backgroundColor: 'transparent', // Background color (transparent in this case)
-          align: 'right', // Text alignment: 'left', 'center', 'right'
-          stroke: '#0000ff', // Stroke color
-          strokeThickness: 5, // Stroke thickness in pixels
-          shadow: {
-            offsetX: 2,
-            offsetY: 2,
-            color: '#0000ff',
-            blur: 5,
-            stroke: true,
-            fill: true,
-          },
-        },
+        player2frame.x,
+        player2frame.y,
+        this.trimName(this.p2name),
+        textstyle,
       )
       .setOrigin(0.5, 0.5);
+    // const player2 = this.add
+    //   .image(
+    //     this.windowsize.width * 0.95,
+    //     this.windowsize.height * 0.05,
+    //     'frame2',
+    //   )
+    //   .setOrigin(0.5, 0.5);
+
+    // const p2text = this.add
+    //   .text(
+    //     this.windowsize.width * 0.955,
+    //     this.windowsize.height * 0.05,
+    //     'P2',
+    //     {
+    //       fontFamily: 'Arial',
+    //       fontSize: 96,
+    //       color: '#ffffff', // Text color in hexadecimal
+    //       backgroundColor: 'transparent', // Background color (transparent in this case)
+    //       align: 'right', // Text alignment: 'left', 'center', 'right'
+    //       stroke: '#0000ff', // Stroke color
+    //       strokeThickness: 5, // Stroke thickness in pixels
+    //       shadow: {
+    //         offsetX: 2,
+    //         offsetY: 2,
+    //         color: '#0000ff',
+    //         blur: 5,
+    //         stroke: true,
+    //         fill: true,
+    //       },
+    //     },
+    //   )
+    //   .setOrigin(0.5, 0.5);
     // const p2text = this.add
     //   .bitmapText(
     //     this.windowsize.width * 0.95,
@@ -225,6 +253,17 @@ export default class GameMainScene extends Phaser.Scene {
     //   .setOrigin(0.5, 0.5)
     //   .setTint(0x0000ff, 0);
 
+    // const testframe = this.add
+    //   .image(
+    //     this.windowsize.width * 0.95,
+    //     this.windowsize.height * 0.05,
+    //     'frametest',
+    //   )
+    //   .setOrigin(0.5, 0.5)
+    //   .setDisplaySize(
+    //     this.windowsize.width * 0.2,
+    //     this.windowsize.height * 0.2,
+    //   );
     this.soundEffect = this.sound.add('laser');
     // if (!ball) return;
     this.ball = game.physics.add
@@ -309,6 +348,10 @@ export default class GameMainScene extends Phaser.Scene {
     };
   }
 
+  trimName(name: string) {
+    if (name.length >= 10) return (name.substring(0, 9) + '..').toUpperCase();
+    else return name.toUpperCase();
+  }
   handleCollision1 = () => {
     if (!this.paddle1) return;
     if (this.soundEffect) this.soundEffect.play();
@@ -368,11 +411,29 @@ export default class GameMainScene extends Phaser.Scene {
       this.score = data.score;
     }
   };
+
   updateScore = () => {
-    if (this.p1scoretext)
-      this.p1scoretext.setText(this.scoreNumber(this.score.player1));
-    if (this.p2scoretext)
-      this.p2scoretext.setText(this.scoreNumber(this.score.player2));
+    this.updatePlayerScore(this.p1scoretext, this.score.player1);
+    this.updatePlayerScore(this.p2scoretext, this.score.player2);
+  };
+
+  updatePlayerScore = (
+    scoreText: Phaser.GameObjects.BitmapText | undefined,
+    playerScore: number,
+  ) => {
+    if (scoreText) {
+      const score = this.scoreNumber(playerScore);
+      if (scoreText.text !== score) {
+        const barrel = scoreText.preFX?.addBarrel(2);
+        scoreText.setText(score);
+        setTimeout(() => {
+          if (barrel) {
+            scoreText.preFX?.remove(barrel);
+            barrel.destroy();
+          }
+        }, 1000);
+      }
+    }
   };
   update() {
     this.keyloop();
