@@ -58,10 +58,24 @@ export default class GameMainScene extends Phaser.Scene {
       '/assets/scorefont_0.png',
       '/assets/scorefont.fnt',
     );
+
+    game.load.bitmapFont(
+      'cyberware',
+      '/assets/Cyberware_0.png',
+      '/assets/Cyberware.fnt',
+    );
     game.load.image('paddle1', '/assets/redpaddle.png');
     game.load.image('paddle2', '/assets/bluepaddle.png');
     // game.load.image('player1avatar', this.p1data.avatar);
     // game.load.image('player2avatar', this.p2data.avatar);
+    game.load.svg('frame1', '/assets/vsred.svg', {
+      width: Number(this.game.config.width) * 0.1,
+      height: Number(this.game.config.height) * 0.1,
+    });
+    game.load.svg('frame2', '/assets/vsblue.svg', {
+      width: Number(this.game.config.width) * 0.1,
+      height: Number(this.game.config.height) * 0.1,
+    });
     game.load.image('redframe', '/assets/redneoncircle.png');
     game.load.image('blueframe', '/assets/blueneoncircle.png');
   }
@@ -125,21 +139,92 @@ export default class GameMainScene extends Phaser.Scene {
       rotate: { min: -180, max: 180 },
     });
 
-    const redframe = this.add
-      .image(0, 0, 'redframe')
-      .setOrigin(0.2, 0.2)
-      .setScale(0.2);
-    // const wisp = this.add.particles(0, 0, 'red', {
-    //   frame: 'white',
-    //   color: [0x96e0da, 0x937ef3],
-    //   colorEase: 'quart.out',
-    //   lifespan: 1500,
-    //   angle: { min: 1 * angle, max: 0.8 * angle },
-    //   scale: { start: 1, end: 0, ease: 'sine.in' },
-    //   speed: { min: 250, max: 350 },
-    //   advance: 2000,
-    //   blendMode: 'ADD',
-    // });
+    const player1 = this.add
+      .image(
+        this.windowsize.width * 0.05,
+        this.windowsize.height * 0.05,
+        'frame1',
+      )
+      .setOrigin(0.5, 0.5);
+
+    // const p1text = this.add
+    //   .bitmapText(
+    //     this.windowsize.width * 0.05,
+    //     this.windowsize.height * 0.05,
+    //     'cyberware',
+    //     'P1',
+    //     96,
+    //   )
+    //   .setOrigin(0.5, 0.5)
+    //   .setTint(0xff0000, 0);
+
+    const p1text = this.add
+      .text(
+        this.windowsize.width * 0.045,
+        this.windowsize.height * 0.05,
+        'P1',
+        {
+          fontFamily: 'Arial',
+          fontSize: 96,
+          color: '#ffffff', // Text color in hexadecimal
+          backgroundColor: 'transparent', // Background color (transparent in this case)
+          align: 'left', // Text alignment: 'left', 'center', 'right'
+          stroke: '#ff0000', // Stroke color
+          strokeThickness: 5, // Stroke thickness in pixels
+          shadow: {
+            offsetX: 2,
+            offsetY: 2,
+            color: '#ff0000',
+            blur: 5,
+            stroke: true,
+            fill: true,
+          },
+        },
+      )
+      .setOrigin(0.5, 0.5);
+    const player2 = this.add
+      .image(
+        this.windowsize.width * 0.95,
+        this.windowsize.height * 0.05,
+        'frame2',
+      )
+      .setOrigin(0.5, 0.5);
+
+    const p2text = this.add
+      .text(
+        this.windowsize.width * 0.955,
+        this.windowsize.height * 0.05,
+        'P2',
+        {
+          fontFamily: 'Arial',
+          fontSize: 96,
+          color: '#ffffff', // Text color in hexadecimal
+          backgroundColor: 'transparent', // Background color (transparent in this case)
+          align: 'right', // Text alignment: 'left', 'center', 'right'
+          stroke: '#0000ff', // Stroke color
+          strokeThickness: 5, // Stroke thickness in pixels
+          shadow: {
+            offsetX: 2,
+            offsetY: 2,
+            color: '#0000ff',
+            blur: 5,
+            stroke: true,
+            fill: true,
+          },
+        },
+      )
+      .setOrigin(0.5, 0.5);
+    // const p2text = this.add
+    //   .bitmapText(
+    //     this.windowsize.width * 0.95,
+    //     this.windowsize.height * 0.05,
+    //     'cyberware',
+    //     'P2',
+    //     96,
+    //   )
+    //   .setOrigin(0.5, 0.5)
+    //   .setTint(0x0000ff, 0);
+
     this.soundEffect = this.sound.add('laser');
     // if (!ball) return;
     this.ball = game.physics.add

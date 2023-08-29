@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="580.31 298.28 369.21 210.42">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke: #f33;
+        stroke-width: 15px;
+        fill: url(#linear-gradient);
+      }
+
+      .cls-1, .cls-2 {
+        stroke-linejoin: bevel;
+        fill-rule: evenodd;
+      }
+
+      .cls-2 {
+        fill: none;
+        stroke: #fcc;
+        stroke-width: 8px;
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="587.812" y1="362.596" x2="942.031" y2="444.373" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffbfbf"/>
+      <stop offset="0.994" stop-color="#f85757"/>
+      <stop offset="1" stop-color="#f85757"/>
+    </linearGradient>
+  </defs>
+  <path class="cls-1" d="M938.455,306h-345.4c-6.741,0-5.056-2.023-5.056,6.07V495.663c0,7.116-1.366,5.337,4.1,5.337H859.866c4.179,0,2.736.982,4.328-2.946l76.286-188.3C942.507,304.749,943.181,306,938.455,306Z"/>
+  <path id="Shape_1_copy" data-name="Shape 1 copy" class="cls-2" d="M935.206,302.751h-345.4c-6.741,0-5.056-2.023-5.056,6.07V492.414c0,7.116-1.366,5.337,4.1,5.337H856.617c4.179,0,2.736.982,4.328-2.946l76.286-188.3C939.258,301.5,939.932,302.751,935.206,302.751Z"/>
+</svg>
