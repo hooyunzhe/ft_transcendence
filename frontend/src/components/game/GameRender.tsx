@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import GameMainScene from './scenes/GameMainScene';
 import GameMatchFoundScene from './scenes/GameVictory';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
-import { useGameActions } from '@/lib/stores/useGameStore';
+import { useGameActions, useMatchInfo } from '@/lib/stores/useGameStore';
 import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
@@ -26,6 +26,7 @@ export default function GameRender() {
   const currentView = useCurrentView();
   const [disconnected, setDisconnected] = useState(false);
   const [gameSession, setGameSession] = useState<Phaser.Game | null>(null);
+  const matchInfo = useMatchInfo();
   let gameInfo: gameData;
   const keyLoop = () => {
     if (gameAction.getKeyState('w')) {
@@ -51,7 +52,6 @@ export default function GameRender() {
         timestamp: number;
       }) => {
         gameInfo = data;
-        console.log(data);
       },
     );
 
@@ -76,7 +76,12 @@ export default function GameRender() {
           clearTimeout(timer);
         };
       });
-    const game = new GameMainScene(gameSocket, keyLoop, clientsidePrediction);
+    const game = new GameMainScene(
+      gameSocket,
+      keyLoop,
+      clientsidePrediction,
+      matchInfo,
+    );
     const config = {
       type: Phaser.AUTO,
       width: 1920,
@@ -126,10 +131,8 @@ export default function GameRender() {
           <Typography variant='h6'>
             Opponent disconnected, returning to main menu...
           </Typography>
-          {/* <Typography>Time elapsed: {searchTime} seconds</Typography> */}
         </Box>
       </Backdrop>
-      {/* The Phaser canvas will be automatically added here */}
     </div>
   );
 }
