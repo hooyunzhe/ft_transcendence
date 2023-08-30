@@ -47,7 +47,7 @@ export function ChannelMemberMutePrompt({
   async function muteUser(): Promise<void> {
     const mutedUntil = calculateMuteUntil();
 
-    callAPI('PATCH', 'channel-members', {
+    await callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.MUTED,
       muted_until: mutedUntil,

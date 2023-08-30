@@ -76,7 +76,7 @@ export function ChannelMemberList() {
   // * Helper Function for update locals * //
 
   async function kickUser(member: ChannelMember): Promise<void> {
-    callAPI('DELETE', 'channel-members', { id: member.id });
+    await callAPI('DELETE', 'channel-members', { id: member.id });
     kickChannelMember(member.id);
     emitToSocket(channelSocket, 'kickMember', member);
     const achievementAlreadyEarned = await handleAchievementsEarned(
@@ -90,7 +90,7 @@ export function ChannelMemberList() {
   }
 
   async function changeToAdmin(member: ChannelMember) {
-    callAPI('PATCH', 'channel-members/', {
+    await callAPI('PATCH', 'channel-members/', {
       id: member.id,
       role: ChannelMemberRole.ADMIN,
     });
@@ -105,7 +105,7 @@ export function ChannelMemberList() {
   }
 
   async function changeToMember(member: ChannelMember) {
-    callAPI('PATCH', 'channel-members/', {
+    await callAPI('PATCH', 'channel-members/', {
       id: member.id,
       role: ChannelMemberRole.MEMBER,
     });
@@ -120,7 +120,7 @@ export function ChannelMemberList() {
   }
 
   async function unmuteMember(member: ChannelMember) {
-    callAPI('PATCH', 'channel-members', {
+    await callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.DEFAULT,
     });
@@ -136,7 +136,7 @@ export function ChannelMemberList() {
   }
 
   async function banMember(member: ChannelMember) {
-    callAPI('PATCH', 'channel-members', {
+    await callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.BANNED,
       muted_until: new Date().toISOString(),
@@ -163,11 +163,11 @@ export function ChannelMemberList() {
       console.log('FATAL ERROR: CURRENT OWNER NOT FOUND!');
       return undefined;
     }
-    callAPI('PATCH', 'channel-members', {
+    await callAPI('PATCH', 'channel-members', {
       id: currentOwner.id,
       role: ChannelMemberRole.ADMIN,
     });
-    callAPI('PATCH', 'channel-members', {
+    await callAPI('PATCH', 'channel-members', {
       id: member.id,
       role: ChannelMemberRole.OWNER,
     });

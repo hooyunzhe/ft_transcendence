@@ -53,13 +53,16 @@ export default function ChannelTypeChangePrompt({
     });
     changeChannelType(channelID, selectedChannelType);
     if (selectedChannelType === ChannelType.PROTECTED) {
-      const updatedChannel = JSON.parse(
-        await callAPI(
-          'GET',
-          `channels?search_type=ONE&search_number=${channelID}`,
-        ),
-      );
-      changeChannelHash(channelID, updatedChannel.hash);
+      const updatedChannel = await callAPI(
+        'GET',
+        `channels?search_type=ONE&search_number=${channelID}`,
+      ).then((res) => res.body);
+
+      if (updatedChannel) {
+        changeChannelHash(channelID, updatedChannel.hash);
+      } else {
+        throw 'FATAL ERROR: FAILED TO GET UPDATED CHANNEL IN BACKEND';
+      }
     }
     emitToSocket(channelSocket, 'changeChannelType', {
       id: channelID,

@@ -40,26 +40,29 @@ export function ChannelMemberAddPrompt({
 
   async function handleAddMemberAction(): Promise<void> {
     if (selectedFriendToJoin) {
-      const newChannelMember = JSON.parse(
-        await callAPI('POST', 'channel-members', {
-          channel_id: selectedChannel?.id,
-          user_id: selectedFriendToJoin.incoming_friend.id,
-          role: ChannelMemberRole.MEMBER,
-          hash: selectedChannel.hash,
-        }),
-      );
-      addChannelMember(newChannelMember);
-      emitToSocket(channelSocket, 'newMember', newChannelMember);
-      const achievementAlreadyEarned = await handleAchievementsEarned(
-        currentUser.id,
-        3,
-        displayNotification,
-      );
-      if (achievementAlreadyEarned) {
-        displayNotification('success', 'Channel member added');
+      const newChannelMember = await callAPI('POST', 'channel-members', {
+        channel_id: selectedChannel?.id,
+        user_id: selectedFriendToJoin.incoming_friend.id,
+        role: ChannelMemberRole.MEMBER,
+        hash: selectedChannel.hash,
+      }).then((res) => res.body);
+
+      if (newChannelMember) {
+        addChannelMember(newChannelMember);
+        emitToSocket(channelSocket, 'newMember', newChannelMember);
+        await handleAchievementsEarned(
+          currentUser.id,
+          3,
+          displayNotification,
+        ).then(
+          (earned) =>
+            earned && displayNotification('success', 'Channel member added'),
+        );
+      } else {
+        throw 'FATAL ERROR: FAILED TO ADD CHANNEL MEMBER IN BACKEND';
       }
     } else {
-      throw 'FATAL ERROR: FAILED TO ADD DUE TO MISSING SELECTED FRIEND TO JOIN';
+      throw 'FATAL ERROR: FAILED TO ADD DUE TO MISSING SELECTED FRIEND TO ADD';
     }
   }
 

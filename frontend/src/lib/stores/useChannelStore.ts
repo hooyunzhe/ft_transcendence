@@ -55,15 +55,14 @@ type StoreSetter = (
 type StoreGetter = () => ChannelStore;
 
 async function getChannelData(set: StoreSetter, userID: number): Promise<void> {
-  const channelData = JSON.parse(
-    await callAPI('GET', 'channels?search_type=ALL&load_relations'),
-  );
-  const joinedChannelData = JSON.parse(
-    await callAPI(
-      'GET',
-      `users?search_type=RELATION&search_number=${userID}&search_relation=CHANNELS`,
-    ),
-  );
+  const channelData = await callAPI(
+    'GET',
+    'channels?search_type=ALL&load_relations',
+  ).then((res) => res.body);
+  const joinedChannelData = await callAPI(
+    'GET',
+    `users?search_type=RELATION&search_number=${userID}&search_relation=CHANNELS`,
+  ).then((res) => res.body);
   const joinedChannelLookup: boolean[] = [];
   const recentChannelActivity: number[] = [];
 

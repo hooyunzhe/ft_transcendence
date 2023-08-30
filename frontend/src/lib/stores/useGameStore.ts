@@ -25,7 +25,9 @@ interface GameStore {
 type StoreSetter = (helper: (state: GameStore) => Partial<GameStore>) => void;
 
 async function getGameData(set: StoreSetter, userID: number): Promise<void> {
-  const matchData = JSON.parse(await callAPI('GET', 'matches?search_type=ALL'));
+  const matchData = await callAPI('GET', 'matches?search_type=ALL').then(
+    (res) => res.body,
+  );
   const matchesPlayed: Match[] = [];
   const recentMatches: RecentMatchesDictionary = {};
 

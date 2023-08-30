@@ -1,46 +1,48 @@
+import callAPI from './callAPI';
 import { User } from '@/types/UserTypes';
+import { Preference } from '@/types/PreferenceTypes';
 
 export default async function signUp(
   intraID: string,
   username: string,
   refreshToken: string,
   avatarUrl: string,
-): Promise<User> {
+): Promise<{
+  newUser: User;
+  preference: Preference;
+}> {
   if (username.length > 16) {
     throw 'Username cannot be more than 16 characters long';
   }
 
-  const newUser = await fetch(
-    process.env.NEXT_PUBLIC_HOST_URL + ':4242/api/users',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        intra_id: intraID,
-        username: username,
-        refresh_token: refreshToken,
-        avatar_url: avatarUrl,
-      }),
-    },
-  ).then((res) => {
-    if (res.status === 400) {
-      throw 'Username already taken';
-    } else {
-      return res.json();
-    }
+  const userResponse = await callAPI('POST', 'users', {
+    intra_id: intraID,
+    username: username,
+    refresh_token: refreshToken,
+    avatar_url: avatarUrl,
   });
-
-  await fetch(process.env.NEXT_PUBLIC_HOST_URL + ':4242/api/statistics', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  if (userResponse.status === 201) {
+    const newUser = userResponse.body;
+    const preference = await callAPI('POST', 'preferences', {
       user_id: newUser.id,
-    }),
-  }).catch((error) => console.log(error));
+    }).then((res) => res.body);
 
-  return newUser;
+    if (preference) {
+      const statistic = await callAPI('POST', 'statistics', {
+        user_id: newUser.id,
+      }).then((res) => res.body);
+
+      if (statistic) {
+        return { newUser: newUser, preference: preference };
+      } else {
+        throw 'FATAL ERROR: FAILED TO CREATE STATISTIC IN BACKEND';
+      }
+    } else {
+      throw 'FATAL ERROR: FAILED TO CREATE PREFERENCE IN BACKEND';
+    }
+  } else if (userResponse.status === 400) {
+    throw 'Username already taken';
+  } else {
+    throw 'FATAL ERROR: FAILED TO CREATE NEW USER IN BACKEND';
+  }
 }

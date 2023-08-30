@@ -30,11 +30,11 @@ export default function TwoFactorPrompt() {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   async function getTwoFactor(): Promise<void> {
-    callAPI('POST', 'two-factor', {
+    const newTwoFactor = await callAPI('POST', 'two-factor', {
       user_id: currentUser.id,
-    }).then((res) => {
-      const newTwoFactor = JSON.parse(res);
+    }).then((res) => res.body);
 
+    if (newTwoFactor) {
       setTwoFactorSecret(newTwoFactor.secretKey);
       toDataURL(newTwoFactor.otpAuthUrl, (error, imageUrl) => {
         if (error) {
@@ -43,35 +43,40 @@ export default function TwoFactorPrompt() {
         }
         setTwoFactorUrl(imageUrl);
       });
-    });
+    } else {
+      console.log('FATAL ERROR: FAILED TO GENERATE TWO FACTOR IN BACKEND');
+    }
   }
 
   async function setupTwoFactor(lastDigit: string): Promise<void> {
-    callAPI('POST', 'two-factor/setup', {
+    const setupResponse = await callAPI('POST', 'two-factor/setup', {
       user_id: currentUser.id,
       secret_key: twoFactorSecret,
       token: twoFactorCode + lastDigit,
-    }).then((res) => {
-      const result = JSON.parse(res);
-
-      if (result.statusCode === 403) {
-        displayNotification('error', 'Invalid code');
-      } else {
-        resetTwoFactor();
-        setTwoFactorCode('');
-        setCurrentUserTwoFactorEnabled(true);
-        displayNotification('success', 'Two-factor authentication enabled!');
-      }
     });
+
+    if (setupResponse.status === 201) {
+      resetTwoFactor();
+      setTwoFactorCode('');
+      setCurrentUserTwoFactorEnabled(true);
+      displayNotification('success', 'Two-factor authentication enabled!');
+    } else if (setupResponse.status === 403) {
+      displayNotification('error', 'Invalid code');
+    } else {
+      displayNotification(
+        'error',
+        'FATAL ERROR: FAILED TO SETUP TWO FACTOR IN BACKEND',
+      );
+    }
   }
 
   async function verifyCode(lastDigit: string): Promise<void> {
-    callAPI('POST', 'two-factor/verify', {
+    const result = await callAPI('POST', 'two-factor/verify', {
       user_id: currentUser.id,
       token: twoFactorCode + lastDigit,
-    }).then((res) => {
-      const result = JSON.parse(res);
+    }).then((res) => res.body);
 
+    if (result) {
       if (result.verified) {
         resetTwoFactor();
         setTwoFactorCode('');
@@ -79,7 +84,12 @@ export default function TwoFactorPrompt() {
       } else {
         displayNotification('error', 'Invalid Code');
       }
-    });
+    } else {
+      displayNotification(
+        'error',
+        'FATAL ERROR: FAILED TO VERIFY CODE IN BACKEND',
+      );
+    }
   }
 
   function handleKeyDown(index: number, key: string): void {

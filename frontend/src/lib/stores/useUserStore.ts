@@ -1,19 +1,25 @@
 import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
+import callAPI from '../callAPI';
 import { User, UserStatus } from '@/types/UserTypes';
+import { Preference, PreferenceType } from '@/types/PreferenceTypes';
 
 type UserStatusDictionary = { [user_id: number]: UserStatus };
 
 interface UserStore {
   data: {
     currentUser: User;
+    currentPreference: Preference;
+    isNewUser: boolean;
     userStatus: UserStatusDictionary;
   };
   actions: {
-    setCurrentUser: (currentUser: User) => void;
+    getUserData: (intraID: string) => void;
+    setNewUser: (newUser: User, preference: Preference) => void;
     changeCurrentUsername: (newUsername: string) => void;
     changeCurrentUserAvatar: (newAvatarUrl: string) => void;
     setCurrentUserTwoFactorEnabled: (enabled: boolean) => void;
+    changeCurrentPreference: (type: PreferenceType, checked: boolean) => void;
     addUserStatus: (userSocket: Socket, userIDs: number[]) => void;
     changeUserStatus: (userID: number, newStatus: UserStatus) => void;
     setupUserSocketEvents: (userSocket: Socket) => void;
@@ -22,11 +28,48 @@ interface UserStore {
 
 type StoreSetter = (helper: (state: UserStore) => Partial<UserStore>) => void;
 
-function setCurrentUser(set: StoreSetter, currentUser: User): void {
+async function getUserData(set: StoreSetter, intraID: string): Promise<void> {
+  const userData = await callAPI(
+    'GET',
+    `users?search_type=INTRA&search_string=${intraID}`,
+  ).then((res) => res.body);
+
+  if (userData) {
+    const preference = await callAPI(
+      'GET',
+      `preferences?search_type=USER&search_number=${userData.id}`,
+    ).then((res) => res.body);
+
+    if (preference) {
+      set(({ data }) => ({
+        data: {
+          ...data,
+          currentUser: userData,
+          currentPreference: preference,
+        },
+      }));
+    }
+  } else {
+    set(({ data }) => ({
+      data: {
+        ...data,
+        isNewUser: true,
+      },
+    }));
+  }
+}
+
+function setNewUser(
+  set: StoreSetter,
+  newUser: User,
+  preference: Preference,
+): void {
   set(({ data }) => ({
     data: {
       ...data,
-      currentUser: currentUser,
+      currentUser: newUser,
+      currentPreference: preference,
+      isNewUser: false,
     },
   }));
 }
@@ -57,6 +100,28 @@ function setCurrentUserTwoFactorEnabled(
     data: {
       ...data,
       currentUser: { ...data.currentUser, two_factor_enabled: enabled },
+    },
+  }));
+}
+
+function changeCurrentPreference(
+  set: StoreSetter,
+  type: PreferenceType,
+  checked: boolean,
+): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      currentPreference: {
+        ...data.currentPreference,
+        ...(type === PreferenceType.MUSIC && { music_enabled: checked }),
+        ...(type === PreferenceType.ANIMATIONS && {
+          animations_enabled: checked,
+        }),
+        ...(type === PreferenceType.LIGHT_MODE && {
+          light_mode_enabled: checked,
+        }),
+      },
     },
   }));
 }
@@ -108,16 +173,26 @@ const useUserStore = create<UserStore>()((set) => ({
       two_factor_enabled: false,
       date_of_creation: '',
     },
+    currentPreference: {
+      id: 0,
+      music_enabled: false,
+      animations_enabled: false,
+      light_mode_enabled: false,
+    },
+    isNewUser: false,
     userStatus: {},
   },
   actions: {
-    setCurrentUser: (currentUser) => setCurrentUser(set, currentUser),
+    getUserData: (intraID) => getUserData(set, intraID),
+    setNewUser: (newUser, preference) => setNewUser(set, newUser, preference),
     changeCurrentUsername: (newUsername) =>
       changeCurrentUsername(set, newUsername),
     changeCurrentUserAvatar: (newAvatarUrl) =>
       changeCurrentUserAvatar(set, newAvatarUrl),
     setCurrentUserTwoFactorEnabled: (enabled) =>
       setCurrentUserTwoFactorEnabled(set, enabled),
+    changeCurrentPreference: (type, checked) =>
+      changeCurrentPreference(set, type, checked),
     addUserStatus: (userSocket, userIDs) =>
       addUserStatus(set, userSocket, userIDs),
     changeUserStatus: (userID, newStatus) =>
@@ -129,6 +204,9 @@ const useUserStore = create<UserStore>()((set) => ({
 
 export const useCurrentUser = () =>
   useUserStore((state) => state.data.currentUser);
+export const useCurrentPreference = () =>
+  useUserStore((state) => state.data.currentPreference);
+export const useIsNewUser = () => useUserStore((state) => state.data.isNewUser);
 export const useUserStatus = () =>
   useUserStore((state) => state.data.userStatus);
 export const useUserActions = () => useUserStore((state) => state.actions);

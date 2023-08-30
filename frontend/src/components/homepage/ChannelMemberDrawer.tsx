@@ -3,18 +3,23 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Box, Drawer } from '@mui/material';
 import { ChannelMemberList } from '../channel-member/ChannelMemberList';
-import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import {
   useChannelMemberDrawerToggle,
   useUtilActions,
 } from '@/lib/stores/useUtilStore';
+import { useCurrentPreference } from '@/lib/stores/useUserStore';
+import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 
 export default function ChannelMemberDrawer() {
-  const selectedChannel = useSelectedChannel();
   const channelMemberDrawerToggle = useChannelMemberDrawerToggle();
-  const { handleDrawerMouseLeave, handleDrawerMouseOver } = useUtilActions();
-  const { setChannelMemberDrawerOpen, setChannelMemberDrawerClose } =
-    useUtilActions();
+  const currentPreference = useCurrentPreference();
+  const selectedChannel = useSelectedChannel();
+  const {
+    setChannelMemberDrawerOpen,
+    setChannelMemberDrawerClose,
+    handleDrawerMouseLeave,
+    handleDrawerMouseOver,
+  } = useUtilActions();
   const [toggleTimeoutID, setToggleTimeoutID] = useState<
     NodeJS.Timeout | undefined
   >();
@@ -57,7 +62,9 @@ export default function ChannelMemberDrawer() {
         }}
         variant='persistent'
         anchor='right'
-        open={channelMemberDrawerToggle}
+        open={
+          channelMemberDrawerToggle || !currentPreference.animations_enabled
+        }
       >
         <ChannelMemberList />
       </Drawer>

@@ -9,13 +9,15 @@ import uploadAvatar from '@/lib/uploadAvatar';
 import signUp from '@/lib/signUp';
 import { useUserActions } from '@/lib/stores/useUserStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { User } from '@/types/UserTypes';
+import { Preference } from '@/types/PreferenceTypes';
 
 interface FirstTimeSetupProps {
   session: Session;
 }
 
 export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
-  const { setCurrentUser } = useUserActions();
+  const { setNewUser } = useUserActions();
   const { displayNotification } = useNotificationActions();
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -108,7 +110,15 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
             onChange={setUsername}
             onSubmit={() =>
               signUp(session.intraID, username, session.refreshToken, avatarUrl)
-                .then((newUser) => setCurrentUser(newUser))
+                .then(
+                  ({
+                    newUser,
+                    preference,
+                  }: {
+                    newUser: User;
+                    preference: Preference;
+                  }) => setNewUser(newUser, preference),
+                )
                 .catch((error) => {
                   displayNotification('error', error);
                 })

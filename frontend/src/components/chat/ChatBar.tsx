@@ -86,18 +86,14 @@ export default function ChatBar() {
 
   async function sendMessage(): Promise<void> {
     if (selectedChannel) {
-      const newMessage = JSON.parse(
-        await callAPI('POST', 'messages', {
-          channel_id: selectedChannel.id,
-          user_id: currentUser.id,
-          content: unsentMessages[selectedChannel.id],
-          type: MessageType.TEXT,
-        }),
-      );
+      const newMessage = await callAPI('POST', 'messages', {
+        channel_id: selectedChannel.id,
+        user_id: currentUser.id,
+        content: unsentMessages[selectedChannel.id],
+        type: MessageType.TEXT,
+      }).then((res) => res.body);
 
-      if (newMessage.status === 403) {
-        console.log('FATAL ERROR: FAILED TO SEND MESSAGE IN BACKEND');
-      } else {
+      if (newMessage) {
         setUnsentMessages((unsentMessages) => {
           const updatedUnsentMessages = [...unsentMessages];
 
@@ -110,6 +106,8 @@ export default function ChatBar() {
         }
         updateRecentChannelActivity(selectedChannel.id);
         emitToSocket(channelSocket, 'newMessage', newMessage);
+      } else {
+        console.log('FATAL ERROR: FAILED TO SEND MESSAGE IN BACKEND');
       }
     } else {
       console.log('FATAL ERROR: NO CHANNEL IS SELECTED');

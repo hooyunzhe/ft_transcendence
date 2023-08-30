@@ -9,13 +9,17 @@ import {
   SettingsRounded,
   SportsTennisRounded,
 } from '@mui/icons-material';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
+import {
+  useCurrentPreference,
+  useCurrentUser,
+} from '@/lib/stores/useUserStore';
 import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { View } from '@/types/UtilTypes';
 
 export default function NavigationHeader() {
   const currentUser = useCurrentUser();
+  const currentPreference = useCurrentPreference();
   const currentView = useCurrentView();
   const { setSelectedStatistic } = useProfileActions();
   const { setCurrentView, changeCurrentView } = useUtilActions();
@@ -43,7 +47,7 @@ export default function NavigationHeader() {
       variant='persistent'
       anchor='right'
       transitionDuration={1000}
-      open={open}
+      open={open || !currentPreference.animations_enabled}
     >
       <Box
         display='flex'

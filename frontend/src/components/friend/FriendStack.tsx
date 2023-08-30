@@ -43,8 +43,8 @@ export default function FriendStack() {
     method: string,
     incoming_friend: User,
     action?: FriendAction,
-  ): Promise<string> {
-    return callAPI(method, 'friends', {
+  ): Promise<void> {
+    await callAPI(method, 'friends', {
       outgoing_id: currentUser.id,
       incoming_id: incoming_friend.id,
       ...(action && { action: action }),
@@ -55,36 +55,39 @@ export default function FriendStack() {
     directChannelName: string,
     incomingID: number,
   ): Promise<void> {
-    const newDirectChannel = JSON.parse(
-      await callAPI('POST', 'channels', {
-        name: directChannelName,
-        type: ChannelType.DIRECT,
-      }),
-    );
+    const newDirectChannel = await callAPI('POST', 'channels', {
+      name: directChannelName,
+      type: ChannelType.DIRECT,
+    }).then((res) => res.body);
 
-    addChannel(newDirectChannel);
-    emitToSocket(channelSocket, 'newChannel', newDirectChannel);
+    if (newDirectChannel) {
+      addChannel(newDirectChannel);
+      emitToSocket(channelSocket, 'newChannel', newDirectChannel);
 
-    const friendMember = JSON.parse(
-      await callAPI('POST', 'channel-members', {
+      const friendMember = await callAPI('POST', 'channel-members', {
         channel_id: newDirectChannel.id,
         user_id: incomingID,
         role: ChannelMemberRole.MEMBER,
-      }),
-    );
-    const selfMember = JSON.parse(
-      await callAPI('POST', 'channel-members', {
+      }).then((res) => res.body);
+
+      const selfMember = await callAPI('POST', 'channel-members', {
         channel_id: newDirectChannel.id,
         user_id: currentUser.id,
         role: ChannelMemberRole.MEMBER,
-      }),
-    );
+      }).then((res) => res.body);
 
-    addJoinedChannel(newDirectChannel.id);
-    addChannelMember(friendMember);
-    addChannelMember(selfMember);
-    emitToSocket(channelSocket, 'newMember', friendMember);
-    emitToSocket(channelSocket, 'joinRoom', newDirectChannel.id);
+      if (friendMember && selfMember) {
+        addJoinedChannel(newDirectChannel.id);
+        addChannelMember(friendMember);
+        addChannelMember(selfMember);
+        emitToSocket(channelSocket, 'newMember', friendMember);
+        emitToSocket(channelSocket, 'joinRoom', newDirectChannel.id);
+      } else {
+        console.log('FATAL ERROR: FAILED TO ADD DM MEMBERS IN BACKEND');
+      }
+    } else {
+      console.log('FATAL ERROR: FAILED TO CREATE DIRECT CHANNEL IN BACKEND');
+    }
   }
 
   async function acceptFriendRequest(request: Friend): Promise<void> {
