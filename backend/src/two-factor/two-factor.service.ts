@@ -100,8 +100,9 @@ export class TwoFactorService {
   }
 
   async findByUser(userID: number): Promise<TwoFactor | null> {
+    const userFound = await this.userService.findOne(userID, false);
     const found = await this.twoFactorRepository.findOneBy({
-      user: { id: userID },
+      user: { id: userFound.id },
     });
 
     if (!found) {

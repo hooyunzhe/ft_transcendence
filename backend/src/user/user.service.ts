@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityNotFoundError, ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { Preference } from 'src/preference/entities/preference.entity';
 import { TwoFactor } from 'src/two-factor/entities/two-factor.entity';
 import { Statistic } from 'src/statistic/entities/statistic.entity';
 import { Channel } from 'src/channel/entities/channel.entity';
@@ -23,6 +24,7 @@ export class UserService {
   ) {}
 
   getRelationsToLoad(loadRelations: boolean): {
+    preference: boolean;
     twoFactor: boolean;
     statistic: boolean;
     channelMembers: boolean;
@@ -33,6 +35,7 @@ export class UserService {
     matchesAsPlayerTwo: boolean;
   } {
     return {
+      preference: loadRelations,
       twoFactor: loadRelations,
       statistic: loadRelations,
       channelMembers: loadRelations,
@@ -138,6 +141,7 @@ export class UserService {
     id: number,
     relation: UserRelation,
   ): Promise<
+    | Preference
     | TwoFactor
     | Statistic
     | Channel[]
@@ -147,6 +151,8 @@ export class UserService {
     | Match[]
   > {
     switch (relation) {
+      case UserRelation.PREFERENCE:
+        return this.getPreference(id);
       case UserRelation.TWO_FACTOR:
         return this.getTwoFactor(id);
       case UserRelation.STATISTIC:
@@ -162,6 +168,12 @@ export class UserService {
       case UserRelation.MATCHES:
         return this.getMatches(id);
     }
+  }
+
+  async getPreference(id: number): Promise<Preference> {
+    const currentUser = await this.findOne(id, true);
+
+    return currentUser.preference;
   }
 
   async getTwoFactor(id: number): Promise<TwoFactor> {

@@ -65,8 +65,9 @@ export class StatisticService {
   }
 
   async findByUser(userID: number): Promise<Statistic | null> {
+    const userFound = await this.userService.findOne(userID, false);
     const found = await this.statisticRepository.findOneBy({
-      user: { id: userID },
+      user: { id: userFound.id },
     });
 
     if (!found) {

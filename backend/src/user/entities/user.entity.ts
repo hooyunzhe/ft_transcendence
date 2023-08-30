@@ -6,6 +6,7 @@ import {
   OneToMany,
   OneToOne,
 } from 'typeorm';
+import { Preference } from 'src/preference/entities/preference.entity';
 import { TwoFactor } from 'src/two-factor/entities/two-factor.entity';
 import { Statistic } from 'src/statistic/entities/statistic.entity';
 import { ChannelMember } from 'src/channel-member/entities/channel-member.entity';
@@ -42,6 +43,9 @@ export class User {
 
   @CreateDateColumn({ type: 'timestamptz' })
   date_of_creation: Date;
+
+  @OneToOne(() => Preference, (preference) => preference.user)
+  preference: Preference;
 
   @OneToOne(() => TwoFactor, (twoFactor) => twoFactor.user)
   twoFactor: TwoFactor;

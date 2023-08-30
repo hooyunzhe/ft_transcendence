@@ -13,6 +13,7 @@ import { Achievement } from 'src/achievement/entities/achievement.entity';
 import { Channel } from 'src/channel/entities/channel.entity';
 import { Match } from 'src/match/entities/match.entity';
 import { Message } from 'src/message/entities/message.entity';
+import { Preference } from 'src/preference/entities/preference.entity';
 import { Statistic } from 'src/statistic/entities/statistic.entity';
 import { TwoFactor } from 'src/two-factor/entities/two-factor.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -38,6 +39,7 @@ export class UserController {
     | Channel[]
     | Match[]
     | Message[]
+    | Preference
     | Statistic
     | TwoFactor
     | User[]
