@@ -22,9 +22,9 @@ export default function ChannelDeletePrompt({
 }: ChannelDeletePromptProps) {
   const channelSocket = useChannelSocket();
   const { deleteChannel, resetSelectedChannel } = useChannelActions();
-  const { actionClicked, backClicked } = useDialogTriggers();
   const { setActionButtonDisabled, resetTriggers, resetDialog } =
     useDialogActions();
+  const { actionClicked, backClicked } = useDialogTriggers();
   const { displayNotification } = useNotificationActions();
   const [nameConfirm, setNameConfirm] = useState('');
 

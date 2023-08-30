@@ -16,19 +16,19 @@ export class SeedService {
     }
     const achievementsToSeed = [
       {
-        name: 'Dont wanna be lonely no more',
+        name: "Don't wanna be lonely no more~",
         description: 'Send a friend request',
       },
       {
-        name: 'I dont love you, like I did, yesterday.',
+        name: "I don't love you, like I did, yesterday.",
         description: 'Delete a friend',
       },
       {
-        name: 'Welcome on board matey',
+        name: 'Welcome on board matey!',
         description: 'Add a channel member',
       },
       {
-        name: 'Off the plank you go',
+        name: 'Off the plank you go!',
         description: 'Boot a person off a channel',
       },
       {
@@ -36,11 +36,11 @@ export class SeedService {
         description: 'Message 20 times in the same channel.',
       },
       {
-        name: 'Being a boss',
+        name: 'Being a Boss',
         description: 'Make a channel',
       },
       {
-        name: 'Societal cog',
+        name: 'Societal Cog',
         description: 'Join a channel',
       },
       {
@@ -48,7 +48,7 @@ export class SeedService {
         description: 'Play a game of pong',
       },
       {
-        name: 'Master sergeant shooter person',
+        name: 'Master Sergeant Shooter Person',
         description: 'Max a skill tree',
       },
       {
@@ -58,6 +58,10 @@ export class SeedService {
       {
         name: 'Showing the Inner Ding',
         description: 'Achieved a flawless victory',
+      },
+      {
+        name: 'Safe and Sound',
+        description: 'Enable two-factor authentication',
       },
       {
         name: 'Hidden',

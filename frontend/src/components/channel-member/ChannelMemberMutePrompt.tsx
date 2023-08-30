@@ -61,7 +61,10 @@ export function ChannelMemberMutePrompt({
       mutedUntil: mutedUntil,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
-    displayNotification('success', 'Channel member muted');
+    displayNotification(
+      'success',
+      `Channel member ${member.user.username} muted`,
+    );
   }
 
   useEffect(() => {

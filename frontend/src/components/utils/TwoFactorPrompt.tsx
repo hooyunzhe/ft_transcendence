@@ -16,14 +16,18 @@ import {
   useTwoFactorActions,
 } from '@/lib/stores/useTwoFactorStore';
 import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 
 export default function TwoFactorPrompt() {
   const twoFactor = useTwoFactor();
   const currentUser = useCurrentUser();
   const { setCurrentUserTwoFactorEnabled } = useUserActions();
   const { resetTwoFactor } = useTwoFactorActions();
+  const { handleAchievementsEarned } = useAchievementActions();
   const { displayNotification } = useNotificationActions();
+  const { setIsPromptOpen } = useUtilActions();
   const [twoFactorSecret, setTwoFactorSecret] = useState('');
   const [twoFactorUrl, setTwoFactorUrl] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState('');
@@ -59,7 +63,15 @@ export default function TwoFactorPrompt() {
       resetTwoFactor();
       setTwoFactorCode('');
       setCurrentUserTwoFactorEnabled(true);
-      displayNotification('success', 'Two-factor authentication enabled!');
+      await handleAchievementsEarned(
+        currentUser.id,
+        12,
+        displayNotification,
+      ).then(
+        (earned) =>
+          earned &&
+          displayNotification('success', 'Two-factor authentication enabled!'),
+      );
     } else if (setupResponse.status === 403) {
       displayNotification('error', 'Invalid code');
     } else {
@@ -126,6 +138,7 @@ export default function TwoFactorPrompt() {
         twoFactor.handleAction();
       }
     }
+    setIsPromptOpen(twoFactor.display);
   }, [twoFactor.display]);
 
   return (

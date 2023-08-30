@@ -56,7 +56,11 @@ export function ChannelMemberAddPrompt({
           displayNotification,
         ).then(
           (earned) =>
-            earned && displayNotification('success', 'Channel member added'),
+            earned &&
+            displayNotification(
+              'success',
+              `${newChannelMember.user.username} added`,
+            ),
         );
       } else {
         throw 'FATAL ERROR: FAILED TO ADD CHANNEL MEMBER IN BACKEND';
