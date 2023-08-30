@@ -28,6 +28,7 @@ export default class GameMainScene extends Phaser.Scene {
   private outofboundEffect:
     | Phaser.GameObjects.Particles.ParticleEmitter
     | undefined;
+  private goalEffectToggle: boolean = false;
   private keyloop: () => void;
   private prediction: (timestamp: number) => gameData;
   constructor(
@@ -49,22 +50,20 @@ export default class GameMainScene extends Phaser.Scene {
   preload() {
     const game = this;
     game.load.audio('laser', '/assets/collision.ogg');
-    game.load.audio('banger', '/assets/bgm0.mp3');
+    game.load.audio('banger', '/assets/bgm1.mp3');
     game.load.video('background', '/assets/background1.mp4', true);
     game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
     game.load.image('red', '/assets/neonpurple.png');
-    game.load.image('star', '/assets/star.png');
+    game.load.image('bubble', '/assets/bubble.png');
     game.load.bitmapFont(
       'font',
       '/assets/scorefont_0.png',
       '/assets/scorefont.fnt',
     );
-
-    game.load.bitmapFont(
-      'cyberware',
-      '/assets/Cyberware_0.png',
-      '/assets/Cyberware.fnt',
-    );
+    game.load.image('smash1', '/assets/smash/1.png');
+    game.load.image('smash2', '/assets/smash/2.png');
+    game.load.image('smash3', '/assets/smash/3.png');
+    game.load.image('smash4', '/assets/smash/4.png');
     game.load.image('paddle1', '/assets/redpaddle.png');
     game.load.image('paddle2', '/assets/bluepaddle.png');
     game.load.image('frametest', '/assets/testframe.png');
@@ -328,25 +327,42 @@ export default class GameMainScene extends Phaser.Scene {
 
     this.ball.anims.play('ballPulse', true);
 
-    this.outofboundEffect = this.add.particles(0, 0, 'star', {
+    this.outofboundEffect = this.add.particles(0, 0, 'bubble', {
       quantity: 10,
-      speed: 100,
-      scale: { start: 1, end: 0.0 },
-      lifespan: 300,
+      speed: 400,
+      scale: { start: 0.5, end: 0 },
+      lifespan: 1000,
       blendMode: 'ADD',
-      frequency: 50,
+      frequency: 200,
       followOffset: { x: 0, y: 0 },
-      rotate: { min: -180, max: 180 },
-      active: false,
+      angle: { min: 0, max: 360 },
+      emitting: false,
     });
 
+    // const frameNames = this.anims.generateFrameNames('smash1', {
+    //   start: 1,
+    //   end: 4,
+    //   zeroPad: 0,
+    // });
+
+    // this.anims.create({
+    //   key: 'outofbound',
+    //   frames: frameNames,
+    //   frameRate: 10,
+    //   repeat: -1,
+    // });
+
+    // this.ball.anims.play('outofbound');
     this.outofboundEffect.startFollow(this.ball);
     this.Socket?.on('victory', (player: number) => {
       this.scene.start('victory', { player: player });
     });
+    this.Socket?.on('reset', () => {
+      this.goalEffectToggle = true;
+    });
     return () => {
       if (this.Socket) {
-        this.Socket.off('game');
+        this.Socket.off('reset');
         this.Socket.off('victory');
       }
     };
@@ -357,17 +373,31 @@ export default class GameMainScene extends Phaser.Scene {
     else return name.toUpperCase();
   }
 
-  outofboundEffectTrigger = () => {
-    if (this.outofboundEffect) {
-      this.outofboundEffect.active = true;
-      this.outofboundEffect.start();
-      setTimeout(() => {
-        if (this.outofboundEffect) {
-          this.outofboundEffect.active = false;
-          this.outofboundEffect.stop();
-        }
-      }, 1000);
+  triggerOutofBoundEffect = () => {
+    if (this.outofboundEffect) this.outofboundEffect.explode(1);
+    if (this.ball) {
+      const cameraX = Phaser.Math.Clamp(
+        this.ball.x,
+        this.windowsize.width / (2 * 1.2),
+        this.windowsize.width - this.windowsize.width / (2 * 1.2),
+      );
+      const cameraY = Phaser.Math.Clamp(
+        this.ball.y,
+        this.windowsize.height / (2 * 1.2),
+        this.windowsize.height - this.windowsize.height / (2 * 1.2),
+      );
+      this.cameras.main.zoomTo(1.2, 500);
+      this.cameras.main.pan(cameraX, cameraY, 500);
     }
+    const timer = setTimeout(() => {
+      this.cameras.main
+        .zoomTo(1, 300)
+        .pan(this.windowsize.width / 2, this.windowsize.height / 2, 300);
+      this.goalEffectToggle = false;
+    }, 1000);
+    return () => {
+      clearTimeout(timer);
+    };
   };
 
   handleCollision1 = () => {
@@ -412,22 +442,25 @@ export default class GameMainScene extends Phaser.Scene {
   updatePosition = () => {
     const data = this.prediction(Date.now());
     if (data) {
-      if (this.ball) {
-        this.ball.x = data.ball.x;
-        this.ball.y = data.ball.y;
+      if (!this.goalEffectToggle) {
+        if (this.ball) {
+          this.ball.x = data.ball.x;
+          this.ball.y = data.ball.y;
+        }
+        if (this.paddle1) this.paddle1.y = data.paddle1.y;
+        if (this.paddle2) this.paddle2.y = data.paddle2.y;
+        if (this.prevDirectionX) {
+          if (this.prevDirectionX < 0 && data.balldirection.x > 0)
+            this.handleCollision1();
+          else if (this.prevDirectionX > 0 && data.balldirection.x < 0)
+            this.handleCollision2();
+        }
+        this.prevDirectionX = data.balldirection.x;
+        this.prevDirectionY = data.balldirection.y;
+        this.score = data.score;
       }
-      if (this.paddle1) this.paddle1.y = data.paddle1.y;
-      if (this.paddle2) this.paddle2.y = data.paddle2.y;
-      if (this.prevDirectionX) {
-        if (this.prevDirectionX < 0 && data.balldirection.x > 0)
-          this.handleCollision1();
-        else if (this.prevDirectionX > 0 && data.balldirection.x < 0)
-          this.handleCollision2();
-      }
-      this.prevDirectionX = data.balldirection.x;
-      this.prevDirectionY = data.balldirection.y;
-      this.score = data.score;
     }
+    if (this.goalEffectToggle) this.triggerOutofBoundEffect();
   };
 
   updateScore = () => {

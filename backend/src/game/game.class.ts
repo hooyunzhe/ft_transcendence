@@ -135,15 +135,6 @@ export class GameClass{
       x: 0,
       y: 0,
     };
-    this.socketHandler(this.matchinfo.roomid, 'game', {
-      ball: {
-        x: this.Ball.x,
-        y: this.Ball.y,
-      },
-      paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
-      paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
-      score: this.score,
-    });
   }
 
   gamePaddleConstruct(
@@ -207,7 +198,7 @@ export class GameClass{
     if (this.score[`player${player}`] >= 3)
     {
       this.socketHandler(this.matchinfo.roomid, 'victory', player);
-      // console.log({p1_id: this.matchinfo.player1, p2_id: this.matchinfo.player2, winner_id: this.matchinfo[`player${player}`], p1_score: this.score.player1, p2_score: this.score.player2, p1_skills: "1231", p2_skills: "1231"})
+  
       this.matchHandler({p1_id: this.matchinfo.player1, p2_id: this.matchinfo.player2, winner_id: this.matchinfo[`player${player}`], p1_score: this.score.player1, p2_score: this.score.player2, p1_skills: "1231", p2_skills: "1231"});
     }
     this.ServingPaddle = player;
@@ -218,6 +209,7 @@ export class GameClass{
       this.score.player2,
     );
     this.gameReset();
+    this.socketHandler(this.matchinfo.roomid, 'reset', player);
   }
 
   stickEffect(paddle: RectObj) {
