@@ -11,13 +11,14 @@ interface Coor {
 }
 
 class RectObj {
-  constructor(x: number, y: number, width: number, height: number) {
+  constructor(x: number, y: number, width: number, height: number, player?: number) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
     this.velocityX = 1;
     this.velocityY = 1;
+    this.player = player;
   }
 
   left() {
@@ -42,6 +43,7 @@ class RectObj {
   height: number;
   velocityX: number;
   velocityY: number;
+  player: number;
 }
 
 
@@ -71,27 +73,31 @@ export class GameClass{
       x: 0,
       y: 0,
     };
-    this.Ball = new RectObj(
-      this.windowSize.x / 2,
-      this.windowSize.y / 2,
-      60,
-      60,
-    );
+
     this.velocity = 5;
     this.score = {
       player1: 0,
       player2: 0,
     };
-    this.Paddle1 = new RectObj(this.windowSize.x * 0.05, this.windowSize.y / 2, 20, 160);
+    this.Paddle1 = new RectObj(this.windowSize.x * 0.05, this.windowSize.y / 2, 20, 160, 1);
     this.Paddle2 = new RectObj(
       this.windowSize.x * 0.95,
       this.windowSize.y / 2,
       20,
       160,
+      2
+    );
+
+    this.Ball = new RectObj(
+      10 + (this.Paddle1.right() + 30),
+      this.windowSize.y / 2,
+      60,
+      60,
     );
     this.matchinfo = matchinfo;
     this.socketHandler = socketHandler;
     this.matchHandler = matchHandler;
+    
   }
 
   gameStart(player: number) {
@@ -101,10 +107,11 @@ export class GameClass{
       if (player === this.ServingPaddle)
       {
       this.direction = {
-        x: 1,
-        y: 0,
-       
+        x: (this.Ball.x - this.windowSize.x / 2 ) / this.windowSize.x,
+        y: (this.windowSize.y / 2 - this.Ball.y) / this.windowSize.y
+      
       };
+      console.log(this.direction);
       this.started = true;
     }
   }
@@ -153,7 +160,7 @@ export class GameClass{
       this.windowSize.x - 15,
       this.windowSize.y / 2,
       paddle2size.width,
-      paddle2size.height,
+      paddle2size.height
     );
     console.log(paddle1size.width, paddle2size.width);
   }
@@ -213,7 +220,11 @@ export class GameClass{
     this.gameReset();
   }
 
-  sticky
+  stickEffect(paddle: RectObj) {
+    if (this.started === false && paddle.player === this.ServingPaddle)
+
+      this.Ball.y = paddle.y;
+  }
 
   gameSetPosition(x: number, y: number) {
     this.Ball.x = x;
@@ -236,7 +247,10 @@ export class GameClass{
   }
   gameMovePaddle(obj: RectObj, dir: number) {
     if (obj.top() + dir >= 0 && obj.bottom() + dir <= this.windowSize.y)
+    {
       obj.y += dir;
+      this.stickEffect(obj);
+    }
     else if (dir > 0) obj.y = this.windowSize.y - obj.height / 2;
     else if (dir < 0) obj.y = obj.height / 2;
   }

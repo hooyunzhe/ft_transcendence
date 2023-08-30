@@ -96,7 +96,7 @@ export default class GameMainScene extends Phaser.Scene {
     music.play();
     this.p1scoretext = game.add
       .bitmapText(
-        this.windowsize.width * 0.48,
+        this.windowsize.width * 0.47,
         this.windowsize.height * 0.05,
         'font',
         '00',
@@ -104,9 +104,20 @@ export default class GameMainScene extends Phaser.Scene {
       )
       .setOrigin(0.5)
       .setTint(0xffffff);
+
+    const colon = game.add
+      .bitmapText(
+        this.windowsize.width * 0.5,
+        this.windowsize.height * 0.05,
+        'font',
+        ':',
+        64,
+      )
+      .setOrigin(0.5)
+      .setTint(0xffffff);
     this.p2scoretext = game.add
       .bitmapText(
-        this.windowsize.width * 0.52,
+        this.windowsize.width * 0.51,
         this.windowsize.height * 0.05,
         'font',
         '00',
@@ -330,11 +341,6 @@ export default class GameMainScene extends Phaser.Scene {
     });
 
     this.outofboundEffect.startFollow(this.ball);
-    // Add text inside the rhombus
-
-    // Add text inside the rhombus
-
-    // circle.setPipeline('simpleTexture');
     this.Socket?.on('victory', (player: number) => {
       this.scene.start('victory', { player: player });
     });
@@ -347,7 +353,7 @@ export default class GameMainScene extends Phaser.Scene {
   }
 
   trimName(name: string) {
-    if (name.length >= 10) return (name.substring(0, 9) + '..').toUpperCase();
+    if (name.length >= 16) return (name.substring(0, 9) + '..').toUpperCase();
     else return name.toUpperCase();
   }
 
@@ -407,8 +413,6 @@ export default class GameMainScene extends Phaser.Scene {
     const data = this.prediction(Date.now());
     if (data) {
       if (this.ball) {
-        if (data.ball.x <= 0 || data.ball.x >= this.windowsize.width)
-          this.outofboundEffectTrigger();
         this.ball.x = data.ball.x;
         this.ball.y = data.ball.y;
       }
