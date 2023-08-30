@@ -159,27 +159,29 @@ export default function ChannelJoinPrompt({
         '&::-webkit-scrollbar': { display: 'none' },
       }}
     >
-      {joinableChannels.map((channel: Channel, index: number) => (
-        <ChannelDisplay
-          key={index}
-          channelID={channel.id}
-          channelName={channel.name}
-          channelType={channel.type}
-          channelHash={channel.hash}
-          isOwner={false}
-          currentChannelMember={undefined}
-          selected={selectedChannelToJoin?.id === channel.id ?? false}
-          selectCurrent={() => {
-            changeActionText(
-              channel.type === ChannelType.PROTECTED ? 'Next' : 'Join',
-            );
-            setSelectedChannelToJoin(
-              channel.id === selectedChannelToJoin?.id ? undefined : channel,
-            );
-            setActionButtonDisabled(channel.id === selectedChannelToJoin?.id);
-          }}
-        />
-      ))}
+      {joinableChannels
+        .filter((channel) => channel.type != ChannelType.PRIVATE)
+        .map((channel: Channel, index: number) => (
+          <ChannelDisplay
+            key={index}
+            channelID={channel.id}
+            channelName={channel.name}
+            channelType={channel.type}
+            channelHash={channel.hash}
+            isOwner={false}
+            currentChannelMember={undefined}
+            selected={selectedChannelToJoin?.id === channel.id ?? false}
+            selectCurrent={() => {
+              changeActionText(
+                channel.type === ChannelType.PROTECTED ? 'Next' : 'Join',
+              );
+              setSelectedChannelToJoin(
+                channel.id === selectedChannelToJoin?.id ? undefined : channel,
+              );
+              setActionButtonDisabled(channel.id === selectedChannelToJoin?.id);
+            }}
+          />
+        ))}
     </Stack>
   );
 }

@@ -20,7 +20,7 @@ export default function DialogPrompt() {
       open={dialog.display}
       onClose={resetDialog}
       onKeyDown={(event) => {
-        if (event.key === 'Enter') {
+        if (event.key === 'Enter' && !dialog.actionButtonDisabled) {
           setActionClicked();
         }
       }}

@@ -152,13 +152,12 @@ export function ChannelMemberList() {
     displayNotification('success', 'Channel member banned');
   }
 
-  async function changeOwnership(member: ChannelMember) {
-    const currentOwner = channelMembers.find((owner) => {
-      if (owner.role === ChannelMemberRole.OWNER) {
-        return owner.id;
-      }
-      return undefined;
-    });
+  async function changeOwnership(newOwner: ChannelMember) {
+    const currentOwner = channelMembers.find(
+      (member) =>
+        member.user.id === currentUser.id &&
+        member.channel.id === newOwner.channel.id,
+    );
     if (currentOwner === undefined) {
       console.log('FATAL ERROR: CURRENT OWNER NOT FOUND!');
       return undefined;
@@ -168,19 +167,19 @@ export function ChannelMemberList() {
       role: ChannelMemberRole.ADMIN,
     });
     callAPI('PATCH', 'channel-members', {
-      id: member.id,
+      id: newOwner.id,
       role: ChannelMemberRole.OWNER,
     });
     changeChannelMemberRole(currentOwner.id, ChannelMemberRole.ADMIN);
-    changeChannelMemberRole(member.id, ChannelMemberRole.OWNER);
+    changeChannelMemberRole(newOwner.id, ChannelMemberRole.OWNER);
     const newOwnerData = {
-      memberID: member.id,
-      channelID: member.channel.id,
+      memberID: newOwner.id,
+      channelID: newOwner.channel.id,
       newRole: ChannelMemberRole.OWNER,
     };
     const oldOwnerData = {
       memberID: currentOwner.id,
-      channelID: member.channel.id,
+      channelID: newOwner.channel.id,
       newRole: ChannelMemberRole.ADMIN,
     };
     emitToSocket(channelSocket, 'changeRole', newOwnerData);
@@ -251,27 +250,29 @@ export function ChannelMemberList() {
   return (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
       <ListHeader title='Members' icon={ListHeaderIcon.SOCIAL} />
-      {selectedChannel && (
-        <Button
-          variant='contained'
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() =>
-            displayDialog(
-              'Add Member',
-              addableFriends.length
-                ? `Add members to ${selectedChannel.name}`
-                : 'No friends to add... why not send someone a friend request first?',
-              <ChannelMemberAddPrompt
-                addableFriends={addableFriends}
-                selectedChannel={selectedChannel}
-              />,
-              'Add',
-            )
-          }
-        >
-          Add Member
-        </Button>
-      )}
+      {selectedChannel &&
+        (isChannelAdmin(currentUser.id, selectedChannel.id) ||
+          isChannelOwner(currentUser.id, selectedChannel.id)) && (
+          <Button
+            variant='contained'
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() =>
+              displayDialog(
+                'Add Member',
+                addableFriends.length
+                  ? `Add members to ${selectedChannel.name}`
+                  : 'No friends to add... why not send someone a friend request first?',
+                <ChannelMemberAddPrompt
+                  addableFriends={addableFriends}
+                  selectedChannel={selectedChannel}
+                />,
+                'Add',
+              )
+            }
+          >
+            Add Member
+          </Button>
+        )}
       {channelMembers
         .filter(
           (member) =>
