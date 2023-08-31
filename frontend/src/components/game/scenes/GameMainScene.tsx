@@ -1,7 +1,6 @@
 import { Socket } from 'socket.io-client';
 import { gameData } from '../GameRender';
 import { MatchInfo } from '@/types/GameTypes';
-import { Circle } from '@mui/icons-material';
 
 export default class GameMainScene extends Phaser.Scene {
   private ball: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
@@ -54,6 +53,11 @@ export default class GameMainScene extends Phaser.Scene {
     game.load.video('background', '/assets/background1.mp4', true);
     game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
     game.load.image('red', '/assets/neonpurple.png');
+    game.load.image('glimmer', '/assets/glimmer_01.png');
+    game.load.image('flame3', '/assets/flame_03.png');
+    game.load.image('flame4', '/assets/flame_04.png');
+    game.load.image('flame5', '/assets/flame_05.png');
+    game.load.image('flame6', '/assets/flame_06.png');
     game.load.image('bubble', '/assets/bubble.png');
     game.load.bitmapFont(
       'font',
@@ -107,7 +111,7 @@ export default class GameMainScene extends Phaser.Scene {
     const colon = game.add
       .bitmapText(
         this.windowsize.width * 0.5,
-        this.windowsize.height * 0.05,
+        this.windowsize.height * 0.045,
         'font',
         ':',
         64,
@@ -116,7 +120,7 @@ export default class GameMainScene extends Phaser.Scene {
       .setTint(0xffffff);
     this.p2scoretext = game.add
       .bitmapText(
-        this.windowsize.width * 0.51,
+        this.windowsize.width * 0.53,
         this.windowsize.height * 0.05,
         'font',
         '00',
@@ -140,30 +144,46 @@ export default class GameMainScene extends Phaser.Scene {
       followOffset: { x: 0, y: 0 },
       rotate: { min: -180, max: 180 },
     });
+    // wisp.startFollow(this.ball);
+
+    const glimmer = game.add.particles(0, 0, 'flame3', {
+      quantity: 20,
+      speed: { min: 200, max: 500 },
+      accelerationY: 1000 * dy,
+      accelerationX: 1000 * dx,
+      scale: { start: 1, end: 0.1 },
+      lifespan: { min: 300, max: 1000 },
+      blendMode: 'ADD',
+      frequency: 100,
+      followOffset: { x: 0, y: 0 },
+      rotate: { min: -180, max: 180 },
+    });
 
     const player1frame = this.add
       .image(
-        this.windowsize.width * 0.35,
-        this.windowsize.height * 0.05,
+        this.windowsize.width * 0.33,
+        this.windowsize.height * 0.055,
         'glowframe',
       )
       .setOrigin(0.5, 0.5)
       .setDisplaySize(
-        this.windowsize.width * 0.4,
-        this.windowsize.height * 0.2,
+        this.windowsize.width * 0.2,
+        this.windowsize.height * 0.1,
       );
+
     const player2frame = this.add
       .image(
-        this.windowsize.width * 0.65,
-        this.windowsize.height * 0.05,
+        this.windowsize.width * 0.67,
+        this.windowsize.height * 0.055,
         'glowframe',
       )
       .setOrigin(0.5, 0.5)
-      .setDisplaySize(this.windowsize.width * 0.4, this.windowsize.height * 0.2)
+      .setDisplaySize(this.windowsize.width * 0.2, this.windowsize.height * 0.1)
       .setFlipX(true);
 
-    const p1glow = player1frame.postFX.addShine(0.2, 0.2, 5);
-    const p2glow = player2frame.postFX.addShine(0.2, 0.2, 5);
+    glimmer.startFollow(player1frame);
+    // const p1glow = player1frame.postFX.addGlow(0xf6f106, 0, 1, false);
+    // const p2glow = player2frame.postFX.addGlow(0x8d1be2, 0, 1, false);
 
     // this.tweens.add({
     //   targets: p1glow,
@@ -205,6 +225,33 @@ export default class GameMainScene extends Phaser.Scene {
     const p2text = this.add
       .text(player2frame.x, player2frame.y, this.trimName('BEEEEEE'), textstyle)
       .setOrigin(0.5, 0.5);
+
+    const zone2 = new Phaser.GameObjects.Particles.Zones.EdgeZone(
+      player1frame.getBounds(),
+      0,
+      1,
+      false,
+      true,
+    );
+
+    // const zone1 = new Phaser.GameObjects.Particles.Zones.EdgeZone(
+    //   player2frame.getBounds(),
+    //   0,
+    //   1,
+    //   false,
+    //   true,
+    // );
+    // const emitter = this.add.particles(0, 0, 'flame2', {
+    //   speed: 24,
+    //   lifespan: 1000,
+    //   quantity: 1,
+    //   scale: { start: 0.4, end: 0 },
+    //   advance: 2000,
+    // });
+
+    // const frame1 = { key: 'flame2' };
+
+    // emitter.addEmitZone(zone2);
     // const player2 = this.add
     //   .image(
     //     this.windowsize.width * 0.95,
@@ -270,7 +317,7 @@ export default class GameMainScene extends Phaser.Scene {
       )
       .setScale(1.5, 1.5);
     particles.startFollow(this.ball);
-    // wisp.startFollow(this.ball);
+
     this.paddle1 = game.physics.add
       .sprite(
         this.windowsize.width * 0.05,
