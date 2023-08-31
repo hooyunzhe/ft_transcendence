@@ -1,7 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { filter } from 'rxjs';
 import { Server } from 'socket.io';
-import { MatchService } from 'src/match/match.service';
 import { MatchInfo } from './game.service';
 import { CreateMatchDto } from 'src/match/dto/create-match.dto';
 
@@ -43,9 +40,8 @@ class RectObj {
   velocityY: number;
 }
 
-
-export class GameClass{
-  matchCompiler: (matchDto: CreateMatchDto)=> void;
+export class GameClass {
+  matchCompiler: (matchDto: CreateMatchDto) => void;
   windowSize: Coor;
   direction: Coor;
   Ball: RectObj;
@@ -56,11 +52,15 @@ export class GameClass{
   matchinfo: MatchInfo;
   server: Server;
   intervalID: NodeJS.Timer = null;
-  ServingPaddle:Number = 1;
-  refreshMilisec: number = 16;
-  started: boolean = false;
+  ServingPaddle = 1;
+  refreshMilisec = 16;
+  started = false;
 
-  constructor(matchinfo: MatchInfo, server: Server, matchCompile: (matchDto: CreateMatchDto) => void) {
+  constructor(
+    matchinfo: MatchInfo,
+    server: Server,
+    matchCompile: (matchDto: CreateMatchDto) => void,
+  ) {
     this.windowSize = {
       x: 800,
       y: 600,
@@ -93,33 +93,28 @@ export class GameClass{
   }
 
   gameStart(player: number) {
-
-    if (!this.started)
-    {
-      if (player === this.ServingPaddle)
-      {
-      this.direction = {
-        x: 1,
-        y: 0,
-       
-      };
-      this.started = true;
+    if (!this.started) {
+      if (player === this.ServingPaddle) {
+        this.direction = {
+          x: 1,
+          y: 0,
+        };
+        this.started = true;
+      }
     }
   }
-}
 
   gameReset() {
     switch (this.ServingPaddle) {
       case 1:
         this.Ball.x = 1 + this.Paddle1.right() + this.Ball.width / 2;
         break;
-    
       case 2:
-        this.Ball.x = +this.Paddle2.left() - this.Ball.width / 2 - 1
+        this.Ball.x = +this.Paddle2.left() - this.Ball.width / 2 - 1;
         break;
       default:
         this.Ball.x = this.windowSize.x / 2;
-      break;
+        break;
     }
 
     this.started = false;
@@ -160,6 +155,7 @@ export class GameClass{
     );
     console.log(paddle1size.width, paddle2size.width);
   }
+
   gameRefresh() {
     this.Ball.x += this.direction.x * this.velocity;
     this.Ball.y += this.direction.y * this.velocity;
@@ -182,11 +178,11 @@ export class GameClass{
         x: this.Ball.x,
         y: this.Ball.y,
       },
-      balldirection : {
+      balldirection: {
         x: this.Ball.velocityX / (this.refreshMilisec / 1000),
         y: this.Ball.velocityY / (this.refreshMilisec / 1000),
       },
-      timestamp : Date.now(),
+      timestamp: Date.now(),
       paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
       paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
       score: this.score,
@@ -198,13 +194,21 @@ export class GameClass{
       this.gameRefresh();
     }, 16);
   }
+
   gameHandleVictory(player: number) {
     this.score[`player${player}`]++;
-    if (this.score[`player${player}`] >= 3)
-    {
+    if (this.score[`player${player}`] >= 3) {
       this.server.to(this.matchinfo.roomid).emit('victory', player);
       // console.log({p1_id: this.matchinfo.player1, p2_id: this.matchinfo.player2, winner_id: this.matchinfo[`player${player}`], p1_score: this.score.player1, p2_score: this.score.player2, p1_skills: "1231", p2_skills: "1231"})
-      this.matchCompiler({p1_id: this.matchinfo.player1, p2_id: this.matchinfo.player2, winner_id: this.matchinfo[`player${player}`], p1_score: this.score.player1, p2_score: this.score.player2, p1_skills: "1231", p2_skills: "1231"});
+      this.matchCompiler({
+        p1_id: this.matchinfo.player1,
+        p2_id: this.matchinfo.player2,
+        winner_id: this.matchinfo[`player${player}`],
+        p1_score: this.score.player1,
+        p2_score: this.score.player2,
+        p1_skills: '1231',
+        p2_skills: '1231',
+      });
     }
     this.ServingPaddle = player;
     console.log(
@@ -235,12 +239,14 @@ export class GameClass{
     if (player === 1) this.Paddle1.velocityY = 1;
     if (player === 2) this.Paddle2.velocityY = 1;
   }
+
   gameMovePaddle(obj: RectObj, dir: number) {
     if (obj.top() + dir >= 0 && obj.bottom() + dir <= this.windowSize.y)
       obj.y += dir;
     else if (dir > 0) obj.y = this.windowSize.y - obj.height / 2;
     else if (dir < 0) obj.y = obj.height / 2;
   }
+
   gameCollision(obj1: RectObj, obj2: RectObj) {
     return (
       obj1.left() <= obj2.right() &&
@@ -249,12 +255,4 @@ export class GameClass{
       obj1.bottom() >= obj2.top()
     );
   }
-  // async sendVictory(player: number){
-  //   const clients = await this.server.in(this.roomid).fetchSockets();
-  //   clients.forEach(client => {
-  //     if (client.data.player === player) {
-  //       client.emit('victory', player);
-  //     }
-  //   });
-  // }
 }

@@ -49,9 +49,10 @@ type StoreSetter = (
 type StoreGetter = () => ChannelMemberStore;
 
 async function getChannelMemberData(set: StoreSetter): Promise<void> {
-  const channelMembersData = JSON.parse(
-    await callAPI('GET', 'channel-members?search_type=ALL'),
-  );
+  const channelMembersData = await callAPI(
+    'GET',
+    'channel-members?search_type=ALL',
+  ).then((res) => res.body);
   set(({ data }) => ({
     data: { ...data, channelMembers: channelMembersData },
   }));

@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityNotFoundError, ILike, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { Preference } from 'src/preference/entities/preference.entity';
+import { TwoFactor } from 'src/two-factor/entities/two-factor.entity';
 import { Statistic } from 'src/statistic/entities/statistic.entity';
 import { Channel } from 'src/channel/entities/channel.entity';
 import { Message } from 'src/message/entities/message.entity';
@@ -22,6 +24,8 @@ export class UserService {
   ) {}
 
   getRelationsToLoad(loadRelations: boolean): {
+    preference: boolean;
+    twoFactor: boolean;
     statistic: boolean;
     channelMembers: boolean;
     messages: boolean;
@@ -31,6 +35,8 @@ export class UserService {
     matchesAsPlayerTwo: boolean;
   } {
     return {
+      preference: loadRelations,
+      twoFactor: loadRelations,
       statistic: loadRelations,
       channelMembers: loadRelations,
       messages: loadRelations,
@@ -41,15 +47,28 @@ export class UserService {
     };
   }
 
+  async setTwoFactorEnabled(id: number, enabled: boolean): Promise<void> {
+    await this.userRepository.update(id, { two_factor_enabled: enabled });
+  }
+
   async create(userDto: CreateUserDto): Promise<User> {
-    const userExists = await this.userRepository.findOneBy({
+    const usernameExists = await this.userRepository.findOneBy({
       username: userDto.username,
     });
+    const intraIDExists = await this.userRepository.findOneBy({
+      intra_id: userDto.intra_id,
+    });
 
-    if (userExists) {
+    if (usernameExists) {
       throw new EntityAlreadyExistsError(
         'User',
         'username = ' + userDto.username,
+      );
+    }
+    if (intraIDExists) {
+      throw new EntityAlreadyExistsError(
+        'User',
+        'intra_id = ' + userDto.intra_id,
       );
     }
     return await this.userRepository.save(userDto);
@@ -73,6 +92,21 @@ export class UserService {
     return found;
   }
 
+  async findByIntraID(
+    intraID: string,
+    loadRelations: boolean,
+  ): Promise<User | null> {
+    const found = await this.userRepository.findOne({
+      relations: this.getRelationsToLoad(loadRelations),
+      where: { intra_id: intraID },
+    });
+
+    if (!found) {
+      throw new EntityNotFoundError(User, 'intra_id = ' + intraID);
+    }
+    return found;
+  }
+
   async findByUsername(
     username: string,
     loadRelations: boolean,
@@ -89,16 +123,16 @@ export class UserService {
   }
 
   async findByToken(
-    refresh_token: string,
+    refreshToken: string,
     loadRelations: boolean,
   ): Promise<User | null> {
     const found = await this.userRepository.findOne({
       relations: this.getRelationsToLoad(loadRelations),
-      where: { refresh_token },
+      where: { refresh_token: refreshToken },
     });
 
     if (!found) {
-      throw new EntityNotFoundError(User, 'refresh_token = ' + refresh_token);
+      throw new EntityNotFoundError(User, 'refresh_token = ' + refreshToken);
     }
     return found;
   }
@@ -107,9 +141,20 @@ export class UserService {
     id: number,
     relation: UserRelation,
   ): Promise<
-    Statistic | Channel[] | Message[] | Achievement[] | User[] | Match[]
+    | Preference
+    | TwoFactor
+    | Statistic
+    | Channel[]
+    | Message[]
+    | Achievement[]
+    | User[]
+    | Match[]
   > {
     switch (relation) {
+      case UserRelation.PREFERENCE:
+        return this.getPreference(id);
+      case UserRelation.TWO_FACTOR:
+        return this.getTwoFactor(id);
       case UserRelation.STATISTIC:
         return this.getStatistic(id);
       case UserRelation.CHANNELS:
@@ -123,6 +168,18 @@ export class UserService {
       case UserRelation.MATCHES:
         return this.getMatches(id);
     }
+  }
+
+  async getPreference(id: number): Promise<Preference> {
+    const currentUser = await this.findOne(id, true);
+
+    return currentUser.preference;
+  }
+
+  async getTwoFactor(id: number): Promise<TwoFactor> {
+    const currentUser = await this.findOne(id, true);
+
+    return currentUser.twoFactor;
   }
 
   async getStatistic(id: number): Promise<Statistic> {
@@ -175,8 +232,10 @@ export class UserService {
 
   async update(userDto: UpdateUserDto): Promise<void> {
     await this.userRepository.update(userDto.id, {
+      ...(userDto.intra_id && { intra_id: userDto.intra_id }),
       ...(userDto.username && { username: userDto.username }),
       ...(userDto.refresh_token && { refresh_token: userDto.refresh_token }),
+      ...(userDto.avatar_url && { avatar_url: userDto.avatar_url }),
     });
   }
 

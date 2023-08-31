@@ -67,8 +67,8 @@ export class UserAchievementService {
     return found;
   }
 
-  async findAchievedByUser(user_id: number): Promise<UserAchievement[]> {
-    const userFound = await this.userService.findOne(user_id, false);
+  async findAchievedByUser(userID: number): Promise<UserAchievement[]> {
+    const userFound = await this.userService.findOne(userID, false);
 
     return await this.userAchievementRepository.findBy({
       user: { id: userFound.id },
@@ -76,10 +76,10 @@ export class UserAchievementService {
   }
 
   async findAchieversByAchievement(
-    achievement_id: number,
+    achievementID: number,
   ): Promise<UserAchievement[]> {
     const achievementFound = await this.achievementService.findOne(
-      achievement_id,
+      achievementID,
       false,
     );
 
@@ -89,12 +89,12 @@ export class UserAchievementService {
   }
 
   async findExact(
-    user_id: number,
-    achievement_id: number,
+    userID: number,
+    achievementID: number,
   ): Promise<UserAchievement> {
-    const userFound = await this.userService.findOne(user_id, false);
+    const userFound = await this.userService.findOne(userID, false);
     const achievementFound = await this.achievementService.findOne(
-      achievement_id,
+      achievementID,
       false,
     );
     const found = await this.userAchievementRepository.findOneBy({
@@ -105,7 +105,7 @@ export class UserAchievementService {
     if (!found) {
       throw new EntityNotFoundError(
         UserAchievement,
-        'user_id = ' + user_id + ' & achievement_id = ' + achievement_id,
+        'user_id = ' + userID + ' & achievement_id = ' + achievementID,
       );
     }
     return found;

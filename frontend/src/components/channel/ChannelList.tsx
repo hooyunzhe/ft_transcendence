@@ -1,5 +1,5 @@
 'use client';
-import { Button, List, Stack } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import ChannelCreatePrompt from './ChannelCreatePrompt';
 import ChannelJoinPrompt from './ChannelJoinPrompt';
 import { ChannelDisplay } from './ChannelDisplay';

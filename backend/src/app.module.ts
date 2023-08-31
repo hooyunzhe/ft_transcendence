@@ -7,7 +7,9 @@ import { FriendModule } from './friend/friend.module';
 import { GameModule } from './game/game.module';
 import { MatchModule } from './match/match.module';
 import { MessageModule } from './message/message.module';
+import { PreferenceModule } from './preference/preference.module';
 import { StatisticModule } from './statistic/statistic.module';
+import { TwoFactorModule } from './two-factor/two-factor.module';
 import { UserModule } from './user/user.module';
 import { UserAchievementModule } from './user-achievement/user-achievement.module';
 
@@ -21,10 +23,11 @@ import { UserAchievementModule } from './user-achievement/user-achievement.modul
     GameModule,
     MatchModule,
     MessageModule,
+    PreferenceModule,
     StatisticModule,
+    TwoFactorModule,
     UserModule,
     UserAchievementModule,
   ],
-  controllers: [],
 })
 export class AppModule {}

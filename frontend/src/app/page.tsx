@@ -1,37 +1,29 @@
 'use client';
-import { useEffect, useState } from 'react';
 import { Session } from 'next-auth';
 import { getSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import { Box } from '@mui/material';
-import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import Login from '@/components/user/Login';
 import FirstTimeSetup from '@/components/user/FirstTimeSetup';
 import Cyberpong from '@/components/homepage/Cyberpong';
-import GameRender from '@/components/game/GameRender';
-import { useMatchState } from '@/lib/stores/useGameStore';
+import {
+  useCurrentUser,
+  useIsNewUser,
+  useUserActions,
+} from '@/lib/stores/useUserStore';
 
 export default function Home() {
-  const [session, setSession] = useState<Session | null | undefined>();
   const user = useCurrentUser();
-  const { setCurrentUser } = useUserActions();
+  const isNewUser = useIsNewUser();
+  const { getUserData } = useUserActions();
+  const [session, setSession] = useState<Session | null | undefined>();
+
   useEffect(() => {
     async function getData() {
       const currentSession = await getSession();
       setSession(currentSession);
       if (currentSession) {
-        fetch(
-          process.env.NEXT_PUBLIC_HOST_URL +
-            `:4242/api/users?search_type=TOKEN&search_string=${currentSession.refresh_token}`,
-          {
-            cache: 'no-store',
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-          },
-        )
-          .then((res) => (res.ok ? res.json() : null))
-          .then((currentUser) => {
-            setCurrentUser(currentUser);
-          });
+        getUserData(currentSession.intraID);
       }
     }
     getData();
@@ -48,10 +40,8 @@ export default function Home() {
       }}
     >
       {session === null && <Login />}
-      {session && user === null && <FirstTimeSetup session={session} />}
-      {session && user && user.id !== 0 && (
-        <Cyberpong />
-      )}
+      {session && isNewUser && <FirstTimeSetup session={session} />}
+      {session && user.id !== 0 && <Cyberpong />}
     </Box>
   );
 }

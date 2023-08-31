@@ -7,7 +7,6 @@ interface ConfirmationStore {
     description: string;
     args: any | any[];
     handleAction: (...args: any[]) => void;
-    handleReject: ((...args: any[]) => void) | undefined;
   };
   actions: {
     displayConfirmation: (
@@ -15,7 +14,6 @@ interface ConfirmationStore {
       description: string,
       args: any | any[],
       handleAction: (...args: any[]) => void,
-      handleReject?: (...args: any[]) => void,
     ) => void;
     resetConfirmation: () => void;
   };
@@ -31,7 +29,6 @@ function displayConfirmation(
   description: string,
   args: any | any[],
   handleAction: (...args: any[]) => void,
-  handleReject?: (...args: any[]) => void,
 ): void {
   set(({}) => ({
     data: {
@@ -40,7 +37,6 @@ function displayConfirmation(
       description,
       args,
       handleAction,
-      handleReject,
     },
   }));
 }
@@ -61,7 +57,6 @@ const useConfirmationStore = create<ConfirmationStore>()((set) => ({
     description: '',
     args: [],
     handleAction: () => null,
-    handleReject: () => null,
   },
   actions: {
     displayConfirmation: (title, description, args, handleAction) =>

@@ -13,7 +13,9 @@ import { Achievement } from 'src/achievement/entities/achievement.entity';
 import { Channel } from 'src/channel/entities/channel.entity';
 import { Match } from 'src/match/entities/match.entity';
 import { Message } from 'src/message/entities/message.entity';
+import { Preference } from 'src/preference/entities/preference.entity';
 import { Statistic } from 'src/statistic/entities/statistic.entity';
+import { TwoFactor } from 'src/two-factor/entities/two-factor.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RemoveUserDto } from './dto/remove-user.dto';
@@ -37,7 +39,9 @@ export class UserController {
     | Channel[]
     | Match[]
     | Message[]
+    | Preference
     | Statistic
+    | TwoFactor
     | User[]
     | User
     | null
@@ -49,6 +53,11 @@ export class UserController {
       case UserSearchType.ONE:
         return this.userService.findOne(
           queryParams.search_number,
+          queryParams.load_relations,
+        );
+      case UserSearchType.INTRA:
+        return this.userService.findByIntraID(
+          queryParams.search_string,
           queryParams.load_relations,
         );
       case UserSearchType.NAME:

@@ -5,7 +5,9 @@ import ChatBox from '../chat/ChatBox';
 import ProfileBox from '../profile/ProfileBox';
 import LeaderboardBox from '../leaderboard/LeaderboardBox';
 import AchievementBox from '../achievement/AchievementBox';
+import SettingsBox from '../settings/SettingsBox';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
+import { useCurrentPreference } from '@/lib/stores/useUserStore';
 import { View } from '@/types/UtilTypes';
 import GameMenu from '../game/GameMenu';
 import GameRender from '../game/GameRender';
@@ -13,6 +15,7 @@ import GameTransition from '../game/GameTransition';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
+  const currentPreference = useCurrentPreference();
   const [localView, setLocalView] = useState<View | false>(false);
   const [open, setOpen] = useState(false);
   const [toggleTimeoutID, setToggleTimeoutID] = useState<
@@ -31,7 +34,7 @@ export default function ContentBox() {
   useEffect(() => {
     clearTimeout(toggleTimeoutID);
     if (currentView) {
-      if (open) {
+      if (open && currentPreference.animations_enabled) {
         setOpen(false);
         setToggleTimeoutID(
           setTimeout(() => {
@@ -46,12 +49,12 @@ export default function ContentBox() {
     } else {
       setOpen(false);
     }
-    const newStyles = localView === (View.PHASER || View.LOADING)
-    ? { width: '70vw', height: '80vh', left: '15vw', bottom: '5vh'}
-    : { width: '60vw', height: '70vh', left: '20vw',
-    bottom: '15vh'};
-  setDrawerStyles((prevStyles) => ({ ...prevStyles, ...newStyles }))
-  }, [currentView, localView]);
+    const newStyles =
+      currentView === (View.PHASER || View.LOADING)
+        ? { width: '70vw', height: '80vh', left: '15vw', bottom: '5vh' }
+        : { width: '60vw', height: '70vh', left: '20vw', bottom: '15vh' };
+    setDrawerStyles((prevStyles) => ({ ...prevStyles, ...newStyles }));
+  }, [currentView]);
 
   return (
     <Drawer
@@ -60,18 +63,17 @@ export default function ContentBox() {
       }}
       variant='persistent'
       anchor='bottom'
-      transitionDuration={1000}
+      transitionDuration={currentPreference.animations_enabled ? 1000 : 0}
       open={open}
     >
       {localView === View.CHAT && <ChatBox />}
       {localView === View.PROFILE && <ProfileBox />}
       {localView === View.GAME && <GameMenu />}
       {localView === View.LOADING && <GameTransition />}
-      {localView === View.PHASER && (
-          <GameRender />
-      )}
+      {localView === View.PHASER && <GameRender />}
       {localView === View.LEADERBOARD && <LeaderboardBox />}
       {localView === View.ACHIEVEMENTS && <AchievementBox />}
+      {localView === View.SETTINGS && <SettingsBox />}
     </Drawer>
   );
 }

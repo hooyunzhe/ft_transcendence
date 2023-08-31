@@ -6,6 +6,8 @@ import {
   OneToMany,
   OneToOne,
 } from 'typeorm';
+import { Preference } from 'src/preference/entities/preference.entity';
+import { TwoFactor } from 'src/two-factor/entities/two-factor.entity';
 import { Statistic } from 'src/statistic/entities/statistic.entity';
 import { ChannelMember } from 'src/channel-member/entities/channel-member.entity';
 import { Message } from 'src/message/entities/message.entity';
@@ -25,6 +27,9 @@ export class User {
   id: number;
 
   @Column({ unique: true })
+  intra_id: string;
+
+  @Column({ unique: true })
   username: string;
 
   @Column()
@@ -33,8 +38,17 @@ export class User {
   @Column()
   avatar_url: string;
 
+  @Column({ default: false })
+  two_factor_enabled: boolean;
+
   @CreateDateColumn({ type: 'timestamptz' })
   date_of_creation: Date;
+
+  @OneToOne(() => Preference, (preference) => preference.user)
+  preference: Preference;
+
+  @OneToOne(() => TwoFactor, (twoFactor) => twoFactor.user)
+  twoFactor: TwoFactor;
 
   @OneToOne(() => Statistic, (statistic) => statistic.user)
   statistic: Statistic;

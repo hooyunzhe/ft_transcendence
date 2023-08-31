@@ -18,7 +18,7 @@ import {
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { ChannelType } from '@/types/ChannelTypes';
 
-interface ChannelTypeChangeProps {
+interface ChannelTypeChangePromptProps {
   channelID: number;
   channelName: string;
   channelType: ChannelType;
@@ -28,7 +28,7 @@ export default function ChannelTypeChangePrompt({
   channelID,
   channelName,
   channelType,
-}: ChannelTypeChangeProps) {
+}: ChannelTypeChangePromptProps) {
   const channelSocket = useChannelSocket();
   const { changeChannelType, changeChannelHash } = useChannelActions();
   const {
@@ -44,24 +44,31 @@ export default function ChannelTypeChangePrompt({
   const [selectedChannelType, setSelectedChannelType] = useState(channelType);
   const [channelPass, setChannelPass] = useState('');
 
-  async function changeType() {
-    const data = {
+  async function changeType(): Promise<void> {
+    console.log(channelID, selectedChannelType, channelPass);
+    await callAPI('PATCH', 'channels', {
       id: channelID,
       type: selectedChannelType,
-      pass: channelPass,
-    };
-    await callAPI('PATCH', 'channels', data);
+      ...(channelPass && { pass: channelPass }),
+    });
     changeChannelType(channelID, selectedChannelType);
     if (selectedChannelType === ChannelType.PROTECTED) {
-      const updatedChannel = JSON.parse(
-        await callAPI(
-          'GET',
-          `channels?search_type=ONE&search_number=${channelID}`,
-        ),
-      );
-      changeChannelHash(channelID, updatedChannel.hash);
+      const updatedChannel = await callAPI(
+        'GET',
+        `channels?search_type=ONE&search_number=${channelID}`,
+      ).then((res) => res.body);
+
+      if (updatedChannel) {
+        changeChannelHash(channelID, updatedChannel.hash);
+      } else {
+        throw 'FATAL ERROR: FAILED TO GET UPDATED CHANNEL IN BACKEND';
+      }
     }
-    emitToSocket(channelSocket, 'changeChannelType', data);
+    emitToSocket(channelSocket, 'changeChannelType', {
+      id: channelID,
+      newType: selectedChannelType,
+      newPass: channelPass,
+    });
     displayNotification('success', 'Channel type changed');
   }
 

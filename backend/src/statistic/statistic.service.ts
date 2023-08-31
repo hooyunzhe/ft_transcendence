@@ -7,6 +7,7 @@ import { MatchService } from 'src/match/match.service';
 import { CreateStatisticDto } from './dto/create-statistic.dto';
 import { UpdateStatisticDto } from './dto/update-statistic.dto';
 import { RemoveStatisticDto } from './dto/remove-statistic.dto';
+import { EntityAlreadyExistsError } from 'src/app.error';
 
 @Injectable()
 export class StatisticService {
@@ -26,7 +27,16 @@ export class StatisticService {
       statisticDto.user_id,
       false,
     );
+    const statisticFound = await this.statisticRepository.findOneBy({
+      user: { id: userFound.id },
+    });
 
+    if (statisticFound) {
+      throw new EntityAlreadyExistsError(
+        'Statistic',
+        'user_id = ' + userFound.id,
+      );
+    }
     return await this.statisticRepository.save({
       wins: 0,
       losses: 0,
@@ -54,13 +64,14 @@ export class StatisticService {
     return found;
   }
 
-  async findByUser(user_id: number): Promise<Statistic | null> {
+  async findByUser(userID: number): Promise<Statistic | null> {
+    const userFound = await this.userService.findOne(userID, false);
     const found = await this.statisticRepository.findOneBy({
-      user: { id: user_id },
+      user: { id: userFound.id },
     });
 
     if (!found) {
-      throw new EntityNotFoundError(Statistic, 'user_id = ' + user_id);
+      throw new EntityNotFoundError(Statistic, 'user_id = ' + userID);
     }
     return found;
   }
