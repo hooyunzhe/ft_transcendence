@@ -21,7 +21,6 @@ export default function Home() {
   useEffect(() => {
     async function getData() {
       const currentSession = await getSession();
-
       setSession(currentSession);
       if (currentSession) {
         getUserData(currentSession.intraID);

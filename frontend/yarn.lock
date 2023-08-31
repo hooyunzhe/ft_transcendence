@@ -2376,9 +2376,9 @@ phaser3spectorjs@^0.0.8:
   resolved "https://registry.npmjs.org/phaser3spectorjs/-/phaser3spectorjs-0.0.8.tgz"
   integrity sha512-0dSO7/aMjEUPrp5EcjRvRRsEf+jXDbmzalPeJ6VtTB2Pn1PeaKc+qlL/DmO3l1Dvc5lkzc+Sil1Ta+Hkyi5cbA==
 
-phaser@^3.60.0:
+phaser@3.60.0:
   version "3.60.0"
-  resolved "https://registry.npmjs.org/phaser/-/phaser-3.60.0.tgz"
+  resolved "https://registry.yarnpkg.com/phaser/-/phaser-3.60.0.tgz#8a555623e64c707482e6321485b4bda84604590d"
   integrity sha512-IKUy35EnoEVcl2EmJ8WOyK4X8OoxHYdlhZLgRGpNrvD1fEagYffhVmwHcapE/tGiLgyrnezmXIo5RrH2NcrTHw==
   dependencies:
     eventemitter3 "^5.0.0"

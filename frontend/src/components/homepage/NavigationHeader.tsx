@@ -71,6 +71,14 @@ export default function NavigationHeader() {
             onClick={() => changeCurrentView(View.GAME)}
           />
           <Tab
+            sx={{
+              color: 'green',
+            }}
+            icon={<SportsTennisRounded />}
+            value={View.PHASER}
+            onClick={() => changeCurrentView(View.PHASER)}
+          />
+          <Tab
             icon={<ChatRounded />}
             value={View.CHAT}
             onClick={() => changeCurrentView(View.CHAT)}

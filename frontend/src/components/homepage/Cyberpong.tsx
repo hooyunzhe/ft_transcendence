@@ -52,12 +52,11 @@ export default function Cyberpong() {
     getGameData(currentUser.id);
     getFriendData(currentUser.id);
     getChannelData(currentUser.id);
+    getGameData(currentUser.id);
     getChatData(currentUser.id);
     getAchievementData(currentUser.id);
     getChannelMemberData();
     getProfileData();
-    getGameData(currentUser.id);
-    getAchievementData(currentUser.id);
 
     return () => {
       resetSockets();

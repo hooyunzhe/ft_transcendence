@@ -24,7 +24,7 @@
     "eslint-config-next": "13.4.2",
     "next": "13.4.2",
     "next-auth": "^4.22.1",
-    "phaser": "^3.60.0",
+    "phaser": "3.60.0",
     "phaser3spectorjs": "^0.0.8",
     "qrcode": "^1.5.3",
     "react": "18.2.0",
