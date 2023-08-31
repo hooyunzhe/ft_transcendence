@@ -49,12 +49,12 @@ export default function ContentBox() {
     } else {
       setOpen(false);
     }
-    const newStyles = localView === (View.PHASER || View.LOADING)
-    ? { width: '70vw', height: '80vh', left: '15vw', bottom: '5vh'}
-    : { width: '60vw', height: '70vh', left: '20vw',
-    bottom: '15vh'};
-  setDrawerStyles((prevStyles) => ({ ...prevStyles, ...newStyles }))
-  }, [currentView, localView]);
+    const newStyles =
+      currentView === (View.PHASER || View.LOADING)
+        ? { width: '70vw', height: '80vh', left: '15vw', bottom: '5vh' }
+        : { width: '60vw', height: '70vh', left: '20vw', bottom: '15vh' };
+    setDrawerStyles((prevStyles) => ({ ...prevStyles, ...newStyles }));
+  }, [currentView]);
 
   return (
     <Drawer
@@ -70,9 +70,7 @@ export default function ContentBox() {
       {localView === View.PROFILE && <ProfileBox />}
       {localView === View.GAME && <GameMenu />}
       {localView === View.LOADING && <GameTransition />}
-      {localView === View.PHASER && (
-          <GameRender />
-      )}
+      {localView === View.PHASER && <GameRender />}
       {localView === View.LEADERBOARD && <LeaderboardBox />}
       {localView === View.ACHIEVEMENTS && <AchievementBox />}
       {localView === View.SETTINGS && <SettingsBox />}
