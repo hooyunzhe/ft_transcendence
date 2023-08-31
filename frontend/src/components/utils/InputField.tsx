@@ -9,6 +9,8 @@ import {
 interface InputFieldProps {
   outlined?: boolean;
   normalMargin?: boolean;
+  ignoreError?: boolean;
+  handleEnterInput?: boolean;
   label: string;
   value: string;
   onChange: (input: string) => void;
@@ -18,6 +20,8 @@ interface InputFieldProps {
 export default function InputField({
   outlined,
   normalMargin,
+  ignoreError,
+  handleEnterInput,
   label,
   value,
   onChange,
@@ -38,17 +42,23 @@ export default function InputField({
       margin={normalMargin ? 'normal' : 'dense'}
       value={value}
       onChange={(event) => {
-        setEmptyError(!event.target.value);
-        setActionButtonDisabled(!event.target.value);
+        if (!ignoreError) {
+          setEmptyError(!event.target.value);
+          setActionButtonDisabled(!event.target.value);
+        }
         onChange(event.target.value);
       }}
       onKeyDown={(event) => {
-        if (event.key === 'Enter' && !dialogActionButtonDisabled) {
+        if (
+          event.key === 'Enter' &&
+          handleEnterInput &&
+          (ignoreError || !dialogActionButtonDisabled)
+        ) {
           onSubmit();
         }
       }}
-      error={emptyError}
-      helperText={emptyError ? `${label} cannot be empty` : ''}
+      error={!ignoreError && emptyError}
+      helperText={!ignoreError && emptyError ? `${label} cannot be empty` : ''}
     />
   );
 }

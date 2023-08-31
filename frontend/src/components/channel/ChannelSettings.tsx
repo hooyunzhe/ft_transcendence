@@ -37,6 +37,7 @@ export default function ChannelSettings({
   channelID,
   channelName,
   channelType,
+  channelHash,
 }: ChannelSettingsProps) {
   const channelMembers = useChannelMembers();
   const { displayTwoFactor } = useTwoFactorActions();
@@ -70,7 +71,11 @@ export default function ChannelSettings({
             displayDialog(
               'Change Channel Name',
               'Please provide the name you want to change to',
-              <ChannelNameChangePrompt channelID={channelID} />,
+              <ChannelNameChangePrompt
+                channelID={channelID}
+                channelName={channelName}
+                channelHash={channelHash}
+              />,
               'Change',
             );
             setAnchorElement(undefined);
@@ -91,6 +96,7 @@ export default function ChannelSettings({
                   channelID={channelID}
                   channelName={channelName}
                   channelType={channelType}
+                  channelHash={channelHash}
                 />,
                 'Change',
               ),
@@ -103,24 +109,26 @@ export default function ChannelSettings({
           </ListItemIcon>
           <ListItemText>Change Channel Type</ListItemText>
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            displayTwoFactor(() =>
-              displayDialog(
-                'Change Channel Password',
-                'Enter the current password to proceed',
-                <ChannelPassChangePrompt channelID={channelID} />,
-                'Change',
-              ),
-            );
-            setAnchorElement(undefined);
-          }}
-        >
-          <ListItemIcon>
-            <Key />
-          </ListItemIcon>
-          <ListItemText>Change Channel Password</ListItemText>
-        </MenuItem>
+        {channelType === ChannelType.PROTECTED && (
+          <MenuItem
+            onClick={() => {
+              displayTwoFactor(() =>
+                displayDialog(
+                  'Change Channel Password',
+                  'Enter the current password to proceed',
+                  <ChannelPassChangePrompt channelID={channelID} />,
+                  'Change',
+                ),
+              );
+              setAnchorElement(undefined);
+            }}
+          >
+            <ListItemIcon>
+              <Key />
+            </ListItemIcon>
+            <ListItemText>Change Channel Password</ListItemText>
+          </MenuItem>
+        )}
         <MenuItem
           onClick={() => {
             displayTwoFactor(() =>

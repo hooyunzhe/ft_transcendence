@@ -64,6 +64,7 @@ export default function ChannelCreatePrompt() {
         addJoinedChannel(newChannel.id);
         addChannelMember(channelCreator);
         emitToSocket(channelSocket, 'joinRoom', newChannel.id);
+        emitToSocket(channelSocket, 'newMember', channelCreator);
         await handleAchievementsEarned(
           currentUser.id,
           6,
@@ -84,6 +85,12 @@ export default function ChannelCreatePrompt() {
     if (checkChannelExists(channelName.trim())) {
       throw 'Channel already exists';
     }
+    if (channelName.length > 16) {
+      throw 'Channel names cannot be longer than 16 characters.';
+    }
+    if (channelName.trim().length === 0) {
+      throw 'Cannot change name into just spaces.';
+    }
     if (checkChannelJoined(channelName.trim())) {
       throw 'Already in channel';
     }
@@ -102,6 +109,7 @@ export default function ChannelCreatePrompt() {
   }
 
   async function handleAction(): Promise<void> {
+    console.log('handleAction');
     if (displayPasswordPrompt) {
       createChannel()
         .then(resetDialog)
@@ -125,6 +133,7 @@ export default function ChannelCreatePrompt() {
 
   useEffect(() => {
     if (actionClicked) {
+      console.log('action clicked');
       handleAction();
     }
     if (backClicked) {

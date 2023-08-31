@@ -2,7 +2,7 @@ import { Socket } from 'socket.io-client';
 import { create } from 'zustand';
 import callAPI from '../callAPI';
 import { Message, MessageType } from '@/types/MessageTypes';
-import { ChannelMember } from '@/types/ChannelMemberTypes';
+import { ChannelMember, ChannelMemberRole } from '@/types/ChannelMemberTypes';
 
 type MessagesSentDictionary = { [channelID: number]: number };
 

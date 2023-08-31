@@ -8,18 +8,19 @@ import {
   Filter5,
   HeartBroken,
   MilitaryTech,
+  PhonelinkLock,
   SettingsSuggest,
   SportsMartialArts,
   VolunteerActivism,
 } from '@mui/icons-material';
 
-interface AchievementIconAvatarProp {
+interface AchievementIconProp {
   achievementID: number;
 }
 
-export default function AchievementIconAvatar({
+export default function AchievementIcon({
   achievementID,
-}: AchievementIconAvatarProp) {
+}: AchievementIconProp) {
   switch (achievementID) {
     case 1:
       return <VolunteerActivism />;
@@ -43,7 +44,9 @@ export default function AchievementIconAvatar({
       return <Filter5 />;
     case 11:
       return <Accessible />;
-    // case 12:
+    case 12:
+      return <PhonelinkLock />;
+    // case 13:
     //   return <Help />; // Not decided
   }
   return null;

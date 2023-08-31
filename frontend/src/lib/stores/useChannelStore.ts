@@ -45,7 +45,6 @@ interface ChannelStore {
   checks: {
     checkChannelExists: (channelName: string) => boolean;
     checkChannelJoined: (channelName: string) => boolean;
-    // checkOwnerAmount: (userID: number) => boolean;
   };
 }
 
@@ -368,15 +367,15 @@ function setupChannelSocketEvents(
     ({
       id,
       newType,
-      newPass,
+      newHash,
     }: {
       id: number;
       newType: ChannelType;
-      newPass?: string;
+      newHash?: string;
     }) => {
       changeChannelType(set, id, newType);
-      if (newType === ChannelType.PROTECTED && newPass)
-        changeChannelHash(set, id, newPass);
+      if (newType === ChannelType.PROTECTED && newHash)
+        changeChannelHash(set, id, newHash);
     },
   );
   channelSocket.on(
