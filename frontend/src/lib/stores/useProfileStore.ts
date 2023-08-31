@@ -22,9 +22,10 @@ type StoreSetter = (
 ) => void;
 
 async function getProfileData(set: StoreSetter): Promise<void> {
-  const statisticData: Statistic[] = JSON.parse(
-    await callAPI('GET', 'statistics?search_type=ALL'),
-  );
+  const statisticData: Statistic[] = await callAPI(
+    'GET',
+    'statistics?search_type=ALL',
+  ).then((res) => res.body);
 
   set(({ data }) => ({
     data: {

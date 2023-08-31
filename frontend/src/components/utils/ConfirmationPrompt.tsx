@@ -1,3 +1,5 @@
+'use client';
+import { useEffect } from 'react';
 import {
   Button,
   Dialog,
@@ -10,15 +12,21 @@ import {
   useConfirmation,
   useConfirmationActions,
 } from '@/lib/stores/useConfirmationStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 
 export default function ConfirmationPrompt() {
   const confirmation = useConfirmation();
   const { resetConfirmation } = useConfirmationActions();
+  const { setIsPromptOpen } = useUtilActions();
 
   function handleConfirmation() {
     confirmation.handleAction(confirmation.args);
     resetConfirmation();
   }
+
+  useEffect(() => {
+    setIsPromptOpen(confirmation.required);
+  }, [confirmation.required]);
 
   return (
     <Dialog

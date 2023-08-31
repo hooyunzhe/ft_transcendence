@@ -1,6 +1,11 @@
 'use client';
 import { Box, Paper, Toolbar, Typography } from '@mui/material';
-import { EmojiEvents, Groups, LeaderboardRounded } from '@mui/icons-material';
+import {
+  EmojiEvents,
+  Groups,
+  LeaderboardRounded,
+  Settings,
+} from '@mui/icons-material';
 import { ListHeaderIcon } from '@/types/UtilTypes';
 
 interface ListHeaderProps {
@@ -21,6 +26,7 @@ export default function ListHeader({ title, icon, children }: ListHeaderProps) {
           {icon === ListHeaderIcon.ACHIEVEMENTS && (
             <EmojiEvents fontSize='large' />
           )}
+          {icon === ListHeaderIcon.SETTINGS && <Settings fontSize='large' />}
         </Box>
         <Typography variant='h6'>{title}</Typography>
         {children}

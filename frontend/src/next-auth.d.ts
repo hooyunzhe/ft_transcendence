@@ -4,15 +4,21 @@ import { User } from './types/UserTypes';
 
 declare module 'next-auth/jwt' {
   interface JWT {
-    access_token: string;
-    refresh_token: string;
+    intraID: string;
+    accessToken: string;
+    refreshToken: string;
   }
 }
 
 declare module 'next-auth' {
+  interface Profile {
+    login: string;
+  }
+
   interface Session {
-    access_token: string;
-    refresh_token: string;
+    intraID: string;
+    accessToken: string;
+    refreshToken: string;
     expires: Date;
   }
 }

@@ -14,7 +14,7 @@ import {
 } from '@/lib/stores/useDialogStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
-interface ChannelNameChangeProps {
+interface ChannelNameChangePromptProps {
   channelID: number;
   channelName: string;
 }
@@ -22,7 +22,7 @@ interface ChannelNameChangeProps {
 export default function ChannelNameChangePrompt({
   channelID,
   channelName,
-}: ChannelNameChangeProps) {
+}: ChannelNameChangePromptProps) {
   const channelSocket = useChannelSocket();
   const { changeChannelName } = useChannelActions();
   const { resetDialog } = useDialogActions();

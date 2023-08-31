@@ -1,9 +1,8 @@
 import { create } from 'zustand';
 import callAPI from '../callAPI';
 import { Match, SkillPath } from '@/types/MatchTypes';
-import { User } from '@/types/UserTypes';
 import { MatchState, MatchInfo } from '@/types/GameTypes';
-
+import { User } from '@/types/UserTypes';
 
 type RecentMatchesDictionary = { [userID: number]: Match[] };
 
@@ -37,8 +36,11 @@ interface GameStore {
 
 type StoreSetter = (helper: (state: GameStore) => Partial<GameStore>) => void;
 type StoreGetter = () => GameStore;
+
 async function getGameData(set: StoreSetter, userID: number): Promise<void> {
-  const matchData = JSON.parse(await callAPI('GET', 'matches?search_type=ALL'));
+  const matchData = await callAPI('GET', 'matches?search_type=ALL').then(
+    (res) => res.body,
+  );
   const matchesPlayed: Match[] = [];
   const recentMatches: RecentMatchesDictionary = {};
 
@@ -72,18 +74,6 @@ async function getGameData(set: StoreSetter, userID: number): Promise<void> {
       matches: matchData,
       matchesPlayed: matchesPlayed,
       recentMatches: recentMatches,
-    },
-  }));
-}
-
-function setKeyState(set: StoreSetter, key: string, isPressed: boolean): void {
-  set((state) => ({
-    data: {
-      ...state.data,
-      keyState: {
-        ...state.data.keyState,
-        [key]: isPressed,
-      },
     },
   }));
 }
@@ -142,6 +132,18 @@ function getPathName(path: SkillPath | null): string {
     case null:
       return 'N/A';
   }
+}
+
+function setKeyState(set: StoreSetter, key: string, isPressed: boolean): void {
+  set((state) => ({
+    data: {
+      ...state.data,
+      keyState: {
+        ...state.data.keyState,
+        [key]: isPressed,
+      },
+    },
+  }));
 }
 
 function getKeyState(key: string, get: StoreGetter) {
@@ -243,5 +245,4 @@ export const useRecentMatches = () =>
 export const useGameActions = () => useGameStore((state) => state.actions);
 export const useMatchState = () =>
   useGameStore((state) => state.data.matchState);
-  export const useMatchInfo = () =>
-  useGameStore((state) => state.data.matchInfo);
+export const useMatchInfo = () => useGameStore((state) => state.data.matchInfo);

@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { Box } from '@mui/material';
 import NavigationHeader from './NavigationHeader';
 import MainArea from './MainArea';
+import TwoFactorPrompt from '../utils/TwoFactorPrompt';
 import DialogPrompt from '../utils/DialogPrompt';
 import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import NotificationBar from '../utils/NotificationBar';
@@ -117,6 +118,7 @@ export default function Cyberpong() {
     >
       <NavigationHeader />
       <MainArea />
+      <TwoFactorPrompt />
       <DialogPrompt />
       <ConfirmationPrompt />
       <NotificationBar />

@@ -107,16 +107,16 @@ export class ChannelMemberService {
     return found;
   }
 
-  async findMembersInChannel(channel_id: number): Promise<ChannelMember[]> {
-    const channelFound = await this.channelService.findOne(channel_id, false);
+  async findMembersInChannel(channelID: number): Promise<ChannelMember[]> {
+    const channelFound = await this.channelService.findOne(channelID, false);
 
     return await this.channelMemberRepository.findBy({
       channel: { id: channelFound.id },
     });
   }
 
-  async findChannelsOfUser(user_id: number): Promise<ChannelMember[]> {
-    const userFound = await this.userService.findOne(user_id, false);
+  async findChannelsOfUser(userID: number): Promise<ChannelMember[]> {
+    const userFound = await this.userService.findOne(userID, false);
 
     return await this.channelMemberRepository.findBy({
       user: { id: userFound.id },
@@ -124,11 +124,11 @@ export class ChannelMemberService {
   }
 
   async findExact(
-    channel_id: number,
-    user_id: number,
+    channelID: number,
+    userID: number,
   ): Promise<ChannelMember | null> {
-    const channelFound = await this.channelService.findOne(channel_id, false);
-    const userFound = await this.userService.findOne(user_id, false);
+    const channelFound = await this.channelService.findOne(channelID, false);
+    const userFound = await this.userService.findOne(userID, false);
 
     const found = await this.channelMemberRepository.findOneBy({
       channel: { id: channelFound.id },
@@ -138,7 +138,7 @@ export class ChannelMemberService {
     if (!found) {
       throw new EntityNotFoundError(
         ChannelMember,
-        'channel_id = ' + channel_id + ' & user_id = ' + user_id,
+        'channel_id = ' + channelID + ' & user_id = ' + userID,
       );
     }
     return found;

@@ -64,8 +64,8 @@ export class MessageService {
     return found;
   }
 
-  async findMessagesInChannel(channel_id: number): Promise<Message[]> {
-    const channelFound = await this.channelService.findOne(channel_id, false);
+  async findMessagesInChannel(channelID: number): Promise<Message[]> {
+    const channelFound = await this.channelService.findOne(channelID, false);
 
     return await this.messageRepository.find({
       where: { channel: channelFound },
@@ -73,11 +73,11 @@ export class MessageService {
   }
 
   async findMessagesFromUser(
-    channel_id: number,
-    user_id: number,
+    channelID: number,
+    userID: number,
   ): Promise<Message[]> {
-    const channelFound = await this.channelService.findOne(channel_id, false);
-    const userFound = await this.userService.findOne(user_id, false);
+    const channelFound = await this.channelService.findOne(channelID, false);
+    const userFound = await this.userService.findOne(userID, false);
 
     return await this.messageRepository.find({
       where: {

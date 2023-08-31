@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 import {
   Button,
   Dialog,
@@ -8,10 +9,16 @@ import {
   DialogTitle,
 } from '@mui/material';
 import { useDialog, useDialogActions } from '@/lib/stores/useDialogStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 
 export default function DialogPrompt() {
   const dialog = useDialog();
   const { setActionClicked, setBackClicked, resetDialog } = useDialogActions();
+  const { setIsPromptOpen } = useUtilActions();
+
+  useEffect(() => {
+    setIsPromptOpen(dialog.display);
+  }, [dialog.display]);
 
   return (
     <Dialog

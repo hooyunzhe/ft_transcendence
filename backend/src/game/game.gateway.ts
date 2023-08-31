@@ -7,10 +7,9 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-
 import { RemoteSocket, Server, Socket } from 'socket.io';
-import { GameClass } from './game.class';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { GameClass } from './game.class';
 import { GameService } from './game.service';
 
 @WebSocketGateway({
@@ -54,7 +53,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.roomid = uniquekey;
       client.leave('');
       client.join(uniquekey);
-      client.emit('match', { player1: clients[0].data.user_id, player2: clients[1].data.user_id});
+      client.emit('match', {
+        player1: clients[0].data.user_id,
+        player2: clients[1].data.user_id,
+      });
     });
     console.log(
       'client found a match, joining room:',
@@ -63,7 +65,17 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     clients[0].data.player = 1;
     clients[1].data.player = 2;
     console.log('event: createroom: ', uniquekey);
-    this.roomlist.set(uniquekey, this.gameService.createGame({roomid: uniquekey, player1: clients[0].data.user_id, player2: clients[1].data.user_id}, this.server));
+    this.roomlist.set(
+      uniquekey,
+      this.gameService.createGame(
+        {
+          roomid: uniquekey,
+          player1: clients[0].data.user_id,
+          player2: clients[1].data.user_id,
+        },
+        this.server,
+      ),
+    );
     console.log('room size : ', this.roomlist.size);
   }
 
@@ -84,7 +96,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.roomlist.get(client.data.roomid).gameUpdate();
     }
   }
-
 
   @SubscribeMessage('join')
   async createRoom(@ConnectedSocket() client: Socket) {
@@ -116,8 +127,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log('room size : ', this.roomlist.size);
     }
   }
+
   @SubscribeMessage('check')
-  async checkGameStatus(@ConnectedSocket() client: Socket) {
+  async checkGameStatus() {
     const players = await this.server.fetchSockets();
     console.log('game server totalconnection:', players.length);
   }
@@ -154,8 +166,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.roomlist.get(client.data.roomid).gameStart(client.data.player);
   }
 
-  // @SubscribeMessage('end')
-  // gameEnd() {}
   async fetchPlayer(roomid: string) {
     return this.server.in(roomid).fetchSockets();
   }

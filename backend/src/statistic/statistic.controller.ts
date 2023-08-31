@@ -9,13 +9,13 @@ import {
 } from '@nestjs/common';
 import { Statistic } from './entities/statistic.entity';
 import { StatisticService } from './statistic.service';
+import { CreateStatisticDto } from './dto/create-statistic.dto';
 import { UpdateStatisticDto } from './dto/update-statistic.dto';
 import { RemoveStatisticDto } from './dto/remove-statistic.dto';
 import {
   StatisticGetQueryParams,
   StatisticSearchType,
 } from './params/get-query-params';
-import { CreateStatisticDto } from './dto/create-statistic.dto';
 
 @Controller('statistics')
 export class StatisticController {
