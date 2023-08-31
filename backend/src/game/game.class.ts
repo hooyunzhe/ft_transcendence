@@ -74,7 +74,7 @@ export class GameClass{
       y: 0,
     };
 
-    this.velocity = 5;
+    this.velocity = 15;
     this.score = {
       player1: 0,
       player2: 0,

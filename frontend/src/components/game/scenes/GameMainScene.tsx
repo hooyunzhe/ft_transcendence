@@ -19,6 +19,10 @@ export default class GameMainScene extends Phaser.Scene {
   private Socket: Socket | null;
   private prevDirectionX: number | undefined;
   private prevDirectionY: number | undefined;
+  private streak: { player: number; streak: number } = { player: 0, streak: 0 };
+  private streakEffect:
+    | Phaser.GameObjects.Particles.ParticleEmitter
+    | undefined;
   private soundEffect:
     | Phaser.Sound.NoAudioSound
     | Phaser.Sound.HTML5AudioSound
@@ -146,7 +150,7 @@ export default class GameMainScene extends Phaser.Scene {
     });
     // wisp.startFollow(this.ball);
 
-    const glimmer = game.add.particles(0, 0, 'flame3', {
+    this.streakEffect = game.add.particles(0, 0, 'flame3', {
       quantity: 20,
       speed: { min: 200, max: 500 },
       accelerationY: 1000 * dy,
@@ -159,6 +163,7 @@ export default class GameMainScene extends Phaser.Scene {
       rotate: { min: -180, max: 180 },
     });
 
+    this.streakEffect.stop();
     const player1frame = this.add
       .image(
         this.windowsize.width * 0.33,
@@ -181,7 +186,6 @@ export default class GameMainScene extends Phaser.Scene {
       .setDisplaySize(this.windowsize.width * 0.2, this.windowsize.height * 0.1)
       .setFlipX(true);
 
-    glimmer.startFollow(player1frame);
     // const p1glow = player1frame.postFX.addGlow(0xf6f106, 0, 1, false);
     // const p2glow = player2frame.postFX.addGlow(0x8d1be2, 0, 1, false);
 
@@ -202,13 +206,14 @@ export default class GameMainScene extends Phaser.Scene {
     // });
 
     const textstyle = {
-      fontFamily: 'Arial',
+      fontFamily: 'Copperplate Gothic Light',
       fontSize: 32,
+      fontweight: 1700,
       color: '#d3d3d3', // Text color in hexadecimal
       backgroundColor: 'transparent', // Background color (transparent in this case)
       align: 'center', // Text alignment: 'left', 'center', 'right'
-      stroke: '#5114ed', // Stroke color
-      strokeThickness: 2, // Stroke thickness in pixels
+      stroke: '#18191A', // Stroke color
+      strokeThickness: 5, // Stroke thickness in pixels
       // shadow: {
       //   offsetX: 2,
       //   offsetY: 2,
@@ -386,20 +391,26 @@ export default class GameMainScene extends Phaser.Scene {
       emitting: false,
     });
 
-    // const frameNames = this.anims.generateFrameNames('smash1', {
-    //   start: 1,
-    //   end: 4,
-    //   zeroPad: 0,
-    // });
+    this.streakEffect?.addEmitZone(
+      new Phaser.GameObjects.Particles.Zones.EdgeZone(
+        p1text.getBounds(),
+        4,
+        0,
+        false,
+        true,
+      ),
+    );
 
-    // this.anims.create({
-    //   key: 'outofbound',
-    //   frames: frameNames,
-    //   frameRate: 10,
-    //   repeat: -1,
-    // });
+    this.streakEffect?.addEmitZone(
+      new Phaser.GameObjects.Particles.Zones.EdgeZone(
+        p2text.getBounds(),
+        4,
+        0,
+        false,
+        true,
+      ),
+    );
 
-    // this.ball.anims.play('outofbound');
     this.outofboundEffect.startFollow(this.ball);
     this.Socket?.on('victory', (player: number) => {
       this.scene.start('victory', { player: player });
@@ -434,6 +445,7 @@ export default class GameMainScene extends Phaser.Scene {
         this.windowsize.height - this.windowsize.height / (2 * 1.2),
       );
       this.cameras.main.zoomTo(1.2, 500);
+      this.cameras.main.shake(50, 0.005);
       this.cameras.main.pan(cameraX, cameraY, 500);
     }
     const timer = setTimeout(() => {
@@ -451,7 +463,6 @@ export default class GameMainScene extends Phaser.Scene {
     if (!this.paddle1) return;
     if (this.soundEffect) this.soundEffect.play();
     const paddlebloom1 = this.paddle1.postFX.addBloom(0xffffff, 0.8, 0.8, 1, 3);
-    // const effect = this.paddle1.current.postFX.addDisplacement('red', this.paddle1.current.x + this.paddle1.current.width / 2, this.ball.current.y)
     this.time.addEvent({
       delay: 150,
       callback: () => {
@@ -511,17 +522,47 @@ export default class GameMainScene extends Phaser.Scene {
   };
 
   updateScore = () => {
-    this.updatePlayerScore(this.p1scoretext, this.score.player1);
-    this.updatePlayerScore(this.p2scoretext, this.score.player2);
+    this.updatePlayerScore(this.p1scoretext, this.score.player1, 1);
+    this.updatePlayerScore(this.p2scoretext, this.score.player2, 2);
   };
 
+  updateStreak = (player: number) => {
+    if (this.streak.player === player) {
+      this.streak.streak++;
+      console.log(this.streak);
+      if (this.streak.streak >= 1) {
+        switch (player) {
+          case 1:
+            {
+              this.streakEffect?.setEmitZone(0);
+              this.streakEffect?.start();
+            }
+            break;
+
+          case 2:
+            {
+              this.streakEffect?.setEmitZone(1);
+              this.streakEffect?.start();
+            }
+            break;
+          default:
+            break;
+        }
+      }
+    } else {
+      this.streakEffect?.stop();
+      this.streak = { player: player, streak: 1 };
+    }
+  };
   updatePlayerScore = (
     scoreText: Phaser.GameObjects.BitmapText | undefined,
     playerScore: number,
+    player: number,
   ) => {
     if (scoreText) {
       const score = this.scoreNumber(playerScore);
       if (scoreText.text !== score) {
+        this.updateStreak(player);
         const barrel = scoreText.preFX?.addBarrel(2);
         scoreText.setText(score);
         setTimeout(() => {
