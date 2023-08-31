@@ -18,14 +18,17 @@ export default function SettingsUsernameChangePrompt() {
   const [newUsername, setNewUsername] = useState('');
 
   async function handleUsernameChange(): Promise<void> {
+    if (newUsername.trim().length === 0) {
+      throw 'Cannot change name into just spaces.';
+    }
     if (newUsername.length > 16) {
       throw 'Username cannot be more than 16 characters long';
     }
     await callAPI('PATCH', 'users', {
       id: currentUser.id,
-      username: newUsername,
+      username: newUsername.trim(),
     });
-    changeCurrentUsername(newUsername);
+    changeCurrentUsername(newUsername.trim());
     displayNotification('success', 'Username changed, refreshing...');
     location.reload();
   }

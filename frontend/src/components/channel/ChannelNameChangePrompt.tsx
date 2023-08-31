@@ -27,7 +27,7 @@ export default function ChannelNameChangePrompt({
 }: ChannelNameChangePromptProps) {
   const channelSocket = useChannelSocket();
   const { changeChannelName } = useChannelActions();
-  const { resetDialog } = useDialogActions();
+  const { resetDialog, resetTriggers } = useDialogActions();
   const { actionClicked, backClicked } = useDialogTriggers();
   const { displayNotification } = useNotificationActions();
   const [newName, setNewName] = useState('');
@@ -48,7 +48,7 @@ export default function ChannelNameChangePrompt({
     }
     const channelResponse = await callAPI('PATCH', 'channels', {
       id: channelID,
-      name: newName,
+      name: newName.trim(),
       hash: channelHash ?? '',
     });
 
@@ -70,6 +70,7 @@ export default function ChannelNameChangePrompt({
     handleNameChange()
       .then(resetDialog)
       .catch((error) => {
+        resetTriggers();
         displayNotification('error', error);
       });
   }

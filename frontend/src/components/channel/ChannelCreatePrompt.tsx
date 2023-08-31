@@ -85,6 +85,9 @@ export default function ChannelCreatePrompt() {
     if (checkChannelExists(channelName.trim())) {
       throw 'Channel already exists';
     }
+    if (channelName.length > 16) {
+      throw 'Channel names cannot be longer than 16 characters.';
+    }
     if (channelName.trim().length === 0) {
       throw 'Cannot change name into just spaces.';
     }

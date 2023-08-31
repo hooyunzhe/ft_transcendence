@@ -11,13 +11,16 @@ export default async function signUp(
   newUser: User;
   preference: Preference;
 }> {
+  if (username.trim().length === 0) {
+    throw 'Cannot change name into just spaces.';
+  }
   if (username.length > 16) {
     throw 'Username cannot be more than 16 characters long';
   }
 
   const userResponse = await callAPI('POST', 'users', {
     intra_id: intraID,
-    username: username,
+    username: username.trim(),
     refresh_token: refreshToken,
     avatar_url: avatarUrl,
   });

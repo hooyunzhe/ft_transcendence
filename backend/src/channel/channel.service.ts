@@ -151,7 +151,8 @@ export class ChannelService {
       ...(channelDto.name && { name: channelDto.name }),
       ...(channelDto.type && { type: channelDto.type }),
       ...(channelDto.pass && { hash: await bcrypt.hash(channelDto.pass, 10) }),
-      ...(channelDto.type !== ChannelType.PROTECTED && { hash: null }),
+      ...((channelDto.type === ChannelType.PUBLIC ||
+        channelDto.type === ChannelType.PRIVATE) && { hash: null }),
     });
   }
 
