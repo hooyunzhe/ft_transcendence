@@ -1,8 +1,7 @@
 'use client';
 import { Achievement } from '@/types/AchievementTypes';
-import { SportsTennis } from '@mui/icons-material';
 import { Avatar, Box, Typography } from '@mui/material';
-import AchievementIcon from '../achievement/AchievementIconAvatar';
+import AchievementIcon from '../achievement/AchievementIcon';
 
 interface ProfileAchievementDisplayProps {
   achievement: Achievement;

@@ -22,12 +22,14 @@ interface ChannelTypeChangePromptProps {
   channelID: number;
   channelName: string;
   channelType: ChannelType;
+  channelHash: string;
 }
 
 export default function ChannelTypeChangePrompt({
   channelID,
   channelName,
   channelType,
+  channelHash,
 }: ChannelTypeChangePromptProps) {
   const channelSocket = useChannelSocket();
   const { changeChannelType, changeChannelHash } = useChannelActions();
@@ -45,31 +47,46 @@ export default function ChannelTypeChangePrompt({
   const [channelPass, setChannelPass] = useState('');
 
   async function changeType(): Promise<void> {
-    console.log(channelID, selectedChannelType, channelPass);
-    await callAPI('PATCH', 'channels', {
+    const channelResponse = await callAPI('PATCH', 'channels', {
       id: channelID,
       type: selectedChannelType,
+      hash: channelHash ?? '',
       ...(channelPass && { pass: channelPass }),
     });
-    changeChannelType(channelID, selectedChannelType);
-    if (selectedChannelType === ChannelType.PROTECTED) {
-      const updatedChannel = await callAPI(
-        'GET',
-        `channels?search_type=ONE&search_number=${channelID}`,
-      ).then((res) => res.body);
 
-      if (updatedChannel) {
-        changeChannelHash(channelID, updatedChannel.hash);
+    if (channelResponse.status === 200) {
+      changeChannelType(channelID, selectedChannelType);
+      if (selectedChannelType === ChannelType.PROTECTED) {
+        const updatedChannel = await callAPI(
+          'GET',
+          `channels?search_type=ONE&search_number=${channelID}`,
+        ).then((res) => res.body);
+
+        if (updatedChannel) {
+          changeChannelHash(channelID, updatedChannel.hash);
+          emitToSocket(channelSocket, 'changeChannelType', {
+            id: channelID,
+            newType: selectedChannelType,
+            newHash: updatedChannel.hash,
+          });
+        } else {
+          throw 'FATAL ERROR: FAILED TO GET UPDATED CHANNEL IN BACKEND';
+        }
       } else {
-        throw 'FATAL ERROR: FAILED TO GET UPDATED CHANNEL IN BACKEND';
+        emitToSocket(channelSocket, 'changeChannelType', {
+          id: channelID,
+          newType: selectedChannelType,
+        });
       }
+      displayNotification(
+        'success',
+        `Channel type changed to ${selectedChannelType.toLowerCase()}`,
+      );
+    } else if (channelResponse.status === 403) {
+      throw "FATAL ERROR: CHANNEL HASH DOESN'T MATCH IN BACKEND";
+    } else {
+      throw 'FATAL ERROR: FAILED TO CHANGE CHANNEL TYPE IN BACKEND';
     }
-    emitToSocket(channelSocket, 'changeChannelType', {
-      id: channelID,
-      newType: selectedChannelType,
-      newPass: channelPass,
-    });
-    displayNotification('success', 'Channel type changed');
   }
 
   async function handleTypeChangeAction(): Promise<void> {
@@ -83,7 +100,10 @@ export default function ChannelTypeChangePrompt({
         !channelPass,
       );
     } else {
-      changeType();
+      changeType().catch((error) => {
+        resetTriggers();
+        displayNotification('error', error);
+      });
     }
   }
 
@@ -96,16 +116,11 @@ export default function ChannelTypeChangePrompt({
           displayNotification('error', error);
         });
     } else {
-      handleTypeChangeAction()
-        .then(() =>
-          selectedChannelType === ChannelType.PROTECTED
-            ? resetTriggers()
-            : resetDialog(),
-        )
-        .catch((error) => {
-          resetTriggers();
-          displayNotification('error', error);
-        });
+      handleTypeChangeAction().then(() =>
+        selectedChannelType === ChannelType.PROTECTED
+          ? resetTriggers()
+          : resetDialog(),
+      );
     }
   }
 

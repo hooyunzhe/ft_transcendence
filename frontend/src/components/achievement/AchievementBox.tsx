@@ -1,8 +1,8 @@
 'use client';
-import { ListHeaderIcon } from '@/types/UtilTypes';
+import { Box } from '@mui/material';
 import ListHeader from '../utils/ListHeader';
 import AchievementGrid from './AchievementGrid';
-import { Box } from '@mui/material';
+import { ListHeaderIcon } from '@/types/UtilTypes';
 
 export default function AchievementBox() {
   return (

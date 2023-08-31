@@ -32,9 +32,13 @@ export class ChannelService {
     const channel = await this.findOne(id, false);
 
     if (channel.type === ChannelType.PROTECTED) {
-      return (
-        (await bcrypt.compare(pass, channel.hash)) || hash === channel.hash
-      );
+      if (pass) {
+        return await bcrypt.compare(pass, channel.hash);
+      }
+      if (hash) {
+        return hash === channel.hash;
+      }
+      return false;
     }
     return true;
   }
@@ -123,17 +127,31 @@ export class ChannelService {
     const authorized = await this.authorize(
       channelDto.id,
       channelDto.oldPass,
-      '',
+      channelDto.hash,
     );
 
     if (!authorized) {
       throw new ForbiddenException();
     }
 
+    if (channelDto.name) {
+      const channelExists = await this.channelsRepository.findOneBy({
+        name: channelDto.name,
+      });
+
+      if (channelExists) {
+        throw new EntityAlreadyExistsError(
+          'Channel',
+          'name = ' + channelDto.name,
+        );
+      }
+    }
+
     await this.channelsRepository.update(channelDto.id, {
       ...(channelDto.name && { name: channelDto.name }),
       ...(channelDto.type && { type: channelDto.type }),
       ...(channelDto.pass && { hash: await bcrypt.hash(channelDto.pass, 10) }),
+      ...(channelDto.type !== ChannelType.PROTECTED && { hash: null }),
     });
   }
 

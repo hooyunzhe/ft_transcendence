@@ -64,6 +64,7 @@ export default function ChannelCreatePrompt() {
         addJoinedChannel(newChannel.id);
         addChannelMember(channelCreator);
         emitToSocket(channelSocket, 'joinRoom', newChannel.id);
+        emitToSocket(channelSocket, 'newMember', channelCreator);
         await handleAchievementsEarned(
           currentUser.id,
           6,
@@ -105,6 +106,7 @@ export default function ChannelCreatePrompt() {
   }
 
   async function handleAction(): Promise<void> {
+    console.log('handleAction');
     if (displayPasswordPrompt) {
       createChannel()
         .then(resetDialog)
@@ -128,6 +130,7 @@ export default function ChannelCreatePrompt() {
 
   useEffect(() => {
     if (actionClicked) {
+      console.log('action clicked');
       handleAction();
     }
     if (backClicked) {

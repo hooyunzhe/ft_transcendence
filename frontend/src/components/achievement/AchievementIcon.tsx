@@ -8,6 +8,7 @@ import {
   Filter5,
   HeartBroken,
   MilitaryTech,
+  PhonelinkLock,
   SettingsSuggest,
   SportsMartialArts,
   VolunteerActivism,
@@ -43,7 +44,9 @@ export default function AchievementIcon({
       return <Filter5 />;
     case 11:
       return <Accessible />;
-    // case 12:
+    case 12:
+      return <PhonelinkLock />;
+    // case 13:
     //   return <Help />; // Not decided
   }
   return null;

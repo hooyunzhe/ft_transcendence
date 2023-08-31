@@ -17,11 +17,13 @@ import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 interface ChannelNameChangePromptProps {
   channelID: number;
   channelName: string;
+  channelHash: string;
 }
 
 export default function ChannelNameChangePrompt({
   channelID,
   channelName,
+  channelHash,
 }: ChannelNameChangePromptProps) {
   const channelSocket = useChannelSocket();
   const { changeChannelName } = useChannelActions();
@@ -44,16 +46,24 @@ export default function ChannelNameChangePrompt({
     if (checkChannelExists(newName)) {
       throw 'Channel name already taken.';
     }
-    await callAPI('PATCH', 'channels', {
+    const channelResponse = await callAPI('PATCH', 'channels', {
       id: channelID,
       name: newName,
+      hash: channelHash ?? '',
     });
-    changeChannelName(channelID, newName);
-    emitToSocket(channelSocket, 'changeChannelName', {
-      id: channelID,
-      newName: newName,
-    });
-    displayNotification('success', 'Channel name changed');
+
+    if (channelResponse.status === 200) {
+      changeChannelName(channelID, newName);
+      emitToSocket(channelSocket, 'changeChannelName', {
+        id: channelID,
+        newName: newName,
+      });
+      displayNotification('success', `Channel name changed to ${newName}`);
+    } else if (channelResponse.status === 403) {
+      throw "FATAL ERROR: CHANNEL HASH DOESN'T MATCH IN BACKEND";
+    } else {
+      throw 'FATAL ERROR: FAILED TO CHANGE CHANNEL NAME IN BACKEND';
+    }
   }
 
   async function handleAction(): Promise<void> {

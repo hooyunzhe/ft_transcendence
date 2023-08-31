@@ -10,6 +10,7 @@ interface InputFieldProps {
   outlined?: boolean;
   normalMargin?: boolean;
   ignoreError?: boolean;
+  handleEnterInput?: boolean;
   label: string;
   value: string;
   onChange: (input: string) => void;
@@ -20,6 +21,7 @@ export default function InputField({
   outlined,
   normalMargin,
   ignoreError,
+  handleEnterInput,
   label,
   value,
   onChange,
@@ -49,6 +51,7 @@ export default function InputField({
       onKeyDown={(event) => {
         if (
           event.key === 'Enter' &&
+          handleEnterInput &&
           (ignoreError || !dialogActionButtonDisabled)
         ) {
           onSubmit();

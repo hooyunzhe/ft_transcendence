@@ -94,6 +94,7 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
             <InputField
               normalMargin
               ignoreError
+              handleEnterInput
               label=''
               value={input}
               onChange={setInput}

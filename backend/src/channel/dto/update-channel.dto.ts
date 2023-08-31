@@ -39,8 +39,13 @@ export class UpdateChannelDto {
 
   @ValidateIf(
     (dto: UpdateChannelDto) =>
-      dto.type === ChannelType.PROTECTED || dto.pass !== undefined,
+      dto.name === undefined &&
+      dto.type === undefined &&
+      dto.pass !== undefined,
   )
   @IsString()
   oldPass: string;
+
+  @IsString()
+  hash: string;
 }

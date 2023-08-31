@@ -105,6 +105,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
         >
           <InputField
             outlined
+            handleEnterInput
             label='Username'
             value={username}
             onChange={setUsername}
