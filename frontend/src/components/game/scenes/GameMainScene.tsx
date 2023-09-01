@@ -14,6 +14,8 @@ export default class GameMainScene extends Phaser.Scene {
   private p2name: string;
   private p1scoretext: Phaser.GameObjects.BitmapText | undefined;
   private p2scoretext: Phaser.GameObjects.BitmapText | undefined;
+  private p1frame: Phaser.GameObjects.Image | undefined;
+  private p2frame: Phaser.GameObjects.Image | undefined;
   private score: { player1: number; player2: number };
   private windowsize: { width: number; height: number };
   private Socket: Socket | null;
@@ -113,13 +115,11 @@ export default class GameMainScene extends Phaser.Scene {
       .setTint(0xffffff);
 
     const colon = game.add
-      .bitmapText(
-        this.windowsize.width * 0.5,
-        this.windowsize.height * 0.045,
-        'font',
-        ':',
-        64,
-      )
+      .text(this.windowsize.width * 0.5, this.windowsize.height * 0.045, '|', {
+        fontFamily: 'Arial',
+        fontSize: 64,
+        color: '#ffffff',
+      })
       .setOrigin(0.5)
       .setTint(0xffffff);
     this.p2scoretext = game.add
@@ -164,7 +164,7 @@ export default class GameMainScene extends Phaser.Scene {
     });
 
     this.streakEffect.stop();
-    const player1frame = this.add
+    this.p1frame = this.add
       .image(
         this.windowsize.width * 0.33,
         this.windowsize.height * 0.055,
@@ -176,7 +176,7 @@ export default class GameMainScene extends Phaser.Scene {
         this.windowsize.height * 0.1,
       );
 
-    const player2frame = this.add
+    this.p2frame = this.add
       .image(
         this.windowsize.width * 0.67,
         this.windowsize.height * 0.055,
@@ -186,8 +186,8 @@ export default class GameMainScene extends Phaser.Scene {
       .setDisplaySize(this.windowsize.width * 0.2, this.windowsize.height * 0.1)
       .setFlipX(true);
 
-    // const p1glow = player1frame.postFX.addGlow(0xf6f106, 0, 1, false);
-    // const p2glow = player2frame.postFX.addGlow(0x8d1be2, 0, 1, false);
+    // const p1glow = this.p1frame.postFX.addGlow(0xf6f106, 0, 1, false);
+    // const p2glow = this.p2frame.postFX.addGlow(0x8d1be2, 0, 1, false);
 
     // this.tweens.add({
     //   targets: p1glow,
@@ -224,15 +224,15 @@ export default class GameMainScene extends Phaser.Scene {
       // },
     };
     const p1text = this.add
-      .text(player1frame.x, player1frame.y, this.trimName('DONG'), textstyle)
+      .text(this.p1frame.x, this.p1frame.y, this.trimName('DONG'), textstyle)
       .setOrigin(0.5, 0.5);
 
     const p2text = this.add
-      .text(player2frame.x, player2frame.y, this.trimName('BEEEEEE'), textstyle)
+      .text(this.p2frame.x, this.p2frame.y, this.trimName('BEEEEEE'), textstyle)
       .setOrigin(0.5, 0.5);
 
     const zone2 = new Phaser.GameObjects.Particles.Zones.EdgeZone(
-      player1frame.getBounds(),
+      this.p1frame.getBounds(),
       0,
       1,
       false,
@@ -240,7 +240,7 @@ export default class GameMainScene extends Phaser.Scene {
     );
 
     // const zone1 = new Phaser.GameObjects.Particles.Zones.EdgeZone(
-    //   player2frame.getBounds(),
+    //   this.p2frame.getBounds(),
     //   0,
     //   1,
     //   false,
@@ -391,26 +391,6 @@ export default class GameMainScene extends Phaser.Scene {
       emitting: false,
     });
 
-    this.streakEffect?.addEmitZone(
-      new Phaser.GameObjects.Particles.Zones.EdgeZone(
-        p1text.getBounds(),
-        4,
-        0,
-        false,
-        true,
-      ),
-    );
-
-    this.streakEffect?.addEmitZone(
-      new Phaser.GameObjects.Particles.Zones.EdgeZone(
-        p2text.getBounds(),
-        4,
-        0,
-        false,
-        true,
-      ),
-    );
-
     this.outofboundEffect.startFollow(this.ball);
     this.Socket?.on('victory', (player: number) => {
       this.scene.start('victory', { player: player });
@@ -530,18 +510,18 @@ export default class GameMainScene extends Phaser.Scene {
     if (this.streak.player === player) {
       this.streak.streak++;
       console.log(this.streak);
-      if (this.streak.streak >= 1) {
+      if (this.streak.streak > 1) {
         switch (player) {
           case 1:
             {
-              this.streakEffect?.setEmitZone(0);
+              if (this.p1frame) this.streakEffect?.startFollow(this.p1frame);
               this.streakEffect?.start();
             }
             break;
 
           case 2:
             {
-              this.streakEffect?.setEmitZone(1);
+              if (this.p2frame) this.streakEffect?.startFollow(this.p2frame);
               this.streakEffect?.start();
             }
             break;
