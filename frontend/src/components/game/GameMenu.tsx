@@ -28,6 +28,7 @@ export default function GameMenu() {
   const userId = useCurrentUser();
   const [searchTime, setSearchTime] = useState(0);
 
+  const fontUrl = '/assets/CyberwayRider.ttf';
   useEffect(() => {
     if (!gameSocket) return;
     gameSocket.on(
@@ -152,12 +153,13 @@ export default function GameMenu() {
       >
         <source src='/assets/mainmenu.mp4' type='video/mp4' />
       </video>
+      <Typography variant='h2'>CYBERPONG</Typography>
       <Button
         variant='contained'
         onClick={findMatch}
         disabled={matchState === MatchState.SEARCHING}
       >
-        Find Match
+        Start Game
       </Button>
       <Backdrop
         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
@@ -176,26 +178,6 @@ export default function GameMenu() {
       >
         <GameMatchFound />
       </Backdrop>
-      {/* <Button onClick={CheckStatus}>Check Status </Button> */}
-      <Button
-        variant='contained'
-        onClick={startGame}
-        disabled={matchState != MatchState.FOUND}
-      >
-        Start Game
-      </Button>
-      <Button
-        variant='contained'
-        onClick={resetGame}
-        // disabled={matchState != MatchState.FOUND}
-      >
-        Reset
-      </Button>
-
-      <Button onClick={disconnectGame}>Disconnect</Button>
-      {/* {matchState === 'FOUND' && ( */}
-
-      {/* )} */}
     </Box>
   );
 }
