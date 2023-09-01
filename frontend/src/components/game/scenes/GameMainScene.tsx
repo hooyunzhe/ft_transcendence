@@ -394,7 +394,26 @@ export default class GameMainScene extends Phaser.Scene {
 
     this.outofboundEffect.startFollow(this.ball);
     this.Socket?.on('victory', (player: number) => {
-      this.scene.start('victory', { player: player });
+      if (this.ball) {
+        const cameraX = Phaser.Math.Clamp(
+          this.ball.x,
+          this.windowsize.width / (2 * 1.2),
+          this.windowsize.width - this.windowsize.width / (2 * 1.2),
+        );
+        const cameraY = Phaser.Math.Clamp(
+          this.ball.y,
+          this.windowsize.height / (2 * 1.2),
+          this.windowsize.height - this.windowsize.height / (2 * 1.2),
+        );
+        this.cameras.main.zoomTo(1.2, 500);
+        this.cameras.main.pan(cameraX, cameraY, 500);
+      }
+
+      this.time.timeScale = 0.5;
+      const timer = setTimeout(() => {
+        clearTimeout(timer);
+        this.scene.start('victory', { player: player });
+      }, 2000);
     });
     this.Socket?.on('reset', () => {
       this.goalEffectToggle = true;
@@ -416,26 +435,11 @@ export default class GameMainScene extends Phaser.Scene {
 
   triggerOutofBoundEffect = () => {
     if (this.outofboundEffect) this.outofboundEffect.explode(1);
-    if (this.ball) {
-      const cameraX = Phaser.Math.Clamp(
-        this.ball.x,
-        this.windowsize.width / (2 * 1.2),
-        this.windowsize.width - this.windowsize.width / (2 * 1.2),
-      );
-      const cameraY = Phaser.Math.Clamp(
-        this.ball.y,
-        this.windowsize.height / (2 * 1.2),
-        this.windowsize.height - this.windowsize.height / (2 * 1.2),
-      );
-      this.cameras.main.zoomTo(1.2, 500);
-      this.cameras.main.shake(50, 0.005);
-      this.cameras.main.pan(cameraX, cameraY, 500);
-    }
+
+    this.cameras.main.shake(50, 0.005);
     const timer = setTimeout(() => {
-      this.cameras.main
-        .zoomTo(1, 300)
-        .pan(this.windowsize.width / 2, this.windowsize.height / 2, 300);
       this.goalEffectToggle = false;
+      this.Socket?.emit('load', true);
     }, 1000);
     return () => {
       clearTimeout(timer);

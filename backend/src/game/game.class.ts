@@ -211,6 +211,7 @@ export class GameClass{
     );
     this.gameReset();
     this.socketHandler(this.matchinfo.roomid, 'reset', player);
+    this.loaded = {player1: false, player2: false};
   }
 
   stickEffect(paddle: RectObj) {
