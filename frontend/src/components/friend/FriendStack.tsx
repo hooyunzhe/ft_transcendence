@@ -209,10 +209,10 @@ export default function FriendStack() {
 
   return (
     <Stack
-      width='100%'
       direction='column'
       justifyContent='center'
       spacing={1}
+      padding='7px'
       sx={{
         overflow: 'hidden',
         '&::-webkit-scrollbar': { display: 'none' },
@@ -220,6 +220,12 @@ export default function FriendStack() {
     >
       <Button
         variant='contained'
+        sx={{
+          bgcolor: '#4CC9F080',
+          ':hover': {
+            bgcolor: '#4CC9F060',
+          },
+        }}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() =>
           displayDialog(

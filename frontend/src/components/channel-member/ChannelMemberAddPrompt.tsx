@@ -22,7 +22,7 @@ interface ChannelMemberAddPromptProps {
   selectedChannel: Channel;
 }
 
-export function ChannelMemberAddPrompt({
+export default function ChannelMemberAddPrompt({
   addableFriends,
   selectedChannel,
 }: ChannelMemberAddPromptProps) {

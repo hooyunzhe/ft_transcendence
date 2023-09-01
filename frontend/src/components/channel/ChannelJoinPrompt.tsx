@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Stack } from '@mui/material';
-import { ChannelDisplay } from './ChannelDisplay';
+import ChannelDisplay from './ChannelDisplay';
 import PasswordField from '../utils/PasswordField';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';

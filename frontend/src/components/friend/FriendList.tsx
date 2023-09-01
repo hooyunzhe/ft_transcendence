@@ -1,5 +1,5 @@
 'use client';
-import { Collapse, ListItemButton, Paper, Stack } from '@mui/material';
+import { Collapse, ListItemButton, Box, Stack } from '@mui/material';
 import FriendDisplay from './FriendDisplay';
 import {
   useFriendActions,
@@ -100,7 +100,7 @@ export default function FriendList({
           .sort(sortFriends)
           .map((friend, index) =>
             category === FriendCategory.FRIENDS ? (
-              <Paper key={index} elevation={2}>
+              <Box key={index}>
                 <ListItemButton
                   selected={selectedFriend?.id === friend.id ?? false}
                   onClick={() => handleFriendSelect(friend)}
@@ -112,15 +112,15 @@ export default function FriendList({
                     handleAction={handleAction}
                   />
                 </ListItemButton>
-              </Paper>
+              </Box>
             ) : (
-              <Paper key={index} elevation={2} sx={{ p: '8px 16px' }}>
+              <Box key={index} sx={{ p: '8px 16px' }}>
                 <FriendDisplay
                   category={category}
                   friend={friend}
                   handleAction={handleAction}
                 />
-              </Paper>
+              </Box>
             ),
           )}
       </Stack>

@@ -24,7 +24,6 @@ export default function ProfileAchievementShowcase({
       alignItems='center'
       padding='5px'
       gap='1vh'
-      border='solid 5px #7209B775'
       borderRadius='10px'
       bgcolor='#a291d275'
     >

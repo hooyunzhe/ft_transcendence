@@ -1,11 +1,4 @@
 'use client';
-import { ChannelType } from '@/types/ChannelTypes';
-import {
-  AccountCircleRounded,
-  AdminPanelSettingsRounded,
-  ExitToAppRounded,
-  LockPersonRounded,
-} from '@mui/icons-material';
 import {
   Avatar,
   IconButton,
@@ -13,16 +6,23 @@ import {
   ListItemAvatar,
   ListItemButton,
   ListItemText,
-  Paper,
+  Box,
 } from '@mui/material';
+import {
+  AccountCircleRounded,
+  AdminPanelSettingsRounded,
+  ExitToAppRounded,
+  LockPersonRounded,
+} from '@mui/icons-material';
 import ChannelSettings from './ChannelSettings';
 import callAPI from '@/lib/callAPI';
-import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
-import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
-import { useChannelActions } from '@/lib/stores/useChannelStore';
-import { ChannelMember } from '@/types/ChannelMemberTypes';
 import emitToSocket from '@/lib/emitToSocket';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useChannelActions } from '@/lib/stores/useChannelStore';
+import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
+import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
+import { ChannelType } from '@/types/ChannelTypes';
+import { ChannelMember } from '@/types/ChannelMemberTypes';
 
 export interface ChannelDisplayProps {
   channelID: number;
@@ -35,7 +35,7 @@ export interface ChannelDisplayProps {
   isOwner: boolean;
 }
 
-export function ChannelDisplay({
+export default function ChannelDisplay({
   channelID,
   channelName,
   channelType,
@@ -45,10 +45,10 @@ export function ChannelDisplay({
   selected,
   selectCurrent,
 }: ChannelDisplayProps) {
+  const channelSocket = useChannelSocket();
+  const { deleteJoinedChannel, resetSelectedChannel } = useChannelActions();
   const { kickChannelMember, deleteChannelMembers } = useChannelMemberActions();
   const { displayConfirmation } = useConfirmationActions();
-  const { deleteJoinedChannel, resetSelectedChannel } = useChannelActions();
-  const channelSocket = useChannelSocket();
 
   async function leaveChannel(
     leavingChannelMember: ChannelMember,
@@ -76,11 +76,13 @@ export function ChannelDisplay({
   }
 
   return (
-    <Paper elevation={2}>
+    <Box border='solid 3px #a23833' borderRadius='10px' bgcolor='#A4B5C6'>
       <ListItem>
         <ListItemButton selected={selected} onClick={selectCurrent}>
           <ListItemAvatar>
-            <Avatar />
+            <Avatar sx={{ bgcolor: '#11111180' }}>
+              {channelName.charAt(0)}
+            </Avatar>
           </ListItemAvatar>
           <ListItemText primary={channelName} sx={{ wordBreak: 'break-all' }} />
           {channelType === ChannelType.PUBLIC && <AccountCircleRounded />}
@@ -106,6 +108,6 @@ export function ChannelDisplay({
           )
         )}
       </ListItem>
-    </Paper>
+    </Box>
   );
 }

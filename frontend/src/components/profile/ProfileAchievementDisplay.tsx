@@ -20,9 +20,7 @@ export default function ProfileAchievementDisplay({
       flexDirection='column'
       justifyContent='space-around'
       alignItems='center'
-      border='solid 2px black'
       borderRadius='10px'
-      bgcolor='#7209B775'
     >
       <Avatar
         sx={{

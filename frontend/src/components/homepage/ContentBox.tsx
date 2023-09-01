@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Box, Drawer } from '@mui/material';
+import { Drawer } from '@mui/material';
 import ChatBox from '../chat/ChatBox';
 import ProfileBox from '../profile/ProfileBox';
 import LeaderboardBox from '../leaderboard/LeaderboardBox';
@@ -22,15 +22,6 @@ export default function ContentBox() {
     NodeJS.Timeout | undefined
   >();
 
-  const [drawerStyles, setDrawerStyles] = useState({
-    width: '60vw',
-    height: '70vh',
-    left: '20vw',
-    bottom: '15vh',
-    border: 'solid 5px #363636',
-    borderRadius: '15px',
-    background: '#3A0CA375',
-  });
   useEffect(() => {
     clearTimeout(toggleTimeoutID);
     if (currentView) {
@@ -49,17 +40,21 @@ export default function ContentBox() {
     } else {
       setOpen(false);
     }
-    const newStyles =
-      currentView === (View.PHASER || View.LOADING)
-        ? { width: '70vw', height: '80vh', left: '15vw', bottom: '5vh' }
-        : { width: '60vw', height: '70vh', left: '20vw', bottom: '15vh' };
-    setDrawerStyles((prevStyles) => ({ ...prevStyles, ...newStyles }));
   }, [currentView]);
 
   return (
     <Drawer
       PaperProps={{
-        sx: drawerStyles,
+        sx: {
+          boxSizing: 'border-box',
+          width: '59.7vw',
+          height: '70vh',
+          left: '20.15vw',
+          bottom: '15vh',
+          border: 'solid 5px #7209B775',
+          borderRadius: '15px',
+          background: '#11111175',
+        },
       }}
       variant='persistent'
       anchor='bottom'

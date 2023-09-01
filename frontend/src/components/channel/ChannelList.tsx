@@ -2,7 +2,7 @@
 import { Button, Stack } from '@mui/material';
 import ChannelCreatePrompt from './ChannelCreatePrompt';
 import ChannelJoinPrompt from './ChannelJoinPrompt';
-import { ChannelDisplay } from './ChannelDisplay';
+import ChannelDisplay from './ChannelDisplay';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import {
   useChannelActions,
@@ -23,7 +23,7 @@ import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberStatus } from '@/types/ChannelMemberTypes';
 import { View } from '@/types/UtilTypes';
 
-export function ChannelList() {
+export default function ChannelList() {
   const currentUser = useCurrentUser();
   const channels = useChannels();
   const joinedChannels = useJoinedChannels();
@@ -84,14 +84,20 @@ export function ChannelList() {
 
   return (
     <Stack
-      width='100%'
       direction='column'
       justifyContent='center'
       spacing={1}
+      padding='7px'
       overflow='hidden'
     >
       <Button
         variant='contained'
+        sx={{
+          bgcolor: '#4CC9F080',
+          ':hover': {
+            bgcolor: '#4CC9F060',
+          },
+        }}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() =>
           displayDialog(
@@ -106,6 +112,12 @@ export function ChannelList() {
       </Button>
       <Button
         variant='contained'
+        sx={{
+          bgcolor: '#4CC9F080',
+          ':hover': {
+            bgcolor: '#4CC9F060',
+          },
+        }}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() =>
           displayDialog(

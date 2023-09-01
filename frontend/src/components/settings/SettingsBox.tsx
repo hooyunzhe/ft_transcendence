@@ -6,7 +6,7 @@ import SettingsUsernameSegment from './SettingsUsernameSegment';
 import SettingsTwoFactorSegment from './SettingsTwoFactorSegment';
 import SettingsPersonalPreferences from './SettingsPersonalPreferences';
 import SettingsAccountDangerZone from './SettingsAccountDangerZone';
-import { ListHeaderIcon } from '@/types/UtilTypes';
+import { ListHeaderType } from '@/types/UtilTypes';
 
 export default function SettingsBox() {
   return (
@@ -16,7 +16,7 @@ export default function SettingsBox() {
       flexDirection='column'
       justifyContent='space-between'
     >
-      <ListHeader title='Settings' icon={ListHeaderIcon.SETTINGS} />
+      <ListHeader title='Settings' type={ListHeaderType.SETTINGS} />
       <Box
         alignSelf='center'
         width='50%'
@@ -26,7 +26,6 @@ export default function SettingsBox() {
         justifyContent='space-between'
         alignItems='center'
         padding='1.5vw'
-        border='solid 5px #7209B775'
         borderRadius='10px'
         bgcolor='#a291d275'
       >

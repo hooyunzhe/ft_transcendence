@@ -20,7 +20,7 @@ interface ChannelMemberMutePromptProps {
   member: ChannelMember;
 }
 
-export function ChannelMemberMutePrompt({
+export default function ChannelMemberMutePrompt({
   member,
 }: ChannelMemberMutePromptProps) {
   const channelSocket = useChannelSocket();

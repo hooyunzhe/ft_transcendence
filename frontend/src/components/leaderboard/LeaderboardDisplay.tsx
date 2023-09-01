@@ -73,9 +73,9 @@ export default function LeaderboardDisplay({
       justifyContent='space-between'
       alignItems='center'
       padding='1vw'
-      border={`${isCurrentUser ? 'dashed' : 'solid'} 2px black`}
+      border={`${isCurrentUser ? 'dashed' : 'solid'} 3px black`}
       borderRadius='10px'
-      bgcolor='#a291d290'
+      bgcolor='#A4B5C6'
       ref={leaderboardDisplay}
     >
       <Box

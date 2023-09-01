@@ -1,36 +1,46 @@
 'use client';
-import { Box, Paper, Toolbar, Typography } from '@mui/material';
+import { Box, Toolbar, Typography } from '@mui/material';
 import {
+  Diversity3,
   EmojiEvents,
   Groups,
   LeaderboardRounded,
   Settings,
 } from '@mui/icons-material';
-import { ListHeaderIcon } from '@/types/UtilTypes';
+import { ListHeaderType } from '@/types/UtilTypes';
 
 interface ListHeaderProps {
   title: string;
-  icon: ListHeaderIcon;
+  type: ListHeaderType;
   children?: React.ReactNode;
 }
 
-export default function ListHeader({ title, icon, children }: ListHeaderProps) {
+export default function ListHeader({ title, type, children }: ListHeaderProps) {
   return (
-    <Paper elevation={2} sx={{ color: 'white', background: '#3A0CA375' }}>
-      <Toolbar>
-        <Box mr={2}>
-          {icon === ListHeaderIcon.SOCIAL && <Groups fontSize='large' />}
-          {icon === ListHeaderIcon.LEADERBOARD && (
-            <LeaderboardRounded fontSize='large' />
-          )}
-          {icon === ListHeaderIcon.ACHIEVEMENTS && (
-            <EmojiEvents fontSize='large' />
-          )}
-          {icon === ListHeaderIcon.SETTINGS && <Settings fontSize='large' />}
-        </Box>
-        <Typography variant='h6'>{title}</Typography>
-        {children}
-      </Toolbar>
-    </Paper>
+    <Toolbar
+      sx={{
+        color: '#DDDDDD',
+        background:
+          type === ListHeaderType.SOCIAL
+            ? '#e8514980'
+            : type === ListHeaderType.CHANNEL_MEMBER
+            ? '#363bd680'
+            : 'linear-gradient(90deg, #e8514980, #363bd680)',
+      }}
+    >
+      <Box mr={2}>
+        {type === ListHeaderType.SOCIAL && <Diversity3 fontSize='large' />}
+        {type === ListHeaderType.CHANNEL_MEMBER && <Groups fontSize='large' />}
+        {type === ListHeaderType.LEADERBOARD && (
+          <LeaderboardRounded fontSize='large' />
+        )}
+        {type === ListHeaderType.ACHIEVEMENTS && (
+          <EmojiEvents fontSize='large' />
+        )}
+        {type === ListHeaderType.SETTINGS && <Settings fontSize='large' />}
+      </Box>
+      <Typography variant='h6'>{title}</Typography>
+      {children}
+    </Toolbar>
   );
 }

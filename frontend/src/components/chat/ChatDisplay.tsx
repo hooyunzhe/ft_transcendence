@@ -80,8 +80,8 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
 
   return (
     <Box display='flex' flexDirection='column' alignItems='flex-start'>
-      <Typography color='white'>{message.user.username}</Typography>
-      <Paper>
+      <Typography color='#DDDDDD'>{message.user.username}</Typography>
+      <Box borderRadius='10px' bgcolor='#A4B5C6'>
         <ListItem
           sx={{
             padding: '0 1vh',
@@ -145,7 +145,7 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
             />
           )}
         </ListItem>
-      </Paper>
+      </Box>
     </Box>
   );
 }

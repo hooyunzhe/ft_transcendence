@@ -111,11 +111,23 @@ export default function Cyberpong() {
         alignSelf: 'stretch',
         display: 'flex',
         alignItems: 'center',
-        margin: '5px',
         borderRadius: '15px',
-        background: '#4CC9F0',
       }}
     >
+      <video
+        width='100%'
+        height='100%'
+        autoPlay
+        muted
+        loop
+        style={{
+          position: 'absolute',
+          zIndex: -1,
+          objectFit: 'cover',
+        }}
+      >
+        <source src='/assets/background1.mp4' type='video/mp4' />
+      </video>
       <NavigationHeader />
       <MainArea />
       <TwoFactorPrompt />

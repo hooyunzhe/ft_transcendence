@@ -18,7 +18,6 @@ export default function ProfileStatCard({
       flexDirection='column'
       justifyContent='space-evenly'
       alignItems='center'
-      border='solid 5px #7209B775'
       borderRadius='10px'
       bgcolor='#a291d275'
     >

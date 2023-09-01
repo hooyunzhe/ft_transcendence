@@ -9,9 +9,9 @@ export enum View {
   SETTINGS = 'SETTINGS',
 }
 
-export enum ListHeaderIcon {
-  NONE = 'NONE',
+export enum ListHeaderType {
   SOCIAL = 'SOCIAL',
+  CHANNEL_MEMBER = 'CHANNEL_MEMBER',
   LEADERBOARD = 'LEADERBOARD',
   ACHIEVEMENTS = 'ACHIEVEMENTS',
   SETTINGS = 'SETTINGS',

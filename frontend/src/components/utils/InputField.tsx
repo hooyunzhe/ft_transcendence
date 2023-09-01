@@ -9,6 +9,7 @@ import {
 interface InputFieldProps {
   outlined?: boolean;
   normalMargin?: boolean;
+  whiteText?: boolean;
   ignoreError?: boolean;
   handleEnterInput?: boolean;
   label: string;
@@ -20,6 +21,7 @@ interface InputFieldProps {
 export default function InputField({
   outlined,
   normalMargin,
+  whiteText,
   ignoreError,
   handleEnterInput,
   label,
@@ -40,6 +42,11 @@ export default function InputField({
       label={label}
       variant={outlined ? 'outlined' : 'standard'}
       margin={normalMargin ? 'normal' : 'dense'}
+      InputProps={{
+        sx: {
+          color: whiteText ? '#DDDDDD' : 'black',
+        },
+      }}
       value={value}
       onChange={(event) => {
         if (!ignoreError) {

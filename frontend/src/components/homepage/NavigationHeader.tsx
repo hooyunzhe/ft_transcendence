@@ -42,6 +42,7 @@ export default function NavigationHeader() {
           marginRight: '0.5vh',
           border: 'solid 3px #7209B775',
           borderRadius: '15px',
+          bgcolor: '#A4B5C6',
         },
       }}
       variant='persistent'

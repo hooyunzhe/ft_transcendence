@@ -1,11 +1,10 @@
 'use client';
 import { Button, ListItem, ListItemIcon, Paper, Stack } from '@mui/material';
 import { LocalPolice, Shield } from '@mui/icons-material';
-import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
+import ChannelMemberAddPrompt from './ChannelMemberAddPrompt';
 import ChannelMemberDisplay from './ChannelMemberDisplay';
 import ChannelMemberActionMenu from './ChannelMemberActionMenu';
-import { ChannelMemberMutePrompt } from './ChannelMemberMutePrompt';
-import ListHeader from '../utils/ListHeader';
+import ChannelMemberMutePrompt from './ChannelMemberMutePrompt';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import {
@@ -28,10 +27,9 @@ import {
   ChannelMemberRole,
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
-import { ListHeaderIcon } from '@/types/UtilTypes';
 import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 
-export function ChannelMemberList() {
+export default function ChannelMemberList() {
   const selectedChannel = useSelectedChannel();
   const currentUser = useCurrentUser();
   const channelMembers = useChannelMembers();
@@ -278,13 +276,18 @@ export function ChannelMemberList() {
   }
 
   return (
-    <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
-      <ListHeader title='Members' icon={ListHeaderIcon.SOCIAL} />
+    <Stack direction='column' justifyContent='center' spacing={1} padding='7px'>
       {selectedChannel &&
         (isChannelAdmin(currentUser.id, selectedChannel.id) ||
           isChannelOwner(currentUser.id, selectedChannel.id)) && (
           <Button
             variant='contained'
+            sx={{
+              bgcolor: '#4CC9F080',
+              ':hover': {
+                bgcolor: '#8A7DD6',
+              },
+            }}
             onMouseDown={(event) => event.preventDefault()}
             onClick={() =>
               displayDialog(
@@ -311,28 +314,38 @@ export function ChannelMemberList() {
             !isFriendBlocked(member.user.id),
         )
         .map((member: ChannelMember, index: number) => (
-          <Paper key={index} elevation={2}>
-            <ListItem component='div'>
-              <ChannelMemberDisplay key={index} user={member.user} />
-              {member.role === ChannelMemberRole.OWNER && (
-                <ListItemIcon>
-                  <LocalPolice />
-                </ListItemIcon>
-              )}
-              {member.role === ChannelMemberRole.ADMIN && (
-                <ListItemIcon>
-                  <Shield />
-                </ListItemIcon>
-              )}
-              {member.role !== ChannelMemberRole.OWNER && (
-                <ChannelMemberActionMenu
-                  member={member}
-                  currentUserRole={getCurrentRole()}
-                  handleAction={handleDisplayAction}
-                />
-              )}
-            </ListItem>
-          </Paper>
+          <ListItem
+            key={index}
+            sx={{
+              border: 'solid 3px #4a4eda',
+              borderRadius: '10px',
+              bgcolor: '#A4B5C6',
+            }}
+            component='div'
+          >
+            <ChannelMemberDisplay
+              key={index}
+              stylesDisabled
+              user={member.user}
+            />
+            {member.role === ChannelMemberRole.OWNER && (
+              <ListItemIcon>
+                <LocalPolice />
+              </ListItemIcon>
+            )}
+            {member.role === ChannelMemberRole.ADMIN && (
+              <ListItemIcon>
+                <Shield />
+              </ListItemIcon>
+            )}
+            {member.role !== ChannelMemberRole.OWNER && (
+              <ChannelMemberActionMenu
+                member={member}
+                currentUserRole={getCurrentRole()}
+                handleAction={handleDisplayAction}
+              />
+            )}
+          </ListItem>
         ))}
     </Stack>
   );

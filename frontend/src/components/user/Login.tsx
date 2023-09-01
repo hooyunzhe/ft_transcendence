@@ -13,7 +13,7 @@ export default function Login() {
       justifyContent='space-around'
     >
       <Slide direction='down' in timeout={2500}>
-        <Typography variant='h1' align='center'>
+        <Typography color='#DDDDDD' variant='h1' align='center'>
           Cyberpong™
         </Typography>
       </Slide>
@@ -24,7 +24,10 @@ export default function Login() {
             width: '30vw',
             border: 'solid 3px #363636',
             borderRadius: '15px',
-            background: '#3A0CA375',
+            bgcolor: '#4CC9F080',
+            ':hover': {
+              bgcolor: '#4CC9F060',
+            },
           }}
           onClick={() => signIn('42-school')}
         >
