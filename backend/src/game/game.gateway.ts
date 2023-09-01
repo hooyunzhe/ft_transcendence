@@ -73,7 +73,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
           player1: clients[0].data.user_id,
           player2: clients[1].data.user_id,
         },
-        this.server,
+        this.socketHandler,
       ),
     );
     console.log('room size : ', this.roomlist.size);
@@ -86,7 +86,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.ready = !client.data.ready;
     console.log(
       'client uid: ',
-      client.data.id,
+      client.data.user_id,
       'ready for the match: ',
       client.data.ready,
     );
@@ -122,7 +122,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log('event: createroom: ', client.data.roomid);
       this.roomlist.set(
         client.data.roomid,
-        this.gameService.createGame(client.data.roomid, this.server),
+        this.gameService.createGame(client.data.roomid, this.socketHandler),
       );
       console.log('room size : ', this.roomlist.size);
     }
@@ -166,6 +166,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.roomlist.get(client.data.roomid).gameStart(client.data.player);
   }
 
+  @SubscribeMessage('load')
+  SetLoaded(@MessageBody() loaded: boolean, @ConnectedSocket() client: Socket) {
+    this.roomlist
+      .get(client.data.roomid)
+      .gameSetLoaded(client.data.player, loaded);
+  }
   async fetchPlayer(roomid: string) {
     return this.server.in(roomid).fetchSockets();
   }
@@ -173,4 +179,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async fetchPlayerCount(roomid: string) {
     return (await this.fetchPlayer(roomid)).length;
   }
+
+  socketHandler = (roomid: string, message: string, data: any) => {
+    this.server.to(roomid).emit(message, data);
+  };
 }

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<font>
+  <info face="Arial" size="32" bold="0" italic="0" charset="" unicode="1" stretchH="100" smooth="1" aa="2" padding="0,0,0,0" spacing="1,1" outline="0"/>
+  <common lineHeight="32" base="26" scaleW="1990" scaleH="380" pages="1" packed="0" alphaChnl="0" redChnl="4" greenChnl="4" blueChnl="4"/>
+  <pages>
+    <page id="0" file="myfont_0.png" />
+  </pages>
+  <chars count="10">
+    <char id="0" x="0" y="0" width="206" height="377" xoffset="0" yoffset="0" xadvance="206" page="0" chnl="15" />
+    <char id="1" x="1844" y="0" width="36" height="357" xoffset="0" yoffset="0" xadvance="36" page="0" chnl="15" />
+    <char id="2" x="207" y="0" width="206" height="377" xoffset="0" yoffset="0" xadvance="206" page="0" chnl="15" />
+    <char id="3" x="1242" y="0" width="197" height="377" xoffset="0" yoffset="0" xadvance="197" page="0" chnl="15" />
+    <char id="4" x="1637" y="0" width="206" height="360" xoffset="0" yoffset="0" xadvance="206" page="0" chnl="15" />
+    <char id="5" x="414" y="0" width="206" height="377" xoffset="0" yoffset="0" xadvance="206" page="0" chnl="15" />
+    <char id="6" x="621" y="0" width="206" height="377" xoffset="0" yoffset="0" xadvance="206" page="0" chnl="15" />
+    <char id="7" x="1440" y="0" width="196" height="368" xoffset="0" yoffset="0" xadvance="196" page="0" chnl="15" />
+    <char id="8" x="828" y="0" width="206" height="377" xoffset="0" yoffset="0" xadvance="206" page="0" chnl="15" />
+    <char id="9" x="1035" y="0" width="206" height="377" xoffset="0" yoffset="0" xadvance="206" page="0" chnl="15" />
+  </chars>
+</font>
