@@ -154,8 +154,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.roomlist.get(client.data.roomid).gameStart(client.data.player);
   }
 
-  // @SubscribeMessage('end')
-  // gameEnd() {}
+ @SubscribeMessage('load')
+ SetLoaded(@MessageBody() loaded: boolean, @ConnectedSocket() client: Socket)
+ {
+  this.roomlist
+  .get(client.data.roomid).gameSetLoaded(client.data.player, loaded);
+ }
   async fetchPlayer(roomid: string) {
     return this.server.in(roomid).fetchSockets();
   }

@@ -62,6 +62,7 @@ export class GameClass{
   intervalID: NodeJS.Timer = null;
   ServingPaddle:Number = 1;
   refreshMilisec: number = 16;
+  loaded: {player1: boolean, player2: boolean} = {player1: false, player2: false};
   started: boolean = false;
 
   constructor(matchinfo: MatchInfo, socketHandler: (roomid: string, message: string, data: any) => void, matchHandler: (matchDto: CreateMatchDto) => void) {
@@ -224,15 +225,28 @@ export class GameClass{
   }
 
   gameSetPaddlePosition(player: number, direction: number) {
-    if (player === 1) {
-      if (direction > 0) this.gameMovePaddle(this.Paddle1, 10);
-      else if (direction < 0) this.gameMovePaddle(this.Paddle1, -10);
-    } else if (player === 2) {
-      if (direction > 0) this.gameMovePaddle(this.Paddle2, 10);
-      else if (direction < 0) this.gameMovePaddle(this.Paddle2, -10);
+    if (this.loaded.player1 && this.loaded.player2)
+    {
+      switch (player) {
+        case 1:
+          if (direction > 0) this.gameMovePaddle(this.Paddle1, 10);
+          else if (direction < 0) this.gameMovePaddle(this.Paddle1, -10);
+          break;
+      
+        case 2:
+          if (direction > 0) this.gameMovePaddle(this.Paddle2, 10);
+          else if (direction < 0) this.gameMovePaddle(this.Paddle2, -10);
+          break;
+        default:
+          break;
+      }
     }
   }
 
+  gameSetLoaded(player: number, loaded: boolean)
+  {
+    this.loaded[`player${player}`] = loaded;
+  }
   gameSetPaddleStop(player: number) {
     if (player === 1) this.Paddle1.velocityY = 1;
     if (player === 2) this.Paddle2.velocityY = 1;

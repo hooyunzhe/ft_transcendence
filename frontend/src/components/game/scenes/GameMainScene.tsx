@@ -399,6 +399,7 @@ export default class GameMainScene extends Phaser.Scene {
     this.Socket?.on('reset', () => {
       this.goalEffectToggle = true;
     });
+    this.Socket?.emit('load', true);
     return () => {
       if (this.Socket) {
         this.Socket.off('reset');
