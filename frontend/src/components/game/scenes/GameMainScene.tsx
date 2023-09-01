@@ -59,24 +59,15 @@ export default class GameMainScene extends Phaser.Scene {
     game.load.video('background', '/assets/background1.mp4', true);
     game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
     game.load.image('red', '/assets/neonpurple.png');
-    game.load.image('glimmer', '/assets/glimmer_01.png');
     game.load.image('flame3', '/assets/flame_03.png');
-    game.load.image('flame4', '/assets/flame_04.png');
-    game.load.image('flame5', '/assets/flame_05.png');
-    game.load.image('flame6', '/assets/flame_06.png');
     game.load.image('bubble', '/assets/bubble.png');
     game.load.bitmapFont(
       'font',
       '/assets/scorefont_0.png',
       '/assets/scorefont.fnt',
     );
-    game.load.image('smash1', '/assets/smash/1.png');
-    game.load.image('smash2', '/assets/smash/2.png');
-    game.load.image('smash3', '/assets/smash/3.png');
-    game.load.image('smash4', '/assets/smash/4.png');
     game.load.image('paddle1', '/assets/redpaddle.png');
     game.load.image('paddle2', '/assets/bluepaddle.png');
-    game.load.image('frametest', '/assets/testframe.png');
     game.load.image('glowframe', '/assets/namebox.png');
     game.load.image('normalframe', '/assets/namebox_normal.png');
   }
@@ -224,11 +215,21 @@ export default class GameMainScene extends Phaser.Scene {
       // },
     };
     const p1text = this.add
-      .text(this.p1frame.x, this.p1frame.y, this.trimName('DONG'), textstyle)
+      .text(
+        this.p1frame.x,
+        this.p1frame.y,
+        this.trimName(this.p1name),
+        textstyle,
+      )
       .setOrigin(0.5, 0.5);
 
     const p2text = this.add
-      .text(this.p2frame.x, this.p2frame.y, this.trimName('BEEEEEE'), textstyle)
+      .text(
+        this.p2frame.x,
+        this.p2frame.y,
+        this.trimName(this.p2name),
+        textstyle,
+      )
       .setOrigin(0.5, 0.5);
 
     const zone2 = new Phaser.GameObjects.Particles.Zones.EdgeZone(
@@ -407,6 +408,7 @@ export default class GameMainScene extends Phaser.Scene {
   }
 
   trimName(name: string) {
+    if (!name) return '';
     if (name.length >= 16) return (name.substring(0, 9) + '..').toUpperCase();
     else return name.toUpperCase();
   }

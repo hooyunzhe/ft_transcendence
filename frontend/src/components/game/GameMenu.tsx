@@ -1,7 +1,13 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { Backdrop, Box, Button, CircularProgress, Typography } from '@mui/material';
+import {
+  Backdrop,
+  Box,
+  Button,
+  CircularProgress,
+  Typography,
+} from '@mui/material';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import GameRender from '@/components/game/GameRender';
 import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
@@ -22,20 +28,22 @@ export default function GameMenu() {
   const userId = useCurrentUser();
   const [searchTime, setSearchTime] = useState(0);
 
-
   useEffect(() => {
     if (!gameSocket) return;
-    gameSocket.on('match', async (data: {player1: string, player2: string}) => {
-      gameAction.setMatchState(MatchState.FOUND);
-      console.log('match found');
-      const matchInfo = await getPlayerData(data);
-      gameAction.setMatchInfo(matchInfo);
+    gameSocket.on(
+      'match',
+      async (data: { player1: string; player2: string }) => {
+        gameAction.setMatchState(MatchState.FOUND);
 
-    }),
-    gameSocket.on('connect', () => {
-      gameSocket.sendBuffer = [];
-      gameSocket.emit('init', userId.id);
-    });
+        const matchInfo = await getPlayerData(data);
+        console.log(matchInfo);
+        gameAction.setMatchInfo(matchInfo);
+      },
+    ),
+      gameSocket.on('connect', () => {
+        gameSocket.sendBuffer = [];
+        gameSocket.emit('init', userId.id);
+      });
     gameSocket.on('disconnect', () => {
       gameSocket.sendBuffer = [];
       console.log('game socket disconnected');
@@ -44,27 +52,24 @@ export default function GameMenu() {
       gameSocket.off('connect');
       gameSocket.off('disconnect');
       gameSocket.off('match');
-
     };
   }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
       if (matchState === MatchState.SEARCHING)
-        setSearchTime((prevTime) => 
-      prevTime + 1);
+        setSearchTime((prevTime) => prevTime + 1);
     }, 500);
 
-    if (matchState === MatchState.FOUND)
-    {
-      const matchFoundtimer = setTimeout(() =>{
+    if (matchState === MatchState.FOUND) {
+      const matchFoundtimer = setTimeout(() => {
         // gameAction.setMatchState(MatchState.INGAME);
         viewAction.setCurrentView(View.LOADING);
-    }, 3000);
-    return () => {
-      clearTimeout(matchFoundtimer);
+      }, 3000);
+      return () => {
+        clearTimeout(matchFoundtimer);
+      };
     }
-  }
     return () => {
       clearInterval(timer);
       setSearchTime(0);
@@ -87,13 +92,10 @@ export default function GameMenu() {
     gameSocket.emit('ready');
   };
 
-
-
   const cancelFindMatch = () => {
-    if (gameSocket) 
-      gameSocket.disconnect();
-      gameAction.setMatchState(MatchState.IDLE);
-  }
+    if (gameSocket) gameSocket.disconnect();
+    gameAction.setMatchState(MatchState.IDLE);
+  };
 
   const disconnectGame = () => {
     if (!gameSocket) return;
@@ -107,39 +109,26 @@ export default function GameMenu() {
     gameSocket.disconnect();
   };
 
-  const joinGame = () => {
-    if (gameSocket) gameSocket.emit('join');
-    gameAction.setMatchState(MatchState.FOUND);
-    // viewAction.setCurrentView(View.LOADING);
-  };
-
-  const rejectGame = () => {
-    if (gameSocket) gameSocket.emit('reject');
-    gameAction.setMatchState(MatchState.IDLE);
-  };
-
-  async function getPlayerData (data: {player1: string, player2: string})
-  {
-  
-    console.log("data is ", data);
+  async function getPlayerData(data: { player1: string; player2: string }) {
     const [player1response, player2response] = await Promise.all([
       callAPI('GET', 'users?search_type=ONE&search_number=' + data.player1),
       callAPI('GET', 'users?search_type=ONE&search_number=' + data.player2),
-    ])
+    ]);
 
     const player1data = JSON.parse(player1response);
     const player2data = JSON.parse(player2response);
 
+    console.log(player1data);
     const matchInfo: MatchInfo = {
-      player1:{
-        nickname: player1data.nickname,
+      player1: {
+        nickname: player1data.username,
         avatar: player1data.avatar_url,
       },
-      player2:{
-        nickname: player2data.nickname,
+      player2: {
+        nickname: player2data.username,
         avatar: player2data.avatar_url,
-      }
-    }
+      },
+    };
     return matchInfo;
   }
   return (

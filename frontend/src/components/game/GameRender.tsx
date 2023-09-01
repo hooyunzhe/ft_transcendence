@@ -76,6 +76,7 @@ export default function GameRender() {
           clearTimeout(timer);
         };
       });
+    console.log(matchInfo);
     const game = new GameMainScene(
       gameSocket,
       keyLoop,
