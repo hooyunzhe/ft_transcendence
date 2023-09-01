@@ -15,7 +15,7 @@ export default function GameReady() {
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (gameSocket)
-      gameSocket.on('start', () => {
+      gameSocket.on('start', (roomid: string) => {
         setCooldown(true);
         timer = setTimeout(() => {
           gameAction.setMatchState(MatchState.INGAME);
