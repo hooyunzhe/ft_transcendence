@@ -103,7 +103,7 @@ export class GameClass{
 
   gameStart(player: number) {
 
-    if (!this.started)
+    if (!this.started && this.loaded.player1 && this.loaded.player2)
     {
       if (player === this.ServingPaddle)
       {

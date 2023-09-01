@@ -74,7 +74,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.ready = !client.data.ready;
     console.log(
       'client uid: ',
-      client.data.id,
+      client.data.user_id,
       'ready for the match: ',
       client.data.ready,
     );
