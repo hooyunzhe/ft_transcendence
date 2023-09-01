@@ -1,11 +1,11 @@
 'use client';
 import { Box } from '@mui/material';
+import AchievementDisplay from './AchievementDisplay';
 import {
   useAchievements,
   useAchievementsEarned,
 } from '@/lib/stores/useAchievementStore';
 import { Achievement } from '@/types/AchievementTypes';
-import AchievementDisplay from './AchievementDisplay';
 
 export default function AchievementGrid() {
   const achievements = useAchievements();

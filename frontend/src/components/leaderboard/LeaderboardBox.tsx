@@ -7,8 +7,8 @@ import LeaderboardList from './LeaderboardList';
 export default function LeaderboardBox() {
   return (
     <Box
-      display='flex'
       height='100%'
+      display='flex'
       flexDirection='column'
       justifyContent='space-between'
     >

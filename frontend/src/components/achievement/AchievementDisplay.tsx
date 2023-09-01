@@ -1,6 +1,6 @@
-import { Achievement } from '@/types/AchievementTypes';
 import { Avatar, Box, Paper, Typography } from '@mui/material';
-import AchievementIconAvatar from './AchievementIconAvatar';
+import AchievementIcon from './AchievementIcon';
+import { Achievement } from '@/types/AchievementTypes';
 
 interface AchievementDisplayProps {
   achievement: Achievement;
@@ -32,7 +32,7 @@ export default function AchievementDisplay({
             variant='square'
             sx={{ width: '50px', height: '50px', bgcolor: 'black' }}
           >
-            <AchievementIconAvatar achievementID={achievement.id} />
+            <AchievementIcon achievementID={achievement.id} />
           </Avatar>
           <Box
             width='100%'

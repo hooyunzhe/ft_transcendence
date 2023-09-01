@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import {
   Avatar,
   Box,
@@ -10,12 +11,12 @@ import {
   Typography,
 } from '@mui/material';
 import { Clear, Done } from '@mui/icons-material';
-import { useState } from 'react';
-import ChatMenu from './ChatMenu';
 import InputField from '../utils/InputField';
+import ChatMenu from './ChatMenu';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import { useChatActions, useSelectedMessage } from '@/lib/stores/useChatStore';
+import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import { Message, MessageType } from '@/types/MessageTypes';
 
@@ -28,23 +29,52 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
   const { editMessage, setSelectedMessage } = useChatActions();
   const channelSocket = useChannelSocket();
   const [input, setInput] = useState(message.content);
+  const { displayConfirmation } = useConfirmationActions();
+  const { deleteMessage } = useChatActions();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   async function handleEdit(): Promise<void> {
-    await callAPI('PATCH', 'messages', {
-      id: message.id,
-      content: input,
-    });
-    editMessage(message.id, input);
-    emitToSocket(channelSocket, 'editMessage', {
-      messageID: message.id,
-      channelID: message.channel.id,
-      content: input,
-    });
-    setSelectedMessage(undefined);
+    if (input.length === 0) {
+      console.log('length 0');
+      handleDelete();
+    } else if (input.trim().length === 0) {
+      handleCancel();
+    } else {
+      await callAPI('PATCH', 'messages', {
+        id: message.id,
+        content: input,
+      });
+      editMessage(message.id, input);
+      emitToSocket(channelSocket, 'editMessage', {
+        messageID: message.id,
+        channelID: message.channel.id,
+        content: input,
+      });
+      setMenuOpen(false);
+      setSelectedMessage(undefined);
+    }
+  }
+
+  async function handleDelete(): Promise<void> {
+    displayConfirmation(
+      'Delete message?',
+      'You are deleting this message, which is irreversible!',
+      null,
+      async () => {
+        await callAPI('PATCH', 'messages', {
+          id: message.id,
+          type: MessageType.DELETED,
+        });
+        deleteMessage(message.id);
+        emitToSocket(channelSocket, 'deleteMessage', message);
+        setMenuOpen(false);
+        setSelectedMessage(undefined);
+      },
+    );
   }
 
   function handleCancel(): void {
-    setInput('');
+    setInput(message.content);
     setSelectedMessage(undefined);
   }
 
@@ -63,6 +93,8 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
           {selectedMessage?.id === message.id ? (
             <InputField
               normalMargin
+              ignoreError
+              handleEnterInput
               label=''
               value={input}
               onChange={setInput}
@@ -106,7 +138,10 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
           ) : (
             <ChatMenu
               message={message}
-              toggleEdit={() => setSelectedMessage(message)}
+              open={menuOpen}
+              handleDelete={handleDelete}
+              handleOpen={() => setMenuOpen(true)}
+              handleClose={() => setMenuOpen(false)}
             />
           )}
         </ListItem>

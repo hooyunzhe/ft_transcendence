@@ -15,15 +15,15 @@ export class FriendService {
     private friendRepository: Repository<Friend>,
 
     @Inject(UserService)
-    private readonly usersService: UserService,
+    private readonly userService: UserService,
   ) {}
 
   async create(friendDto: CreateFriendDto): Promise<Friend[]> {
-    const outgoingFound = await this.usersService.findOne(
+    const outgoingFound = await this.userService.findOne(
       friendDto.outgoing_id,
       false,
     );
-    const incomingFound = await this.usersService.findOne(
+    const incomingFound = await this.userService.findOne(
       friendDto.incoming_id,
       false,
     );
@@ -72,8 +72,8 @@ export class FriendService {
     return found;
   }
 
-  async findFriendsOfUser(outgoing_id: number): Promise<Friend[] | null> {
-    const outgoingFound = await this.usersService.findOne(outgoing_id, false);
+  async findFriendsOfUser(outgoingID: number): Promise<Friend[] | null> {
+    const outgoingFound = await this.userService.findOne(outgoingID, false);
 
     return await this.friendRepository.findBy({
       outgoing_friend: { id: outgoingFound.id },
@@ -81,11 +81,11 @@ export class FriendService {
   }
 
   async findExactMatch(
-    outgoing_id: number,
-    incoming_id: number,
+    outgoingID: number,
+    incomingID: number,
   ): Promise<Friend | null> {
-    const outgoingFound = await this.usersService.findOne(outgoing_id, false);
-    const incomingFound = await this.usersService.findOne(incoming_id, false);
+    const outgoingFound = await this.userService.findOne(outgoingID, false);
+    const incomingFound = await this.userService.findOne(incomingID, false);
     const found = await this.friendRepository.findOneBy({
       outgoing_friend: { id: outgoingFound.id },
       incoming_friend: { id: incomingFound.id },
@@ -94,7 +94,7 @@ export class FriendService {
     if (!found) {
       throw new EntityNotFoundError(
         Friend,
-        'outgoing_id = ' + outgoing_id + ' & incoming_id = ' + incoming_id,
+        'outgoing_id = ' + outgoingID + ' & incoming_id = ' + incomingID,
       );
     }
     return found;

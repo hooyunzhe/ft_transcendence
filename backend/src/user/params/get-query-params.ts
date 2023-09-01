@@ -11,12 +11,15 @@ import {
 export enum UserSearchType {
   ALL = 'ALL',
   ONE = 'ONE',
+  INTRA = 'INTRA',
   NAME = 'NAME',
   TOKEN = 'TOKEN',
   RELATION = 'RELATION',
 }
 
 export enum UserRelation {
+  PREFERENCE = 'PREFERENCE',
+  TWO_FACTOR = 'TWO_FACTOR',
   STATISTIC = 'STATISTIC',
   CHANNELS = 'CHANNELS',
   MESSAGES = 'MESSAGES',
@@ -46,10 +49,12 @@ export class UserGetQueryParams {
 
   @ValidateIf(
     (params: UserGetQueryParams) =>
+      params.search_type === UserSearchType.INTRA ||
       params.search_type === UserSearchType.NAME ||
       params.search_type === UserSearchType.TOKEN,
   )
   @Transform(({ obj, value }: { obj: UserGetQueryParams; value: number }) =>
+    obj.search_type === UserSearchType.INTRA ||
     obj.search_type === UserSearchType.NAME ||
     obj.search_type === UserSearchType.TOKEN
       ? value

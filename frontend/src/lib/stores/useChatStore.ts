@@ -2,7 +2,7 @@ import { Socket } from 'socket.io-client';
 import { create } from 'zustand';
 import callAPI from '../callAPI';
 import { Message, MessageType } from '@/types/MessageTypes';
-import { ChannelMember } from '@/types/ChannelMemberTypes';
+import { ChannelMember, ChannelMemberRole } from '@/types/ChannelMemberTypes';
 
 type MessagesSentDictionary = { [channelID: number]: number };
 
@@ -26,8 +26,8 @@ interface ChatStore {
 type StoreSetter = (helper: (state: ChatStore) => Partial<ChatStore>) => void;
 
 async function getChatData(set: StoreSetter, userID: number): Promise<void> {
-  const messageData = JSON.parse(
-    await callAPI('GET', 'messages?search_type=ALL'),
+  const messageData = await callAPI('GET', 'messages?search_type=ALL').then(
+    (res) => res.body,
   );
   const messagesSent: MessagesSentDictionary = {};
 

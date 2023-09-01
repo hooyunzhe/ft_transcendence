@@ -6,8 +6,10 @@ export enum UserStatus {
 
 export interface User {
   id: number;
+  intra_id: string;
   username: string;
   refresh_token: string;
   avatar_url: string;
+  two_factor_enabled: boolean;
   date_of_creation: string;
 }

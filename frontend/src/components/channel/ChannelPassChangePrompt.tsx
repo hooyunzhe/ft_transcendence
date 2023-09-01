@@ -48,24 +48,29 @@ export default function ChannelPassChangePrompt({
       throw 'Cannot change password to the same password, bro wth.';
     }
 
-    const passChanged = await callAPI('PATCH', 'channels', {
+    const channelResponse = await callAPI('PATCH', 'channels', {
       id: channelID,
       pass: newPass,
       oldPass: oldPass,
+      hash: '',
     });
 
-    if (passChanged) {
-      throw 'Current Password is incorrect';
-    }
-
-    const changedChannel = JSON.parse(
-      await callAPI(
+    if (channelResponse.status === 200) {
+      const changedChannel = await callAPI(
         'GET',
         `channels?search_type=ONE&search_number=${channelID}`,
-      ),
-    );
+      ).then((res) => res.body);
 
-    changeChannelHash(channelID, changedChannel.hash);
+      if (changedChannel) {
+        changeChannelHash(channelID, changedChannel.hash);
+      } else {
+        throw 'FATAL ERROR: FAILED TO GET CHANGED CHANNEL IN BACKEND';
+      }
+    } else if (channelResponse.status === 403) {
+      throw 'Current Password is incorrect';
+    } else {
+      throw 'FATAL ERROR: FAILED TO CHANGE CHANNEL PASSWORD IN BACKEND';
+    }
   }
 
   async function handleAction(): Promise<void> {

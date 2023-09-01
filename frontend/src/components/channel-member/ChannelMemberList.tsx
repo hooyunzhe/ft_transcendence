@@ -17,6 +17,7 @@ import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { useFriendChecks, useFriends } from '@/lib/stores/useFriendStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useTwoFactorActions } from '@/lib/stores/useTwoFactorStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
@@ -43,6 +44,7 @@ export function ChannelMemberList() {
   } = useChannelMemberActions();
   const { isChannelAdmin, isChannelOwner } = useChannelMemberChecks();
   const { isFriendBlocked } = useFriendChecks();
+  const { displayTwoFactor } = useTwoFactorActions();
   const { displayDialog } = useDialogActions();
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
@@ -76,7 +78,7 @@ export function ChannelMemberList() {
   // * Helper Function for update locals * //
 
   async function kickUser(member: ChannelMember): Promise<void> {
-    callAPI('DELETE', 'channel-members', { id: member.id });
+    await callAPI('DELETE', 'channel-members', { id: member.id });
     kickChannelMember(member.id);
     emitToSocket(channelSocket, 'kickMember', member);
     const achievementAlreadyEarned = await handleAchievementsEarned(
@@ -85,12 +87,15 @@ export function ChannelMemberList() {
       displayNotification,
     );
     if (achievementAlreadyEarned) {
-      displayNotification('success', 'Channel member kicked');
+      displayNotification(
+        'success',
+        `Channel member ${member.user.username} kicked`,
+      );
     }
   }
 
   async function changeToAdmin(member: ChannelMember) {
-    callAPI('PATCH', 'channel-members/', {
+    await callAPI('PATCH', 'channel-members/', {
       id: member.id,
       role: ChannelMemberRole.ADMIN,
     });
@@ -101,11 +106,14 @@ export function ChannelMemberList() {
       newRole: ChannelMemberRole.ADMIN,
     };
     emitToSocket(channelSocket, 'changeRole', data);
-    displayNotification('success', 'Channel member is now an admin');
+    displayNotification(
+      'success',
+      `Channel member ${member.user.username} is now an admin`,
+    );
   }
 
   async function changeToMember(member: ChannelMember) {
-    callAPI('PATCH', 'channel-members/', {
+    await callAPI('PATCH', 'channel-members/', {
       id: member.id,
       role: ChannelMemberRole.MEMBER,
     });
@@ -116,11 +124,14 @@ export function ChannelMemberList() {
       newRole: ChannelMemberRole.MEMBER,
     };
     emitToSocket(channelSocket, 'changeRole', data);
-    displayNotification('success', 'Channel member is now a member');
+    displayNotification(
+      'success',
+      `Channel member ${member.user.username} is now a member`,
+    );
   }
 
   async function unmuteMember(member: ChannelMember) {
-    callAPI('PATCH', 'channel-members', {
+    await callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.DEFAULT,
     });
@@ -132,11 +143,14 @@ export function ChannelMemberList() {
       newStatus: ChannelMemberStatus.DEFAULT,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
-    displayNotification('success', 'Channel member unmuted');
+    displayNotification(
+      'success',
+      `Channel member ${member.user.username} unmuted`,
+    );
   }
 
   async function banMember(member: ChannelMember) {
-    callAPI('PATCH', 'channel-members', {
+    await callAPI('PATCH', 'channel-members', {
       id: member.id,
       status: ChannelMemberStatus.BANNED,
       muted_until: new Date().toISOString(),
@@ -149,43 +163,48 @@ export function ChannelMemberList() {
       newStatus: ChannelMemberStatus.BANNED,
     };
     emitToSocket(channelSocket, 'changeStatus', data);
-    displayNotification('success', 'Channel member banned');
+    displayNotification(
+      'success',
+      `Channel member ${member.user.username} banned`,
+    );
   }
 
-  async function changeOwnership(member: ChannelMember) {
-    const currentOwner = channelMembers.find((owner) => {
-      if (owner.role === ChannelMemberRole.OWNER) {
-        return owner.id;
-      }
-      return undefined;
-    });
+  async function changeOwnership(newOwner: ChannelMember) {
+    const currentOwner = channelMembers.find(
+      (member) =>
+        member.user.id === currentUser.id &&
+        member.channel.id === newOwner.channel.id,
+    );
     if (currentOwner === undefined) {
       console.log('FATAL ERROR: CURRENT OWNER NOT FOUND!');
       return undefined;
     }
-    callAPI('PATCH', 'channel-members', {
+    await callAPI('PATCH', 'channel-members', {
       id: currentOwner.id,
       role: ChannelMemberRole.ADMIN,
     });
     callAPI('PATCH', 'channel-members', {
-      id: member.id,
+      id: newOwner.id,
       role: ChannelMemberRole.OWNER,
     });
     changeChannelMemberRole(currentOwner.id, ChannelMemberRole.ADMIN);
-    changeChannelMemberRole(member.id, ChannelMemberRole.OWNER);
+    changeChannelMemberRole(newOwner.id, ChannelMemberRole.OWNER);
     const newOwnerData = {
-      memberID: member.id,
-      channelID: member.channel.id,
+      memberID: newOwner.id,
+      channelID: newOwner.channel.id,
       newRole: ChannelMemberRole.OWNER,
     };
     const oldOwnerData = {
       memberID: currentOwner.id,
-      channelID: member.channel.id,
+      channelID: newOwner.channel.id,
       newRole: ChannelMemberRole.ADMIN,
     };
     emitToSocket(channelSocket, 'changeRole', newOwnerData);
     emitToSocket(channelSocket, 'changeRole', oldOwnerData);
-    displayNotification('success', 'Channel ownership transferred');
+    displayNotification(
+      'success',
+      `Channel ownership transferred to ${newOwner.user.username}`,
+    );
   }
 
   // * Action handlers that are passed into components * //
@@ -196,39 +215,49 @@ export function ChannelMemberList() {
   ) {
     switch (action) {
       case ChannelMemberAction.CHOWN:
-        return displayConfirmation(
-          'Change Ownership to ' + member.user.username + '?',
-          'You are transfering the ownership of this server.',
-          member,
-          changeOwnership,
+        return displayTwoFactor(() =>
+          displayConfirmation(
+            'Change Ownership to ' + member.user.username + '?',
+            'You are transfering the ownership of this server.',
+            member,
+            changeOwnership,
+          ),
         );
       case ChannelMemberAction.KICK:
-        return displayConfirmation(
-          'Kick user ' + member.user.username + '?',
-          'You are booting the user from the channel.',
-          member,
-          kickUser,
+        return displayTwoFactor(() =>
+          displayConfirmation(
+            'Kick user ' + member.user.username + '?',
+            'You are booting the user from the channel.',
+            member,
+            kickUser,
+          ),
         );
       case ChannelMemberAction.ADMIN:
-        return displayConfirmation(
-          'Make ' + member.user.username + ' an admin?',
-          'You are making this user admin.',
-          member,
-          changeToAdmin,
+        return displayTwoFactor(() =>
+          displayConfirmation(
+            'Make ' + member.user.username + ' an admin?',
+            'You are making this user admin.',
+            member,
+            changeToAdmin,
+          ),
         );
       case ChannelMemberAction.UNADMIN:
-        return displayConfirmation(
-          'Remove admin privileges from ' + member.user.username + '?',
-          'You are removing admin from this user.',
-          member,
-          changeToMember,
+        return displayTwoFactor(() =>
+          displayConfirmation(
+            'Remove admin privileges from ' + member.user.username + '?',
+            'You are removing admin from this user.',
+            member,
+            changeToMember,
+          ),
         );
       case ChannelMemberAction.BAN:
-        return displayConfirmation(
-          'Ban ' + member.user.username + '?',
-          'You are banning this user from this channel.',
-          member,
-          banMember,
+        return displayTwoFactor(() =>
+          displayConfirmation(
+            'Ban ' + member.user.username + '?',
+            'You are banning this user from this channel.',
+            member,
+            banMember,
+          ),
         );
       case ChannelMemberAction.MUTE:
         return displayDialog(
@@ -251,27 +280,29 @@ export function ChannelMemberList() {
   return (
     <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
       <ListHeader title='Members' icon={ListHeaderIcon.SOCIAL} />
-      {selectedChannel && (
-        <Button
-          variant='contained'
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() =>
-            displayDialog(
-              'Add Member',
-              addableFriends.length
-                ? `Add members to ${selectedChannel.name}`
-                : 'No friends to add... why not send someone a friend request first?',
-              <ChannelMemberAddPrompt
-                addableFriends={addableFriends}
-                selectedChannel={selectedChannel}
-              />,
-              'Add',
-            )
-          }
-        >
-          Add Member
-        </Button>
-      )}
+      {selectedChannel &&
+        (isChannelAdmin(currentUser.id, selectedChannel.id) ||
+          isChannelOwner(currentUser.id, selectedChannel.id)) && (
+          <Button
+            variant='contained'
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() =>
+              displayDialog(
+                'Add Member',
+                addableFriends.length
+                  ? `Add members to ${selectedChannel.name}`
+                  : 'No friends to add... why not send someone a friend request first?',
+                <ChannelMemberAddPrompt
+                  addableFriends={addableFriends}
+                  selectedChannel={selectedChannel}
+                />,
+                'Add',
+              )
+            }
+          >
+            Add Member
+          </Button>
+        )}
       {channelMembers
         .filter(
           (member) =>

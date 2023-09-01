@@ -10,6 +10,7 @@ interface UtilStore {
     socialDrawerToggle: boolean;
     channelMemberDrawerToggle: boolean;
     drawerTimeoutID: NodeJS.Timeout | undefined;
+    isPromptOpen: boolean;
   };
   actions: {
     setCurrentView: (newView: View | false) => void;
@@ -22,6 +23,7 @@ interface UtilStore {
     setChannelMemberDrawerClose: () => void;
     handleDrawerMouseOver: (channelSelected: boolean) => void;
     handleDrawerMouseLeave: () => void;
+    setIsPromptOpen: (open: boolean) => void;
     setupUtilSocketEvents: (friendSocket: Socket) => void;
   };
 }
@@ -83,7 +85,7 @@ function setSocialDrawerClose(set: StoreSetter): void {
   set(({ data }) => ({
     data: {
       ...data,
-      socialDrawerToggle: false,
+      socialDrawerToggle: data.isPromptOpen ? data.socialDrawerToggle : false,
     },
   }));
 }
@@ -92,7 +94,9 @@ function setChannelMemberDrawerClose(set: StoreSetter): void {
   set(({ data }) => ({
     data: {
       ...data,
-      channelMemberDrawerToggle: false,
+      channelMemberDrawerToggle: data.isPromptOpen
+        ? data.channelMemberDrawerToggle
+        : false,
     },
   }));
 }
@@ -130,6 +134,18 @@ function handleDrawerMouseLeave(set: StoreSetter): void {
   }));
 }
 
+function setIsPromptOpen(set: StoreSetter, open: boolean): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      isPromptOpen: open,
+    },
+  }));
+  if (!open) {
+    handleDrawerMouseLeave(set);
+  }
+}
+
 function setupFriendSocketEvents(set: StoreSetter, friendSocket: Socket): void {
   friendSocket.on('newRequest', () =>
     setCurrentFriendCategory(set, FriendCategory.PENDING),
@@ -144,10 +160,11 @@ const useUtilStore = create<UtilStore>()((set, get) => ({
     currentView: false,
     currentSocialTab: SocialTab.FRIEND,
     currentFriendCategory: FriendCategory.FRIENDS,
-    channelMemberDrawerToggle: false,
     socialDrawerToggle: false,
+    channelMemberDrawerToggle: false,
     drawerTimeoutID: undefined,
     channelSelected: false,
+    isPromptOpen: false,
   },
   actions: {
     setCurrentView: (newView) => setCurrentView(set, newView),
@@ -162,6 +179,7 @@ const useUtilStore = create<UtilStore>()((set, get) => ({
     handleDrawerMouseOver: (channelSelected) =>
       handleDrawerMouseOver(set, get, channelSelected),
     handleDrawerMouseLeave: () => handleDrawerMouseLeave(set),
+    setIsPromptOpen: (open) => setIsPromptOpen(set, open),
     setupUtilSocketEvents: (friendSocket) =>
       setupFriendSocketEvents(set, friendSocket),
   },
@@ -173,8 +191,8 @@ export const useCurrentSocialTab = () =>
   useUtilStore((state) => state.data.currentSocialTab);
 export const useCurrentFriendCategory = () =>
   useUtilStore((state) => state.data.currentFriendCategory);
-export const useChannelMemberDrawerToggle = () =>
-  useUtilStore((state) => state.data.channelMemberDrawerToggle);
 export const useSocialDrawerToggle = () =>
   useUtilStore((state) => state.data.socialDrawerToggle);
+export const useChannelMemberDrawerToggle = () =>
+  useUtilStore((state) => state.data.channelMemberDrawerToggle);
 export const useUtilActions = () => useUtilStore((state) => state.actions);

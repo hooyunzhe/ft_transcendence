@@ -1,7 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { filter } from 'rxjs';
 import { Server } from 'socket.io';
-import { MatchService } from 'src/match/match.service';
 import { MatchInfo } from './game.service';
 import { CreateMatchDto } from 'src/match/dto/create-match.dto';
 
@@ -11,7 +8,13 @@ interface Coor {
 }
 
 class RectObj {
-  constructor(x: number, y: number, width: number, height: number, player?: number) {
+  constructor(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    player?: number,
+  ) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -36,7 +39,7 @@ class RectObj {
   bottom() {
     return this.y + this.height / 2;
   }
-  
+
   x: number;
   y: number;
   width: number;
@@ -46,10 +49,9 @@ class RectObj {
   player: number;
 }
 
-
-export class GameClass{
-  matchHandler: (matchDto: CreateMatchDto)=> void;
-  socketHandler: (roomid: string, message: string, data: any) => void
+export class GameClass {
+  matchHandler: (matchDto: CreateMatchDto) => void;
+  socketHandler: (roomid: string, message: string, data: any) => void;
   windowSize: Coor;
   direction: Coor;
   Ball: RectObj;
@@ -60,12 +62,19 @@ export class GameClass{
   matchinfo: MatchInfo;
   server: Server;
   intervalID: NodeJS.Timer = null;
-  ServingPaddle:Number = 1;
+  ServingPaddle: Number = 1;
   refreshMilisec: number = 16;
-  loaded: {player1: boolean, player2: boolean} = {player1: false, player2: false};
+  loaded: { player1: boolean; player2: boolean } = {
+    player1: false,
+    player2: false,
+  };
   started: boolean = false;
 
-  constructor(matchinfo: MatchInfo, socketHandler: (roomid: string, message: string, data: any) => void, matchHandler: (matchDto: CreateMatchDto) => void) {
+  constructor(
+    matchinfo: MatchInfo,
+    socketHandler: (roomid: string, message: string, data: any) => void,
+    matchHandler: (matchDto: CreateMatchDto) => void,
+  ) {
     this.windowSize = {
       x: 1920,
       y: 1080,
@@ -80,13 +89,19 @@ export class GameClass{
       player1: 0,
       player2: 0,
     };
-    this.Paddle1 = new RectObj(this.windowSize.x * 0.05, this.windowSize.y / 2, 20, 160, 1);
+    this.Paddle1 = new RectObj(
+      this.windowSize.x * 0.05,
+      this.windowSize.y / 2,
+      20,
+      160,
+      1,
+    );
     this.Paddle2 = new RectObj(
       this.windowSize.x * 0.95,
       this.windowSize.y / 2,
       20,
       160,
-      2
+      2,
     );
 
     this.Ball = new RectObj(
@@ -98,34 +113,28 @@ export class GameClass{
     this.matchinfo = matchinfo;
     this.socketHandler = socketHandler;
     this.matchHandler = matchHandler;
-    
   }
 
   gameStart(player: number) {
-
-    if (!this.started && this.loaded.player1 && this.loaded.player2)
-    {
-      if (player === this.ServingPaddle)
-      {
-      this.direction = {
-        x: (this.Ball.x - this.windowSize.x / 2 ) / this.windowSize.x,
-        y: (this.windowSize.y / 2 - this.Ball.y) / this.windowSize.y
-      
-      };
-      console.log(this.direction);
-      this.started = true;
+    if (!this.started && this.loaded.player1 && this.loaded.player2) {
+      if (player === this.ServingPaddle) {
+        this.direction = {
+          x: (this.Ball.x - this.windowSize.x / 2) / this.windowSize.x,
+          y: (this.windowSize.y / 2 - this.Ball.y) / this.windowSize.y,
+        };
+        console.log(this.direction);
+        this.started = true;
+      }
     }
   }
-}
-
   gameReset() {
     switch (this.ServingPaddle) {
       case 2:
-        this.Ball.x = (this.Paddle2.left() - this.Ball.width / 2) - 10
+        this.Ball.x = this.Paddle2.left() - this.Ball.width / 2 - 10;
         break;
       default:
         this.Ball.x = 10 + (this.Paddle1.right() + this.Ball.width / 2);
-      break;
+        break;
     }
 
     this.started = false;
@@ -152,10 +161,11 @@ export class GameClass{
       this.windowSize.x - 15,
       this.windowSize.y / 2,
       paddle2size.width,
-      paddle2size.height
+      paddle2size.height,
     );
     console.log(paddle1size.width, paddle2size.width);
   }
+
   gameRefresh() {
     this.Ball.x += this.direction.x * this.velocity;
     this.Ball.y += this.direction.y * this.velocity;
@@ -178,11 +188,11 @@ export class GameClass{
         x: this.Ball.x,
         y: this.Ball.y,
       },
-      balldirection : {
+      balldirection: {
         x: this.direction.x,
         y: this.direction.y,
       },
-      timestamp : Date.now(),
+      timestamp: Date.now(),
       paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
       paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
       score: this.score,
@@ -194,13 +204,21 @@ export class GameClass{
       this.gameRefresh();
     }, 16);
   }
+
   gameHandleVictory(player: number) {
     this.score[`player${player}`]++;
-    if (this.score[`player${player}`] >= 3)
-    {
+    if (this.score[`player${player}`] >= 3) {
       this.socketHandler(this.matchinfo.roomid, 'victory', player);
-  
-      this.matchHandler({p1_id: this.matchinfo.player1, p2_id: this.matchinfo.player2, winner_id: this.matchinfo[`player${player}`], p1_score: this.score.player1, p2_score: this.score.player2, p1_skills: "1231", p2_skills: "1231"});
+
+      this.matchHandler({
+        p1_id: this.matchinfo.player1,
+        p2_id: this.matchinfo.player2,
+        winner_id: this.matchinfo[`player${player}`],
+        p1_score: this.score.player1,
+        p2_score: this.score.player2,
+        p1_skills: '1231',
+        p2_skills: '1231',
+      });
     }
     this.ServingPaddle = player;
     console.log(
@@ -211,12 +229,11 @@ export class GameClass{
     );
     this.gameReset();
     this.socketHandler(this.matchinfo.roomid, 'reset', player);
-    this.loaded = {player1: false, player2: false};
+    this.loaded = { player1: false, player2: false };
   }
 
   stickEffect(paddle: RectObj) {
     if (this.started === false && paddle.player === this.ServingPaddle)
-
       this.Ball.y = paddle.y;
   }
 
@@ -226,14 +243,13 @@ export class GameClass{
   }
 
   gameSetPaddlePosition(player: number, direction: number) {
-    if (this.loaded.player1 && this.loaded.player2)
-    {
+    if (this.loaded.player1 && this.loaded.player2) {
       switch (player) {
         case 1:
           if (direction > 0) this.gameMovePaddle(this.Paddle1, 10);
           else if (direction < 0) this.gameMovePaddle(this.Paddle1, -10);
           break;
-      
+
         case 2:
           if (direction > 0) this.gameMovePaddle(this.Paddle2, 10);
           else if (direction < 0) this.gameMovePaddle(this.Paddle2, -10);
@@ -244,23 +260,22 @@ export class GameClass{
     }
   }
 
-  gameSetLoaded(player: number, loaded: boolean)
-  {
+  gameSetLoaded(player: number, loaded: boolean) {
     this.loaded[`player${player}`] = loaded;
   }
   gameSetPaddleStop(player: number) {
     if (player === 1) this.Paddle1.velocityY = 1;
     if (player === 2) this.Paddle2.velocityY = 1;
   }
+
   gameMovePaddle(obj: RectObj, dir: number) {
-    if (obj.top() + dir >= 0 && obj.bottom() + dir <= this.windowSize.y)
-    {
+    if (obj.top() + dir >= 0 && obj.bottom() + dir <= this.windowSize.y) {
       obj.y += dir;
       this.stickEffect(obj);
-    }
-    else if (dir > 0) obj.y = this.windowSize.y - obj.height / 2;
+    } else if (dir > 0) obj.y = this.windowSize.y - obj.height / 2;
     else if (dir < 0) obj.y = obj.height / 2;
   }
+
   gameCollision(obj1: RectObj, obj2: RectObj) {
     return (
       obj1.left() <= obj2.right() &&
@@ -269,12 +284,4 @@ export class GameClass{
       obj1.bottom() >= obj2.top()
     );
   }
-  // async sendVictory(player: number){
-  //   const clients = await this.server.in(this.roomid).fetchSockets();
-  //   clients.forEach(client => {
-  //     if (client.data.player === player) {
-  //       client.emit('victory', player);
-  //     }
-  //   });
-  // }
 }

@@ -1,7 +1,7 @@
 'use client';
-import { Box, Button, Slide, Typography } from '@mui/material';
-import { signIn } from 'next-auth/react';
 import Image from 'next/image';
+import { signIn } from 'next-auth/react';
+import { Box, Button, Slide, Typography } from '@mui/material';
 
 export default function Login() {
   return (

@@ -4,20 +4,22 @@ import Image from 'next/image';
 import ListHeader from '../utils/ListHeader';
 import FriendStack from '../friend/FriendStack';
 import { ChannelList } from '../channel/ChannelList';
-import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import {
   useCurrentSocialTab,
   useSocialDrawerToggle,
   useUtilActions,
 } from '@/lib/stores/useUtilStore';
+import { useCurrentPreference } from '@/lib/stores/useUserStore';
+import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { ListHeaderIcon, SocialTab } from '@/types/UtilTypes';
 
 export default function SocialDrawer() {
+  const socialDrawerToggle = useSocialDrawerToggle();
+  const currentPreference = useCurrentPreference();
   const currentSocialTab = useCurrentSocialTab();
+  const selectedChannel = useSelectedChannel();
   const { setCurrentSocialTab, handleDrawerMouseLeave, handleDrawerMouseOver } =
     useUtilActions();
-  const socialDrawerToggle = useSocialDrawerToggle();
-  const selectedChannel = useSelectedChannel();
 
   return (
     <Box
@@ -41,7 +43,7 @@ export default function SocialDrawer() {
         }}
         variant='persistent'
         anchor='left'
-        open={socialDrawerToggle}
+        open={socialDrawerToggle || !currentPreference.animations_enabled}
       >
         <ListHeader title='Social' icon={ListHeaderIcon.SOCIAL} />
         <Tabs

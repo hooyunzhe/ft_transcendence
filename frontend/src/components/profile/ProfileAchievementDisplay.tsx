@@ -1,7 +1,7 @@
 'use client';
 import { Achievement } from '@/types/AchievementTypes';
-import { SportsTennis } from '@mui/icons-material';
 import { Avatar, Box, Typography } from '@mui/material';
+import AchievementIcon from '../achievement/AchievementIcon';
 
 interface ProfileAchievementDisplayProps {
   achievement: Achievement;
@@ -30,11 +30,11 @@ export default function ProfileAchievementDisplay({
           height: '40px',
           alignSelf: 'flex-start',
           marginLeft: '0.5vw',
-          bgcolor: 'green',
+          bgcolor: 'steelblue',
           border: 'solid 1px black',
         }}
       >
-        <SportsTennis />
+        <AchievementIcon achievementID={achievement.id} />
       </Avatar>
       <Box
         width='90%'

@@ -12,7 +12,7 @@ export class ChangeChannelNameEmitBodyParams {
 export class ChangeChannelTypeEmitBodyParams {
   id: number;
   newType: ChannelType;
-  newPass?: string;
+  newHash?: string;
 }
 
 export class ChangeChannelMemberRoleEmitBodyParams {

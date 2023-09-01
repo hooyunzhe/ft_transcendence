@@ -7,7 +7,19 @@ export class UpdateUserDto {
 
   @ValidateIf(
     (dto: UpdateUserDto) =>
-      (dto.refresh_token === undefined && dto.avatar_url === undefined) ||
+      (dto.username === undefined &&
+        dto.refresh_token === undefined &&
+        dto.avatar_url === undefined) ||
+      dto.intra_id !== undefined,
+  )
+  @IsString()
+  intra_id: string;
+
+  @ValidateIf(
+    (dto: UpdateUserDto) =>
+      (dto.intra_id === undefined &&
+        dto.refresh_token === undefined &&
+        dto.avatar_url === undefined) ||
       dto.username !== undefined,
   )
   @IsString()
@@ -15,7 +27,9 @@ export class UpdateUserDto {
 
   @ValidateIf(
     (dto: UpdateUserDto) =>
-      (dto.username === undefined && dto.avatar_url === undefined) ||
+      (dto.intra_id === undefined &&
+        dto.username === undefined &&
+        dto.avatar_url === undefined) ||
       dto.refresh_token !== undefined,
   )
   @IsString()
@@ -23,7 +37,9 @@ export class UpdateUserDto {
 
   @ValidateIf(
     (dto: UpdateUserDto) =>
-      (dto.username === undefined && dto.refresh_token === undefined) ||
+      (dto.intra_id === undefined &&
+        dto.username === undefined &&
+        dto.refresh_token === undefined) ||
       dto.avatar_url !== undefined,
   )
   @IsString()

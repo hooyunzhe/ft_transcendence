@@ -5,6 +5,7 @@ import { Socket } from 'socket.io-client';
 import { ChannelMemberStatus, ChannelMember } from '@/types/ChannelMemberTypes';
 import { Message } from '@/types/MessageTypes';
 import emitToSocket from '../emitToSocket';
+
 interface ChannelStore {
   data: {
     channels: Channel[];
@@ -44,7 +45,6 @@ interface ChannelStore {
   checks: {
     checkChannelExists: (channelName: string) => boolean;
     checkChannelJoined: (channelName: string) => boolean;
-    // checkOwnerAmount: (userID: number) => boolean;
   };
 }
 
@@ -54,15 +54,14 @@ type StoreSetter = (
 type StoreGetter = () => ChannelStore;
 
 async function getChannelData(set: StoreSetter, userID: number): Promise<void> {
-  const channelData = JSON.parse(
-    await callAPI('GET', 'channels?search_type=ALL&load_relations'),
-  );
-  const joinedChannelData = JSON.parse(
-    await callAPI(
-      'GET',
-      `users?search_type=RELATION&search_number=${userID}&search_relation=CHANNELS`,
-    ),
-  );
+  const channelData = await callAPI(
+    'GET',
+    'channels?search_type=ALL&load_relations',
+  ).then((res) => res.body);
+  const joinedChannelData = await callAPI(
+    'GET',
+    `users?search_type=RELATION&search_number=${userID}&search_relation=CHANNELS`,
+  ).then((res) => res.body);
   const joinedChannelLookup: boolean[] = [];
   const recentChannelActivity: number[] = [];
 
@@ -128,6 +127,10 @@ function changeChannelName(
         }
         return channel;
       }),
+      selectedChannel:
+        data.selectedChannel?.id === channelID
+          ? { ...data.selectedChannel, name: newName }
+          : data.selectedChannel,
     },
   }));
   updateRecentChannelActivity(set, channelID);
@@ -364,15 +367,15 @@ function setupChannelSocketEvents(
     ({
       id,
       newType,
-      newPass,
+      newHash,
     }: {
       id: number;
       newType: ChannelType;
-      newPass?: string;
+      newHash?: string;
     }) => {
       changeChannelType(set, id, newType);
-      if (newType === ChannelType.PROTECTED && newPass)
-        changeChannelHash(set, id, newPass);
+      if (newType === ChannelType.PROTECTED && newHash)
+        changeChannelHash(set, id, newHash);
     },
   );
   channelSocket.on(

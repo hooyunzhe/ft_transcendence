@@ -58,8 +58,8 @@ export class MatchService {
     return found;
   }
 
-  async findAllWithPlayer(player_id: number): Promise<Match[]> {
-    const playerFound = await this.userService.findOne(player_id, false);
+  async findAllWithPlayer(playerID: number): Promise<Match[]> {
+    const playerFound = await this.userService.findOne(playerID, false);
 
     return await this.matchRepository.find({
       where: [
@@ -69,17 +69,20 @@ export class MatchService {
     });
   }
 
-  async findAllWithWinner(player_id: number): Promise<Match[]> {
-    const playerFound = await this.userService.findOne(player_id, false);
+  async findAllWithWinner(playerID: number): Promise<Match[]> {
+    const playerFound = await this.userService.findOne(playerID, false);
 
     return await this.matchRepository.find({
       where: { winner_id: playerFound.id },
     });
   }
 
-  async findAllWithBothPlayers(p1_id: number, p2_id: number): Promise<Match[]> {
-    const playerOneFound = await this.userService.findOne(p1_id, false);
-    const playerTwoFound = await this.userService.findOne(p2_id, false);
+  async findAllWithBothPlayers(
+    playerOneID: number,
+    playerTwoID: number,
+  ): Promise<Match[]> {
+    const playerOneFound = await this.userService.findOne(playerOneID, false);
+    const playerTwoFound = await this.userService.findOne(playerTwoID, false);
 
     return await this.matchRepository.find({
       where: {

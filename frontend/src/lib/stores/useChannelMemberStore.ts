@@ -39,6 +39,11 @@ interface ChannelMemberStore {
     isChannelAdmin: (userID: number, channelID: number) => boolean;
     isMemberBanned: (userID: number, channelID: number) => boolean;
     isMemberMuted: (userID: number, channelID: number) => boolean;
+    isMessageDeletable: (
+      currentMemberID: number,
+      messageSenderID: number,
+      channelID: number,
+    ) => boolean;
   };
 }
 
@@ -49,9 +54,10 @@ type StoreSetter = (
 type StoreGetter = () => ChannelMemberStore;
 
 async function getChannelMemberData(set: StoreSetter): Promise<void> {
-  const channelMembersData = JSON.parse(
-    await callAPI('GET', 'channel-members?search_type=ALL'),
-  );
+  const channelMembersData = await callAPI(
+    'GET',
+    'channel-members?search_type=ALL',
+  ).then((res) => res.body);
   set(({ data }) => ({
     data: { ...data, channelMembers: channelMembersData },
   }));
@@ -229,6 +235,33 @@ function isMemberMuted(
   );
 }
 
+function isMessageDeletable(
+  get: StoreGetter,
+  currentMemberID: number,
+  messageSenderID: number,
+  channelID: number,
+): boolean {
+  const currentMember = getChannelMember(get, currentMemberID, channelID);
+  const messageSender = getChannelMember(get, messageSenderID, channelID);
+
+  if (!currentMember || !messageSender) {
+    return false;
+  }
+  if (currentMember.id === messageSender.id) {
+    return true;
+  }
+  if (currentMember.role === ChannelMemberRole.MEMBER) {
+    return false;
+  } else if (
+    currentMember.role === ChannelMemberRole.ADMIN &&
+    (messageSender.role === ChannelMemberRole.OWNER ||
+      messageSender.role === ChannelMemberRole.ADMIN)
+  ) {
+    return false;
+  }
+  return true;
+}
+
 const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
   data: {
     channelMembers: [],
@@ -255,6 +288,8 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
     isMemberBanned: (userID, channelID) =>
       isMemberBanned(get, userID, channelID),
     isMemberMuted: (userID, channelID) => isMemberMuted(get, userID, channelID),
+    isMessageDeletable: (currentMemberID, messageSenderID, channelID) =>
+      isMessageDeletable(get, currentMemberID, messageSenderID, channelID),
   },
 }));
 

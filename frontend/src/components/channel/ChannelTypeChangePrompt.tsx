@@ -18,17 +18,19 @@ import {
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { ChannelType } from '@/types/ChannelTypes';
 
-interface ChannelTypeChangeProps {
+interface ChannelTypeChangePromptProps {
   channelID: number;
   channelName: string;
   channelType: ChannelType;
+  channelHash: string;
 }
 
 export default function ChannelTypeChangePrompt({
   channelID,
   channelName,
   channelType,
-}: ChannelTypeChangeProps) {
+  channelHash,
+}: ChannelTypeChangePromptProps) {
   const channelSocket = useChannelSocket();
   const { changeChannelType, changeChannelHash } = useChannelActions();
   const {
@@ -44,25 +46,47 @@ export default function ChannelTypeChangePrompt({
   const [selectedChannelType, setSelectedChannelType] = useState(channelType);
   const [channelPass, setChannelPass] = useState('');
 
-  async function changeType() {
-    const data = {
+  async function changeType(): Promise<void> {
+    const channelResponse = await callAPI('PATCH', 'channels', {
       id: channelID,
       type: selectedChannelType,
-      pass: channelPass,
-    };
-    await callAPI('PATCH', 'channels', data);
-    changeChannelType(channelID, selectedChannelType);
-    if (selectedChannelType === ChannelType.PROTECTED) {
-      const updatedChannel = JSON.parse(
-        await callAPI(
+      hash: channelHash ?? '',
+      ...(channelPass && { pass: channelPass }),
+    });
+
+    if (channelResponse.status === 200) {
+      changeChannelType(channelID, selectedChannelType);
+      if (selectedChannelType === ChannelType.PROTECTED) {
+        const updatedChannel = await callAPI(
           'GET',
           `channels?search_type=ONE&search_number=${channelID}`,
-        ),
+        ).then((res) => res.body);
+
+        if (updatedChannel) {
+          changeChannelHash(channelID, updatedChannel.hash);
+          emitToSocket(channelSocket, 'changeChannelType', {
+            id: channelID,
+            newType: selectedChannelType,
+            newHash: updatedChannel.hash,
+          });
+        } else {
+          throw 'FATAL ERROR: FAILED TO GET UPDATED CHANNEL IN BACKEND';
+        }
+      } else {
+        emitToSocket(channelSocket, 'changeChannelType', {
+          id: channelID,
+          newType: selectedChannelType,
+        });
+      }
+      displayNotification(
+        'success',
+        `Channel type changed to ${selectedChannelType.toLowerCase()}`,
       );
-      changeChannelHash(channelID, updatedChannel.hash);
+    } else if (channelResponse.status === 403) {
+      throw "FATAL ERROR: CHANNEL HASH DOESN'T MATCH IN BACKEND";
+    } else {
+      throw 'FATAL ERROR: FAILED TO CHANGE CHANNEL TYPE IN BACKEND';
     }
-    emitToSocket(channelSocket, 'changeChannelType', data);
-    displayNotification('success', 'Channel type changed');
   }
 
   async function handleTypeChangeAction(): Promise<void> {
@@ -76,7 +100,10 @@ export default function ChannelTypeChangePrompt({
         !channelPass,
       );
     } else {
-      changeType();
+      changeType().catch((error) => {
+        resetTriggers();
+        displayNotification('error', error);
+      });
     }
   }
 
@@ -89,16 +116,11 @@ export default function ChannelTypeChangePrompt({
           displayNotification('error', error);
         });
     } else {
-      handleTypeChangeAction()
-        .then(() =>
-          selectedChannelType === ChannelType.PROTECTED
-            ? resetTriggers()
-            : resetDialog(),
-        )
-        .catch((error) => {
-          resetTriggers();
-          displayNotification('error', error);
-        });
+      handleTypeChangeAction().then(() =>
+        selectedChannelType === ChannelType.PROTECTED
+          ? resetTriggers()
+          : resetDialog(),
+      );
     }
   }
 

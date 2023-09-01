@@ -10,12 +10,12 @@ import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { User } from '@/types/UserTypes';
 import { Friend, FriendStatus } from '@/types/FriendTypes';
 import { FriendCategory } from '@/types/UtilTypes';
-import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 
 export default function FriendAddPrompt() {
   const currentUser = useCurrentUser();
@@ -30,16 +30,10 @@ export default function FriendAddPrompt() {
   const { handleAchievementsEarned } = useAchievementActions();
 
   async function getUserByName(name: string): Promise<User | null> {
-    return fetch(
-      process.env.NEXT_PUBLIC_HOST_URL +
-        ':4242/api/users?search_type=NAME&search_string=' +
-        name,
-      {
-        cache: 'no-store',
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      },
-    ).then((res) => (res.ok ? res.json() : null));
+    return await callAPI(
+      'GET',
+      `users?search_type=NAME&search_string=${name}`,
+    ).then((res) => res.body);
   }
 
   function checkFriendship(incomingID: number): string {
@@ -75,27 +69,28 @@ export default function FriendAddPrompt() {
       throw 'No, you simply cannot add yourself smartie pants';
     }
 
-    const newRequests = JSON.parse(
-      await callAPI('POST', 'friends', {
-        outgoing_id: currentUser.id,
-        incoming_id: userToAdd.id,
-      }),
-    );
+    const newRequests = await callAPI('POST', 'friends', {
+      outgoing_id: currentUser.id,
+      incoming_id: userToAdd.id,
+    }).then((res) => res.body);
 
-    addFriend(newRequests[0]);
-    emitToSocket(friendSocket, 'newRequest', {
-      outgoing_request: newRequests[0],
-      incoming_request: newRequests[1],
-    });
-    const achievementAlreadyEarned = await handleAchievementsEarned(
-      currentUser.id,
-      1,
-      displayNotification,
-    );
-    if (achievementAlreadyEarned) {
-      displayNotification('success', 'Request sent');
+    if (newRequests) {
+      addFriend(newRequests[0]);
+      emitToSocket(friendSocket, 'newRequest', {
+        outgoing_request: newRequests[0],
+        incoming_request: newRequests[1],
+      });
+      await handleAchievementsEarned(
+        currentUser.id,
+        1,
+        displayNotification,
+      ).then(
+        (earned) => earned && displayNotification('success', 'Request sent'),
+      );
+      setCurrentFriendCategory(FriendCategory.INVITED);
+    } else {
+      console.log('FATAL ERROR: FAILED TO ADD FRIEND IN BACKEND');
     }
-    setCurrentFriendCategory(FriendCategory.INVITED);
   }
 
   async function handleAction(): Promise<void> {

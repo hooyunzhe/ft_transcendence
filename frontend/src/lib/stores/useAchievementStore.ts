@@ -33,12 +33,14 @@ async function getAchievementData(
   set: StoreSetter,
   userID: number,
 ): Promise<void> {
-  const achievementData = JSON.parse(
-    await callAPI('GET', 'achievements?search_type=ALL'),
-  );
-  const userAchievementData = JSON.parse(
-    await callAPI('GET', 'user-achievements?search_type=ALL'),
-  );
+  const achievementData = await callAPI(
+    'GET',
+    'achievements?search_type=ALL',
+  ).then((res) => res.body);
+  const userAchievementData = await callAPI(
+    'GET',
+    'user-achievements?search_type=ALL',
+  ).then((res) => res.body);
   const achievementsEarned: AchievementsEarnedDictionary = {};
   const recentAchievements: RecentAchievementsDictionary = {};
 

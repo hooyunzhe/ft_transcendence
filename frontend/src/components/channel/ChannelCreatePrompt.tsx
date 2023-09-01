@@ -21,10 +21,10 @@ import {
   useDialogActions,
   useDialogTriggers,
 } from '@/lib/stores/useDialogStore';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
-import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 
 export default function ChannelCreatePrompt() {
   const currentUser = useCurrentUser();
@@ -35,48 +35,44 @@ export default function ChannelCreatePrompt() {
   const { actionClicked, backClicked } = useDialogTriggers();
   const { changeDialog, changeActionText, resetDialog, resetTriggers } =
     useDialogActions();
+  const { handleAchievementsEarned } = useAchievementActions();
   const { displayNotification } = useNotificationActions();
   const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
   const [channelName, setChannelName] = useState('');
   const [channelType, setChannelType] = useState(ChannelType.PUBLIC);
   const [channelPass, setChannelPass] = useState('');
-  const { handleAchievementsEarned } = useAchievementActions();
 
   async function createChannel(): Promise<void> {
-    const newChannel: Channel = JSON.parse(
-      await callAPI('POST', 'channels', {
-        name: channelName.trim(),
-        type: channelType,
-        pass: channelPass,
-      }),
-    );
+    const newChannel: Channel = await callAPI('POST', 'channels', {
+      name: channelName.trim(),
+      type: channelType,
+      pass: channelPass,
+    }).then((res) => res.body);
 
     if (newChannel) {
       addChannel(newChannel);
       emitToSocket(channelSocket, 'newChannel', newChannel);
 
-      const channelCreator = JSON.parse(
-        await callAPI('POST', 'channel-members', {
-          channel_id: newChannel.id,
-          user_id: currentUser.id,
-          role: ChannelMemberRole.OWNER,
-          pass: channelPass,
-        }),
-      );
+      const channelCreator = await callAPI('POST', 'channel-members', {
+        channel_id: newChannel.id,
+        user_id: currentUser.id,
+        role: ChannelMemberRole.OWNER,
+        pass: channelPass,
+      }).then((res) => res.body);
 
       if (channelCreator) {
         addJoinedChannel(newChannel.id);
         addChannelMember(channelCreator);
         emitToSocket(channelSocket, 'joinRoom', newChannel.id);
-
-        const achievementAlreadyEarned = await handleAchievementsEarned(
+        emitToSocket(channelSocket, 'newMember', channelCreator);
+        await handleAchievementsEarned(
           currentUser.id,
           6,
           displayNotification,
+        ).then(
+          (earned) =>
+            earned && displayNotification('success', 'Channel created'),
         );
-        if (achievementAlreadyEarned) {
-          displayNotification('success', 'Channel created');
-        }
       } else {
         throw 'FATAL ERROR: FAILED TO ADD MEMBER TO NEW CHANNEL IN BACKEND';
       }
@@ -88,6 +84,12 @@ export default function ChannelCreatePrompt() {
   async function handleCreateChannelAction(): Promise<void> {
     if (checkChannelExists(channelName.trim())) {
       throw 'Channel already exists';
+    }
+    if (channelName.length > 16) {
+      throw 'Channel names cannot be longer than 16 characters.';
+    }
+    if (channelName.trim().length === 0) {
+      throw 'Cannot change name into just spaces.';
     }
     if (checkChannelJoined(channelName.trim())) {
       throw 'Already in channel';
@@ -107,6 +109,7 @@ export default function ChannelCreatePrompt() {
   }
 
   async function handleAction(): Promise<void> {
+    console.log('handleAction');
     if (displayPasswordPrompt) {
       createChannel()
         .then(resetDialog)
@@ -130,6 +133,7 @@ export default function ChannelCreatePrompt() {
 
   useEffect(() => {
     if (actionClicked) {
+      console.log('action clicked');
       handleAction();
     }
     if (backClicked) {

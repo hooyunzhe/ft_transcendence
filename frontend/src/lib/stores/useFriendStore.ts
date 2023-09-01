@@ -33,9 +33,10 @@ type StoreSetter = (
 type StoreGetter = () => FriendStore;
 
 async function getFriendData(set: StoreSetter, userID: number): Promise<void> {
-  const friendData = JSON.parse(
-    await callAPI('GET', `friends?search_type=USER&search_number=${userID}`),
-  );
+  const friendData = await callAPI(
+    'GET',
+    `friends?search_type=USER&search_number=${userID}`,
+  ).then((res) => res.body);
 
   set(({ data }) => ({
     data: {
