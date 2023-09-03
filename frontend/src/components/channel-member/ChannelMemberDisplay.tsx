@@ -22,7 +22,12 @@ export default function ChannelMemberDisplay({
       })}
     >
       <ListItemAvatar>
-        <Avatar src={user.avatar_url} />
+        <Avatar
+          src={user.avatar_url}
+          sx={{
+            border: 'solid 1px black',
+          }}
+        />
       </ListItemAvatar>
       <ListItemText primary={user.username} />
     </ListItem>

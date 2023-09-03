@@ -31,7 +31,13 @@ export default function FriendDisplay({
   handleAction,
 }: FriendDisplayProps) {
   return (
-    <ListItem>
+    <ListItem
+      sx={{
+        border: 'solid 3px #a23833',
+        borderRadius: '10px',
+        bgcolor: '#A4B5C6',
+      }}
+    >
       <ListItem
         component='div'
         sx={{
@@ -42,13 +48,19 @@ export default function FriendDisplay({
         }}
       >
         <ListItemAvatar>
-          <Avatar src={friend.incoming_friend.avatar_url} />
+          <Avatar
+            src={friend.incoming_friend.avatar_url}
+            sx={{
+              border: 'solid 1px black',
+            }}
+          />
         </ListItemAvatar>
         <ListItemText primary={friend.incoming_friend.username} />
       </ListItem>
       {category === FriendCategory.FRIENDS && (
         <>
           <IconButton
+            onMouseDown={(event) => event.preventDefault()}
             onClick={(event) => {
               event.stopPropagation();
               handleAction(friend, FriendAction.BLOCK);
@@ -57,6 +69,7 @@ export default function FriendDisplay({
             <BlockRounded />
           </IconButton>
           <IconButton
+            onMouseDown={(event) => event.preventDefault()}
             onClick={(event) => {
               event.stopPropagation();
               handleAction(friend, FriendAction.UNFRIEND);
@@ -69,6 +82,7 @@ export default function FriendDisplay({
       {category === FriendCategory.PENDING && (
         <>
           <IconButton
+            onMouseDown={(event) => event.preventDefault()}
             onClick={(event) => {
               event.stopPropagation();
               handleAction(friend, FriendAction.ACCEPT);
@@ -77,6 +91,7 @@ export default function FriendDisplay({
             <CheckCircleRounded />
           </IconButton>
           <IconButton
+            onMouseDown={(event) => event.preventDefault()}
             onClick={(event) => {
               event.stopPropagation();
               handleAction(friend, FriendAction.REJECT);
@@ -88,6 +103,7 @@ export default function FriendDisplay({
       )}
       {category === FriendCategory.INVITED && (
         <IconButton
+          onMouseDown={(event) => event.preventDefault()}
           onClick={(event) => {
             event.stopPropagation();
             handleAction(friend, FriendAction.REMOVE);
@@ -98,6 +114,7 @@ export default function FriendDisplay({
       )}
       {category === FriendCategory.BLOCKED && (
         <IconButton
+          onMouseDown={(event) => event.preventDefault()}
           onClick={(event) => {
             event.stopPropagation();
             handleAction(friend, FriendAction.UNBLOCK);

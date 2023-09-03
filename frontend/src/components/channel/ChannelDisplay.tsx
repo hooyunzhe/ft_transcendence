@@ -80,7 +80,7 @@ export default function ChannelDisplay({
       <ListItem>
         <ListItemButton selected={selected} onClick={selectCurrent}>
           <ListItemAvatar>
-            <Avatar sx={{ bgcolor: '#11111180' }}>
+            <Avatar sx={{ border: 'solid 1px black', bgcolor: '#11111180' }}>
               {channelName.charAt(0)}
             </Avatar>
           </ListItemAvatar>

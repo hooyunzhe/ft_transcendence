@@ -88,7 +88,12 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
           }}
         >
           <ListItemAvatar>
-            <Avatar src={message.user.avatar_url} />
+            <Avatar
+              src={message.user.avatar_url}
+              sx={{
+                border: 'solid 1px black',
+              }}
+            />
           </ListItemAvatar>
           {selectedMessage?.id === message.id ? (
             <InputField

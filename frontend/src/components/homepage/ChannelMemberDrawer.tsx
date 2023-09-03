@@ -9,12 +9,15 @@ import {
   useUtilActions,
 } from '@/lib/stores/useUtilStore';
 import { useCurrentPreference } from '@/lib/stores/useUserStore';
+import { useMatchState } from '@/lib/stores/useGameStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
+import { MatchState } from '@/types/GameTypes';
 import { ListHeaderType } from '@/types/UtilTypes';
 
 export default function ChannelMemberDrawer() {
   const channelMemberDrawerToggle = useChannelMemberDrawerToggle();
   const currentPreference = useCurrentPreference();
+  const matchState = useMatchState();
   const selectedChannel = useSelectedChannel();
   const {
     setChannelMemberDrawerOpen,
@@ -64,13 +67,14 @@ export default function ChannelMemberDrawer() {
             top: '15vh',
             border: 'solid 5px #7209B775',
             borderRadius: '15px 0 0 15px',
-            bgcolor: '#11111180',
+            bgcolor: '#00000000',
           },
         }}
         variant='persistent'
         anchor='right'
         open={
-          channelMemberDrawerToggle || !currentPreference.animations_enabled
+          matchState !== MatchState.INGAME &&
+          (channelMemberDrawerToggle || !currentPreference.animations_enabled)
         }
       >
         <ListHeader title='Members' type={ListHeaderType.CHANNEL_MEMBER} />

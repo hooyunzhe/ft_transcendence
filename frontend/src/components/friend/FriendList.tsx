@@ -100,27 +100,25 @@ export default function FriendList({
           .sort(sortFriends)
           .map((friend, index) =>
             category === FriendCategory.FRIENDS ? (
-              <Box key={index}>
-                <ListItemButton
-                  selected={selectedFriend?.id === friend.id ?? false}
-                  onClick={() => handleFriendSelect(friend)}
-                >
-                  <FriendDisplay
-                    category={category}
-                    friend={friend}
-                    status={userStatus[friend.incoming_friend.id]}
-                    handleAction={handleAction}
-                  />
-                </ListItemButton>
-              </Box>
-            ) : (
-              <Box key={index} sx={{ p: '8px 16px' }}>
+              <ListItemButton
+                key={index}
+                disableGutters
+                selected={selectedFriend?.id === friend.id ?? false}
+                onClick={() => handleFriendSelect(friend)}
+              >
                 <FriendDisplay
                   category={category}
                   friend={friend}
+                  status={userStatus[friend.incoming_friend.id]}
                   handleAction={handleAction}
                 />
-              </Box>
+              </ListItemButton>
+            ) : (
+              <FriendDisplay
+                category={category}
+                friend={friend}
+                handleAction={handleAction}
+              />
             ),
           )}
       </Stack>

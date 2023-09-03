@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Drawer } from '@mui/material';
+import GameBox from '../game/GameBox';
 import ChatBox from '../chat/ChatBox';
 import ProfileBox from '../profile/ProfileBox';
 import LeaderboardBox from '../leaderboard/LeaderboardBox';
@@ -8,14 +9,14 @@ import AchievementBox from '../achievement/AchievementBox';
 import SettingsBox from '../settings/SettingsBox';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { useCurrentPreference } from '@/lib/stores/useUserStore';
+import { useMatchState } from '@/lib/stores/useGameStore';
+import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
-import GameMenu from '../game/GameMenu';
-import GameRender from '../game/GameRender';
-import GameTransition from '../game/GameTransition';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
   const currentPreference = useCurrentPreference();
+  const matchState = useMatchState();
   const [localView, setLocalView] = useState<View | false>(false);
   const [open, setOpen] = useState(false);
   const [toggleTimeoutID, setToggleTimeoutID] = useState<
@@ -53,19 +54,17 @@ export default function ContentBox() {
           bottom: '15vh',
           border: 'solid 5px #7209B775',
           borderRadius: '15px',
-          background: '#11111175',
+          background: '#00000000',
         },
       }}
       variant='persistent'
       anchor='bottom'
       transitionDuration={currentPreference.animations_enabled ? 1000 : 0}
-      open={open}
+      open={matchState !== MatchState.INGAME && open}
     >
+      {localView === View.GAME && <GameBox />}
       {localView === View.CHAT && <ChatBox />}
       {localView === View.PROFILE && <ProfileBox />}
-      {localView === View.GAME && <GameMenu />}
-      {localView === View.LOADING && <GameTransition />}
-      {localView === View.PHASER && <GameRender />}
       {localView === View.LEADERBOARD && <LeaderboardBox />}
       {localView === View.ACHIEVEMENTS && <AchievementBox />}
       {localView === View.SETTINGS && <SettingsBox />}

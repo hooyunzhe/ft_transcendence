@@ -79,17 +79,14 @@ export default function ChannelMemberList() {
     await callAPI('DELETE', 'channel-members', { id: member.id });
     kickChannelMember(member.id);
     emitToSocket(channelSocket, 'kickMember', member);
-    const achievementAlreadyEarned = await handleAchievementsEarned(
-      currentUser.id,
-      4,
-      displayNotification,
+    await handleAchievementsEarned(currentUser.id, 4, displayNotification).then(
+      (earned) =>
+        earned &&
+        displayNotification(
+          'success',
+          `Channel member ${member.user.username} kicked`,
+        ),
     );
-    if (achievementAlreadyEarned) {
-      displayNotification(
-        'success',
-        `Channel member ${member.user.username} kicked`,
-      );
-    }
   }
 
   async function changeToAdmin(member: ChannelMember) {

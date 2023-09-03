@@ -1,30 +1,27 @@
-import { useGameActions } from '@/lib/stores/useGameStore';
-import { useGameSocket } from '@/lib/stores/useSocketStore';
-import { useUtilActions } from '@/lib/stores/useUtilStore';
-import { MatchState } from '@/types/GameTypes';
-import { View } from '@/types/UtilTypes';
-import { Box, Button, ToggleButton } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { Box, Button } from '@mui/material';
+import { useGameSocket } from '@/lib/stores/useSocketStore';
+import { useGameActions } from '@/lib/stores/useGameStore';
+import { MatchState } from '@/types/GameTypes';
 
 export default function GameReady() {
-  const [ready, setReady] = useState(false);
-  const [cooldown, setCooldown] = useState(false);
   const gameSocket = useGameSocket();
   const gameAction = useGameActions();
+  const [ready, setReady] = useState(false);
+  const [cooldown, setCooldown] = useState(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (gameSocket)
       gameSocket.on('start', () => {
         setCooldown(true);
-        timer = setTimeout(() => {
-          gameAction.setMatchState(MatchState.INGAME);
-        }, 3000);
+        gameAction.setMatchState(MatchState.INGAME);
       });
     return () => {
       clearTimeout(timer);
     };
   }, []);
+
   const getReady = () => {
     if (!cooldown && gameSocket) {
       setReady(!ready);

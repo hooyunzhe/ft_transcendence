@@ -10,13 +10,16 @@ import {
   useUtilActions,
 } from '@/lib/stores/useUtilStore';
 import { useCurrentPreference } from '@/lib/stores/useUserStore';
+import { useMatchState } from '@/lib/stores/useGameStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
+import { MatchState } from '@/types/GameTypes';
 import { ListHeaderType, SocialTab } from '@/types/UtilTypes';
 
 export default function SocialDrawer() {
   const socialDrawerToggle = useSocialDrawerToggle();
   const currentPreference = useCurrentPreference();
   const currentSocialTab = useCurrentSocialTab();
+  const matchState = useMatchState();
   const selectedChannel = useSelectedChannel();
   const { setCurrentSocialTab, handleDrawerMouseLeave, handleDrawerMouseOver } =
     useUtilActions();
@@ -43,12 +46,15 @@ export default function SocialDrawer() {
             top: '15vh',
             border: 'solid 5px #7209B775',
             borderRadius: '0 15px 15px 0',
-            bgcolor: '#11111180',
+            bgcolor: '#00000000',
           },
         }}
         variant='persistent'
         anchor='left'
-        open={socialDrawerToggle || !currentPreference.animations_enabled}
+        open={
+          matchState !== MatchState.INGAME &&
+          (socialDrawerToggle || !currentPreference.animations_enabled)
+        }
       >
         <ListHeader title='Social' type={ListHeaderType.SOCIAL} />
         <Tabs

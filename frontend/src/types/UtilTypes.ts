@@ -1,6 +1,4 @@
 export enum View {
-  PHASER = 'PHASER',
-  LOADING = 'LOADING',
   GAME = 'GAME',
   CHAT = 'CHAT',
   PROFILE = 'PROFILE',

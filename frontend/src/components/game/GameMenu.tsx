@@ -1,6 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import {
   Backdrop,
   Box,
@@ -8,23 +7,17 @@ import {
   CircularProgress,
   Typography,
 } from '@mui/material';
+import GameMatchFound from './GameMatchFound';
+import callAPI from '@/lib/callAPI';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
-import GameRender from '@/components/game/GameRender';
 import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
-import ConfirmationPrompt from '../utils/ConfirmationPrompt';
-import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
-import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
-import { View } from '@/types/UtilTypes';
 import { MatchInfo, MatchState } from '@/types/GameTypes';
-import callAPI from '@/lib/callAPI';
-import GameMatchFound from './GameMatchFound';
 
 export default function GameMenu() {
   const gameSocket = useGameSocket();
   const matchState = useMatchState();
   const gameAction = useGameActions();
-  const viewAction = useUtilActions();
   const userId = useCurrentUser();
   const [searchTime, setSearchTime] = useState(0);
 
@@ -64,8 +57,7 @@ export default function GameMenu() {
 
     if (matchState === MatchState.FOUND) {
       const matchFoundtimer = setTimeout(() => {
-        // gameAction.setMatchState(MatchState.INGAME);
-        viewAction.setCurrentView(View.LOADING);
+        gameAction.setMatchState(MatchState.READY);
       }, 3000);
       return () => {
         clearTimeout(matchFoundtimer);
@@ -84,7 +76,6 @@ export default function GameMenu() {
       gameSocket.sendBuffer = [];
       gameSocket.emit('init', userId.id);
     }
-    // viewAction.setCurrentView(View.LOADING);
     console.log(matchState);
   };
 
@@ -116,8 +107,8 @@ export default function GameMenu() {
       callAPI('GET', 'users?search_type=ONE&search_number=' + data.player2),
     ]);
 
-    const player1data = JSON.parse(player1response);
-    const player2data = JSON.parse(player2response);
+    const player1data = player1response.body;
+    const player2data = player2response.body;
 
     console.log(player1data);
     const matchInfo: MatchInfo = {
@@ -136,26 +127,21 @@ export default function GameMenu() {
     <Box
       height='100%'
       display='flex'
-      justifyContent='center'
+      flexDirection='column'
+      justifyContent='space-evenly'
       alignItems='center'
     >
-      <video
-        width='100%'
-        height='100%'
-        autoPlay
-        muted
-        loop
-        style={{
-          position: 'absolute',
-          zIndex: -1,
-          objectFit: 'cover',
-        }}
-      >
-        <source src='/assets/mainmenu.mp4' type='video/mp4' />
-      </video>
-      <Typography variant='h2'>CYBERPONG</Typography>
+      <Typography variant='h2' color='white'>
+        CYBERPONG
+      </Typography>
       <Button
         variant='contained'
+        sx={{
+          bgcolor: '#4CC9F080',
+          ':hover': {
+            bgcolor: '#4CC9F060',
+          },
+        }}
         onClick={findMatch}
         disabled={matchState === MatchState.SEARCHING}
       >

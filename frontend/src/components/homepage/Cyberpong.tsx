@@ -114,20 +114,6 @@ export default function Cyberpong() {
         borderRadius: '15px',
       }}
     >
-      <video
-        width='100%'
-        height='100%'
-        autoPlay
-        muted
-        loop
-        style={{
-          position: 'absolute',
-          zIndex: -1,
-          objectFit: 'cover',
-        }}
-      >
-        <source src='/assets/background1.mp4' type='video/mp4' />
-      </video>
       <NavigationHeader />
       <MainArea />
       <TwoFactorPrompt />

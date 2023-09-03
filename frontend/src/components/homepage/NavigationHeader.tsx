@@ -14,13 +14,16 @@ import {
   useCurrentUser,
 } from '@/lib/stores/useUserStore';
 import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
+import { useMatchState } from '@/lib/stores/useGameStore';
 import { useProfileActions } from '@/lib/stores/useProfileStore';
+import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
 
 export default function NavigationHeader() {
   const currentUser = useCurrentUser();
   const currentPreference = useCurrentPreference();
   const currentView = useCurrentView();
+  const matchState = useMatchState();
   const { setSelectedStatistic } = useProfileActions();
   const { setCurrentView, changeCurrentView } = useUtilActions();
   const [open, setOpen] = useState(false);
@@ -48,7 +51,10 @@ export default function NavigationHeader() {
       variant='persistent'
       anchor='right'
       transitionDuration={1000}
-      open={open || !currentPreference.animations_enabled}
+      open={
+        matchState !== MatchState.INGAME &&
+        (open || !currentPreference.animations_enabled)
+      }
     >
       <Box
         display='flex'
@@ -70,14 +76,6 @@ export default function NavigationHeader() {
             icon={<SportsTennisRounded />}
             value={View.GAME}
             onClick={() => changeCurrentView(View.GAME)}
-          />
-          <Tab
-            sx={{
-              color: 'green',
-            }}
-            icon={<SportsTennisRounded />}
-            value={View.PHASER}
-            onClick={() => changeCurrentView(View.PHASER)}
           />
           <Tab
             icon={<ChatRounded />}
