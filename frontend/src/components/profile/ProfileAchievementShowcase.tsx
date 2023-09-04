@@ -23,7 +23,7 @@ export default function ProfileAchievementShowcase({
       alignContent='flex-start'
       alignItems='center'
       padding='5px'
-      gap='1vh'
+      gap='1vw'
       borderRadius='10px'
       bgcolor='#a291d275'
     >

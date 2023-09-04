@@ -1,15 +1,15 @@
 'use client';
-import Phaser, { Time } from 'phaser';
-import { useEffect, useRef, useState } from 'react';
+import Phaser from 'phaser';
+import { useEffect, useState } from 'react';
 import GameMainScene from './scenes/GameMainScene';
-import GameMatchFoundScene from './scenes/GameVictory';
+import GameVictoryScene from './scenes/GameVictory';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions, useMatchInfo } from '@/lib/stores/useGameStore';
 import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
+import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
-import { Backdrop, Box, Typography } from '@mui/material';
-import GameVictoryScene from './scenes/GameVictory';
+import { Box, Typography } from '@mui/material';
 
 export interface gameData {
   ball: { x: number; y: number };
@@ -24,9 +24,9 @@ export default function GameRender() {
   const gameAction = useGameActions();
   const viewAction = useUtilActions();
   const currentView = useCurrentView();
-  const [disconnected, setDisconnected] = useState(false);
-  const [gameSession, setGameSession] = useState<Phaser.Game | null>(null);
   const matchInfo = useMatchInfo();
+  const { displayBackdrop } = useBackdropActions();
+  const [gameSession, setGameSession] = useState<Phaser.Game | null>(null);
   let gameInfo: gameData;
   const keyLoop = () => {
     if (gameAction.getKeyState('w')) {
@@ -66,7 +66,13 @@ export default function GameRender() {
   useEffect(() => {
     if (gameSocket)
       gameSocket.on('disc', () => {
-        setDisconnected(true);
+        displayBackdrop(
+          <Box sx={{ ml: 2 }}>
+            <Typography variant='h6'>
+              Opponent disconnected, returning to main menu...
+            </Typography>
+          </Box>,
+        );
         const timer = setTimeout(() => {
           gameAction.setMatchState(MatchState.IDLE);
           viewAction.setCurrentView(View.GAME);
@@ -93,8 +99,6 @@ export default function GameRender() {
       scale: {
         mode: Phaser.Scale.AUTO,
         autoCenter: Phaser.Scale.Center.CENTER_BOTH,
-        //     width: '100%',
-        // height: '100%',
       },
       parent: 'maingame',
 
@@ -122,18 +126,5 @@ export default function GameRender() {
     gameAction.setKeyState(event.key, true);
   }
 
-  return (
-    <div id='maingame' style={{}}>
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={disconnected}
-      >
-        <Box sx={{ ml: 2 }}>
-          <Typography variant='h6'>
-            Opponent disconnected, returning to main menu...
-          </Typography>
-        </Box>
-      </Backdrop>
-    </div>
-  );
+  return <div id='maingame' />;
 }

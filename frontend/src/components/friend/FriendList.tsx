@@ -115,6 +115,7 @@ export default function FriendList({
               </ListItemButton>
             ) : (
               <FriendDisplay
+                key={index}
                 category={category}
                 friend={friend}
                 handleAction={handleAction}

@@ -1,27 +1,22 @@
 'use client';
-import { useEffect, useState } from 'react';
-import {
-  Backdrop,
-  Box,
-  Button,
-  CircularProgress,
-  Typography,
-} from '@mui/material';
+import { useEffect } from 'react';
+import { Box, Button, Typography } from '@mui/material';
+import GameSearch from './GameSearch';
 import GameMatchFound from './GameMatchFound';
 import callAPI from '@/lib/callAPI';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { MatchInfo, MatchState } from '@/types/GameTypes';
 
 export default function GameMenu() {
+  const currentUser = useCurrentUser();
   const gameSocket = useGameSocket();
   const matchState = useMatchState();
   const gameAction = useGameActions();
-  const userId = useCurrentUser();
-  const [searchTime, setSearchTime] = useState(0);
+  const { displayBackdrop, resetBackdrop } = useBackdropActions();
 
-  const fontUrl = '/assets/CyberwayRider.ttf';
   useEffect(() => {
     if (!gameSocket) return;
     gameSocket.on(
@@ -32,11 +27,12 @@ export default function GameMenu() {
         const matchInfo = await getPlayerData(data);
         console.log(matchInfo);
         gameAction.setMatchInfo(matchInfo);
+        displayBackdrop(<GameMatchFound />);
       },
     ),
       gameSocket.on('connect', () => {
         gameSocket.sendBuffer = [];
-        gameSocket.emit('init', userId.id);
+        gameSocket.emit('init', currentUser.id);
       });
     gameSocket.on('disconnect', () => {
       gameSocket.sendBuffer = [];
@@ -50,31 +46,24 @@ export default function GameMenu() {
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (matchState === MatchState.SEARCHING)
-        setSearchTime((prevTime) => prevTime + 1);
-    }, 500);
-
     if (matchState === MatchState.FOUND) {
       const matchFoundtimer = setTimeout(() => {
         gameAction.setMatchState(MatchState.READY);
+        resetBackdrop();
       }, 3000);
       return () => {
         clearTimeout(matchFoundtimer);
       };
     }
-    return () => {
-      clearInterval(timer);
-      setSearchTime(0);
-    };
   }, [matchState]);
 
   const findMatch = () => {
     if (gameSocket) {
       gameSocket.connect();
-      gameAction.setMatchState(MatchState.SEARCHING);
       gameSocket.sendBuffer = [];
-      gameSocket.emit('init', userId.id);
+      gameSocket.emit('init', currentUser.id);
+      gameAction.setMatchState(MatchState.SEARCHING);
+      displayBackdrop(<GameSearch />, cancelFindMatch);
     }
     console.log(matchState);
   };
@@ -143,27 +132,9 @@ export default function GameMenu() {
           },
         }}
         onClick={findMatch}
-        disabled={matchState === MatchState.SEARCHING}
       >
         Start Game
       </Button>
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={matchState === MatchState.SEARCHING}
-        onClick={cancelFindMatch}
-      >
-        <CircularProgress color='inherit' />
-        <Box sx={{ ml: 2 }}>
-          <Typography variant='h6'>Searching Match...</Typography>
-          <Typography>Time elapsed: {searchTime} seconds</Typography>
-        </Box>
-      </Backdrop>
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={matchState === MatchState.FOUND}
-      >
-        <GameMatchFound />
-      </Backdrop>
     </Box>
   );
 }

@@ -14,13 +14,14 @@ export default function ProfileAchievementDisplay({
 }: ProfileAchievementDisplayProps) {
   return (
     <Box
-      width='13.5vw'
+      width='13.75vw'
       height='17vh'
       display='flex'
       flexDirection='column'
       justifyContent='space-around'
       alignItems='center'
       borderRadius='10px'
+      bgcolor='#A4B5C6'
     >
       <Avatar
         sx={{

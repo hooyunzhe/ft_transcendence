@@ -33,7 +33,7 @@ export default function ProfileMatchDisplay({
         match.winner_id === currentPlayer.id ? '#4A8179' : '#EB370050'
       }`}
       borderRadius='10px'
-      bgcolor={match.winner_id === currentPlayer.id ? '#00C5AD' : '#EB370085'}
+      bgcolor={match.winner_id === currentPlayer.id ? '#00930095' : '#EB370095'}
     >
       <Avatar
         src={

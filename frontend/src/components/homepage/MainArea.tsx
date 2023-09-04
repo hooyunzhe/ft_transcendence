@@ -1,22 +1,28 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Backdrop, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import GameRender from '../game/GameRender';
 import SocialDrawer from './SocialDrawer';
 import ContentBox from './ContentBox';
 import ChannelMemberDrawer from './ChannelMemberDrawer';
 import { useMatchState } from '@/lib/stores/useGameStore';
+import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { MatchState } from '@/types/GameTypes';
 
 export default function MainArea() {
   const matchState = useMatchState();
+  const { displayBackdrop, resetBackdrop } = useBackdropActions();
   const [displayGame, setDisplayGame] = useState(false);
 
   useEffect(() => {
     let timeoutID: NodeJS.Timeout;
 
     if (matchState === MatchState.INGAME) {
-      timeoutID = setTimeout(() => setDisplayGame(true), 3000);
+      timeoutID = setTimeout(() => {
+        setDisplayGame(true);
+        resetBackdrop();
+      }, 1500);
+      displayBackdrop(null, undefined, true);
     }
 
     return () => clearTimeout(timeoutID);
@@ -57,11 +63,6 @@ export default function MainArea() {
           <ChannelMemberDrawer />
         </Box>
       )}
-      <Backdrop
-        sx={{ bgcolor: 'black' }}
-        transitionDuration={3000}
-        open={matchState === MatchState.INGAME && !displayGame}
-      />
     </>
   );
 }

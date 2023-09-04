@@ -26,6 +26,7 @@ import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
+import BackdropOverlay from '../utils/BackdropOverlay';
 
 export default function Cyberpong() {
   const currentUser = useCurrentUser();
@@ -120,6 +121,7 @@ export default function Cyberpong() {
       <DialogPrompt />
       <ConfirmationPrompt />
       <NotificationBar />
+      <BackdropOverlay />
     </Box>
   );
 }
