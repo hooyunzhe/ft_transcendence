@@ -73,6 +73,8 @@ export default class GameMainScene extends Phaser.Scene {
   }
 
   create() {
+    const data = this.prediction(Date.now());
+    console.log(data.paddlesize);
     this.windowsize = {
       width: Number(this.game.config.width),
       height: Number(this.game.config.height),
@@ -330,14 +332,20 @@ export default class GameMainScene extends Phaser.Scene {
         this.windowsize.height * 0.5,
         'paddle1',
       )
-      .setScale(2, 2);
+      .setDisplaySize(
+        data.paddlesize.paddle1.width,
+        data.paddlesize.paddle1.height,
+      );
     this.paddle2 = game.physics.add
       .sprite(
         this.windowsize.width * 0.95,
         this.windowsize.height * 0.5,
         'paddle2',
       )
-      .setScale(2, 2);
+      .setDisplaySize(
+        data.paddlesize.paddle2.width,
+        data.paddlesize.paddle2.height,
+      );
 
     const redglow = this.paddle1.preFX?.addGlow(0xff4444, 0, 0, false, 0.1, 3);
     const blueglow = this.paddle2.preFX?.addGlow(
@@ -503,6 +511,14 @@ export default class GameMainScene extends Phaser.Scene {
         this.prevDirectionX = data.balldirection.x;
         this.prevDirectionY = data.balldirection.y;
         this.score = data.score;
+        this.paddle1?.setDisplaySize(
+          data.paddlesize.paddle1.width,
+          data.paddlesize.paddle1.height,
+        );
+        this.paddle1?.setDisplaySize(
+          data.paddlesize.paddle2.width,
+          data.paddlesize.paddle2.height,
+        );
       }
     }
     if (this.goalEffectToggle) this.triggerOutofBoundEffect();

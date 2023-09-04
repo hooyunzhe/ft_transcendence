@@ -32,7 +32,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('init')
   async setup(
-    @MessageBody() user_id: string,
+    @MessageBody() user_id: string, invited: boolean,
     @ConnectedSocket() client: Socket,
   ) {
     client.data.user_id ??= user_id;
@@ -81,7 +81,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('ready')
-  async start(@ConnectedSocket() client: Socket) {
+  async start(@MessageBody() classes: number, @ConnectedSocket() client: Socket) {
     const players = await this.fetchPlayer(client.data.roomid);
     if (players.length != 2) return;
     client.data.ready = !client.data.ready;
@@ -91,6 +91,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       'ready for the match: ',
       client.data.ready,
     );
+    this.roomlist.get(client.data.roomid).gameSetClass(client.data.player, classes);
     if (players.every((player) => player.data.ready)) {
       players.forEach((player) => player.emit('start', client.data.roomid));
       console.log('Game is starting in room :', client.data.roomid);
@@ -156,6 +157,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         .gameSetPaddlePosition(client.data.player, 1);
     if (movement === ' ')
       this.roomlist.get(client.data.roomid).gameStart(client.data.player);
+    if (movement === 'e')
+    this.roomlist.get(client.data.roomid).gameActiveSkill(client.data.player);
   }
 
   @SubscribeMessage('spectator')

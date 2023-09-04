@@ -8,21 +8,27 @@ interface Coor {
 }
 
 class Player {
-  player: number;
-  cooldown: NodeJS.Timer;
-  paddleSize: number = 1;
-  paddleSpeed: number = 1;
-  ballSpeed: number = 1;
-  activated: boolean = false;
+  timer: NodeJS.Timer;
+  paddleSize: number;
+  paddleSpeed: number;
+  ballSpeed: number;
+  cooldown: boolean;
   activeSkill: (player: number) => boolean | null = null;
 
-  constructor(classes: number, player: number, activeSkill?: (player: number) => boolean)
+  constructor()
+  {
+    this.paddleSize = 160;
+    this.paddleSpeed = 1;
+    this.ballSpeed = 1;
+    this.cooldown = false;
+  }
+
+  setClass(classes: number, activeSkill?: (player: number) => boolean)
   {
     this.activeSkill = activeSkill;
-    this.player = player;
     switch (classes) {
       case 1:
-          this.paddleSize = 1.2;
+          this.paddleSize = 192;
         break;
       case 2:
           this.paddleSpeed = 1.2;
@@ -33,9 +39,11 @@ class Player {
       default:
         break;
     }
-
   }
 
+  setCooldown(cd: boolean){
+    this.cooldown = cd;
+  }
 }
 
 class RectObj {
@@ -117,26 +125,25 @@ export class GameClass {
       x: 0,
       y: 0,
     };
-
+    this.playerClass = {player1: new Player(), player2: new Player()}
     this.velocity = 15;
     this.score = {
       player1: 0,
       player2: 0,
     };
-    this.paddleClass.paddle1 = new RectObj(
+    this.paddleClass = {paddle1 : new RectObj(
       this.windowSize.x * 0.05,
       this.windowSize.y / 2,
       20,
       160,
       1,
-    );
-    this.paddleClass.paddle2 = new RectObj(
+    ), paddle2: new RectObj(
       this.windowSize.x * 0.95,
       this.windowSize.y / 2,
       20,
       160,
       2,
-    );
+    )}
 
     this.ball = new RectObj(
       10 + (this.paddleClass.paddle1.right() + 30),
@@ -147,6 +154,7 @@ export class GameClass {
     this.matchinfo = matchinfo;
     this.socketHandler = socketHandler;
     this.matchHandler = matchHandler;
+
   }
 
   gameStart(player: number) {
@@ -230,6 +238,16 @@ export class GameClass {
       paddle1: { x: this.paddleClass.paddle1.x, y: this.paddleClass.paddle1.y },
       paddle2: { x: this.paddleClass.paddle2.x, y: this.paddleClass.paddle2.y },
       score: this.score,
+      paddlesize: {
+        paddle1: {
+          width: this.paddleClass.paddle1.width,
+          height: this.paddleClass.paddle1.height,
+        },
+        paddle2: {
+          width: this.paddleClass.paddle2.width,
+          height: this.paddleClass.paddle2.height,
+        },
+      },
     });
   }
 
@@ -284,25 +302,32 @@ export class GameClass {
 
   activeStickyPaddle = (player: number) => {
     if (Math.abs(this.paddleClass[`paddle${player}`] - this.ball.x) < 30)
+    {
       this.ball.y = this.paddleClass[`paddle${player}`].y;
-
+      return true;
+    }
+    else
+      return false
   }
 
   activeSlowTime = (player: number) => {
-    if (!this.slowed)
-    {
-      this.timeFactor = 0.5
+    if (!this.slowed) {
+      console.log("slowed", this.slowed)
+      this.timeFactor = 0.5;
       this.slowed = true;
       const timer = setTimeout(() => {
+
+        console.log("unslowed", this.slowed)
         this.timeFactor = 1;
         this.slowed = false;
+        clearTimeout(timer);
       }, 5000);
 
-      return (() => {
-        clearTimeout (timer);
-      }
-    )}
-  }
+      return true;
+    }
+  else
+    return false;
+}
 
   activeInvertPaddle = (player: number) => {
     let opponent: number;
@@ -323,45 +348,46 @@ export class GameClass {
       const timer = setTimeout(() => {
         this.inverted = false;
         this.playerClass[`player${opponent}`].paddleSpeed * -1;
-      }, 5000)
-
-      return (() => {
         clearTimeout(timer);
-      })
+      }, 5000)
+      return true;
     }
+    return false;
   }
 
   gameSetClass(player: number, classes: number)
   {
     switch (classes) {
       case 1:
-        this.playerClass[`player${player}`] = new Player(classes, player);
+        this.playerClass[`player${player}`].setClass(classes, this.activeStickyPaddle);
         break;
       case 2:
-        this.playerClass[`player${player}`] = new Player(classes, player);
+        this.playerClass[`player${player}`].setClass(classes, this.activeSlowTime);
         break;
       case 3:
-        this.playerClass[`player${player}`] = new Player(classes, player);
+        this.playerClass[`player${player}`].setClass(classes, this.activeInvertPaddle);
         break;
       default:
-        this.playerClass[`player${player}`] = new Player(0, null);
+        this.playerClass[`player${player}`].setClass(classes, null);
         break;
     }
-    
+    this.paddleClass[`paddle${player}`].height = this.playerClass[`player${player}`].paddleSize;
   }
 
   gameActiveSkill(player: number)
   {
-    if (this.started && this.playerClass[`player${player}`].activeSkill())
+    if (this.started && this.playerClass[`player${player}`].activeSkill && !this.playerClass[`player${player}`].cooldown)
     {
+      console.log(`player${player}`, " used skill, entering cd", this.playerClass[`player${player}`].cooldown);
       if (this.playerClass[`player${player}`].activeSkill(player))
       {
-        this.playerClass[`player${player}`].activated = true
-        this.playerClass[`player${player}`].cooldown = setTimeout(() => {
-          this.playerClass[`player${player}`].activated = false;
-      }, 30000);
-
-      return (() => clearTimeout( this.playerClass[`player${player}`].cooldown));
+        this.playerClass[`player${player}`].setCooldown(true);
+        console.log(`player${player}`, " used skill, entering cd");
+        this.playerClass[`player${player}`].timer = setTimeout(() => {
+          console.log(`player${player}`, " cooldown done");
+          this.playerClass[`player${player}`].setCooldown(false);
+          clearTimeout( this.playerClass[`player${player}`].cooldown);
+      }, 10000);
       }
     }
   }
