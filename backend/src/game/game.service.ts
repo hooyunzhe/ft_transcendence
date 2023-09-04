@@ -3,6 +3,7 @@ import { Server } from 'socket.io';
 import { GameClass } from './game.class';
 import { MatchService } from 'src/match/match.service';
 import { CreateMatchDto } from 'src/match/dto/create-match.dto';
+import { StatisticService } from 'src/statistic/statistic.service';
 
 export interface MatchInfo {
   roomid: string;
@@ -14,6 +15,9 @@ export class GameService {
   constructor(
     @Inject(MatchService)
     private readonly matchService: MatchService,
+
+    @Inject(StatisticService)
+    private readonly statisticService: StatisticService,
   ) {}
 
   createGame(
@@ -23,7 +27,10 @@ export class GameService {
     const newGame = new GameClass(matchinfo, socketHandler, this.matchHandler);
     return newGame;
   }
-  matchHandler = (matchDto: CreateMatchDto) => {
-    this.matchService.create(matchDto);
+  matchHandler = async (matchDto: CreateMatchDto) => {
+    const newMatch = await this.matchService.create(matchDto);
+    this.statisticService.update({user_id: newMatch.player_one.id, match_id: newMatch.id});
+    this.statisticService.update({user_id: newMatch.player_two.id, match_id: newMatch.id});
   };
+  
 }

@@ -32,16 +32,51 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('init')
   async setup(
-    @MessageBody() user_id: string, invited: boolean,
+    @MessageBody() user_id: string,
     @ConnectedSocket() client: Socket,
   ) {
     client.data.user_id ??= user_id;
     client.data.ready = false;
     client.join(client.data.roomid);
     console.log('user id:', client.data.user_id);
-    const client_list = await this.fetchPlayer('');
+    this.makingRoom('');
+  }
+
+  async makingRoom(roomid: string)
+  {
+    const client_list = await this.fetchPlayer(roomid);
     if (client_list.length >= 2) this.matchMaking(client_list.splice(0, 2));
   }
+
+  @SubscribeMessage('invite')
+    async inviteGame(@MessageBody() user_id: string, opponent_id: string,
+  @ConnectedSocket() client: Socket) {
+    client.data.user_id ??= user_id;
+    const playerlist = await this.fetchPlayer('')
+    const opponent = playerlist.find((player) => player.data.user_id === opponent_id);
+    if (opponent)
+      return;
+    client.join(client.id);
+    client.data.ready = false;
+    client.emit('invite', client.id);
+  }
+
+
+  @SubscribeMessage('accept')
+  acceptGame(@MessageBody() user_id: string, client_id: string,
+   @ConnectedSocket() client: Socket) {
+     client.data.user_id ??= user_id;
+     client.join(client_id);
+     client.data.ready = false;
+     this.makingRoom(client_id);
+   }
+ 
+   @SubscribeMessage('reject')
+   rejectGame(@MessageBody() user_id: string, client_id: string,
+    @ConnectedSocket() client: Socket) {
+      this.server.to(client_id).emit('reject');
+    }
+
   async handleDisconnect(client: Socket) {
     if (client.data.player === 0) return;
     this.server.to(client.data.roomid).emit('disc');
