@@ -7,8 +7,10 @@ export enum View {
   SETTINGS = 'SETTINGS',
 }
 
-export enum ListHeaderType {
+export enum ToolbarHeaderType {
+  NONE = 'NONE',
   SOCIAL = 'SOCIAL',
+  DIRECT_MESSAGE = 'DIRECT_MESSAGE',
   CHANNEL_MEMBER = 'CHANNEL_MEMBER',
   LEADERBOARD = 'LEADERBOARD',
   ACHIEVEMENTS = 'ACHIEVEMENTS',

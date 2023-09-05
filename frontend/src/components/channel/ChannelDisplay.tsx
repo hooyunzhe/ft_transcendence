@@ -7,6 +7,7 @@ import {
   ListItemButton,
   ListItemText,
   Box,
+  ListItemIcon,
 } from '@mui/material';
 import {
   AccountCircleRounded,
@@ -85,9 +86,13 @@ export default function ChannelDisplay({
             </Avatar>
           </ListItemAvatar>
           <ListItemText primary={channelName} sx={{ wordBreak: 'break-all' }} />
-          {channelType === ChannelType.PUBLIC && <AccountCircleRounded />}
-          {channelType === ChannelType.PRIVATE && <AdminPanelSettingsRounded />}
-          {channelType === ChannelType.PROTECTED && <LockPersonRounded />}
+          <ListItemIcon sx={{ minWidth: '0px' }}>
+            {channelType === ChannelType.PUBLIC && <AccountCircleRounded />}
+            {channelType === ChannelType.PRIVATE && (
+              <AdminPanelSettingsRounded />
+            )}
+            {channelType === ChannelType.PROTECTED && <LockPersonRounded />}
+          </ListItemIcon>
         </ListItemButton>
         {isOwner ? (
           <ChannelSettings

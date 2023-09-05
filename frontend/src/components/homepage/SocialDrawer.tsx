@@ -1,7 +1,7 @@
 'use client';
 import { Box, Drawer, Tab, Tabs } from '@mui/material';
 import Image from 'next/image';
-import ListHeader from '../utils/ListHeader';
+import ToolbarHeader from '../utils/ToolbarHeader';
 import FriendStack from '../friend/FriendStack';
 import ChannelList from '../channel/ChannelList';
 import {
@@ -13,7 +13,7 @@ import { useCurrentPreference } from '@/lib/stores/useUserStore';
 import { useMatchState } from '@/lib/stores/useGameStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { MatchState } from '@/types/GameTypes';
-import { ListHeaderType, SocialTab } from '@/types/UtilTypes';
+import { ToolbarHeaderType, SocialTab } from '@/types/UtilTypes';
 
 export default function SocialDrawer() {
   const socialDrawerToggle = useSocialDrawerToggle();
@@ -56,7 +56,7 @@ export default function SocialDrawer() {
           (socialDrawerToggle || !currentPreference.animations_enabled)
         }
       >
-        <ListHeader title='Social' type={ListHeaderType.SOCIAL} />
+        <ToolbarHeader title='Social' type={ToolbarHeaderType.SOCIAL} />
         <Tabs
           sx={{
             margin: '3px',

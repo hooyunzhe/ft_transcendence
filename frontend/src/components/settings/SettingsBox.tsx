@@ -1,12 +1,12 @@
 'use client';
 import { Box } from '@mui/material';
-import ListHeader from '../utils/ListHeader';
+import ToolbarHeader from '../utils/ToolbarHeader';
 import SettingsAvatarSegment from './SettingsAvatarSegment';
 import SettingsUsernameSegment from './SettingsUsernameSegment';
 import SettingsTwoFactorSegment from './SettingsTwoFactorSegment';
 import SettingsPersonalPreferences from './SettingsPersonalPreferences';
 import SettingsAccountDangerZone from './SettingsAccountDangerZone';
-import { ListHeaderType } from '@/types/UtilTypes';
+import { ToolbarHeaderType } from '@/types/UtilTypes';
 
 export default function SettingsBox() {
   return (
@@ -16,7 +16,7 @@ export default function SettingsBox() {
       flexDirection='column'
       justifyContent='space-between'
     >
-      <ListHeader title='Settings' type={ListHeaderType.SETTINGS} />
+      <ToolbarHeader title='Settings' type={ToolbarHeaderType.SETTINGS} />
       <Box
         alignSelf='center'
         width='50%'

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Box, Drawer } from '@mui/material';
-import ListHeader from '../utils/ListHeader';
+import ToolbarHeader from '../utils/ToolbarHeader';
 import ChannelMemberList from '../channel-member/ChannelMemberList';
 import {
   useChannelMemberDrawerToggle,
@@ -12,7 +12,8 @@ import { useCurrentPreference } from '@/lib/stores/useUserStore';
 import { useMatchState } from '@/lib/stores/useGameStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { MatchState } from '@/types/GameTypes';
-import { ListHeaderType } from '@/types/UtilTypes';
+import { ChannelType } from '@/types/ChannelTypes';
+import { ToolbarHeaderType } from '@/types/UtilTypes';
 
 export default function ChannelMemberDrawer() {
   const channelMemberDrawerToggle = useChannelMemberDrawerToggle();
@@ -77,7 +78,22 @@ export default function ChannelMemberDrawer() {
           (channelMemberDrawerToggle || !currentPreference.animations_enabled)
         }
       >
-        <ListHeader title='Members' type={ListHeaderType.CHANNEL_MEMBER} />
+        <ToolbarHeader
+          title={
+            !selectedChannel
+              ? ''
+              : selectedChannel.type === ChannelType.DIRECT
+              ? 'Direct Message'
+              : 'Members'
+          }
+          type={
+            !selectedChannel
+              ? ToolbarHeaderType.NONE
+              : selectedChannel.type === ChannelType.DIRECT
+              ? ToolbarHeaderType.DIRECT_MESSAGE
+              : ToolbarHeaderType.CHANNEL_MEMBER
+          }
+        />
         <ChannelMemberList />
       </Drawer>
     </Box>

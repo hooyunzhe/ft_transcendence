@@ -1,9 +1,8 @@
 'use client';
-import { Button, ListItem, ListItemIcon, Paper, Stack } from '@mui/material';
-import { LocalPolice, Shield } from '@mui/icons-material';
+import { Button, IconButton, ListItem, Stack } from '@mui/material';
+import { SportsTennis } from '@mui/icons-material';
 import ChannelMemberAddPrompt from './ChannelMemberAddPrompt';
 import ChannelMemberDisplay from './ChannelMemberDisplay';
-import ChannelMemberActionMenu from './ChannelMemberActionMenu';
 import ChannelMemberMutePrompt from './ChannelMemberMutePrompt';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
@@ -20,6 +19,7 @@ import { useTwoFactorActions } from '@/lib/stores/useTwoFactorStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { FriendStatus } from '@/types/FriendTypes';
 import {
   ChannelMember,
@@ -27,7 +27,7 @@ import {
   ChannelMemberRole,
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
-import { useAchievementActions } from '@/lib/stores/useAchievementStore';
+import { ChannelType } from '@/types/ChannelTypes';
 
 export default function ChannelMemberList() {
   const selectedChannel = useSelectedChannel();
@@ -60,17 +60,14 @@ export default function ChannelMemberList() {
   );
 
   function getCurrentRole(): ChannelMemberRole {
-    if (!selectedChannel?.id) {
-      return ChannelMemberRole.MEMBER;
+    if (selectedChannel) {
+      if (isChannelOwner(currentUser.id, selectedChannel.id)) {
+        return ChannelMemberRole.OWNER;
+      }
+      if (isChannelAdmin(currentUser.id, selectedChannel.id))
+        return ChannelMemberRole.ADMIN;
     }
-    if (isChannelOwner(currentUser.id, selectedChannel?.id)) {
-      return ChannelMemberRole.OWNER;
-    }
-    if (isChannelAdmin(currentUser.id, selectedChannel?.id))
-      return ChannelMemberRole.ADMIN;
-    else {
-      return ChannelMemberRole.MEMBER;
-    }
+    return ChannelMemberRole.MEMBER;
   }
 
   // * Helper Function for update locals * //
@@ -308,6 +305,8 @@ export default function ChannelMemberList() {
           (member) =>
             member.channel.id === selectedChannel?.id &&
             member.status !== ChannelMemberStatus.BANNED &&
+            (member.user.id !== currentUser.id ||
+              member.channel.type !== ChannelType.DIRECT) &&
             !isFriendBlocked(member.user.id),
         )
         .map((member: ChannelMember, index: number) => (
@@ -321,26 +320,15 @@ export default function ChannelMemberList() {
             component='div'
           >
             <ChannelMemberDisplay
-              key={index}
-              stylesDisabled
               user={member.user}
+              member={member}
+              currentUserRole={getCurrentRole()}
+              handleAction={handleDisplayAction}
             />
-            {member.role === ChannelMemberRole.OWNER && (
-              <ListItemIcon>
-                <LocalPolice />
-              </ListItemIcon>
-            )}
-            {member.role === ChannelMemberRole.ADMIN && (
-              <ListItemIcon>
-                <Shield />
-              </ListItemIcon>
-            )}
-            {member.role !== ChannelMemberRole.OWNER && (
-              <ChannelMemberActionMenu
-                member={member}
-                currentUserRole={getCurrentRole()}
-                handleAction={handleDisplayAction}
-              />
+            {member.user.id !== currentUser.id && (
+              <IconButton onClick={() => null}>
+                <SportsTennis />
+              </IconButton>
             )}
           </ListItem>
         ))}

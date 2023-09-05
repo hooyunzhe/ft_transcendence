@@ -3,7 +3,6 @@ import { Avatar, Box, Typography } from '@mui/material';
 import { useGameActions } from '@/lib/stores/useGameStore';
 import { Match } from '@/types/MatchTypes';
 import { User } from '@/types/UserTypes';
-import ProfileSkillIcon from './ProfileSkillIcon';
 
 interface ProfileMatchDisplayProps {
   match: Match;
@@ -14,13 +13,8 @@ export default function ProfileMatchDisplay({
   match,
   currentPlayer,
 }: ProfileMatchDisplayProps) {
-  const {
-    getMatchOpponent,
-    getMatchScore,
-    getMatchSkills,
-    getMatchPath,
-    getPathName,
-  } = useGameActions();
+  const { getMatchOpponent, getMatchScore, getMatchPath, getPathName } =
+    useGameActions();
 
   return (
     <Box
@@ -62,11 +56,6 @@ export default function ProfileMatchDisplay({
         <Typography variant='body1'>
           {getPathName(getMatchPath(match, currentPlayer.id))}
         </Typography>
-        <Box>
-          {getMatchSkills(match, currentPlayer.id).map((skillID, index) => (
-            <ProfileSkillIcon key={index} skillID={skillID} />
-          ))}
-        </Box>
       </Box>
       <Typography minWidth='5vw' variant='h6' align='right'>
         {getMatchScore(match, currentPlayer.id)}
