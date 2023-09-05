@@ -1,7 +1,7 @@
 'use client';
 import { Box, Typography } from '@mui/material';
-import { useRecentMatches } from '@/lib/stores/useGameStore';
 import ProfileMatchDisplay from './ProfileMatchDisplay';
+import { useRecentMatches } from '@/lib/stores/useGameStore';
 import { Statistic } from '@/types/StatisticTypes';
 
 interface ProfileMatchHistoryProps {

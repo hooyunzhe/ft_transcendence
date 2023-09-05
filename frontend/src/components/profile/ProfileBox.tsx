@@ -14,7 +14,7 @@ export default function ProfileBox() {
       height='100%'
       flexDirection='column'
       justifyContent='space-between'
-      gap='1vh'
+      gap='3vh'
     >
       {selectedStatistic ? (
         <>

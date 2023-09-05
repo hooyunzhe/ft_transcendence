@@ -216,8 +216,8 @@ export class GameClass {
         winner_id: this.matchinfo[`player${player}`],
         p1_score: this.score.player1,
         p2_score: this.score.player2,
-        p1_skills: '1231',
-        p2_skills: '1231',
+        p1_class_id: 0,
+        p2_class_id: 0,
       });
     }
     this.ServingPaddle = player;

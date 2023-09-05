@@ -1,4 +1,5 @@
 'use client';
+import '../../styles/cyberfont.css';
 import Image from 'next/image';
 import { signIn } from 'next-auth/react';
 import { Box, Button, Slide, Typography } from '@mui/material';
@@ -13,8 +14,17 @@ export default function Login() {
       justifyContent='space-around'
     >
       <Slide direction='down' in timeout={2500}>
-        <Typography color='#DDDDDD' variant='h1' align='center'>
-          Cyberpong™
+        <Typography
+          sx={{
+            textShadow: '4px 4px 6px black',
+          }}
+          fontFamily='cyberfont'
+          color='#DDDDDD'
+          variant='h1'
+          align='center'
+          letterSpacing='1rem'
+        >
+          Cyberpong
         </Typography>
       </Slide>
       <Slide direction='up' in timeout={2500}>

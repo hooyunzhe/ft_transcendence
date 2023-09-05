@@ -17,8 +17,8 @@ export default function LeaderboardDisplay({
   isCurrentUser,
 }: LeaderboardDisplayProps) {
   const leaderboardDisplay = useRef<HTMLDivElement | null>(null);
-  const { getFavoritePath } = useProfileActions();
-  const { getPathName } = useGameActions();
+  const { getFavoriteClass } = useProfileActions();
+  const { getClassName } = useGameActions();
 
   useEffect(() => {
     let scrollTimeoutID: NodeJS.Timeout;
@@ -60,7 +60,7 @@ export default function LeaderboardDisplay({
     {
       minWidth: '5.5vw',
       name: 'Favorite Path',
-      stat: `${getPathName(getFavoritePath(statistic))}`,
+      stat: `${getClassName(getFavoriteClass(statistic))}`,
     },
   ];
 

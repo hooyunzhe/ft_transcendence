@@ -1,7 +1,8 @@
 'use client';
 import { Avatar, Box, Typography } from '@mui/material';
+import { FitnessCenter, Psychology, ShutterSpeed } from '@mui/icons-material';
 import { useGameActions } from '@/lib/stores/useGameStore';
-import { Match } from '@/types/MatchTypes';
+import { Match, SkillClass } from '@/types/MatchTypes';
 import { User } from '@/types/UserTypes';
 
 interface ProfileMatchDisplayProps {
@@ -13,8 +14,9 @@ export default function ProfileMatchDisplay({
   match,
   currentPlayer,
 }: ProfileMatchDisplayProps) {
-  const { getMatchOpponent, getMatchScore, getMatchPath, getPathName } =
+  const { getMatchOpponent, getMatchScore, getMatchClass, getClassName } =
     useGameActions();
+  const matchClass = getMatchClass(match, currentPlayer.id);
 
   return (
     <Box
@@ -23,9 +25,6 @@ export default function ProfileMatchDisplay({
       display='flex'
       justifyContent='space-evenly'
       alignItems='center'
-      border={`solid 2px ${
-        match.winner_id === currentPlayer.id ? '#4A8179' : '#EB370050'
-      }`}
       borderRadius='10px'
       bgcolor={match.winner_id === currentPlayer.id ? '#00930095' : '#EB370095'}
     >
@@ -48,14 +47,16 @@ export default function ProfileMatchDisplay({
         </Typography>
       </Box>
       <Box
+        minWidth='5vw'
         display='flex'
         flexDirection='column'
         justifyContent='space-around'
-        alignItems='flex-start'
+        alignItems='center'
       >
-        <Typography variant='body1'>
-          {getPathName(getMatchPath(match, currentPlayer.id))}
-        </Typography>
+        <Typography variant='body1'>{getClassName(matchClass)}</Typography>
+        {matchClass === SkillClass.STRENGTH && <FitnessCenter />}
+        {matchClass === SkillClass.SPEED && <ShutterSpeed />}
+        {matchClass === SkillClass.TECH && <Psychology />}
       </Box>
       <Typography minWidth='5vw' variant='h6' align='right'>
         {getMatchScore(match, currentPlayer.id)}

@@ -10,25 +10,31 @@ interface ProfileStatsProps {
 }
 
 export default function ProfileStats({ statistic }: ProfileStatsProps) {
-  const { getFavoritePath } = useProfileActions();
-  const { getPathName } = useGameActions();
+  const { getFavoriteClass } = useProfileActions();
+  const { getNotableOpponents, getClassName } = useGameActions();
+  const { punchingBag, archenemy } = getNotableOpponents(statistic.user.id);
 
   return (
-    <Box display='flex' justifyContent='space-between' alignItems='center'>
+    <Box height='100%' display='flex' justifyContent='space-between'>
       <ProfileStatCard
         description='Wins / Losses'
         stats={`${statistic.wins} / ${statistic.losses}`}
       />
       <ProfileStatCard
+        alignEnd
         description='Highest Winstreak'
         stats={`${statistic.highest_winstreak}`}
       />
       <ProfileStatCard
-        description='Favorite Path'
-        stats={getPathName(getFavoritePath(statistic))}
+        description='Favorite Class'
+        stats={getClassName(getFavoriteClass(statistic))}
       />
-      <ProfileStatCard description='Punching Bag' stats='N/A' />
-      <ProfileStatCard description='Archenemy' stats='EL' />
+      <ProfileStatCard
+        alignEnd
+        description='Punching Bag'
+        stats={punchingBag}
+      />
+      <ProfileStatCard description='Archenemy' stats={archenemy} />
     </Box>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
-import { Achievement } from '@/types/AchievementTypes';
 import { Avatar, Box, Typography } from '@mui/material';
 import AchievementIcon from '../achievement/AchievementIcon';
+import { Achievement } from '@/types/AchievementTypes';
 
 interface ProfileAchievementDisplayProps {
   achievement: Achievement;

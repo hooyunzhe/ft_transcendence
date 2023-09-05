@@ -98,7 +98,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
         <Box maxWidth='30vw' marginLeft='15vw'>
           <InputField
             outlined
-            whiteText
+            invertColors
             handleEnterInput
             label='Username'
             value={username}

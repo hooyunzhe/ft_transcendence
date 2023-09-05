@@ -1,8 +1,8 @@
 'use client';
 import { Box } from '@mui/material';
 import ToolbarHeader from '../utils/ToolbarHeader';
-import { ToolbarHeaderType } from '@/types/UtilTypes';
 import LeaderboardList from './LeaderboardList';
+import { ToolbarHeaderType } from '@/types/UtilTypes';
 
 export default function LeaderboardBox() {
   return (
