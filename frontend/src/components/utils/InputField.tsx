@@ -9,6 +9,7 @@ import {
 interface InputFieldProps {
   outlined?: boolean;
   normalMargin?: boolean;
+  invertColors?: boolean;
   ignoreError?: boolean;
   handleEnterInput?: boolean;
   label: string;
@@ -20,6 +21,7 @@ interface InputFieldProps {
 export default function InputField({
   outlined,
   normalMargin,
+  invertColors,
   ignoreError,
   handleEnterInput,
   label,
@@ -40,6 +42,28 @@ export default function InputField({
       label={label}
       variant={outlined ? 'outlined' : 'standard'}
       margin={normalMargin ? 'normal' : 'dense'}
+      InputProps={{
+        sx: {
+          color: invertColors ? '#DDDDDD' : 'black',
+          ...(invertColors && {
+            '&.MuiOutlinedInput-root': {
+              '& fieldset': { borderColor: '#DDDDDD' },
+              '&:hover fieldset': { borderColor: '#DDDDDD' },
+              '&.Mui-focused fieldset': { borderColor: '#DDDDDD' },
+            },
+          }),
+        },
+      }}
+      {...(invertColors && {
+        InputLabelProps: {
+          sx: {
+            color: '#DDDDDD',
+            '&.Mui-focused': {
+              color: '#DDDDDD',
+            },
+          },
+        },
+      })}
       value={value}
       onChange={(event) => {
         if (!ignoreError) {

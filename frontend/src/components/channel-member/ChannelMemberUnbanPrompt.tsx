@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { ListItemButton, Paper, Stack } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import ChannelMemberDisplay from './ChannelMemberDisplay';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
@@ -66,21 +66,35 @@ export default function ChannelMemberUnbanPrompt({
   }, [actionClicked, backClicked]);
 
   return (
-    <Stack maxHeight={200} overflow='auto' spacing={1} sx={{ p: 1 }}>
+    <Stack
+      maxHeight={200}
+      spacing={1}
+      sx={{
+        p: 1,
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { display: 'none' },
+      }}
+    >
       {unbannableMembers.map((member: ChannelMember, index: number) => (
-        <Paper key={index} elevation={2}>
-          <ListItemButton
-            selected={selectedMemberToUnban?.id === member.id ?? false}
-            onClick={() => {
-              setSelectedMemberToUnban(
-                member.id === selectedMemberToUnban?.id ? undefined : member,
-              );
-              setActionButtonDisabled(member.id === selectedMemberToUnban?.id);
-            }}
-          >
-            <ChannelMemberDisplay user={member.user} />
-          </ListItemButton>
-        </Paper>
+        <ListItemButton
+          key={index}
+          disableGutters
+          sx={{
+            border: 'solid 3px #4a4eda',
+            borderRadius: '10px',
+            bgcolor: '#7E8E9E80',
+          }}
+          selected={selectedMemberToUnban?.id === member.id ?? false}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => {
+            setSelectedMemberToUnban(
+              member.id === selectedMemberToUnban?.id ? undefined : member,
+            );
+            setActionButtonDisabled(member.id === selectedMemberToUnban?.id);
+          }}
+        >
+          <ChannelMemberDisplay stylesDisabled user={member.user} />
+        </ListItemButton>
       ))}
     </Stack>
   );

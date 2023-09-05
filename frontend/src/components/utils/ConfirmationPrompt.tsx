@@ -32,6 +32,11 @@ export default function ConfirmationPrompt() {
     <Dialog
       fullWidth
       maxWidth='xs'
+      PaperProps={{
+        sx: {
+          bgcolor: '#A4B5C6',
+        },
+      }}
       open={confirmation.required}
       onClose={resetConfirmation}
       onKeyDown={(event) => {

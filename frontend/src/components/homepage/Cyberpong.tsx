@@ -11,6 +11,7 @@ import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import {
   useChannelSocket,
   useFriendSocket,
+  useGameSocket,
   useSocketActions,
   useUserSocket,
 } from '@/lib/stores/useSocketStore';
@@ -26,16 +27,18 @@ import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
+import BackdropOverlay from '../utils/BackdropOverlay';
 
 export default function Cyberpong() {
   const currentUser = useCurrentUser();
   const userSocket = useUserSocket();
   const friendSocket = useFriendSocket();
   const channelSocket = useChannelSocket();
+  const gameSocket = useGameSocket();
   const friends = useFriends();
   const joinedChannels = useJoinedChannels();
   const { initSockets, resetSockets } = useSocketActions();
-  const { getGameData } = useGameActions();
+  const { getGameData, setupGameSocketEvents } = useGameActions();
   const { getFriendData, setupFriendSocketEvents } = useFriendActions();
   const { getChannelData, setupChannelSocketEvents } = useChannelActions();
   const { getChatData, setupChatSocketEvents } = useChatActions();
@@ -104,6 +107,12 @@ export default function Cyberpong() {
     }
   }, [channelSocket]);
 
+  useEffect(() => {
+    if (gameSocket) {
+      setupGameSocketEvents(gameSocket);
+    }
+  }, [gameSocket]);
+
   return (
     <Box
       sx={{
@@ -111,9 +120,7 @@ export default function Cyberpong() {
         alignSelf: 'stretch',
         display: 'flex',
         alignItems: 'center',
-        margin: '5px',
         borderRadius: '15px',
-        background: '#4CC9F0',
       }}
     >
       <NavigationHeader />
@@ -122,6 +129,7 @@ export default function Cyberpong() {
       <DialogPrompt />
       <ConfirmationPrompt />
       <NotificationBar />
+      <BackdropOverlay />
     </Box>
   );
 }

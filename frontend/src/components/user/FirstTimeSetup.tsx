@@ -64,7 +64,16 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
       justifyContent='space-evenly'
     >
       <Slide direction='down' in timeout={2500}>
-        <Typography variant='h1' align='center'>
+        <Typography
+          sx={{
+            textShadow: '4px 4px 6px black',
+          }}
+          fontFamily='cyberfont'
+          letterSpacing='1rem'
+          color='#DDDDDD'
+          variant='h1'
+          align='center'
+        >
           Welcome, {session.user?.name}
         </Typography>
       </Slide>
@@ -95,16 +104,10 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
         </Box>
       </Grow>
       <Slide direction='up' in timeout={2500}>
-        <Box
-          maxWidth='30vw'
-          marginLeft='15vw'
-          padding='1vh'
-          border='solid 3px #363636'
-          borderRadius='15px'
-          bgcolor='#4CC9F090'
-        >
+        <Box maxWidth='30vw' marginLeft='15vw'>
           <InputField
             outlined
+            invertColors
             handleEnterInput
             label='Username'
             value={username}

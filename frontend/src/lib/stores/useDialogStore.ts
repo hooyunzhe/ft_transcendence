@@ -21,7 +21,7 @@ interface DialogStore {
       description: string,
       children: ReactNode,
       actionButtonText: string,
-      actionOnEnterEnabled?: boolean,
+      actionButtonDisabled?: boolean,
     ) => void;
     changeDialog: (
       title: string,
@@ -49,6 +49,7 @@ function displayDialog(
   description: string,
   children: ReactNode,
   actionButtonText: string,
+  actionButtonDisabled?: boolean,
 ): void {
   set(({ data }) => ({
     data: {
@@ -58,6 +59,7 @@ function displayDialog(
       description: description,
       children: children,
       actionButtonText: actionButtonText,
+      actionButtonDisabled: actionButtonDisabled ?? true,
     },
   }));
 }

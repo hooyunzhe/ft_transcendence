@@ -143,6 +143,13 @@ export default function TwoFactorPrompt() {
 
   return (
     <Dialog
+      fullWidth
+      maxWidth='xs'
+      PaperProps={{
+        sx: {
+          bgcolor: '#A4B5C6',
+        },
+      }}
       open={
         twoFactor.display && (twoFactor.setup || currentUser.two_factor_enabled)
       }
@@ -150,8 +157,6 @@ export default function TwoFactorPrompt() {
         resetTwoFactor();
         setTwoFactorCode('');
       }}
-      maxWidth='xs'
-      fullWidth
     >
       <DialogTitle>
         {twoFactor.setup ? 'Setup' : ''} Two-factor Authentication

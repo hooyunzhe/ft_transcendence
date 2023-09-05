@@ -1,4 +1,5 @@
 'use client';
+import '../../styles/cyberfont.css';
 import Image from 'next/image';
 import { signIn } from 'next-auth/react';
 import { Box, Button, Slide, Typography } from '@mui/material';
@@ -13,8 +14,17 @@ export default function Login() {
       justifyContent='space-around'
     >
       <Slide direction='down' in timeout={2500}>
-        <Typography variant='h1' align='center'>
-          Cyberpong™
+        <Typography
+          sx={{
+            textShadow: '4px 4px 6px black',
+          }}
+          fontFamily='cyberfont'
+          letterSpacing='1rem'
+          color='#DDDDDD'
+          variant='h1'
+          align='center'
+        >
+          Cyberpong
         </Typography>
       </Slide>
       <Slide direction='up' in timeout={2500}>
@@ -24,7 +34,10 @@ export default function Login() {
             width: '30vw',
             border: 'solid 3px #363636',
             borderRadius: '15px',
-            background: '#3A0CA375',
+            bgcolor: '#4CC9F080',
+            ':hover': {
+              bgcolor: '#4CC9F060',
+            },
           }}
           onClick={() => signIn('42-school')}
         >

@@ -1,6 +1,4 @@
 export enum View {
-  PHASER = 'PHASER',
-  LOADING = 'LOADING',
   GAME = 'GAME',
   CHAT = 'CHAT',
   PROFILE = 'PROFILE',
@@ -9,9 +7,11 @@ export enum View {
   SETTINGS = 'SETTINGS',
 }
 
-export enum ListHeaderIcon {
+export enum ToolbarHeaderType {
   NONE = 'NONE',
   SOCIAL = 'SOCIAL',
+  DIRECT_MESSAGE = 'DIRECT_MESSAGE',
+  CHANNEL_MEMBER = 'CHANNEL_MEMBER',
   LEADERBOARD = 'LEADERBOARD',
   ACHIEVEMENTS = 'ACHIEVEMENTS',
   SETTINGS = 'SETTINGS',

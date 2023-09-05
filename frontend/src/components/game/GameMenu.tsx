@@ -1,34 +1,26 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import {
-  Backdrop,
-  Box,
-  Button,
-  CircularProgress,
-  Typography,
-} from '@mui/material';
-import { useGameSocket } from '@/lib/stores/useSocketStore';
-import GameRender from '@/components/game/GameRender';
-import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
-import ConfirmationPrompt from '../utils/ConfirmationPrompt';
-import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
-import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
-import { View } from '@/types/UtilTypes';
-import { MatchInfo, MatchState } from '@/types/GameTypes';
-import callAPI from '@/lib/callAPI';
+import { useEffect, useState } from 'react';
+import { Box, Button, Typography } from '@mui/material';
+import GameSearch from './GameSearch';
 import GameMatchFound from './GameMatchFound';
+import callAPI from '@/lib/callAPI';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useGameSocket } from '@/lib/stores/useSocketStore';
+import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
+import { useBackdropActions } from '@/lib/stores/useBackdropStore';
+import { MatchInfo, MatchState } from '@/types/GameTypes';
+import GameMenuDropdown from './GameMenuDropdown';
 
 export default function GameMenu() {
+  const currentUser = useCurrentUser();
   const gameSocket = useGameSocket();
   const matchState = useMatchState();
   const gameAction = useGameActions();
-  const viewAction = useUtilActions();
-  const userId = useCurrentUser();
-  const [searchTime, setSearchTime] = useState(0);
+  const { displayBackdrop, resetBackdrop } = useBackdropActions();
+  const [gameMenuAnchor, setGameMenuAnchor] = useState<
+    HTMLElement | undefined
+  >();
 
-  const fontUrl = '/assets/CyberwayRider.ttf';
   useEffect(() => {
     if (!gameSocket) return;
     gameSocket.on(
@@ -39,16 +31,17 @@ export default function GameMenu() {
         const matchInfo = await getPlayerData(data);
         console.log(matchInfo);
         gameAction.setMatchInfo(matchInfo);
+        displayBackdrop(<GameMatchFound />);
       },
-    ),
-      gameSocket.on('connect', () => {
-        gameSocket.sendBuffer = [];
-        gameSocket.emit('init', userId.id);
-      });
-    gameSocket.on('disconnect', () => {
-      gameSocket.sendBuffer = [];
-      console.log('game socket disconnected');
-    });
+    );
+    //   gameSocket.on('connect', () => {
+    //     gameSocket.sendBuffer = [];
+    //     gameSocket.emit('init', currentUser.id);
+    //   });
+    // gameSocket.on('disconnect', () => {
+    //   gameSocket.sendBuffer = [];
+    //   console.log('game socket disconnected');
+    // });
     return () => {
       gameSocket.off('connect');
       gameSocket.off('disconnect');
@@ -57,34 +50,25 @@ export default function GameMenu() {
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (matchState === MatchState.SEARCHING)
-        setSearchTime((prevTime) => prevTime + 1);
-    }, 500);
-
     if (matchState === MatchState.FOUND) {
       const matchFoundtimer = setTimeout(() => {
-        // gameAction.setMatchState(MatchState.INGAME);
-        viewAction.setCurrentView(View.LOADING);
+        gameAction.setMatchState(MatchState.READY);
+        resetBackdrop();
       }, 3000);
       return () => {
         clearTimeout(matchFoundtimer);
       };
     }
-    return () => {
-      clearInterval(timer);
-      setSearchTime(0);
-    };
   }, [matchState]);
 
-  const findMatch = () => {
+  const findMatch = (gameMode: string) => {
     if (gameSocket) {
-      gameSocket.connect();
-      gameAction.setMatchState(MatchState.SEARCHING);
+      // gameSocket.connect();
       gameSocket.sendBuffer = [];
-      gameSocket.emit('init', userId.id);
+      gameSocket.emit('init', { user_id: currentUser.id, game_mode: gameMode });
+      gameAction.setMatchState(MatchState.SEARCHING);
+      displayBackdrop(<GameSearch />, cancelFindMatch);
     }
-    // viewAction.setCurrentView(View.LOADING);
     console.log(matchState);
   };
 
@@ -124,48 +108,40 @@ export default function GameMenu() {
     <Box
       height='100%'
       display='flex'
-      justifyContent='center'
+      flexDirection='column'
+      justifyContent='space-evenly'
       alignItems='center'
     >
-      <video
-        width='100%'
-        height='100%'
-        autoPlay
-        muted
-        loop
-        style={{
-          position: 'absolute',
-          zIndex: -1,
-          objectFit: 'cover',
+      <Typography
+        sx={{
+          textShadow: '4px 4px 6px black',
         }}
+        fontFamily='cyberfont'
+        letterSpacing='1rem'
+        color='#DDDDDD'
+        variant='h2'
+        align='center'
       >
-        <source src='/assets/mainmenu.mp4' type='video/mp4' />
-      </video>
-      <Typography variant='h2'>CYBERPONG</Typography>
+        Cyberpong
+      </Typography>
       <Button
         variant='contained'
-        onClick={findMatch}
+        sx={{
+          bgcolor: '#4CC9F080',
+          ':hover': {
+            bgcolor: '#4CC9F060',
+          },
+        }}
+        onClick={(event) => setGameMenuAnchor(event.currentTarget)}
         disabled={matchState === MatchState.SEARCHING}
       >
         Start Game
       </Button>
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={matchState === MatchState.SEARCHING}
-        onClick={cancelFindMatch}
-      >
-        <CircularProgress color='inherit' />
-        <Box sx={{ ml: 2 }}>
-          <Typography variant='h6'>Searching Match...</Typography>
-          <Typography>Time elapsed: {searchTime} seconds</Typography>
-        </Box>
-      </Backdrop>
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={matchState === MatchState.FOUND}
-      >
-        <GameMatchFound />
-      </Backdrop>
+      <GameMenuDropdown
+        anchorElement={gameMenuAnchor}
+        handleClose={() => setGameMenuAnchor(undefined)}
+        findMatch={findMatch}
+      />
     </Box>
   );
 }

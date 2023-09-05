@@ -22,10 +22,10 @@ export class Match {
   p2_score: number;
 
   @Column()
-  p1_skills: string;
+  p1_class_id: number;
 
   @Column()
-  p2_skills: string;
+  p2_class_id: number;
 
   @CreateDateColumn({ type: 'timestamptz' })
   date_of_creation: Date;

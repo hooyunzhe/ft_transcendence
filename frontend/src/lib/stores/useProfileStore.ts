@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import callAPI from '../callAPI';
 import { Statistic } from '@/types/StatisticTypes';
-import { Match, SkillPath } from '@/types/MatchTypes';
+import { Match, SkillClass } from '@/types/MatchTypes';
 
 interface ProfileStore {
   data: {
@@ -11,7 +11,7 @@ interface ProfileStore {
   };
   actions: {
     getProfileData: () => void;
-    getFavoritePath: (statistic: Statistic) => SkillPath | null;
+    getFavoriteClass: (statistic: Statistic) => SkillClass | null;
     updateStatistic: (userID: number, newMatch: Match) => void;
     setSelectedStatistic: (userID: number | undefined) => void;
   };
@@ -40,24 +40,24 @@ async function getProfileData(set: StoreSetter): Promise<void> {
   }));
 }
 
-function getFavoritePath(statistic: Statistic): SkillPath | null {
-  const pathCounts = [
-    statistic.strength_count ?? 0,
-    statistic.speed_count ?? 0,
-    statistic.tech_count ?? 0,
+function getFavoriteClass(statistic: Statistic): SkillClass | null {
+  const classCounts = [
+    statistic.strength_count,
+    statistic.speed_count,
+    statistic.tech_count,
   ];
 
-  if (pathCounts.every((count) => count === 0)) {
+  if (classCounts.every((count) => count === 0)) {
     return null;
   }
 
-  switch (pathCounts.indexOf(Math.max(...pathCounts))) {
+  switch (classCounts.indexOf(Math.max(...classCounts))) {
     case 0:
-      return SkillPath.STRENGTH;
+      return SkillClass.STRENGTH;
     case 1:
-      return SkillPath.SPEED;
+      return SkillClass.SPEED;
     case 2:
-      return SkillPath.TECH;
+      return SkillClass.TECH;
     default:
       return null;
   }
@@ -80,26 +80,14 @@ function getUpdatedStatistic(
     currentStatistic.current_winstreak = 0;
   }
 
-  const skills =
+  const classID =
     newMatch.player_one.id === currentStatistic.user.id
-      ? newMatch.p1_skills
-      : newMatch.p2_skills;
-  const skillIDS = skills.split('|').map((skillID) => Number(skillID));
-  const strengthSkills = skillIDS.filter(
-    (skill) => skill >= 1 && skill <= 5,
-  ).length;
-  const speedSkills = skillIDS.filter(
-    (skill) => skill >= 6 && skill <= 10,
-  ).length;
-  const techSkills = skillIDS.filter(
-    (skill) => skill >= 11 && skill <= 15,
-  ).length;
-  const skillCounts = [strengthSkills, speedSkills, techSkills];
-  const topPath = skillCounts.indexOf(Math.max(...skillCounts));
+      ? newMatch.p1_class_id
+      : newMatch.p2_class_id;
 
-  if (topPath === 0) {
+  if (classID === 1) {
     currentStatistic.strength_count++;
-  } else if (topPath === 1) {
+  } else if (classID === 2) {
     currentStatistic.speed_count++;
   } else {
     currentStatistic.tech_count++;
@@ -157,7 +145,7 @@ const useProfileStore = create<ProfileStore>()((set) => ({
   },
   actions: {
     getProfileData: () => getProfileData(set),
-    getFavoritePath: (statistic) => getFavoritePath(statistic),
+    getFavoriteClass: (statistic) => getFavoriteClass(statistic),
     updateStatistic: (userID, newMatch) =>
       updateStatistic(set, userID, newMatch),
     setSelectedStatistic: (userID) => setSelectedStatistic(set, userID),

@@ -1,7 +1,7 @@
 'use client';
 import { Box, Typography } from '@mui/material';
-import { useRecentMatches } from '@/lib/stores/useGameStore';
 import ProfileMatchDisplay from './ProfileMatchDisplay';
+import { useRecentMatches } from '@/lib/stores/useGameStore';
 import { Statistic } from '@/types/StatisticTypes';
 
 interface ProfileMatchHistoryProps {
@@ -23,7 +23,6 @@ export default function ProfileMatchHistory({
       alignItems='center'
       padding='5px'
       gap='1vh'
-      border='solid 5px #7209B775'
       borderRadius='10px'
       bgcolor='#a291d275'
     >

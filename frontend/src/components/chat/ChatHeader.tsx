@@ -14,12 +14,14 @@ export default function ChatHeader() {
   return (
     <Box
       display='flex'
-      minHeight='5.5vh'
+      minHeight='6.1vh'
       justifyContent='center'
       alignItems='center'
-      bgcolor='#363636'
+      sx={{
+        background: 'linear-gradient(90deg, #e8514980, #363bd680)',
+      }}
     >
-      <Typography variant='h4' color='white'>
+      <Typography variant='h4' color='#DDDDDD'>
         {selectedChannel &&
           (selectedChannel.type === ChannelType.DIRECT
             ? selectedFriend?.incoming_friend.username

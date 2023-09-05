@@ -51,4 +51,12 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
     return statusDictionary;
   }
+
+  @SubscribeMessage('inviteToGame')
+  inviteToGame(
+    @MessageBody() data: { user_id: number; room_id: number },
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log(data);
+  }
 }

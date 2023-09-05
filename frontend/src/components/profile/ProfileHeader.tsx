@@ -17,7 +17,6 @@ export default function ProfileHeader({ statistic }: ProfileHeaderProps) {
       display='flex'
       alignItems='center'
       padding='15px'
-      border='solid 5px #7209B775'
       borderRadius='10px'
       bgcolor='#a291d275'
     >

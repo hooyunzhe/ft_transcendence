@@ -1,6 +1,6 @@
 import { User } from './UserTypes';
 
-export enum SkillPath {
+export enum SkillClass {
   STRENGTH = 'STRENGTH',
   SPEED = 'SPEED',
   TECH = 'TECH',
@@ -11,8 +11,8 @@ export interface Match {
   winner_id: number;
   p1_score: number;
   p2_score: number;
-  p1_skills: string;
-  p2_skills: string;
+  p1_class_id: number;
+  p2_class_id: number;
   date_of_creation: string;
   player_one: User;
   player_two: User;

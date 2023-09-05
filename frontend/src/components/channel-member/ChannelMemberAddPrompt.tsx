@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { ListItemButton, Paper, Stack } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import ChannelMemberDisplay from './ChannelMemberDisplay';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
@@ -22,7 +22,7 @@ interface ChannelMemberAddPromptProps {
   selectedChannel: Channel;
 }
 
-export function ChannelMemberAddPrompt({
+export default function ChannelMemberAddPrompt({
   addableFriends,
   selectedChannel,
 }: ChannelMemberAddPromptProps) {
@@ -95,19 +95,25 @@ export function ChannelMemberAddPrompt({
       }}
     >
       {addableFriends.map((friend: Friend, index: number) => (
-        <Paper key={index} elevation={2}>
-          <ListItemButton
-            selected={selectedFriendToJoin?.id === friend.id ?? false}
-            onClick={() => {
-              setSelectedFriendToJoin(
-                friend.id === selectedFriendToJoin?.id ? undefined : friend,
-              );
-              setActionButtonDisabled(friend.id === selectedFriendToJoin?.id);
-            }}
-          >
-            <ChannelMemberDisplay user={friend.incoming_friend} />
-          </ListItemButton>
-        </Paper>
+        <ListItemButton
+          key={index}
+          disableGutters
+          sx={{
+            border: 'solid 3px #4a4eda',
+            borderRadius: '10px',
+            bgcolor: '#7E8E9E80',
+          }}
+          selected={selectedFriendToJoin?.id === friend.id ?? false}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => {
+            setSelectedFriendToJoin(
+              friend.id === selectedFriendToJoin?.id ? undefined : friend,
+            );
+            setActionButtonDisabled(friend.id === selectedFriendToJoin?.id);
+          }}
+        >
+          <ChannelMemberDisplay stylesDisabled user={friend.incoming_friend} />
+        </ListItemButton>
       ))}
     </Stack>
   );

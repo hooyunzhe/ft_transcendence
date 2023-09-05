@@ -24,6 +24,11 @@ export default function DialogPrompt() {
     <Dialog
       fullWidth
       maxWidth='xs'
+      PaperProps={{
+        sx: {
+          bgcolor: '#A4B5C6',
+        },
+      }}
       open={dialog.display}
       onClose={resetDialog}
       onKeyDown={(event) => {
