@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io-client';
-import { gameData } from '../GameRender';
+import { effectData, gameData } from '../GameRender';
 import { MatchInfo } from '@/types/GameTypes';
 
 export default class GameMainScene extends Phaser.Scene {
@@ -36,16 +36,19 @@ export default class GameMainScene extends Phaser.Scene {
   private goalEffectToggle: boolean = false;
   private keyloop: () => void;
   private prediction: (timestamp: number) => gameData;
+  private effectHandler: (triggered?: boolean) => effectData;
   constructor(
     gameSocket: Socket | null,
     keyloop: () => void,
     prediction: (timestamp: number) => gameData,
+    effectHandler: (triggered?: boolean) => effectData,
     matchInfo: MatchInfo | null,
   ) {
     super({ key: 'MainScene' });
     this.Socket = gameSocket;
     this.keyloop = keyloop;
     this.prediction = prediction;
+    this.effectHandler = effectHandler;
     this.score = { player1: 0, player2: 0 };
     this.windowsize = { width: 0, height: 0 };
     this.p1name = matchInfo ? matchInfo.player1.nickname : '';
@@ -334,38 +337,8 @@ export default class GameMainScene extends Phaser.Scene {
           break;
       }
     });
-    this.Socket?.on('victory', (player: number) => {
-      if (this.ball) {
-        const cameraX = Phaser.Math.Clamp(
-          this.ball.x,
-          this.windowsize.width / (2 * 1.2),
-          this.windowsize.width - this.windowsize.width / (2 * 1.2),
-        );
-        const cameraY = Phaser.Math.Clamp(
-          this.ball.y,
-          this.windowsize.height / (2 * 1.2),
-          this.windowsize.height - this.windowsize.height / (2 * 1.2),
-        );
-        this.cameras.main.zoomTo(1.2, 500);
-        this.cameras.main.pan(cameraX, cameraY, 500);
-      }
 
-      this.time.timeScale = 0.5;
-      const timer = setTimeout(() => {
-        clearTimeout(timer);
-        this.Socket?.emit('end');
-      }, 2000);
-    });
-    this.Socket?.on('reset', () => {
-      this.goalEffectToggle = true;
-    });
     this.Socket?.emit('load', true);
-    return () => {
-      if (this.Socket) {
-        this.Socket.off('reset');
-        this.Socket.off('victory');
-      }
-    };
   }
 
   trimName(name: string) {
@@ -373,19 +346,6 @@ export default class GameMainScene extends Phaser.Scene {
     if (name.length >= 16) return (name.substring(0, 9) + '..').toUpperCase();
     else return name.toUpperCase();
   }
-
-  triggerOutofBoundEffect = () => {
-    if (this.outofboundEffect) this.outofboundEffect.explode(1);
-
-    this.cameras.main.shake(50, 0.005);
-    const timer = setTimeout(() => {
-      this.goalEffectToggle = false;
-      this.Socket?.emit('load', true);
-    }, 1000);
-    return () => {
-      clearTimeout(timer);
-    };
-  };
 
   handleCollision1 = () => {
     if (!this.paddle1) return;
@@ -427,34 +387,35 @@ export default class GameMainScene extends Phaser.Scene {
 
   updatePosition = () => {
     const data = this.prediction(Date.now());
-    if (data) {
-      if (!this.goalEffectToggle) {
-        if (this.ball) {
-          this.ball.x = data.ball.x;
-          this.ball.y = data.ball.y;
-        }
-        if (this.paddle1) this.paddle1.y = data.paddle1.y;
-        if (this.paddle2) this.paddle2.y = data.paddle2.y;
-        if (this.prevDirectionX) {
-          if (this.prevDirectionX < 0 && data.balldirection.x > 0)
-            this.handleCollision1();
-          else if (this.prevDirectionX > 0 && data.balldirection.x < 0)
-            this.handleCollision2();
-        }
-        this.prevDirectionX = data.balldirection.x;
-        this.prevDirectionY = data.balldirection.y;
-        this.score = data.score;
-        this.paddle1?.setDisplaySize(
-          data.paddlesize.paddle1.width,
-          data.paddlesize.paddle1.height,
-        );
-        this.paddle1?.setDisplaySize(
-          data.paddlesize.paddle2.width,
-          data.paddlesize.paddle2.height,
-        );
-      }
+    if (this.goalEffectToggle) {
+      this.triggerOutofBoundEffect();
+      return;
     }
-    if (this.goalEffectToggle) this.triggerOutofBoundEffect();
+    if (data) {
+      if (this.ball) {
+        this.ball.x = data.ball.x;
+        this.ball.y = data.ball.y;
+      }
+      if (this.paddle1) this.paddle1.y = data.paddle1.y;
+      if (this.paddle2) this.paddle2.y = data.paddle2.y;
+      if (this.prevDirectionX) {
+        if (this.prevDirectionX < 0 && data.balldirection.x > 0)
+          this.handleCollision1();
+        else if (this.prevDirectionX > 0 && data.balldirection.x < 0)
+          this.handleCollision2();
+      }
+      this.prevDirectionX = data.balldirection.x;
+      this.prevDirectionY = data.balldirection.y;
+      this.score = data.score;
+      this.paddle1?.setDisplaySize(
+        data.paddlesize.paddle1.width,
+        data.paddlesize.paddle1.height,
+      );
+      this.paddle1?.setDisplaySize(
+        data.paddlesize.paddle2.width,
+        data.paddlesize.paddle2.height,
+      );
+    }
   };
 
   updateScore = () => {
@@ -465,7 +426,6 @@ export default class GameMainScene extends Phaser.Scene {
   updateStreak = (player: number) => {
     if (this.streak.player === player) {
       this.streak.streak++;
-      console.log(this.streak);
       if (this.streak.streak > 1) {
         switch (player) {
           case 1:
@@ -512,9 +472,50 @@ export default class GameMainScene extends Phaser.Scene {
       }
     }
   };
+
+  triggerOutofBoundEffect = () => {
+    if (this.outofboundEffect) this.outofboundEffect.explode(1);
+    this.cameras.main.shake(50, 0.005);
+    const timer = setTimeout(() => {
+      this.goalEffectToggle = false;
+      this.Socket?.emit('load', true);
+      clearTimeout(timer);
+    }, 1000);
+  };
+
+  resetEffect() {
+    this.goalEffectToggle = true;
+    this.triggerOutofBoundEffect();
+    this.effectHandler(false);
+  }
+  victoryEffect() {
+    {
+      if (this.ball) {
+        const cameraX = Phaser.Math.Clamp(
+          this.ball.x,
+          this.windowsize.width / (2 * 1.2),
+          this.windowsize.width - this.windowsize.width / (2 * 1.2),
+        );
+        const cameraY = Phaser.Math.Clamp(
+          this.ball.y,
+          this.windowsize.height / (2 * 1.2),
+          this.windowsize.height - this.windowsize.height / (2 * 1.2),
+        );
+        this.cameras.main.zoomTo(1.2, 500);
+        this.cameras.main.pan(cameraX, cameraY, 500);
+      }
+      this.time.timeScale = 0.5;
+    }
+  }
+  updateEffect() {
+    const data = this.effectHandler();
+    if (data.reset) this.resetEffect();
+    if (data.victory) this.victoryEffect();
+  }
   update() {
     this.keyloop();
     this.updatePosition();
     this.updateScore();
+    this.updateEffect();
   }
 }

@@ -31,7 +31,7 @@ export class GameService {
 
   deleteGame(roomid: string)
   {
-    this.roomlist.delete(roomid);
+      this.roomlist.delete(roomid);
   }
 
   matchHandler = async (matchDto: CreateMatchDto) => {

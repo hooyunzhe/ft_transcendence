@@ -12,7 +12,6 @@ import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
 import '../../styles/cyberthrone.css';
-import '../../styles/led.css';
 
 export interface gameData {
   ball: { x: number; y: number };
@@ -30,9 +29,6 @@ export interface gameData {
 export interface effectData {
   victory: boolean;
   reset: boolean;
-  kratos: boolean;
-  kronos: boolean;
-  cosmos: boolean;
 }
 export default function GameRender() {
   const gameSocket = useGameSocket();
@@ -43,6 +39,10 @@ export default function GameRender() {
   const { displayBackdrop } = useBackdropActions();
   const [gameSession, setGameSession] = useState<Phaser.Game | null>(null);
 
+  let effectData: effectData = {
+    victory: false,
+    reset: false,
+  };
   let gameInfo: gameData;
   const keyLoop = () => {
     if (gameAction.getKeyState('w')) {
@@ -62,37 +62,39 @@ export default function GameRender() {
     }
   };
 
-  if (gameSocket)
-    gameSocket.on(
-      'game',
-      (data: {
-        ball: { x: number; y: number };
-        balldirection: { x: number; y: number };
-        paddle1: { x: number; y: number };
-        paddle2: { x: number; y: number };
-        score: { player1: number; player2: number };
-        paddlesize: {
-          paddle1: { width: number; height: number };
-          paddle2: { width: number; height: number };
-        };
-        timestamp: number;
-      }) => {
-        gameInfo = data;
-      },
-    );
-
-  // const effectHandler = () => {};
   const clientsidePrediction = (timestamp: number) => {
     return gameInfo;
   };
 
+  const effecthandler = (triggered?: boolean) => {
+    if (triggered === false) effectData.reset = false;
+    return effectData;
+  };
   const endGame = () => {
     if (gameSocket) gameSocket.emit('end');
     viewAction.setCurrentView(View.GAME);
   };
 
   useEffect(() => {
-    if (gameSocket)
+    if (gameSocket) {
+      gameSocket.on(
+        'game',
+        (data: {
+          ball: { x: number; y: number };
+          balldirection: { x: number; y: number };
+          paddle1: { x: number; y: number };
+          paddle2: { x: number; y: number };
+          score: { player1: number; player2: number };
+          paddlesize: {
+            paddle1: { width: number; height: number };
+            paddle2: { width: number; height: number };
+          };
+          timestamp: number;
+        }) => {
+          gameInfo = data;
+        },
+      );
+
       gameSocket.on('disc', () => {
         displayBackdrop(
           <Box sx={{ ml: 2 }}>
@@ -111,13 +113,20 @@ export default function GameRender() {
         };
       });
 
-    // if (gameSocket) gameSocket.on('effect', (data :{effect: string, enable: boolean}) => {
-    //   data.effect
-    // });
+      gameSocket.on('victory', (player: number) => {
+        effectData.victory = true;
+        // gameSocket.emit('end'); (transition to backdrop then end);
+      });
+
+      gameSocket.on('reset', () => {
+        effectData.reset = true;
+      });
+    }
     const game = new GameMainScene(
       gameSocket,
       keyLoop,
       clientsidePrediction,
+      effecthandler,
       matchInfo,
     );
     const config = {
