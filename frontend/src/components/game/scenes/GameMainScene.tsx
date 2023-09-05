@@ -352,7 +352,7 @@ export default class GameMainScene extends Phaser.Scene {
       this.time.timeScale = 0.5;
       const timer = setTimeout(() => {
         clearTimeout(timer);
-        this.scene.start('victory', { player: player });
+        this.Socket?.emit('end');
       }, 2000);
     });
     this.Socket?.on('reset', () => {
@@ -515,6 +515,5 @@ export default class GameMainScene extends Phaser.Scene {
     this.keyloop();
     this.updatePosition();
     this.updateScore();
-    // console.log(this.p1data.avatar);
   }
 }

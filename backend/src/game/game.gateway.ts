@@ -109,17 +109,30 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(data.room_id).emit('reject');
   }
 
-  @SubscribeMessage('leave')
+  @SubscribeMessage('end')
   leaveRoom(client: Socket)
   {
     this.leaveCurrentRoom(client);
+
   }
 
+  @SubscribeMessage('disconnect')
+  async disconnectGame(client: Socket) {
+    if (client.data.player === 1 || client.data.player === 2 )
+    {    
+      this.server.to(client.data.roomid).emit('disc');
+      this.roomlist.delete(client.data.roomid);
+    }
+    this.leaveCurrentRoom(client);
+  }
+  
   async handleDisconnect(client: Socket) {
-    if (client.data.player === 0) return;
-    this.server.to(client.data.roomid).emit('disc');
-    this.server.to(client.data.roomid).emit('leave');
-    this.roomlist.delete(client.data.roomid);
+    if (client.data.player === 1 || client.data.player === 2 )
+    {    
+      this.server.to(client.data.roomid).emit('disc');
+      this.roomlist.delete(client.data.roomid);
+    }
+    this.leaveCurrentRoom(client);
   }
 
   async matchMaking(
