@@ -301,15 +301,14 @@ export class GameClass {
     this.score[`player${player}`]++;
     if (this.score[`player${player}`] >= 3) {
       this.socketHandler(this.matchinfo.roomid, 'victory', player);
-
       this.matchHandler({
         p1_id: this.matchinfo.player1,
         p2_id: this.matchinfo.player2,
         winner_id: this.matchinfo[`player${player}`],
         p1_score: this.score.player1,
         p2_score: this.score.player2,
-        p1_class_id: 0,
-        p2_class_id: 0,
+        p1_class_id: this.playerClass.player1.classID,
+        p2_class_id: this.playerClass.player1.classID,
       });
     }
     this.ServingPaddle = player;

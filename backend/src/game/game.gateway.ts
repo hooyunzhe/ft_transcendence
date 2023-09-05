@@ -109,9 +109,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(data.room_id).emit('reject');
   }
 
+  @SubscribeMessage('leave')
+  leaveRoom(client: Socket)
+  {
+    this.leaveCurrentRoom(client);
+  }
+
   async handleDisconnect(client: Socket) {
     if (client.data.player === 0) return;
     this.server.to(client.data.roomid).emit('disc');
+    this.server.to(client.data.roomid).emit('leave');
     this.roomlist.delete(client.data.roomid);
   }
 
@@ -208,17 +215,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  // @SubscribeMessage('check')
-  // async checkGameStatus() {
-  //   const players = await this.server.fetchSockets();
-  //   console.log('game server totalconnection:', players.length);
-  // }
-
-  // @SubscribeMessage('reset')
-  // reset(@ConnectedSocket() client: Socket) {
-  //   this.roomlist.get(client.data.roomid).gameReset();
-  // }
-
   @SubscribeMessage('Player')
   MovePaddle(
     @MessageBody() movement: string,
@@ -276,6 +272,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.leave(client.data.room_id);
     client.data.room_id = '';
     client.data.game_mode = '';
+    client.data.player = 0;
   }
 
   socketHandler = (roomid: string, message: string, data: any) => {
