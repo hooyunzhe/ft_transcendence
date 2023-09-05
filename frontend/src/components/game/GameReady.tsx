@@ -28,7 +28,7 @@ export default function GameReady() {
   const getReady = () => {
     if (!cooldown && gameSocket) {
       setReady(!ready);
-      gameSocket.emit('ready', 3);
+      gameSocket.emit('ready', 1);
       setCooldown(true);
 
       const timer = setTimeout(() => {

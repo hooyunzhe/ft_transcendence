@@ -179,24 +179,24 @@ export default class GameMainScene extends Phaser.Scene {
       .setDisplaySize(this.windowsize.width * 0.2, this.windowsize.height * 0.1)
       .setFlipX(true);
 
-    // const p1glow = this.p1frame.postFX.addGlow(0xf6f106, 0, 1, false);
-    // const p2glow = this.p2frame.postFX.addGlow(0x8d1be2, 0, 1, false);
+    const p1glow = this.p1frame.postFX.addGlow(0xbc13fe, 0, 1, false);
+    const p2glow = this.p2frame.postFX.addGlow(0xbc13fe, 0, 1, false);
 
-    // this.tweens.add({
-    //   targets: p1glow,
-    //   outerStrength: 2,
-    //   yoyo: true,
-    //   loop: -1,
-    //   ease: 'sine.inout',
-    // });
+    const p1cooldownEffect = this.tweens.add({
+      targets: p1glow,
+      outerStrength: 5,
+      yoyo: true,
+      loop: -1,
+      ease: 'sine.inout',
+    });
 
-    // this.tweens.add({
-    //   targets: p2glow,
-    //   outerStrength: 2,
-    //   yoyo: true,
-    //   loop: -1,
-    //   ease: 'sine.inout',
-    // });
+    const p2cooldownEffect = this.tweens.add({
+      targets: p2glow,
+      outerStrength: 5,
+      yoyo: true,
+      loop: -1,
+      ease: 'sine.inout',
+    });
 
     const textstyle = {
       fontFamily: 'Copperplate Gothic Light',
@@ -242,80 +242,7 @@ export default class GameMainScene extends Phaser.Scene {
       true,
     );
 
-    // const zone1 = new Phaser.GameObjects.Particles.Zones.EdgeZone(
-    //   this.p2frame.getBounds(),
-    //   0,
-    //   1,
-    //   false,
-    //   true,
-    // );
-    // const emitter = this.add.particles(0, 0, 'flame2', {
-    //   speed: 24,
-    //   lifespan: 1000,
-    //   quantity: 1,
-    //   scale: { start: 0.4, end: 0 },
-    //   advance: 2000,
-    // });
-
-    // const frame1 = { key: 'flame2' };
-
-    // emitter.addEmitZone(zone2);
-    // const player2 = this.add
-    //   .image(
-    //     this.windowsize.width * 0.95,
-    //     this.windowsize.height * 0.05,
-    //     'frame2',
-    //   )
-    //   .setOrigin(0.5, 0.5);
-
-    // const p2text = this.add
-    //   .text(
-    //     this.windowsize.width * 0.955,
-    //     this.windowsize.height * 0.05,
-    //     'P2',
-    //     {
-    //       fontFamily: 'Arial',
-    //       fontSize: 96,
-    //       color: '#ffffff', // Text color in hexadecimal
-    //       backgroundColor: 'transparent', // Background color (transparent in this case)
-    //       align: 'right', // Text alignment: 'left', 'center', 'right'
-    //       stroke: '#0000ff', // Stroke color
-    //       strokeThickness: 5, // Stroke thickness in pixels
-    //       shadow: {
-    //         offsetX: 2,
-    //         offsetY: 2,
-    //         color: '#0000ff',
-    //         blur: 5,
-    //         stroke: true,
-    //         fill: true,
-    //       },
-    //     },
-    //   )
-    //   .setOrigin(0.5, 0.5);
-    // const p2text = this.add
-    //   .bitmapText(
-    //     this.windowsize.width * 0.95,
-    //     this.windowsize.height * 0.05,
-    //     'cyberware',
-    //     'P2',
-    //     96,
-    //   )
-    //   .setOrigin(0.5, 0.5)
-    //   .setTint(0x0000ff, 0);
-
-    // const testframe = this.add
-    //   .image(
-    //     this.windowsize.width * 0.95,
-    //     this.windowsize.height * 0.05,
-    //     'frametest',
-    //   )
-    //   .setOrigin(0.5, 0.5)
-    //   .setDisplaySize(
-    //     this.windowsize.width * 0.2,
-    //     this.windowsize.height * 0.2,
-    //   );
     this.soundEffect = this.sound.add('laser');
-    // if (!ball) return;
     this.ball = game.physics.add
       .sprite(
         this.windowsize.width * 0.5,
@@ -401,6 +328,30 @@ export default class GameMainScene extends Phaser.Scene {
     });
 
     this.outofboundEffect.startFollow(this.ball);
+    this.Socket?.on('cooldownOff', (player: number) => {
+      switch (player) {
+        case 1:
+          p1cooldownEffect.stop();
+          break;
+        case 2:
+          p2cooldownEffect.stop();
+          break;
+        default:
+          break;
+      }
+    });
+    this.Socket?.on('cooldownOn', (player: number) => {
+      switch (player) {
+        case 1:
+          p1cooldownEffect.play();
+          break;
+        case 2:
+          p2cooldownEffect.play();
+          break;
+        default:
+          break;
+      }
+    });
     this.Socket?.on('victory', (player: number) => {
       if (this.ball) {
         const cameraX = Phaser.Math.Clamp(
