@@ -20,13 +20,20 @@ export class GameService {
     private readonly statisticService: StatisticService,
   ) {}
 
+  roomlist = new Map<string, GameClass>();
+
   createGame(
     matchinfo: MatchInfo,
     socketHandler: (roomid: string, message: string, data: any) => void,
   ) {
-    const newGame = new GameClass(matchinfo, socketHandler, this.matchHandler);
-    return newGame;
+    this.roomlist.set(matchinfo.roomid, new GameClass(matchinfo, socketHandler, this.matchHandler, this.deleteGame));
   }
+
+  deleteGame(roomid: string)
+  {
+    this.roomlist.delete(roomid);
+  }
+
   matchHandler = async (matchDto: CreateMatchDto) => {
     const newMatch = await this.matchService.create(matchDto);
     this.statisticService.update({user_id: newMatch.player_one.id, match_id: newMatch.id});

@@ -76,6 +76,7 @@ export default function GameRender() {
   };
 
   const endGame = () => {
+    if (gameSocket) gameSocket.emit('end');
     viewAction.setCurrentView(View.GAME);
   };
 
@@ -109,6 +110,7 @@ export default function GameRender() {
       type: Phaser.AUTO,
       width: 1920,
       height: 1080,
+      parent: 'maingame',
       physics: {
         default: 'arcade',
       },
@@ -116,7 +118,6 @@ export default function GameRender() {
         mode: Phaser.Scale.AUTO,
         autoCenter: Phaser.Scale.Center.CENTER_BOTH,
       },
-      parent: 'maingame',
 
       scene: [game, new GameVictoryScene(endGame)],
     };

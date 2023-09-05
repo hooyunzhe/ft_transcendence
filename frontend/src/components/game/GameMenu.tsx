@@ -65,17 +65,17 @@ export default function GameMenu() {
     if (gameSocket) {
       // gameSocket.connect();
       gameSocket.sendBuffer = [];
-      gameSocket.emit('init', { user_id: currentUser.id, game_mode: gameMode });
+      gameSocket.emit('matchmake', gameMode);
       gameAction.setMatchState(MatchState.SEARCHING);
       displayBackdrop(<GameSearch />, cancelFindMatch);
     }
     console.log(matchState);
   };
 
-  const startGame = () => {
-    if (!gameSocket) return;
-    gameSocket.emit('ready');
-  };
+  // const startGame = () => {
+  //   if (!gameSocket) return;
+  //   gameSocket.emit('ready');
+  // };
 
   const cancelFindMatch = () => {
     if (gameSocket) gameSocket.disconnect();

@@ -117,6 +117,7 @@ class RectObj {
 export class GameClass {
   matchHandler: (matchDto: CreateMatchDto) => void;
   socketHandler: (roomid: string, message: string, data: any) => void;
+  gameDestructor: (roomid: string) => void;
   timeFactor: number = 1;
   windowSize: Coor;
   direction: Coor;
@@ -141,6 +142,7 @@ export class GameClass {
     matchinfo: MatchInfo,
     socketHandler: (roomid: string, message: string, data: any) => void,
     matchHandler: (matchDto: CreateMatchDto) => void,
+    gameDestructor: (roomid: string) => void,
   ) {
     this.windowSize = {
       x: 1920,
@@ -182,6 +184,7 @@ export class GameClass {
     this.matchinfo = matchinfo;
     this.socketHandler = socketHandler;
     this.matchHandler = matchHandler;
+    this.gameDestructor = gameDestructor;
   }
 
   gameStart(player: number) {
@@ -299,7 +302,7 @@ export class GameClass {
 
   gameHandleVictory(player: number) {
     this.score[`player${player}`]++;
-    if (this.score[`player${player}`] >= 3) {
+    if (this.score[`player${player}`] >= 11) {
       this.socketHandler(this.matchinfo.roomid, 'victory', player);
       this.matchHandler({
         p1_id: this.matchinfo.player1,
@@ -310,6 +313,8 @@ export class GameClass {
         p1_class_id: this.playerClass.player1.classID,
         p2_class_id: this.playerClass.player1.classID,
       });
+      clearInterval(this.intervalID);
+      this.gameDestructor(this.matchinfo.roomid);
     }
     this.ServingPaddle = player;
     console.log(
