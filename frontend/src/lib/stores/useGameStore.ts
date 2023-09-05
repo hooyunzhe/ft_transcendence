@@ -15,7 +15,7 @@ interface GameStore {
     keyState: { [key: string]: boolean };
     matchInfo: MatchInfo | null;
     gameReady: boolean;
-    skillState: boolean[];
+    skillPath: SkillPath;
   };
   actions: {
     getGameData: (userID: number) => void;
@@ -33,7 +33,7 @@ interface GameStore {
     setKeyState: (key: string, isPressed: boolean) => void;
     setMatchInfo: (matchinfo: MatchInfo) => void;
     setGameReady: (ready: boolean) => void;
-    setSkillState: (skillState: boolean[]) => void;
+    setSkillPath: (path: SkillPath) => void;
   };
 }
 
@@ -172,6 +172,15 @@ function setKeyState(set: StoreSetter, key: string, isPressed: boolean): void {
   }));
 }
 
+function setSkillPath(set: StoreSetter, path: SkillPath): void {
+  set((state) => ({
+    data: {
+      ...state.data,
+      skillPath: path,
+    },
+  }));
+}
+
 function getKeyState(key: string, get: StoreGetter) {
   const keyState = get().data.keyState;
   return !!keyState[key];
@@ -216,15 +225,6 @@ function setGameReady(set: StoreSetter, ready: boolean): void {
   }));
 }
 
-function setSkillState(set: StoreSetter, skillState: boolean[]): void {
-  set((state) => ({
-    data: {
-      ...state.data,
-      skillState: skillState,
-    },
-  }));
-}
-
 function setMatchInfo(set: StoreSetter, matchInfo: MatchInfo): void {
   set((state) => ({
     data: {
@@ -243,7 +243,7 @@ const useGameStore = create<GameStore>()((set, get) => ({
     keyState: {},
     gameReady: false,
     matchInfo: null,
-    skillState: [],
+    skillPath: SkillPath.STRENGTH,
   },
   actions: {
     getGameData: (userID) => getGameData(set, userID),
@@ -259,11 +259,12 @@ const useGameStore = create<GameStore>()((set, get) => ({
     setKeyState: (key, isPressed) => setKeyState(set, key, isPressed),
     setMatchInfo: (matchInfo) => setMatchInfo(set, matchInfo),
     setGameReady: (ready) => setGameReady(set, ready),
-    setSkillState: (skillState) => setSkillState(set, skillState),
+    setSkillPath: (path) => setSkillPath(set, path),
   },
 }));
 
 export const useMatches = () => useGameStore((state) => state.data.matches);
+export const useSkillPath = () => useGameStore((state) => state.data.skillPath);
 export const useMatchesPlayed = () =>
   useGameStore((state) => state.data.matchesPlayed);
 export const useRecentMatches = () =>

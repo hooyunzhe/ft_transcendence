@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import GameSearch from './GameSearch';
 import GameMatchFound from './GameMatchFound';
@@ -9,6 +9,7 @@ import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { MatchInfo, MatchState } from '@/types/GameTypes';
+import GameMenuDropdown from './GameMenuDropdown';
 
 export default function GameMenu() {
   const currentUser = useCurrentUser();
@@ -16,6 +17,9 @@ export default function GameMenu() {
   const matchState = useMatchState();
   const gameAction = useGameActions();
   const { displayBackdrop, resetBackdrop } = useBackdropActions();
+  const [gameMenuAnchor, setGameMenuAnchor] = useState<
+    HTMLElement | undefined
+  >();
 
   useEffect(() => {
     if (!gameSocket) return;
@@ -57,11 +61,11 @@ export default function GameMenu() {
     }
   }, [matchState]);
 
-  const findMatch = () => {
+  const findMatch = (gameMode: string) => {
     if (gameSocket) {
       gameSocket.connect();
       gameSocket.sendBuffer = [];
-      gameSocket.emit('init', currentUser.id);
+      gameSocket.emit('init', currentUser.id, gameMode);
       gameAction.setMatchState(MatchState.SEARCHING);
       displayBackdrop(<GameSearch />, cancelFindMatch);
     }
@@ -131,10 +135,16 @@ export default function GameMenu() {
             bgcolor: '#4CC9F060',
           },
         }}
-        onClick={findMatch}
+        onClick={(event) => setGameMenuAnchor(event.currentTarget)}
+        disabled={matchState === MatchState.SEARCHING}
       >
         Start Game
       </Button>
+      <GameMenuDropdown
+        anchorElement={gameMenuAnchor}
+        handleClose={() => setGameMenuAnchor(undefined)}
+        findMatch={findMatch}
+      />
     </Box>
   );
 }

@@ -3,6 +3,7 @@ import { Box, Button } from '@mui/material';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions } from '@/lib/stores/useGameStore';
 import { MatchState } from '@/types/GameTypes';
+import GameSkills from './GameSkills';
 
 export default function GameReady() {
   const gameSocket = useGameSocket();
@@ -39,18 +40,14 @@ export default function GameReady() {
   };
   return (
     <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        backgroundColor: '#0e0e2a',
-      }}
+      height='100%'
+      display='flex'
+      flexDirection='column'
+      justifyContent='space-around'
+      alignItems='center'
+      bgcolor='#00000000'
     >
-      <p style={{ color: 'white', fontSize: '24px', marginBottom: '20px' }}>
-        GET READY
-      </p>
+      <GameSkills />
       <Button
         variant='contained'
         onClick={getReady}
