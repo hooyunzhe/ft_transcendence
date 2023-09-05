@@ -104,7 +104,7 @@ export default class GameMainScene extends Phaser.Scene {
         64,
       )
       .setOrigin(0.5)
-      .setTint(0xffffff);
+      .setTint(0xff5f1f);
 
     this.p2scoretext = this.add
       .bitmapText(
@@ -115,7 +115,7 @@ export default class GameMainScene extends Phaser.Scene {
         64,
       )
       .setOrigin(0.5)
-      .setTint(0xffffff);
+      .setTint(0xff5f1f);
 
     const dx = this.prevDirectionX !== undefined ? this.prevDirectionX : 0;
     const dy = this.prevDirectionY !== undefined ? this.prevDirectionY : 0;
@@ -173,14 +173,14 @@ export default class GameMainScene extends Phaser.Scene {
     // });
 
     const textstyle = {
-      fontFamily: 'Copperplate Gothic Light',
-      fontSize: 32,
+      fontFamily: 'cyberthrone',
+      fontSize: 48,
       fontweight: 1700,
-      color: '#d3d3d3', // Text color in hexadecimal
-      backgroundColor: 'transparent', // Background color (transparent in this case)
-      align: 'center', // Text alignment: 'left', 'center', 'right'
-      stroke: '#18191A', // Stroke color
-      strokeThickness: 5, // Stroke thickness in pixels
+      color: '#d3d3d3',
+      backgroundColor: 'transparent',
+      align: 'center',
+      stroke: '#18191A',
+      strokeThickness: 5,
       // shadow: {
       //   offsetX: 2,
       //   offsetY: 2,
@@ -190,6 +190,7 @@ export default class GameMainScene extends Phaser.Scene {
       //   fill: true,
       // },
     };
+
     const p1text = this.add
       .text(
         this.p1frame.x,
@@ -515,6 +516,5 @@ export default class GameMainScene extends Phaser.Scene {
     this.keyloop();
     this.updatePosition();
     this.updateScore();
-    console.log(window.innerWidth, window.innerHeight);
   }
 }

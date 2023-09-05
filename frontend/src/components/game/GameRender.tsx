@@ -11,6 +11,8 @@ import { useGameActions, useMatchInfo } from '@/lib/stores/useGameStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
+import '../../styles/cyberthrone.css';
+import '../../styles/led.css';
 
 export interface gameData {
   ball: { x: number; y: number };
@@ -23,6 +25,14 @@ export interface gameData {
     paddle2: { width: number; height: number };
   };
   timestamp: number;
+}
+
+export interface effectData {
+  victory: boolean;
+  reset: boolean;
+  kratos: boolean;
+  kronos: boolean;
+  cosmos: boolean;
 }
 export default function GameRender() {
   const gameSocket = useGameSocket();
@@ -71,6 +81,7 @@ export default function GameRender() {
       },
     );
 
+  // const effectHandler = () => {};
   const clientsidePrediction = (timestamp: number) => {
     return gameInfo;
   };
@@ -100,6 +111,9 @@ export default function GameRender() {
         };
       });
 
+    // if (gameSocket) gameSocket.on('effect', (data :{effect: string, enable: boolean}) => {
+    //   data.effect
+    // });
     const game = new GameMainScene(
       gameSocket,
       keyLoop,
@@ -129,7 +143,7 @@ export default function GameRender() {
 
     return () => {
       if (gameSession) gameSession.destroy(true, false);
-      gameSocket?.disconnect();
+      gameSocket?.off('game');
       window.removeEventListener('keyup', setKeyStateFalse, true);
       window.removeEventListener('keydown', setKeyStateTrue, true);
     };
@@ -143,5 +157,14 @@ export default function GameRender() {
     gameAction.setKeyState(event.key, true);
   }
 
-  return <div id='maingame' />;
+  return (
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        fontFamily: 'cyberthrone, Arial',
+      }}
+      id='maingame'
+    />
+  );
 }
