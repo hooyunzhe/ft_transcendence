@@ -1,10 +1,5 @@
 'use client';
-import {
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Paper,
-} from '@mui/material';
+import { Box, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import {
   ExpandLess,
   ExpandMore,
@@ -35,7 +30,7 @@ export default function FriendDropdown({
 
   return (
     <>
-      <Paper elevation={2}>
+      <Box border='solid 3px #a23833' borderRadius='10px' bgcolor='#A4B5C6'>
         <ListItemButton
           onClick={() =>
             setCurrentFriendCategory(
@@ -54,7 +49,7 @@ export default function FriendDropdown({
           ></ListItemText>
           {currentFriendCategory === category ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
-      </Paper>
+      </Box>
       <FriendList
         expand={currentFriendCategory === category}
         category={category}

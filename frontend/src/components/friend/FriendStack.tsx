@@ -142,7 +142,7 @@ export default function FriendStack() {
     changeFriend(friendship, FriendStatus.BLOCKED, FriendStatus.FRIENDS);
     displayNotification(
       'warning',
-      'Blocked ' + friendship.incoming_friend.username,
+      'Unblocked ' + friendship.incoming_friend.username,
     );
   }
 
@@ -150,16 +150,16 @@ export default function FriendStack() {
     await callFriendsAPI('DELETE', friendship.incoming_friend);
     deleteFriend(friendship);
     emitToSocket(friendSocket, 'deleteFriend', friendship);
-    const achievementAlreadyEarned = await handleAchievementsEarned(
-      currentUser.id,
-      2,
-      displayNotification,
+    await handleAchievementsEarned(currentUser.id, 2, displayNotification).then(
+      (earned) =>
+        earned &&
+        displayNotification(
+          'error',
+          'Unfriended ' + friendship.incoming_friend.username,
+        ),
     );
-    if (achievementAlreadyEarned)
-      displayNotification(
-        'error',
-        'Unfriended ' + friendship.incoming_friend.username,
-      );
+    resetSelectedFriend(friendship.id);
+    resetSelectedDirectChannel(friendship.incoming_friend.id);
   }
 
   function handleAction(request: Friend, action: FriendAction): void {
@@ -209,10 +209,10 @@ export default function FriendStack() {
 
   return (
     <Stack
-      width='100%'
       direction='column'
       justifyContent='center'
       spacing={1}
+      padding='7px'
       sx={{
         overflow: 'hidden',
         '&::-webkit-scrollbar': { display: 'none' },
@@ -220,6 +220,12 @@ export default function FriendStack() {
     >
       <Button
         variant='contained'
+        sx={{
+          bgcolor: '#4CC9F080',
+          ':hover': {
+            bgcolor: '#4CC9F060',
+          },
+        }}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() =>
           displayDialog(

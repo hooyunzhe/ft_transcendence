@@ -2,23 +2,25 @@
 import { Box, Typography } from '@mui/material';
 
 interface ProfileStatCardProps {
+  alignEnd?: boolean;
   description: string;
   stats: string;
 }
 
 export default function ProfileStatCard({
+  alignEnd,
   description,
   stats,
 }: ProfileStatCardProps) {
   return (
     <Box
+      alignSelf={alignEnd ? 'flex-end' : 'flex-start'}
       width='11vw'
       height='12vh'
       display='flex'
       flexDirection='column'
       justifyContent='space-evenly'
       alignItems='center'
-      border='solid 5px #7209B775'
       borderRadius='10px'
       bgcolor='#a291d275'
     >

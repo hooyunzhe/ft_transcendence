@@ -80,15 +80,20 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
 
   return (
     <Box display='flex' flexDirection='column' alignItems='flex-start'>
-      <Typography color='white'>{message.user.username}</Typography>
-      <Paper>
+      <Typography color='#DDDDDD'>{message.user.username}</Typography>
+      <Box borderRadius='10px' bgcolor='#A4B5C6'>
         <ListItem
           sx={{
             padding: '0 1vh',
           }}
         >
           <ListItemAvatar>
-            <Avatar src={message.user.avatar_url} />
+            <Avatar
+              src={message.user.avatar_url}
+              sx={{
+                border: 'solid 1px black',
+              }}
+            />
           </ListItemAvatar>
           {selectedMessage?.id === message.id ? (
             <InputField
@@ -145,7 +150,7 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
             />
           )}
         </ListItem>
-      </Paper>
+      </Box>
     </Box>
   );
 }

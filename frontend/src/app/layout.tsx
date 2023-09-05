@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'Cyberpong™',
+  title: 'Cyberpong',
   description: 'Not an ordinary Pong',
   viewport: 'initial-scale=1, width=device-width',
 };

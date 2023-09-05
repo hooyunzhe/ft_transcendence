@@ -35,7 +35,7 @@ export class TwoFactorService {
       secretKey: secretKey,
       otpAuthUrl: authenticator.keyuri(
         userFound.username,
-        'Cyberpong™',
+        'Cyberpong',
         secretKey,
       ),
     };

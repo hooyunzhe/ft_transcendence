@@ -1,11 +1,9 @@
 'use client';
-import { Button, ListItem, ListItemIcon, Paper, Stack } from '@mui/material';
-import { LocalPolice, Shield } from '@mui/icons-material';
-import { ChannelMemberAddPrompt } from './ChannelMemberAddPrompt';
+import { Button, IconButton, ListItem, Stack } from '@mui/material';
+import { SportsTennis } from '@mui/icons-material';
+import ChannelMemberAddPrompt from './ChannelMemberAddPrompt';
 import ChannelMemberDisplay from './ChannelMemberDisplay';
-import ChannelMemberActionMenu from './ChannelMemberActionMenu';
-import { ChannelMemberMutePrompt } from './ChannelMemberMutePrompt';
-import ListHeader from '../utils/ListHeader';
+import ChannelMemberMutePrompt from './ChannelMemberMutePrompt';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
 import {
@@ -21,6 +19,7 @@ import { useTwoFactorActions } from '@/lib/stores/useTwoFactorStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { FriendStatus } from '@/types/FriendTypes';
 import {
   ChannelMember,
@@ -28,10 +27,9 @@ import {
   ChannelMemberRole,
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
-import { ListHeaderIcon } from '@/types/UtilTypes';
-import { useAchievementActions } from '@/lib/stores/useAchievementStore';
+import { ChannelType } from '@/types/ChannelTypes';
 
-export function ChannelMemberList() {
+export default function ChannelMemberList() {
   const selectedChannel = useSelectedChannel();
   const currentUser = useCurrentUser();
   const channelMembers = useChannelMembers();
@@ -62,17 +60,14 @@ export function ChannelMemberList() {
   );
 
   function getCurrentRole(): ChannelMemberRole {
-    if (!selectedChannel?.id) {
-      return ChannelMemberRole.MEMBER;
+    if (selectedChannel) {
+      if (isChannelOwner(currentUser.id, selectedChannel.id)) {
+        return ChannelMemberRole.OWNER;
+      }
+      if (isChannelAdmin(currentUser.id, selectedChannel.id))
+        return ChannelMemberRole.ADMIN;
     }
-    if (isChannelOwner(currentUser.id, selectedChannel?.id)) {
-      return ChannelMemberRole.OWNER;
-    }
-    if (isChannelAdmin(currentUser.id, selectedChannel?.id))
-      return ChannelMemberRole.ADMIN;
-    else {
-      return ChannelMemberRole.MEMBER;
-    }
+    return ChannelMemberRole.MEMBER;
   }
 
   // * Helper Function for update locals * //
@@ -81,17 +76,14 @@ export function ChannelMemberList() {
     await callAPI('DELETE', 'channel-members', { id: member.id });
     kickChannelMember(member.id);
     emitToSocket(channelSocket, 'kickMember', member);
-    const achievementAlreadyEarned = await handleAchievementsEarned(
-      currentUser.id,
-      4,
-      displayNotification,
+    await handleAchievementsEarned(currentUser.id, 4, displayNotification).then(
+      (earned) =>
+        earned &&
+        displayNotification(
+          'success',
+          `Channel member ${member.user.username} kicked`,
+        ),
     );
-    if (achievementAlreadyEarned) {
-      displayNotification(
-        'success',
-        `Channel member ${member.user.username} kicked`,
-      );
-    }
   }
 
   async function changeToAdmin(member: ChannelMember) {
@@ -278,13 +270,18 @@ export function ChannelMemberList() {
   }
 
   return (
-    <Stack width='100%' direction='column' justifyContent='center' spacing={1}>
-      <ListHeader title='Members' icon={ListHeaderIcon.SOCIAL} />
+    <Stack direction='column' justifyContent='center' spacing={1} padding='7px'>
       {selectedChannel &&
         (isChannelAdmin(currentUser.id, selectedChannel.id) ||
           isChannelOwner(currentUser.id, selectedChannel.id)) && (
           <Button
             variant='contained'
+            sx={{
+              bgcolor: '#4CC9F080',
+              ':hover': {
+                bgcolor: '#8A7DD6',
+              },
+            }}
             onMouseDown={(event) => event.preventDefault()}
             onClick={() =>
               displayDialog(
@@ -308,31 +305,32 @@ export function ChannelMemberList() {
           (member) =>
             member.channel.id === selectedChannel?.id &&
             member.status !== ChannelMemberStatus.BANNED &&
+            (member.user.id !== currentUser.id ||
+              member.channel.type !== ChannelType.DIRECT) &&
             !isFriendBlocked(member.user.id),
         )
         .map((member: ChannelMember, index: number) => (
-          <Paper key={index} elevation={2}>
-            <ListItem component='div'>
-              <ChannelMemberDisplay key={index} user={member.user} />
-              {member.role === ChannelMemberRole.OWNER && (
-                <ListItemIcon>
-                  <LocalPolice />
-                </ListItemIcon>
-              )}
-              {member.role === ChannelMemberRole.ADMIN && (
-                <ListItemIcon>
-                  <Shield />
-                </ListItemIcon>
-              )}
-              {member.role !== ChannelMemberRole.OWNER && (
-                <ChannelMemberActionMenu
-                  member={member}
-                  currentUserRole={getCurrentRole()}
-                  handleAction={handleDisplayAction}
-                />
-              )}
-            </ListItem>
-          </Paper>
+          <ListItem
+            key={index}
+            sx={{
+              border: 'solid 3px #4a4eda',
+              borderRadius: '10px',
+              bgcolor: '#A4B5C6',
+            }}
+            component='div'
+          >
+            <ChannelMemberDisplay
+              user={member.user}
+              member={member}
+              currentUserRole={getCurrentRole()}
+              handleAction={handleDisplayAction}
+            />
+            {member.user.id !== currentUser.id && (
+              <IconButton onClick={() => null}>
+                <SportsTennis />
+              </IconButton>
+            )}
+          </ListItem>
         ))}
     </Stack>
   );

@@ -36,9 +36,24 @@ export default function Home() {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        background: '#4361EE',
       }}
     >
+      {(session === null || isNewUser) && (
+        <video
+          width='100%'
+          height='100%'
+          autoPlay
+          muted
+          loop
+          style={{
+            position: 'absolute',
+            zIndex: -1,
+            objectFit: 'cover',
+          }}
+        >
+          <source src='/assets/mainmenu.mp4' type='video/mp4' />
+        </video>
+      )}
       {session === null && <Login />}
       {session && isNewUser && <FirstTimeSetup session={session} />}
       {session && user.id !== 0 && <Cyberpong />}

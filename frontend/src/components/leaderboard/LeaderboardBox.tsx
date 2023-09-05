@@ -1,8 +1,8 @@
 'use client';
 import { Box } from '@mui/material';
-import ListHeader from '../utils/ListHeader';
-import { ListHeaderIcon } from '@/types/UtilTypes';
+import ToolbarHeader from '../utils/ToolbarHeader';
 import LeaderboardList from './LeaderboardList';
+import { ToolbarHeaderType } from '@/types/UtilTypes';
 
 export default function LeaderboardBox() {
   return (
@@ -12,7 +12,7 @@ export default function LeaderboardBox() {
       flexDirection='column'
       justifyContent='space-between'
     >
-      <ListHeader title='Leaderboard' icon={ListHeaderIcon.LEADERBOARD} />
+      <ToolbarHeader title='Leaderboard' type={ToolbarHeaderType.LEADERBOARD} />
       <LeaderboardList />
     </Box>
   );

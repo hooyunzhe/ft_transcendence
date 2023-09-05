@@ -1,4 +1,4 @@
-import { Avatar, Box, Paper, Typography } from '@mui/material';
+import { Avatar, Box, Typography } from '@mui/material';
 import AchievementIcon from './AchievementIcon';
 import { Achievement } from '@/types/AchievementTypes';
 
@@ -13,14 +13,13 @@ export default function AchievementDisplay({
 }: AchievementDisplayProps) {
   return (
     <Box width='50%' display='flex'>
-      <Paper
-        sx={{
-          display: 'flex',
-          margin: '5px',
-          padding: '1vh',
-          width: '100%',
-          boxSizing: 'border-box',
-        }}
+      <Box
+        display='flex'
+        margin='5px'
+        padding='1vh'
+        width='100%'
+        boxSizing='border-box'
+        bgcolor='#A4B5C6'
       >
         <Box
           width='100%'
@@ -54,7 +53,7 @@ export default function AchievementDisplay({
             )}
           </Box>
         </Box>
-      </Paper>
+      </Box>
     </Box>
   );
 }

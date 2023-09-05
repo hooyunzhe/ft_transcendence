@@ -2,6 +2,7 @@ export enum MatchState {
   IDLE = 'IDLE',
   SEARCHING = 'SEARCHING',
   FOUND = 'FOUND',
+  READY = 'READY',
   INGAME = 'INGAME',
   SPECTATE = 'SPECTATE',
 }

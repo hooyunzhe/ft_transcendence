@@ -22,10 +22,10 @@ export class CreateMatchDto {
   p2_score: number;
 
   @IsNotEmpty()
-  @IsString()
-  p1_skills: string;
+  @IsNumber()
+  p1_class_id: number;
 
   @IsNotEmpty()
-  @IsString()
-  p2_skills: string;
+  @IsNumber()
+  p2_class_id: number;
 }

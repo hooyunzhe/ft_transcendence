@@ -1,7 +1,7 @@
 'use client';
-import { Achievement } from '@/types/AchievementTypes';
 import { Avatar, Box, Typography } from '@mui/material';
 import AchievementIcon from '../achievement/AchievementIcon';
+import { Achievement } from '@/types/AchievementTypes';
 
 interface ProfileAchievementDisplayProps {
   achievement: Achievement;
@@ -14,15 +14,14 @@ export default function ProfileAchievementDisplay({
 }: ProfileAchievementDisplayProps) {
   return (
     <Box
-      width='13.5vw'
+      width='13.75vw'
       height='17vh'
       display='flex'
       flexDirection='column'
       justifyContent='space-around'
       alignItems='center'
-      border='solid 2px black'
       borderRadius='10px'
-      bgcolor='#7209B775'
+      bgcolor='#A4B5C6'
     >
       <Avatar
         sx={{

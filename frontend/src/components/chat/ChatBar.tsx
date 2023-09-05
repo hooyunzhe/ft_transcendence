@@ -125,6 +125,13 @@ export default function ChatBar() {
       sx={{
         background: '#4CC9F075',
       }}
+      InputLabelProps={{
+        sx: {
+          '&.Mui-focused': {
+            color: 'black',
+          },
+        },
+      }}
       fullWidth
       autoFocus
       inputRef={chatBar}
@@ -148,7 +155,6 @@ export default function ChatBar() {
           : `Select a ${currentSocialTab.toLowerCase()} to start messaging`
       }
       variant='filled'
-      color='secondary'
     />
   );
 }

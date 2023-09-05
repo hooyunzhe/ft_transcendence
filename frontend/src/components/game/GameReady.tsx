@@ -1,30 +1,28 @@
-import { useGameActions } from '@/lib/stores/useGameStore';
-import { useGameSocket } from '@/lib/stores/useSocketStore';
-import { useUtilActions } from '@/lib/stores/useUtilStore';
-import { MatchState } from '@/types/GameTypes';
-import { View } from '@/types/UtilTypes';
-import { Box, Button, ToggleButton } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { Box, Button } from '@mui/material';
+import { useGameSocket } from '@/lib/stores/useSocketStore';
+import { useGameActions } from '@/lib/stores/useGameStore';
+import { MatchState } from '@/types/GameTypes';
+import GameSkills from './GameSkills';
 
 export default function GameReady() {
-  const [ready, setReady] = useState(false);
-  const [cooldown, setCooldown] = useState(false);
   const gameSocket = useGameSocket();
   const gameAction = useGameActions();
+  const [ready, setReady] = useState(false);
+  const [cooldown, setCooldown] = useState(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (gameSocket)
       gameSocket.on('start', (roomid: string) => {
         setCooldown(true);
-        timer = setTimeout(() => {
-          gameAction.setMatchState(MatchState.INGAME);
-        }, 3000);
+        gameAction.setMatchState(MatchState.INGAME);
       });
     return () => {
       clearTimeout(timer);
     };
   }, []);
+
   const getReady = () => {
     if (!cooldown && gameSocket) {
       setReady(!ready);
@@ -42,18 +40,14 @@ export default function GameReady() {
   };
   return (
     <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        backgroundColor: '#0e0e2a',
-      }}
+      height='100%'
+      display='flex'
+      flexDirection='column'
+      justifyContent='space-around'
+      alignItems='center'
+      bgcolor='#00000000'
     >
-      <p style={{ color: 'white', fontSize: '24px', marginBottom: '20px' }}>
-        GET READY
-      </p>
+      <GameSkills />
       <Button
         variant='contained'
         onClick={getReady}
