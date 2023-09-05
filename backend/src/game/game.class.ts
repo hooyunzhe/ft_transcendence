@@ -8,6 +8,7 @@ interface Coor {
 }
 
 class Player {
+  classID: number;
   timer: NodeJS.Timer;
   paddleSize: number;
   paddleSpeed: number;
@@ -23,6 +24,7 @@ class Player {
     this.ballSpeed = 1;
     this.inCooldown = false;
     this.cooldown = 0;
+    this.classID = 0;
   }
 
   setClass(classes: number, activeSkill?: (player: number) => boolean) {
@@ -49,6 +51,7 @@ class Player {
       default:
         break;
     }
+    this.classID = classes;
   }
 
   resetCooldown() {
@@ -148,7 +151,7 @@ export class GameClass {
       y: 0,
     };
     this.playerClass = { player1: new Player(), player2: new Player() };
-    this.velocity = 15;
+    this.velocity = 30;
     this.score = {
       player1: 0,
       player2: 0,
@@ -207,6 +210,8 @@ export class GameClass {
 
     this.playerClass.player1.resetCooldown();
     this.playerClass.player2.resetCooldown();
+    this.socketHandler(this.matchinfo.roomid, 'skillOn', 1);
+    this.socketHandler(this.matchinfo.roomid, 'skillOn', 2);
     this.started = false;
     this.ball.y = this.windowSize.y / 2;
     this.paddleClass.paddle1.y = this.windowSize.y / 2;
@@ -256,10 +261,10 @@ export class GameClass {
       this.direction.x *= -1;
     }
 
-    // if (this.playerClass.player1.checkCooldown())
-    //   this.socketHandler(this.matchinfo.roomid, 'cooldownOff', 1);
-    // if (this.playerClass.player2.checkCooldown())
-    //   this.socketHandler(this.matchinfo.roomid, 'cooldownOff', 2);
+    if (this.playerClass.player1.checkCooldown())
+      this.socketHandler(this.matchinfo.roomid, 'skillOn', 1);
+    if (this.playerClass.player2.checkCooldown())
+      this.socketHandler(this.matchinfo.roomid, 'skillOn', 2);
     this.socketHandler(this.matchinfo.roomid, 'game', {
       ball: {
         x: this.ball.x,
@@ -427,7 +432,7 @@ export class GameClass {
       !this.playerClass[`player${player}`].inCooldown
     ) {
       if (this.playerClass[`player${player}`].activeSkill(player)) {
-        this.socketHandler(this.matchinfo.roomid, 'cooldownOn', player);
+        this.socketHandler(this.matchinfo.roomid, 'skillOff', player);
         this.playerClass[`player${player}`].setCooldown();
       }
     }
