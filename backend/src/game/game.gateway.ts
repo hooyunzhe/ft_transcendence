@@ -39,10 +39,46 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.ready = false;
     client.join(client.data.roomid);
     console.log('user id:', client.data.user_id);
-    const client_list = await this.fetchPlayer('');
+    this.makingRoom('');
+  }
+
+  async makingRoom(roomid: string)
+  {
+    const client_list = await this.fetchPlayer(roomid);
     if (client_list.length >= 2) this.matchMaking(client_list.splice(0, 2));
   }
+
+  @SubscribeMessage('invite')
+    async inviteGame(@MessageBody() user_id: string, opponent_id: string,
+  @ConnectedSocket() client: Socket) {
+    client.data.user_id ??= user_id;
+    const playerlist = await this.fetchPlayer('')
+    const opponent = playerlist.find((player) => player.data.user_id === opponent_id);
+    if (opponent)
+      return;
+    client.join(client.id);
+    client.data.ready = false;
+    client.emit('invite', client.id);
+  }
+
+
+  @SubscribeMessage('accept')
+  acceptGame(@MessageBody() user_id: string, client_id: string,
+   @ConnectedSocket() client: Socket) {
+     client.data.user_id ??= user_id;
+     client.join(client_id);
+     client.data.ready = false;
+     this.makingRoom(client_id);
+   }
+ 
+   @SubscribeMessage('reject')
+   rejectGame(@MessageBody() user_id: string, client_id: string,
+    @ConnectedSocket() client: Socket) {
+      this.server.to(client_id).emit('reject');
+    }
+
   async handleDisconnect(client: Socket) {
+    if (client.data.player === 0) return;
     this.server.to(client.data.roomid).emit('disc');
     this.roomlist.delete(client.data.roomid);
   }
@@ -80,7 +116,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('ready')
-  async start(@ConnectedSocket() client: Socket) {
+  async start(@MessageBody() classes: number, @ConnectedSocket() client: Socket) {
     const players = await this.fetchPlayer(client.data.roomid);
     if (players.length != 2) return;
     client.data.ready = !client.data.ready;
@@ -90,8 +126,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       'ready for the match: ',
       client.data.ready,
     );
+    this.roomlist.get(client.data.roomid).gameSetClass(client.data.player, classes);
     if (players.every((player) => player.data.ready)) {
-      players.forEach((player) => player.emit('start'));
+      players.forEach((player) => player.emit('start', client.data.roomid));
       console.log('Game is starting in room :', client.data.roomid);
       this.roomlist.get(client.data.roomid).gameUpdate();
     }
@@ -128,32 +165,23 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('check')
-  async checkGameStatus() {
-    const players = await this.server.fetchSockets();
-    console.log('game server totalconnection:', players.length);
-  }
+  // @SubscribeMessage('check')
+  // async checkGameStatus() {
+  //   const players = await this.server.fetchSockets();
+  //   console.log('game server totalconnection:', players.length);
+  // }
 
-  @SubscribeMessage('reset')
-  reset(@ConnectedSocket() client: Socket) {
-    this.roomlist.get(client.data.roomid).gameReset();
-  }
-
-  @SubscribeMessage('Set')
-  SetPosition(
-    @MessageBody() position: { x: number; y: number },
-    @ConnectedSocket() client: Socket,
-  ): void {
-    this.roomlist
-      .get(client.data.roomid)
-      .gameSetPosition(position.x, position.y);
-  }
+  // @SubscribeMessage('reset')
+  // reset(@ConnectedSocket() client: Socket) {
+  //   this.roomlist.get(client.data.roomid).gameReset();
+  // }
 
   @SubscribeMessage('Player')
   MovePaddle(
     @MessageBody() movement: string,
     @ConnectedSocket() client: Socket,
   ): void {
+    if (client.data.player === 0) return;
     if (movement === 'w')
       this.roomlist
         .get(client.data.roomid)
@@ -164,6 +192,21 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         .gameSetPaddlePosition(client.data.player, 1);
     if (movement === ' ')
       this.roomlist.get(client.data.roomid).gameStart(client.data.player);
+    if (movement === 'e')
+    this.roomlist.get(client.data.roomid).gameActiveSkill(client.data.player);
+  }
+
+  @SubscribeMessage('spectator')
+  async SpectateGame(
+    @MessageBody() friend_id: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.data.player = 0;
+    const friend = await this.fetchPlayerwithUID(friend_id);
+    if (friend) {
+      if (this.roomlist[friend.data.roomid]) client.join(friend.data.roomid);
+      else this.server.to(client.id).emit('error');
+    } else this.server.to(client.id).emit('error');
   }
 
   @SubscribeMessage('load')
@@ -176,6 +219,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return this.server.in(roomid).fetchSockets();
   }
 
+  async fetchPlayerwithUID(user_id: string) {
+    const players = this.server.fetchSockets();
+    return (await players).find((player) => player.data.user_id === user_id);
+  }
   async fetchPlayerCount(roomid: string) {
     return (await this.fetchPlayer(roomid)).length;
   }

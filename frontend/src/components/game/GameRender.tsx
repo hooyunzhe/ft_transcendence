@@ -17,6 +17,10 @@ export interface gameData {
   paddle1: { x: number; y: number };
   paddle2: { x: number; y: number };
   score: { player1: number; player2: number };
+  paddlesize: {
+    paddle1: { width: number; height: number };
+    paddle2: { width: number; height: number };
+  };
   timestamp: number;
 }
 export default function GameRender() {
@@ -38,6 +42,9 @@ export default function GameRender() {
     if (gameAction.getKeyState(' ')) {
       if (gameSocket) gameSocket.emit('Player', ' ');
     }
+    if (gameAction.getKeyState('e')) {
+      if (gameSocket) gameSocket.emit('Player', 'e');
+    }
   };
 
   if (gameSocket)
@@ -49,6 +56,10 @@ export default function GameRender() {
         paddle1: { x: number; y: number };
         paddle2: { x: number; y: number };
         score: { player1: number; player2: number };
+        paddlesize: {
+          paddle1: { width: number; height: number };
+          paddle2: { width: number; height: number };
+        };
         timestamp: number;
       }) => {
         gameInfo = data;

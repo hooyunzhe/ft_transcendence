@@ -10,5 +10,6 @@ import { MatchModule } from 'src/match/match.module';
   imports: [TypeOrmModule.forFeature([Statistic]), UserModule, MatchModule],
   controllers: [StatisticController],
   providers: [StatisticService],
+  exports: [StatisticService],
 })
 export class StatisticModule {}

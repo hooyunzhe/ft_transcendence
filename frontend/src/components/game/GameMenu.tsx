@@ -82,18 +82,6 @@ export default function GameMenu() {
     gameAction.setMatchState(MatchState.IDLE);
   };
 
-  const disconnectGame = () => {
-    if (!gameSocket) return;
-    gameSocket.disconnect();
-    gameAction.setMatchState(MatchState.IDLE);
-  };
-
-  const resetGame = () => {
-    if (!gameSocket) return;
-    gameSocket.emit('reset');
-    gameSocket.disconnect();
-  };
-
   async function getPlayerData(data: { player1: string; player2: string }) {
     const [player1response, player2response] = await Promise.all([
       callAPI('GET', 'users?search_type=ONE&search_number=' + data.player1),
