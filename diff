@@ -1,0 +1,503 @@
+diff --git a/backend/src/game/game.class.ts b/backend/src/game/game.class.ts
+index 7e1ccc6..a4a293a 100644
+--- a/backend/src/game/game.class.ts
++++ b/backend/src/game/game.class.ts
+@@ -12,37 +12,60 @@ class Player {
+   paddleSize: number;
+   paddleSpeed: number;
+   ballSpeed: number;
+-  cooldown: boolean;
++  cooldown: number;
++  inCooldown: boolean;
++  lastUsed: number;
+   activeSkill: (player: number) => boolean | null = null;
+ 
+-  constructor()
+-  {
++  constructor() {
+     this.paddleSize = 160;
+     this.paddleSpeed = 1;
+     this.ballSpeed = 1;
+-    this.cooldown = false;
++    this.inCooldown = false;
++    this.cooldown = 0;
+   }
+ 
+-  setClass(classes: number, activeSkill?: (player: number) => boolean)
+-  {
++  setClass(classes: number, activeSkill?: (player: number) => boolean) {
+     this.activeSkill = activeSkill;
+     switch (classes) {
+       case 1:
++        {
+           this.paddleSize = 192;
++          this.cooldown = 20;
++        }
+         break;
+       case 2:
++        {
+           this.paddleSpeed = 1.2;
++          this.cooldown = 15;
++        }
+         break;
+       case 3:
++        {
+           this.ballSpeed = 1.2;
++          this.cooldown = 30;
++        }
+         break;
+       default:
+         break;
+     }
+   }
+ 
+-  setCooldown(cd: boolean){
+-    this.cooldown = cd;
++  resetCooldown() {
++    this.lastUsed = 0;
++    this.inCooldown = false;
++  }
++  checkCooldown() {
++    if (this.inCooldown === false) return false;
++    const timeDiff = (Date.now() - this.lastUsed) / 1000;
++    if (this.cooldown === 0 || timeDiff > this.cooldown) {
++      this.inCooldown = false;
++      return true;
++    }
++  }
++  setCooldown() {
++    this.lastUsed = Date.now();
++    this.inCooldown = true;
+   }
+ }
+ 
+@@ -94,9 +117,9 @@ export class GameClass {
+   timeFactor: number = 1;
+   windowSize: Coor;
+   direction: Coor;
+-  ball: RectObj; 
+-  playerClass : {player1: Player, player2: Player}
+-  paddleClass : {paddle1: RectObj, paddle2: RectObj}
++  ball: RectObj;
++  playerClass: { player1: Player; player2: Player };
++  paddleClass: { paddle1: RectObj; paddle2: RectObj };
+   velocity: number;
+   score: { player1: number; player2: number };
+   matchinfo: MatchInfo;
+@@ -110,7 +133,6 @@ export class GameClass {
+   };
+   started: boolean = false;
+   slowed: boolean = false;
+-  inverted: boolean = false;
+ 
+   constructor(
+     matchinfo: MatchInfo,
+@@ -125,25 +147,28 @@ export class GameClass {
+       x: 0,
+       y: 0,
+     };
+-    this.playerClass = {player1: new Player(), player2: new Player()}
++    this.playerClass = { player1: new Player(), player2: new Player() };
+     this.velocity = 15;
+     this.score = {
+       player1: 0,
+       player2: 0,
+     };
+-    this.paddleClass = {paddle1 : new RectObj(
+-      this.windowSize.x * 0.05,
+-      this.windowSize.y / 2,
+-      20,
+-      160,
+-      1,
+-    ), paddle2: new RectObj(
+-      this.windowSize.x * 0.95,
+-      this.windowSize.y / 2,
+-      20,
+-      160,
+-      2,
+-    )}
++    this.paddleClass = {
++      paddle1: new RectObj(
++        this.windowSize.x * 0.05,
++        this.windowSize.y / 2,
++        20,
++        160,
++        1,
++      ),
++      paddle2: new RectObj(
++        this.windowSize.x * 0.95,
++        this.windowSize.y / 2,
++        20,
++        160,
++        2,
++      ),
++    };
+ 
+     this.ball = new RectObj(
+       10 + (this.paddleClass.paddle1.right() + 30),
+@@ -154,7 +179,6 @@ export class GameClass {
+     this.matchinfo = matchinfo;
+     this.socketHandler = socketHandler;
+     this.matchHandler = matchHandler;
+-
+   }
+ 
+   gameStart(player: number) {
+@@ -172,13 +196,17 @@ export class GameClass {
+   gameReset() {
+     switch (this.ServingPaddle) {
+       case 2:
+-        this.ball.x = this.paddleClass.paddle2.left() - this.ball.width / 2 - 10;
++        this.ball.x =
++          this.paddleClass.paddle2.left() - this.ball.width / 2 - 10;
+         break;
+       default:
+-        this.ball.x = 10 + (this.paddleClass.paddle1.right() + this.ball.width / 2);
++        this.ball.x =
++          10 + (this.paddleClass.paddle1.right() + this.ball.width / 2);
+         break;
+     }
+ 
++    this.playerClass.player1.resetCooldown();
++    this.playerClass.player2.resetCooldown();
+     this.started = false;
+     this.ball.y = this.windowSize.y / 2;
+     this.paddleClass.paddle1.y = this.windowSize.y / 2;
+@@ -220,11 +248,18 @@ export class GameClass {
+       this.gameHandleVictory(1);
+     }
+     if (
+-      (this.gameCollision(this.ball, this.paddleClass.paddle1) && this.direction.x < 0) ||
+-      (this.gameCollision(this.ball, this.paddleClass.paddle2) && this.direction.x > 0)
++      (this.gameCollision(this.ball, this.paddleClass.paddle1) &&
++        this.direction.x < 0) ||
++      (this.gameCollision(this.ball, this.paddleClass.paddle2) &&
++        this.direction.x > 0)
+     ) {
+       this.direction.x *= -1;
+     }
++
++    // if (this.playerClass.player1.checkCooldown())
++    //   this.socketHandler(this.matchinfo.roomid, 'cooldownOff', 1);
++    // if (this.playerClass.player2.checkCooldown())
++    //   this.socketHandler(this.matchinfo.roomid, 'cooldownOff', 2);
+     this.socketHandler(this.matchinfo.roomid, 'game', {
+       ball: {
+         x: this.ball.x,
+@@ -296,28 +331,32 @@ export class GameClass {
+ 
+   gameSetPaddlePosition(player: number, direction: number) {
+     if (this.loaded.player1 && this.loaded.player2) {
+-     this.gameMovePaddle(this.paddleClass[`paddle${player}`], 10 * direction * this.timeFactor * this.playerClass[`player${player}`].paddleSpeed);
++      this.gameMovePaddle(
++        this.paddleClass[`paddle${player}`],
++        10 *
++          direction *
++          this.timeFactor *
++          this.playerClass[`player${player}`].paddleSpeed,
++      );
+     }
+   }
+ 
+   activeStickyPaddle = (player: number) => {
+-    if (Math.abs(this.paddleClass[`paddle${player}`] - this.ball.x) < 30)
+-    {
++    console.log(Math.abs(this.paddleClass[`paddle${player}`].x - this.ball.x));
++    if (Math.abs(this.paddleClass[`paddle${player}`].x - this.ball.x) < 300) {
+       this.ball.y = this.paddleClass[`paddle${player}`].y;
+       return true;
+     }
+-    else
+-      return false
+-  }
++    return false;
++  };
+ 
+   activeSlowTime = (player: number) => {
+     if (!this.slowed) {
+-      console.log("slowed", this.slowed)
++      console.log('slowed', this.slowed);
+       this.timeFactor = 0.5;
+       this.slowed = true;
+       const timer = setTimeout(() => {
+-
+-        console.log("unslowed", this.slowed)
++        console.log('unslowed', this.slowed);
+         this.timeFactor = 1;
+         this.slowed = false;
+         clearTimeout(timer);
+@@ -325,9 +364,8 @@ export class GameClass {
+ 
+       return true;
+     }
+-  else
+     return false;
+-}
++  };
+ 
+   activeInvertPaddle = (player: number) => {
+     let opponent: number;
+@@ -336,58 +374,61 @@ export class GameClass {
+       case 1:
+         opponent = 2;
+         break;
+-    
+-      default:
++
++      case 2:
+         opponent = 1;
+         break;
++      default:
++        break;
+     }
+-    if (this.playerClass[`player${opponent}`].paddleSpeed > 0 && !this.inverted)
+-    {
+-      this.inverted = true;
+-      this.playerClass[`player${opponent}`].paddleSpeed * -1;
++    if (this.playerClass[`player${opponent}`].paddleSpeed > 0) {
++      this.playerClass[`player${opponent}`].paddleSpeed *= -1;
+       const timer = setTimeout(() => {
+-        this.inverted = false;
+-        this.playerClass[`player${opponent}`].paddleSpeed * -1;
++        this.playerClass[`player${opponent}`].paddleSpeed *= -1;
+         clearTimeout(timer);
+-      }, 5000)
++      }, 3000);
+       return true;
+     }
+     return false;
+-  }
++  };
+ 
+-  gameSetClass(player: number, classes: number)
+-  {
++  gameSetClass(player: number, classes: number) {
+     switch (classes) {
+       case 1:
+-        this.playerClass[`player${player}`].setClass(classes, this.activeStickyPaddle);
++        this.playerClass[`player${player}`].setClass(
++          classes,
++          this.activeStickyPaddle,
++        );
+         break;
+       case 2:
+-        this.playerClass[`player${player}`].setClass(classes, this.activeSlowTime);
++        this.playerClass[`player${player}`].setClass(
++          classes,
++          this.activeSlowTime,
++        );
+         break;
+       case 3:
+-        this.playerClass[`player${player}`].setClass(classes, this.activeInvertPaddle);
++        this.playerClass[`player${player}`].setClass(
++          classes,
++          this.activeInvertPaddle,
++        );
+         break;
+       default:
+         this.playerClass[`player${player}`].setClass(classes, null);
+         break;
+     }
+-    this.paddleClass[`paddle${player}`].height = this.playerClass[`player${player}`].paddleSize;
++    this.paddleClass[`paddle${player}`].height =
++      this.playerClass[`player${player}`].paddleSize;
+   }
+ 
+-  gameActiveSkill(player: number)
+-  {
+-    if (this.started && this.playerClass[`player${player}`].activeSkill && !this.playerClass[`player${player}`].cooldown)
+-    {
+-      console.log(`player${player}`, " used skill, entering cd", this.playerClass[`player${player}`].cooldown);
+-      if (this.playerClass[`player${player}`].activeSkill(player))
+-      {
+-        this.playerClass[`player${player}`].setCooldown(true);
+-        console.log(`player${player}`, " used skill, entering cd");
+-        this.playerClass[`player${player}`].timer = setTimeout(() => {
+-          console.log(`player${player}`, " cooldown done");
+-          this.playerClass[`player${player}`].setCooldown(false);
+-          clearTimeout( this.playerClass[`player${player}`].cooldown);
+-      }, 10000);
++  gameActiveSkill(player: number) {
++    if (
++      this.started &&
++      this.playerClass[`player${player}`].activeSkill &&
++      !this.playerClass[`player${player}`].inCooldown
++    ) {
++      if (this.playerClass[`player${player}`].activeSkill(player)) {
++        // this.socketHandler(this.matchinfo.roomid, 'cooldownOn', player);
++        this.playerClass[`player${player}`].setCooldown();
+       }
+     }
+   }
+diff --git a/frontend/src/components/game/GameReady.tsx b/frontend/src/components/game/GameReady.tsx
+index 18d20ce..525b04f 100644
+--- a/frontend/src/components/game/GameReady.tsx
++++ b/frontend/src/components/game/GameReady.tsx
+@@ -28,7 +28,7 @@ export default function GameReady() {
+   const getReady = () => {
+     if (!cooldown && gameSocket) {
+       setReady(!ready);
+-      gameSocket.emit('ready', 3);
++      gameSocket.emit('ready', 1);
+       setCooldown(true);
+ 
+       const timer = setTimeout(() => {
+diff --git a/frontend/src/components/game/scenes/GameMainScene.tsx b/frontend/src/components/game/scenes/GameMainScene.tsx
+index 4e1c789..533030d 100644
+--- a/frontend/src/components/game/scenes/GameMainScene.tsx
++++ b/frontend/src/components/game/scenes/GameMainScene.tsx
+@@ -179,24 +179,24 @@ export default class GameMainScene extends Phaser.Scene {
+       .setDisplaySize(this.windowsize.width * 0.2, this.windowsize.height * 0.1)
+       .setFlipX(true);
+ 
+-    // const p1glow = this.p1frame.postFX.addGlow(0xf6f106, 0, 1, false);
+-    // const p2glow = this.p2frame.postFX.addGlow(0x8d1be2, 0, 1, false);
+-
+-    // this.tweens.add({
+-    //   targets: p1glow,
+-    //   outerStrength: 2,
+-    //   yoyo: true,
+-    //   loop: -1,
+-    //   ease: 'sine.inout',
+-    // });
+-
+-    // this.tweens.add({
+-    //   targets: p2glow,
+-    //   outerStrength: 2,
+-    //   yoyo: true,
+-    //   loop: -1,
+-    //   ease: 'sine.inout',
+-    // });
++    const p1glow = this.p1frame.postFX.addGlow(0xbc13fe, 0, 1, false);
++    const p2glow = this.p2frame.postFX.addGlow(0xbc13fe, 0, 1, false);
++
++    const p1cooldownEffect = this.tweens.add({
++      targets: p1glow,
++      outerStrength: 5,
++      yoyo: true,
++      loop: -1,
++      ease: 'sine.inout',
++    });
++
++    const p2cooldownEffect = this.tweens.add({
++      targets: p2glow,
++      outerStrength: 5,
++      yoyo: true,
++      loop: -1,
++      ease: 'sine.inout',
++    });
+ 
+     const textstyle = {
+       fontFamily: 'Copperplate Gothic Light',
+@@ -242,80 +242,7 @@ export default class GameMainScene extends Phaser.Scene {
+       true,
+     );
+ 
+-    // const zone1 = new Phaser.GameObjects.Particles.Zones.EdgeZone(
+-    //   this.p2frame.getBounds(),
+-    //   0,
+-    //   1,
+-    //   false,
+-    //   true,
+-    // );
+-    // const emitter = this.add.particles(0, 0, 'flame2', {
+-    //   speed: 24,
+-    //   lifespan: 1000,
+-    //   quantity: 1,
+-    //   scale: { start: 0.4, end: 0 },
+-    //   advance: 2000,
+-    // });
+-
+-    // const frame1 = { key: 'flame2' };
+-
+-    // emitter.addEmitZone(zone2);
+-    // const player2 = this.add
+-    //   .image(
+-    //     this.windowsize.width * 0.95,
+-    //     this.windowsize.height * 0.05,
+-    //     'frame2',
+-    //   )
+-    //   .setOrigin(0.5, 0.5);
+-
+-    // const p2text = this.add
+-    //   .text(
+-    //     this.windowsize.width * 0.955,
+-    //     this.windowsize.height * 0.05,
+-    //     'P2',
+-    //     {
+-    //       fontFamily: 'Arial',
+-    //       fontSize: 96,
+-    //       color: '#ffffff', // Text color in hexadecimal
+-    //       backgroundColor: 'transparent', // Background color (transparent in this case)
+-    //       align: 'right', // Text alignment: 'left', 'center', 'right'
+-    //       stroke: '#0000ff', // Stroke color
+-    //       strokeThickness: 5, // Stroke thickness in pixels
+-    //       shadow: {
+-    //         offsetX: 2,
+-    //         offsetY: 2,
+-    //         color: '#0000ff',
+-    //         blur: 5,
+-    //         stroke: true,
+-    //         fill: true,
+-    //       },
+-    //     },
+-    //   )
+-    //   .setOrigin(0.5, 0.5);
+-    // const p2text = this.add
+-    //   .bitmapText(
+-    //     this.windowsize.width * 0.95,
+-    //     this.windowsize.height * 0.05,
+-    //     'cyberware',
+-    //     'P2',
+-    //     96,
+-    //   )
+-    //   .setOrigin(0.5, 0.5)
+-    //   .setTint(0x0000ff, 0);
+-
+-    // const testframe = this.add
+-    //   .image(
+-    //     this.windowsize.width * 0.95,
+-    //     this.windowsize.height * 0.05,
+-    //     'frametest',
+-    //   )
+-    //   .setOrigin(0.5, 0.5)
+-    //   .setDisplaySize(
+-    //     this.windowsize.width * 0.2,
+-    //     this.windowsize.height * 0.2,
+-    //   );
+     this.soundEffect = this.sound.add('laser');
+-    // if (!ball) return;
+     this.ball = game.physics.add
+       .sprite(
+         this.windowsize.width * 0.5,
+@@ -401,6 +328,30 @@ export default class GameMainScene extends Phaser.Scene {
+     });
+ 
+     this.outofboundEffect.startFollow(this.ball);
++    this.Socket?.on('cooldownOff', (player: number) => {
++      switch (player) {
++        case 1:
++          p1cooldownEffect.stop();
++          break;
++        case 2:
++          p2cooldownEffect.stop();
++          break;
++        default:
++          break;
++      }
++    });
++    this.Socket?.on('cooldownOn', (player: number) => {
++      switch (player) {
++        case 1:
++          p1cooldownEffect.play();
++          break;
++        case 2:
++          p2cooldownEffect.play();
++          break;
++        default:
++          break;
++      }
++    });
+     this.Socket?.on('victory', (player: number) => {
+       if (this.ball) {
+         const cameraX = Phaser.Math.Clamp(

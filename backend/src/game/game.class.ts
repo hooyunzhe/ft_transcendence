@@ -7,6 +7,71 @@ interface Coor {
   y: number;
 }
 
+class Player {
+  classID: number;
+  timer: NodeJS.Timer;
+  paddleSize: number;
+  paddleSpeed: number;
+  ballSpeed: number;
+  cooldown: number;
+  inCooldown: boolean;
+  lastUsed: number;
+  activeSkill: (player: number) => boolean | null = null;
+
+  constructor() {
+    this.paddleSize = 160;
+    this.paddleSpeed = 1;
+    this.ballSpeed = 1;
+    this.inCooldown = false;
+    this.cooldown = 0;
+    this.classID = 0;
+  }
+
+  setClass(classes: number, activeSkill?: (player: number) => boolean) {
+    this.activeSkill = activeSkill;
+    switch (classes) {
+      case 1:
+        {
+          this.paddleSize = 192;
+          this.cooldown = 20;
+        }
+        break;
+      case 2:
+        {
+          this.paddleSpeed = 1.2;
+          this.cooldown = 15;
+        }
+        break;
+      case 3:
+        {
+          this.ballSpeed = 1.2;
+          this.cooldown = 30;
+        }
+        break;
+      default:
+        break;
+    }
+    this.classID = classes;
+  }
+
+  resetCooldown() {
+    this.lastUsed = 0;
+    this.inCooldown = false;
+  }
+  checkCooldown() {
+    if (this.inCooldown === false) return false;
+    const timeDiff = (Date.now() - this.lastUsed) / 1000;
+    if (this.cooldown === 0 || timeDiff > this.cooldown) {
+      this.inCooldown = false;
+      return true;
+    }
+  }
+  setCooldown() {
+    this.lastUsed = Date.now();
+    this.inCooldown = true;
+  }
+}
+
 class RectObj {
   constructor(
     x: number,
@@ -52,11 +117,12 @@ class RectObj {
 export class GameClass {
   matchHandler: (matchDto: CreateMatchDto) => void;
   socketHandler: (roomid: string, message: string, data: any) => void;
+  timeFactor: number = 1;
   windowSize: Coor;
   direction: Coor;
-  Ball: RectObj;
-  Paddle1: RectObj;
-  Paddle2: RectObj;
+  ball: RectObj;
+  playerClass: { player1: Player; player2: Player };
+  paddleClass: { paddle1: RectObj; paddle2: RectObj };
   velocity: number;
   score: { player1: number; player2: number };
   matchinfo: MatchInfo;
@@ -69,6 +135,7 @@ export class GameClass {
     player2: false,
   };
   started: boolean = false;
+  slowed: boolean = false;
 
   constructor(
     matchinfo: MatchInfo,
@@ -83,29 +150,31 @@ export class GameClass {
       x: 0,
       y: 0,
     };
-
-    this.velocity = 15;
+    this.playerClass = { player1: new Player(), player2: new Player() };
+    this.velocity = 30;
     this.score = {
       player1: 0,
       player2: 0,
     };
-    this.Paddle1 = new RectObj(
-      this.windowSize.x * 0.05,
-      this.windowSize.y / 2,
-      20,
-      160,
-      1,
-    );
-    this.Paddle2 = new RectObj(
-      this.windowSize.x * 0.95,
-      this.windowSize.y / 2,
-      20,
-      160,
-      2,
-    );
+    this.paddleClass = {
+      paddle1: new RectObj(
+        this.windowSize.x * 0.05,
+        this.windowSize.y / 2,
+        20,
+        160,
+        1,
+      ),
+      paddle2: new RectObj(
+        this.windowSize.x * 0.95,
+        this.windowSize.y / 2,
+        20,
+        160,
+        2,
+      ),
+    };
 
-    this.Ball = new RectObj(
-      10 + (this.Paddle1.right() + 30),
+    this.ball = new RectObj(
+      10 + (this.paddleClass.paddle1.right() + 30),
       this.windowSize.y / 2,
       60,
       60,
@@ -119,8 +188,8 @@ export class GameClass {
     if (!this.started && this.loaded.player1 && this.loaded.player2) {
       if (player === this.ServingPaddle) {
         this.direction = {
-          x: (this.Ball.x - this.windowSize.x / 2) / this.windowSize.x,
-          y: (this.windowSize.y / 2 - this.Ball.y) / this.windowSize.y,
+          x: (this.ball.x - this.windowSize.x / 2) / this.windowSize.x,
+          y: (this.windowSize.y / 2 - this.ball.y) / this.windowSize.y,
         };
         console.log(this.direction);
         this.started = true;
@@ -130,17 +199,23 @@ export class GameClass {
   gameReset() {
     switch (this.ServingPaddle) {
       case 2:
-        this.Ball.x = this.Paddle2.left() - this.Ball.width / 2 - 10;
+        this.ball.x =
+          this.paddleClass.paddle2.left() - this.ball.width / 2 - 10;
         break;
       default:
-        this.Ball.x = 10 + (this.Paddle1.right() + this.Ball.width / 2);
+        this.ball.x =
+          10 + (this.paddleClass.paddle1.right() + this.ball.width / 2);
         break;
     }
 
+    this.playerClass.player1.resetCooldown();
+    this.playerClass.player2.resetCooldown();
+    this.socketHandler(this.matchinfo.roomid, 'skillOn', 1);
+    this.socketHandler(this.matchinfo.roomid, 'skillOn', 2);
     this.started = false;
-    this.Ball.y = this.windowSize.y / 2;
-    this.Paddle1.y = this.windowSize.y / 2;
-    this.Paddle2.y = this.windowSize.y / 2;
+    this.ball.y = this.windowSize.y / 2;
+    this.paddleClass.paddle1.y = this.windowSize.y / 2;
+    this.paddleClass.paddle2.y = this.windowSize.y / 2;
     this.direction = {
       x: 0,
       y: 0,
@@ -151,13 +226,13 @@ export class GameClass {
     paddle1size: { width: number; height: number },
     paddle2size: { width: number; height: number },
   ) {
-    this.Paddle1 = new RectObj(
+    this.paddleClass.paddle1 = new RectObj(
       15,
       this.windowSize.y / 2,
       paddle1size.width,
       paddle1size.height,
     );
-    this.Paddle2 = new RectObj(
+    this.paddleClass.paddle2 = new RectObj(
       this.windowSize.x - 15,
       this.windowSize.y / 2,
       paddle2size.width,
@@ -167,35 +242,52 @@ export class GameClass {
   }
 
   gameRefresh() {
-    this.Ball.x += this.direction.x * this.velocity;
-    this.Ball.y += this.direction.y * this.velocity;
-    if (this.Ball.top() <= 0 || this.Ball.bottom() >= this.windowSize.y)
+    this.ball.x += this.direction.x * this.velocity * this.timeFactor;
+    this.ball.y += this.direction.y * this.velocity * this.timeFactor;
+    if (this.ball.top() <= 0 || this.ball.bottom() >= this.windowSize.y)
       this.direction.y *= -1;
-    if (this.Ball.right() < 0) {
+    if (this.ball.right() < 0) {
       this.gameHandleVictory(2);
     }
-    if (this.Ball.left() > this.windowSize.x) {
+    if (this.ball.left() > this.windowSize.x) {
       this.gameHandleVictory(1);
     }
     if (
-      (this.gameCollision(this.Ball, this.Paddle1) && this.direction.x < 0) ||
-      (this.gameCollision(this.Ball, this.Paddle2) && this.direction.x > 0)
+      (this.gameCollision(this.ball, this.paddleClass.paddle1) &&
+        this.direction.x < 0) ||
+      (this.gameCollision(this.ball, this.paddleClass.paddle2) &&
+        this.direction.x > 0)
     ) {
       this.direction.x *= -1;
     }
+
+    if (this.playerClass.player1.checkCooldown())
+      this.socketHandler(this.matchinfo.roomid, 'skillOn', 1);
+    if (this.playerClass.player2.checkCooldown())
+      this.socketHandler(this.matchinfo.roomid, 'skillOn', 2);
     this.socketHandler(this.matchinfo.roomid, 'game', {
       ball: {
-        x: this.Ball.x,
-        y: this.Ball.y,
+        x: this.ball.x,
+        y: this.ball.y,
       },
       balldirection: {
         x: this.direction.x,
         y: this.direction.y,
       },
       timestamp: Date.now(),
-      paddle1: { x: this.Paddle1.x, y: this.Paddle1.y },
-      paddle2: { x: this.Paddle2.x, y: this.Paddle2.y },
+      paddle1: { x: this.paddleClass.paddle1.x, y: this.paddleClass.paddle1.y },
+      paddle2: { x: this.paddleClass.paddle2.x, y: this.paddleClass.paddle2.y },
       score: this.score,
+      paddlesize: {
+        paddle1: {
+          width: this.paddleClass.paddle1.width,
+          height: this.paddleClass.paddle1.height,
+        },
+        paddle2: {
+          width: this.paddleClass.paddle2.width,
+          height: this.paddleClass.paddle2.height,
+        },
+      },
     });
   }
 
@@ -234,38 +326,119 @@ export class GameClass {
 
   stickEffect(paddle: RectObj) {
     if (this.started === false && paddle.player === this.ServingPaddle)
-      this.Ball.y = paddle.y;
+      this.ball.y = paddle.y;
   }
 
   gameSetPosition(x: number, y: number) {
-    this.Ball.x = x;
-    this.Ball.y = y;
+    this.ball.x = x;
+    this.ball.y = y;
   }
 
   gameSetPaddlePosition(player: number, direction: number) {
     if (this.loaded.player1 && this.loaded.player2) {
-      switch (player) {
-        case 1:
-          if (direction > 0) this.gameMovePaddle(this.Paddle1, 10);
-          else if (direction < 0) this.gameMovePaddle(this.Paddle1, -10);
-          break;
-
-        case 2:
-          if (direction > 0) this.gameMovePaddle(this.Paddle2, 10);
-          else if (direction < 0) this.gameMovePaddle(this.Paddle2, -10);
-          break;
-        default:
-          break;
-      }
+      this.gameMovePaddle(
+        this.paddleClass[`paddle${player}`],
+        10 *
+          direction *
+          this.timeFactor *
+          this.playerClass[`player${player}`].paddleSpeed,
+      );
     }
   }
 
+  activeStickyPaddle = (player: number) => {
+    console.log(Math.abs(this.paddleClass[`paddle${player}`].x - this.ball.x));
+    if (Math.abs(this.paddleClass[`paddle${player}`].x - this.ball.x) < 300) {
+      this.ball.y = this.paddleClass[`paddle${player}`].y;
+      return true;
+    }
+    return false;
+  };
+
+  activeSlowTime = (player: number) => {
+    if (!this.slowed) {
+      console.log('slowed', this.slowed);
+      this.timeFactor = 0.5;
+      this.slowed = true;
+      const timer = setTimeout(() => {
+        console.log('unslowed', this.slowed);
+        this.timeFactor = 1;
+        this.slowed = false;
+        clearTimeout(timer);
+      }, 5000);
+
+      return true;
+    }
+    return false;
+  };
+
+  activeInvertPaddle = (player: number) => {
+    let opponent: number;
+
+    switch (player) {
+      case 1:
+        opponent = 2;
+        break;
+
+      case 2:
+        opponent = 1;
+        break;
+      default:
+        break;
+    }
+    if (this.playerClass[`player${opponent}`].paddleSpeed > 0) {
+      this.playerClass[`player${opponent}`].paddleSpeed *= -1;
+      const timer = setTimeout(() => {
+        this.playerClass[`player${opponent}`].paddleSpeed *= -1;
+        clearTimeout(timer);
+      }, 3000);
+      return true;
+    }
+    return false;
+  };
+
+  gameSetClass(player: number, classes: number) {
+    switch (classes) {
+      case 1:
+        this.playerClass[`player${player}`].setClass(
+          classes,
+          this.activeStickyPaddle,
+        );
+        break;
+      case 2:
+        this.playerClass[`player${player}`].setClass(
+          classes,
+          this.activeSlowTime,
+        );
+        break;
+      case 3:
+        this.playerClass[`player${player}`].setClass(
+          classes,
+          this.activeInvertPaddle,
+        );
+        break;
+      default:
+        this.playerClass[`player${player}`].setClass(classes, null);
+        break;
+    }
+    this.paddleClass[`paddle${player}`].height =
+      this.playerClass[`player${player}`].paddleSize;
+  }
+
+  gameActiveSkill(player: number) {
+    if (
+      this.started &&
+      this.playerClass[`player${player}`].activeSkill &&
+      !this.playerClass[`player${player}`].inCooldown
+    ) {
+      if (this.playerClass[`player${player}`].activeSkill(player)) {
+        this.socketHandler(this.matchinfo.roomid, 'skillOff', player);
+        this.playerClass[`player${player}`].setCooldown();
+      }
+    }
+  }
   gameSetLoaded(player: number, loaded: boolean) {
     this.loaded[`player${player}`] = loaded;
-  }
-  gameSetPaddleStop(player: number) {
-    if (player === 1) this.Paddle1.velocityY = 1;
-    if (player === 2) this.Paddle2.velocityY = 1;
   }
 
   gameMovePaddle(obj: RectObj, dir: number) {

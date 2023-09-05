@@ -53,26 +53,27 @@ export default class GameMainScene extends Phaser.Scene {
   }
 
   preload() {
-    const game = this;
-    game.load.audio('laser', '/assets/collision.ogg');
-    game.load.audio('banger', '/assets/bgm1.mp3');
-    game.load.video('background', '/assets/background1.mp4', true);
-    game.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
-    game.load.image('red', '/assets/neonpurple.png');
-    game.load.image('flame3', '/assets/flame_03.png');
-    game.load.image('bubble', '/assets/bubble.png');
-    game.load.bitmapFont(
+    this.load.audio('laser', '/assets/collision.ogg');
+    this.load.audio('banger', '/assets/bgm1.mp3');
+    this.load.video('background', '/assets/background1.mp4', true);
+    this.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
+    this.load.image('red', '/assets/neonpurple.png');
+    this.load.image('flame3', '/assets/flame_03.png');
+    this.load.image('bubble', '/assets/bubble.png');
+    this.load.bitmapFont(
       'font',
       '/assets/scorefont_0.png',
       '/assets/scorefont.fnt',
     );
-    game.load.image('paddle1', '/assets/redpaddle.png');
-    game.load.image('paddle2', '/assets/bluepaddle.png');
-    game.load.image('glowframe', '/assets/namebox.png');
-    game.load.image('normalframe', '/assets/namebox_normal.png');
+    this.load.image('paddle1', '/assets/redpaddle.png');
+    this.load.image('paddle2', '/assets/bluepaddle.png');
+    this.load.image('glowframe', '/assets/namebox.png');
+    this.load.image('normalframe', '/assets/namebox_normal.png');
   }
 
   create() {
+    const data = this.prediction(Date.now());
+    console.log(data.paddlesize);
     this.windowsize = {
       width: Number(this.game.config.width),
       height: Number(this.game.config.height),
@@ -87,14 +88,14 @@ export default class GameMainScene extends Phaser.Scene {
       window.innerWidth / window.innerHeight,
     );
     videoSprite.setScale(
-      Number(this.game.config.width) / 1920,
-      Number(this.game.config.height) / 1080,
+      this.windowsize.width / 1920,
+      this.windowsize.height / 1080,
     );
     videoSprite.play(true);
     const game = this;
     const music = this.sound.add('banger', { loop: true }).setVolume(0.5);
     music.play();
-    this.p1scoretext = game.add
+    this.p1scoretext = this.add
       .bitmapText(
         this.windowsize.width * 0.47,
         this.windowsize.height * 0.05,
@@ -105,15 +106,7 @@ export default class GameMainScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setTint(0xffffff);
 
-    const colon = game.add
-      .text(this.windowsize.width * 0.5, this.windowsize.height * 0.045, '|', {
-        fontFamily: 'Arial',
-        fontSize: 64,
-        color: '#ffffff',
-      })
-      .setOrigin(0.5)
-      .setTint(0xffffff);
-    this.p2scoretext = game.add
+    this.p2scoretext = this.add
       .bitmapText(
         this.windowsize.width * 0.53,
         this.windowsize.height * 0.05,
@@ -127,7 +120,7 @@ export default class GameMainScene extends Phaser.Scene {
     const dx = this.prevDirectionX !== undefined ? this.prevDirectionX : 0;
     const dy = this.prevDirectionY !== undefined ? this.prevDirectionY : 0;
 
-    const particles = game.add.particles(0, 0, 'red', {
+    const particles = this.add.particles(0, 0, 'red', {
       quantity: 20,
       speed: { min: -100, max: 100 },
       accelerationY: 1000 * dy,
@@ -141,20 +134,6 @@ export default class GameMainScene extends Phaser.Scene {
     });
     // wisp.startFollow(this.ball);
 
-    this.streakEffect = game.add.particles(0, 0, 'flame3', {
-      quantity: 20,
-      speed: { min: 200, max: 500 },
-      accelerationY: 1000 * dy,
-      accelerationX: 1000 * dx,
-      scale: { start: 1, end: 0.1 },
-      lifespan: { min: 300, max: 1000 },
-      blendMode: 'ADD',
-      frequency: 100,
-      followOffset: { x: 0, y: 0 },
-      rotate: { min: -180, max: 180 },
-    });
-
-    this.streakEffect.stop();
     this.p1frame = this.add
       .image(
         this.windowsize.width * 0.33,
@@ -177,20 +156,17 @@ export default class GameMainScene extends Phaser.Scene {
       .setDisplaySize(this.windowsize.width * 0.2, this.windowsize.height * 0.1)
       .setFlipX(true);
 
-    // const p1glow = this.p1frame.postFX.addGlow(0xf6f106, 0, 1, false);
-    // const p2glow = this.p2frame.postFX.addGlow(0x8d1be2, 0, 1, false);
-
-    // this.tweens.add({
+    // const p1cooldownEffect = this.tweens.add({
     //   targets: p1glow,
-    //   outerStrength: 2,
+    //   outerStrength: 10,
     //   yoyo: true,
     //   loop: -1,
     //   ease: 'sine.inout',
     // });
 
-    // this.tweens.add({
+    // const p2cooldownEffect = this.tweens.add({
     //   targets: p2glow,
-    //   outerStrength: 2,
+    //   outerStrength: 10,
     //   yoyo: true,
     //   loop: -1,
     //   ease: 'sine.inout',
@@ -232,89 +208,8 @@ export default class GameMainScene extends Phaser.Scene {
       )
       .setOrigin(0.5, 0.5);
 
-    const zone2 = new Phaser.GameObjects.Particles.Zones.EdgeZone(
-      this.p1frame.getBounds(),
-      0,
-      1,
-      false,
-      true,
-    );
-
-    // const zone1 = new Phaser.GameObjects.Particles.Zones.EdgeZone(
-    //   this.p2frame.getBounds(),
-    //   0,
-    //   1,
-    //   false,
-    //   true,
-    // );
-    // const emitter = this.add.particles(0, 0, 'flame2', {
-    //   speed: 24,
-    //   lifespan: 1000,
-    //   quantity: 1,
-    //   scale: { start: 0.4, end: 0 },
-    //   advance: 2000,
-    // });
-
-    // const frame1 = { key: 'flame2' };
-
-    // emitter.addEmitZone(zone2);
-    // const player2 = this.add
-    //   .image(
-    //     this.windowsize.width * 0.95,
-    //     this.windowsize.height * 0.05,
-    //     'frame2',
-    //   )
-    //   .setOrigin(0.5, 0.5);
-
-    // const p2text = this.add
-    //   .text(
-    //     this.windowsize.width * 0.955,
-    //     this.windowsize.height * 0.05,
-    //     'P2',
-    //     {
-    //       fontFamily: 'Arial',
-    //       fontSize: 96,
-    //       color: '#ffffff', // Text color in hexadecimal
-    //       backgroundColor: 'transparent', // Background color (transparent in this case)
-    //       align: 'right', // Text alignment: 'left', 'center', 'right'
-    //       stroke: '#0000ff', // Stroke color
-    //       strokeThickness: 5, // Stroke thickness in pixels
-    //       shadow: {
-    //         offsetX: 2,
-    //         offsetY: 2,
-    //         color: '#0000ff',
-    //         blur: 5,
-    //         stroke: true,
-    //         fill: true,
-    //       },
-    //     },
-    //   )
-    //   .setOrigin(0.5, 0.5);
-    // const p2text = this.add
-    //   .bitmapText(
-    //     this.windowsize.width * 0.95,
-    //     this.windowsize.height * 0.05,
-    //     'cyberware',
-    //     'P2',
-    //     96,
-    //   )
-    //   .setOrigin(0.5, 0.5)
-    //   .setTint(0x0000ff, 0);
-
-    // const testframe = this.add
-    //   .image(
-    //     this.windowsize.width * 0.95,
-    //     this.windowsize.height * 0.05,
-    //     'frametest',
-    //   )
-    //   .setOrigin(0.5, 0.5)
-    //   .setDisplaySize(
-    //     this.windowsize.width * 0.2,
-    //     this.windowsize.height * 0.2,
-    //   );
     this.soundEffect = this.sound.add('laser');
-    // if (!ball) return;
-    this.ball = game.physics.add
+    this.ball = this.physics.add
       .sprite(
         this.windowsize.width * 0.5,
         this.windowsize.height * 0.5,
@@ -324,20 +219,26 @@ export default class GameMainScene extends Phaser.Scene {
       .setScale(1.5, 1.5);
     particles.startFollow(this.ball);
 
-    this.paddle1 = game.physics.add
+    this.paddle1 = this.physics.add
       .sprite(
         this.windowsize.width * 0.05,
         this.windowsize.height * 0.5,
         'paddle1',
       )
-      .setScale(2, 2);
-    this.paddle2 = game.physics.add
+      .setDisplaySize(
+        data.paddlesize.paddle1.width,
+        data.paddlesize.paddle1.height,
+      );
+    this.paddle2 = this.physics.add
       .sprite(
         this.windowsize.width * 0.95,
         this.windowsize.height * 0.5,
         'paddle2',
       )
-      .setScale(2, 2);
+      .setDisplaySize(
+        data.paddlesize.paddle2.width,
+        data.paddlesize.paddle2.height,
+      );
 
     const redglow = this.paddle1.preFX?.addGlow(0xff4444, 0, 0, false, 0.1, 3);
     const blueglow = this.paddle2.preFX?.addGlow(
@@ -364,14 +265,14 @@ export default class GameMainScene extends Phaser.Scene {
       ease: 'sine.inout',
     });
 
-    const frames = game.anims.generateFrameNames('ballsprite', {
+    const frames = this.anims.generateFrameNames('ballsprite', {
       start: 0,
       end: 215,
       zeroPad: 0,
       suffix: '.png',
     });
 
-    game.anims.create({
+    this.anims.create({
       key: 'ballPulse',
       frames: frames,
       frameRate: 60,
@@ -392,7 +293,46 @@ export default class GameMainScene extends Phaser.Scene {
       emitting: false,
     });
 
+    this.streakEffect = this.add.particles(0, 0, 'flame3', {
+      quantity: 10,
+      speed: { min: 100, max: 200 },
+      accelerationY: 1000 * dy,
+      accelerationX: 1000 * dx,
+      scale: { start: 1, end: 0.1 },
+      lifespan: { min: 300, max: 1000 },
+      blendMode: 'ADD',
+      frequency: 300,
+      followOffset: { x: 0, y: 0 },
+      rotate: { min: -180, max: 180 },
+    });
+
+    this.streakEffect.stop();
+
     this.outofboundEffect.startFollow(this.ball);
+    this.Socket?.on('skillOn', (player: number) => {
+      switch (player) {
+        case 1:
+          this.p1frame?.setAlpha(1);
+          break;
+        case 2:
+          this.p2frame?.setAlpha(1);
+          break;
+        default:
+          break;
+      }
+    });
+    this.Socket?.on('skillOff', (player: number) => {
+      switch (player) {
+        case 1:
+          this.p1frame?.setAlpha(0.5);
+          break;
+        case 2:
+          this.p2frame?.setAlpha(0.5);
+          break;
+        default:
+          break;
+      }
+    });
     this.Socket?.on('victory', (player: number) => {
       if (this.ball) {
         const cameraX = Phaser.Math.Clamp(
@@ -503,6 +443,14 @@ export default class GameMainScene extends Phaser.Scene {
         this.prevDirectionX = data.balldirection.x;
         this.prevDirectionY = data.balldirection.y;
         this.score = data.score;
+        this.paddle1?.setDisplaySize(
+          data.paddlesize.paddle1.width,
+          data.paddlesize.paddle1.height,
+        );
+        this.paddle1?.setDisplaySize(
+          data.paddlesize.paddle2.width,
+          data.paddlesize.paddle2.height,
+        );
       }
     }
     if (this.goalEffectToggle) this.triggerOutofBoundEffect();
@@ -521,14 +469,16 @@ export default class GameMainScene extends Phaser.Scene {
         switch (player) {
           case 1:
             {
-              if (this.p1frame) this.streakEffect?.startFollow(this.p1frame);
+              if (this.p1scoretext)
+                this.streakEffect?.startFollow(this.p1scoretext);
               this.streakEffect?.start();
             }
             break;
 
           case 2:
             {
-              if (this.p2frame) this.streakEffect?.startFollow(this.p2frame);
+              if (this.p2scoretext)
+                this.streakEffect?.startFollow(this.p2scoretext);
               this.streakEffect?.start();
             }
             break;
