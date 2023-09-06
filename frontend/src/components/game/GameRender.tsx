@@ -12,6 +12,7 @@ import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
 import '../../styles/cyberthrone.css';
+import GameVictory from './gameVictory';
 
 export interface gameData {
   ball: { x: number; y: number };
@@ -115,7 +116,43 @@ export default function GameRender() {
 
       gameSocket.on('victory', (player: number) => {
         effectData.victory = true;
-        // gameSocket.emit('end'); (transition to backdrop then end);
+        if (matchInfo)
+          switch (player) {
+            case 1:
+              displayBackdrop(
+                <GameVictory
+                  victor={{
+                    id: matchInfo.player1.id,
+                    nickname: matchInfo.player1.nickname,
+                  }}
+                  loser={{
+                    id: matchInfo.player2.id,
+                    nickname: matchInfo.player2.nickname,
+                  }}
+                />,
+              );
+              break;
+            case 2:
+              displayBackdrop(
+                <GameVictory
+                  victor={{
+                    id: matchInfo.player2.id,
+                    nickname: matchInfo.player2.nickname,
+                  }}
+                  loser={{
+                    id: matchInfo.player1.id,
+                    nickname: matchInfo.player1.nickname,
+                  }}
+                />,
+              );
+              break;
+            default:
+              break;
+          }
+        const timer = setTimeout(() => {
+          gameSocket.emit('end');
+          clearTimeout(timer);
+        }, 2000);
       });
 
       gameSocket.on('reset', () => {

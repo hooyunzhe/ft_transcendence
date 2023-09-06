@@ -34,14 +34,6 @@ export default function GameMenu() {
         displayBackdrop(<GameMatchFound />);
       },
     );
-    //   gameSocket.on('connect', () => {
-    //     gameSocket.sendBuffer = [];
-    //     gameSocket.emit('init', currentUser.id);
-    //   });
-    // gameSocket.on('disconnect', () => {
-    //   gameSocket.sendBuffer = [];
-    //   console.log('game socket disconnected');
-    // });
     return () => {
       gameSocket.off('connect');
       gameSocket.off('disconnect');
@@ -94,10 +86,12 @@ export default function GameMenu() {
     console.log(player1data);
     const matchInfo: MatchInfo = {
       player1: {
+        id: player1data.id,
         nickname: player1data.username,
         avatar: player1data.avatar_url,
       },
       player2: {
+        id: player2data.id,
         nickname: player2data.username,
         avatar: player2data.avatar_url,
       },

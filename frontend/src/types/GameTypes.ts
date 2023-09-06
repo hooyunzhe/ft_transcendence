@@ -10,10 +10,12 @@ export enum MatchState {
 
 export interface MatchInfo {
   player1: {
+    id: number;
     nickname: string;
     avatar: string;
   };
   player2: {
+    id: number;
     nickname: string;
     avatar: string;
   };
