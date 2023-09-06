@@ -73,6 +73,7 @@ export default function GameRender() {
   };
   const endGame = () => {
     if (gameSocket) gameSocket.emit('end');
+    gameAction.setMatchState(MatchState.IDLE);
     viewAction.setCurrentView(View.GAME);
   };
 
@@ -150,7 +151,7 @@ export default function GameRender() {
               break;
           }
         const timer = setTimeout(() => {
-          gameSocket.emit('end');
+          endGame();
           clearTimeout(timer);
         }, 2000);
       });

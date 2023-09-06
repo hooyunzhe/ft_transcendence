@@ -1,7 +1,6 @@
 'use client';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { Box, Button, Typography } from '@mui/material';
-import { useEffect } from 'react';
 
 interface GameVictoryProps {
   victor: { id: number; nickname: string };
