@@ -33,13 +33,13 @@ class Player {
       case 1:
         {
           this.paddleSize = 192;
-          this.cooldown = 20;
+          this.cooldown = 15;
         }
         break;
       case 2:
         {
           this.paddleSpeed = 1.2;
-          this.cooldown = 15;
+          this.cooldown = 20;
         }
         break;
       case 3:
@@ -266,7 +266,6 @@ export class GameClass {
     ) {
       this.direction.x *= -1;
     }
-
     if (this.playerClass.player1.checkCooldown())
       this.socketHandler(this.matchinfo.roomid, 'skillOn', 1);
     if (this.playerClass.player2.checkCooldown())
@@ -368,7 +367,7 @@ export class GameClass {
         this.timeFactor = 1;
         this.slowed = false;
         clearTimeout(timer);
-      }, 5000);
+      }, 3000);
 
       return true;
     }
