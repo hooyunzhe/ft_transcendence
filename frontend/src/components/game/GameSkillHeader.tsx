@@ -18,7 +18,7 @@ export default function GameSkillHeader({ skillClass }: GameSkillHeaderProps) {
       <Box display='flex' alignItems='center'>
         <Typography justifyContent='center' variant='h4' color='#DDDDDD'>
           {skillClass === SkillClass.STRENGTH && 'CRATOS'}
-          {skillClass === SkillClass.SPEED && 'CRONOS'}
+          {skillClass === SkillClass.SPEED && 'CHRONOS'}
           {skillClass === SkillClass.TECH && 'COSMOS'}
         </Typography>
         <Box>
@@ -27,24 +27,24 @@ export default function GameSkillHeader({ skillClass }: GameSkillHeaderProps) {
               <FitnessCenter
                 sx={{
                   color: '#DDDDDD',
+                  fontSize: '4rem',
                 }}
-                fontSize='large'
               />
             )}
             {skillClass === SkillClass.SPEED && (
               <ShutterSpeed
                 sx={{
                   color: '#DDDDDD',
+                  fontSize: '4rem',
                 }}
-                fontSize='large'
               />
             )}
             {skillClass === SkillClass.TECH && (
               <Psychology
                 sx={{
                   color: '#DDDDDD',
+                  fontSize: '4rem',
                 }}
-                fontSize='large'
               />
             )}
           </ListItemIcon>

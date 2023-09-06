@@ -12,9 +12,10 @@ import {
   Hardware,
   SportsKabaddi,
 } from '@mui/icons-material';
-import { Box, Button } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import GameSkillBox from './GameSkillBox';
 import GameSkillHeader from './GameSkillHeader';
+import React from 'react';
 
 interface GameSkillCardProps {
   skillClass: SkillClass;
@@ -24,59 +25,87 @@ export default function GameSkillCard({ skillClass }: GameSkillCardProps) {
   const selectedSkillClass = useSelectedSkillClass();
   const { setSelectedSkillClass } = useGameActions();
 
-  function handleActiveNameDisplay(path: SkillClass): string {
-    if (path === SkillClass.STRENGTH) {
+  function handleActiveNameDisplay(skillClass: SkillClass): string {
+    if (skillClass === SkillClass.STRENGTH) {
       return 'The Grit of Cratos';
     }
-    if (path === SkillClass.SPEED) {
-      return 'The Celerity of Cronos';
+    if (skillClass === SkillClass.SPEED) {
+      return 'The Celerity of Chronos';
     }
-    if (path === SkillClass.TECH) {
+    if (skillClass === SkillClass.TECH) {
       return 'The Insight of Cosmos';
     }
     return '';
   }
 
-  function handleActiveDescDisplay(path: SkillClass): string {
-    if (path === SkillClass.STRENGTH) {
-      return 'Pulls ball to the paddle, 20s cd. Press [E] for action.';
+  function handleActiveDescDisplay(skillClass: SkillClass): React.ReactNode {
+    if (skillClass === SkillClass.STRENGTH) {
+      return (
+        <Typography component={'span'}>
+          <b style={{ color: 'purple' }}>Pulls ball to own paddle, </b> 15s cd.
+          Press<b style={{ fontWeight: 800 }}> [E]. </b>
+        </Typography>
+      );
     }
-    if (path === SkillClass.SPEED) {
-      return 'Slows time by 50%, 15s cd. Press [E] for action.';
+    if (skillClass === SkillClass.SPEED) {
+      return (
+        <Typography component={'span'}>
+          <b style={{ color: 'purple' }}>Slows downs everyone's time </b>for 3s,
+          20s cd. Press<b style={{ fontWeight: 800 }}> [E]. </b>
+        </Typography>
+      );
     }
-    if (path === SkillClass.TECH) {
-      return 'Inverts paddle direction for 3s, 30s cd. Press [E] for action.';
+    if (skillClass === SkillClass.TECH) {
+      return (
+        <Typography component={'span'}>
+          <b style={{ color: 'purple' }}>
+            Inverts opponent's paddle direction{' '}
+          </b>
+          for 3s, 30s cd. Press<b style={{ fontWeight: 800 }}> [E]. </b>
+        </Typography>
+      );
     }
     return '';
   }
 
-  function handlePassiveNameDisplay(path: SkillClass): string {
-    if (path === SkillClass.STRENGTH) {
+  function handlePassiveNameDisplay(skillClass: SkillClass): string {
+    if (skillClass === SkillClass.STRENGTH) {
       return 'Cratos Might';
     }
-    if (path === SkillClass.SPEED) {
+    if (skillClass === SkillClass.SPEED) {
       return 'Cronos Agility';
     }
-    if (path === SkillClass.TECH) {
+    if (skillClass === SkillClass.TECH) {
       return 'Cosmos Wisdom';
     }
     return '';
   }
 
-  function handlePassiveDescDisplay(path: SkillClass): string {
-    if (path === SkillClass.STRENGTH) {
-      return 'Increases paddle size by 20% (passive)';
+  function handlePassiveDescDisplay(skillClass: SkillClass): React.ReactNode {
+    if (skillClass === SkillClass.STRENGTH) {
+      return (
+        <Typography component={'span'}>
+          Increases <b style={{ color: 'purple' }}>paddle size</b> by 20%
+        </Typography>
+      );
     }
-    if (path === SkillClass.SPEED) {
-      return 'Increases ball speed by 20% (passive)';
+    if (skillClass === SkillClass.SPEED) {
+      return (
+        <Typography component={'span'}>
+          Increases <b style={{ color: 'purple' }}>ball speed</b> by 20%
+        </Typography>
+      );
     }
-    if (path === SkillClass.TECH) {
-      return 'Increases paddle speed by 20% (passive)';
+    if (skillClass === SkillClass.TECH) {
+      return (
+        <Typography component={'span'}>
+          Increases <b style={{ color: 'purple' }}>paddle speed</b> by 20%
+        </Typography>
+      );
     }
-    return '';
   }
 
-  function handleSelectPathAction(skillClass: SkillClass) {
+  function handleSelectSkillAction(skillClass: SkillClass) {
     setSelectedSkillClass(skillClass);
   }
 
@@ -90,8 +119,12 @@ export default function GameSkillCard({ skillClass }: GameSkillCardProps) {
         flexDirection='column'
         justifyContent='space-evenly'
         alignItems='center'
+        boxSizing='border-box'
         borderRadius='10px'
+        onClick={() => handleSelectSkillAction(skillClass)}
         sx={{
+          border:
+            skillClass === selectedSkillClass ? 'solid 3px yellow' : 'none',
           background:
             skillClass === SkillClass.STRENGTH
               ? '#e8514995'
@@ -101,46 +134,59 @@ export default function GameSkillCard({ skillClass }: GameSkillCardProps) {
         }}
       >
         <GameSkillBox
+          skillType='active'
           skillName={handleActiveNameDisplay(skillClass)}
           skillDescription={handleActiveDescDisplay(skillClass)}
         >
-          {skillClass === SkillClass.STRENGTH && <Hardware />}
-          {skillClass === SkillClass.TECH && <Android />}
-          {skillClass === SkillClass.SPEED && <FlutterDash />}
+          {skillClass === SkillClass.STRENGTH && (
+            <Hardware
+              sx={{
+                fontSize: '2.5rem',
+              }}
+            />
+          )}
+          {skillClass === SkillClass.TECH && (
+            <Android
+              sx={{
+                fontSize: '2.5rem',
+              }}
+            />
+          )}
+          {skillClass === SkillClass.SPEED && (
+            <FlutterDash
+              sx={{
+                fontSize: '2.5rem',
+              }}
+            />
+          )}
         </GameSkillBox>
         <GameSkillBox
+          skillType='passive'
           skillName={handlePassiveNameDisplay(skillClass)}
           skillDescription={handlePassiveDescDisplay(skillClass)}
         >
-          {skillClass === SkillClass.STRENGTH && <SportsKabaddi />}
-          {skillClass === SkillClass.TECH && <EmojiObjects />}
-          {skillClass === SkillClass.SPEED && <FastForward />}
+          {skillClass === SkillClass.STRENGTH && (
+            <SportsKabaddi
+              sx={{
+                fontSize: '2.5rem',
+              }}
+            />
+          )}
+          {skillClass === SkillClass.TECH && (
+            <EmojiObjects
+              sx={{
+                fontSize: '2.5rem',
+              }}
+            />
+          )}
+          {skillClass === SkillClass.SPEED && (
+            <FastForward
+              sx={{
+                fontSize: '2.5rem',
+              }}
+            />
+          )}
         </GameSkillBox>
-        <Button
-          variant='contained'
-          onClick={() => handleSelectPathAction(skillClass)}
-          sx={{
-            backgroundColor:
-              selectedSkillClass === skillClass ? 'green' : 'red',
-            color: 'white',
-            fontSize: '18px',
-            padding: '10px 20px',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            transition: 'background-color 0.3s',
-            '&:hover': {
-              backgroundColor:
-                selectedSkillClass === skillClass ? 'darkgreen' : 'darkred',
-            },
-            '&:active': {
-              backgroundColor:
-                selectedSkillClass === skillClass ? 'green' : 'red',
-            },
-          }}
-        >
-          Select!
-        </Button>
       </Box>
     </Box>
   );

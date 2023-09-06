@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import callAPI from '../callAPI';
 import { Match, SkillClass } from '@/types/MatchTypes';
-import { MatchState, MatchInfo } from '@/types/GameTypes';
+import { MatchState, MatchInfo, GameType } from '@/types/GameTypes';
 import { User } from '@/types/UserTypes';
 import { Socket } from 'socket.io-client';
 
@@ -18,6 +18,7 @@ interface GameStore {
     gameReady: boolean;
     selectedSkillClass: SkillClass;
     invitedUser: User | undefined;
+    selectedGameType: GameType;
   };
   actions: {
     getGameData: (userID: number) => void;
@@ -38,6 +39,7 @@ interface GameStore {
     setSelectedSkillClass: (skillClass: SkillClass) => void;
     setInvitedUser: (user: User | undefined) => void;
     setupGameSocketEvents: (gameSocket: Socket) => void;
+    setSelectedGameType: (type: GameType) => void;
   };
 }
 
@@ -251,6 +253,15 @@ function setupGameSocketEvents(set: StoreSetter, gameSocket: Socket): void {
   gameSocket.on('newInvite', (room_id) => console.log(room_id));
 }
 
+function setSelectedGameType(set: StoreSetter, gameType: GameType): void {
+  set((state) => ({
+    data: {
+      ...state.data,
+      gameType: gameType,
+    },
+  }));
+}
+
 const useGameStore = create<GameStore>()((set, get) => ({
   data: {
     matches: [],
@@ -262,6 +273,7 @@ const useGameStore = create<GameStore>()((set, get) => ({
     matchInfo: null,
     selectedSkillClass: SkillClass.STRENGTH,
     invitedUser: undefined,
+    selectedGameType: GameType.CLASSIC,
   },
   actions: {
     getGameData: (userID) => getGameData(set, userID),
@@ -281,6 +293,7 @@ const useGameStore = create<GameStore>()((set, get) => ({
     setInvitedUser: (user) => setInvitedUser(set, user),
     setupGameSocketEvents: (gameSocket) =>
       setupGameSocketEvents(set, gameSocket),
+    setSelectedGameType: (gameType) => setSelectedGameType(set, gameType),
   },
 }));
 
@@ -296,4 +309,6 @@ export const useSelectedSkillClass = () =>
   useGameStore((state) => state.data.selectedSkillClass);
 export const useInvitedUser = () =>
   useGameStore((state) => state.data.invitedUser);
+export const useSelectedGameType = () =>
+  useGameStore((state) => state.data.selectedGameType);
 export const useGameActions = () => useGameStore((state) => state.actions);

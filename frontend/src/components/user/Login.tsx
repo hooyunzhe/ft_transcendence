@@ -1,5 +1,4 @@
 'use client';
-import '../../styles/cyberfont.css';
 import Image from 'next/image';
 import { signIn } from 'next-auth/react';
 import { Box, Button, Slide, Typography } from '@mui/material';

@@ -1,3 +1,8 @@
+export enum GameType {
+  CLASSIC = 'CLASSIC',
+  CYBERPONG = 'CYBERPONG',
+}
+
 export enum MatchState {
   IDLE = 'IDLE',
   SEARCHING = 'SEARCHING',

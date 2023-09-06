@@ -11,7 +11,6 @@ import { useGameActions, useMatchInfo } from '@/lib/stores/useGameStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
-import '../../styles/cyberthrone.css';
 import GameVictory from './gameVictory';
 
 export interface gameData {

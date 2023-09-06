@@ -1,15 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Box, Button } from '@mui/material';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
-import { useGameActions } from '@/lib/stores/useGameStore';
-import { MatchState } from '@/types/GameTypes';
+import {
+  useGameActions,
+  useSelectedGameType,
+  useSelectedSkillClass,
+} from '@/lib/stores/useGameStore';
+import { GameType, MatchState } from '@/types/GameTypes';
 import GameSkills from './GameSkills';
+import { SkillClass } from '@/types/MatchTypes';
 
 export default function GameReady() {
   const gameSocket = useGameSocket();
+  const selectedSkillClass = useSelectedSkillClass();
+  const selectedGameType = useSelectedGameType();
   const gameAction = useGameActions();
   const [ready, setReady] = useState(false);
   const [cooldown, setCooldown] = useState(false);
+
+  console.log(selectedSkillClass);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -23,10 +32,23 @@ export default function GameReady() {
     };
   }, []);
 
+  function handleSelectedClasses(): number {
+    if (selectedGameType === GameType.CLASSIC) {
+      return 0;
+    }
+    if (selectedSkillClass === SkillClass.STRENGTH) {
+      return 1;
+    } else if (selectedSkillClass === SkillClass.SPEED) {
+      return 2;
+    } else {
+      return 3;
+    }
+  }
+
   const getReady = () => {
     if (!cooldown && gameSocket) {
       setReady(!ready);
-      gameSocket.emit('ready', 1);
+      gameSocket.emit('ready', handleSelectedClasses());
       setCooldown(true);
 
       const timer = setTimeout(() => {

@@ -1,25 +1,19 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import GameSearch from './GameSearch';
 import GameMatchFound from './GameMatchFound';
 import callAPI from '@/lib/callAPI';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
-import { MatchInfo, MatchState } from '@/types/GameTypes';
-import GameMenuDropdown from './GameMenuDropdown';
+import { GameType, MatchInfo, MatchState } from '@/types/GameTypes';
 
 export default function GameMenu() {
-  const currentUser = useCurrentUser();
   const gameSocket = useGameSocket();
   const matchState = useMatchState();
   const gameAction = useGameActions();
   const { displayBackdrop, resetBackdrop } = useBackdropActions();
-  const [gameMenuAnchor, setGameMenuAnchor] = useState<
-    HTMLElement | undefined
-  >();
 
   useEffect(() => {
     if (!gameSocket) return;
@@ -34,6 +28,7 @@ export default function GameMenu() {
         displayBackdrop(<GameMatchFound />);
       },
     );
+
     return () => {
       gameSocket.off('connect');
       gameSocket.off('disconnect');
@@ -53,9 +48,13 @@ export default function GameMenu() {
     }
   }, [matchState]);
 
-  const findMatch = (gameMode: string) => {
+  const findMatch = (gameMode: GameType) => {
+    if (gameMode === GameType.CLASSIC) {
+      gameAction.setSelectedGameType(GameType.CLASSIC);
+    } else {
+      gameAction.setSelectedGameType(GameType.CYBERPONG);
+    }
     if (gameSocket) {
-      // gameSocket.connect();
       gameSocket.sendBuffer = [];
       gameSocket.emit('matchmake', gameMode);
       gameAction.setMatchState(MatchState.SEARCHING);
@@ -63,11 +62,6 @@ export default function GameMenu() {
     }
     console.log(matchState);
   };
-
-  // const startGame = () => {
-  //   if (!gameSocket) return;
-  //   gameSocket.emit('ready');
-  // };
 
   const cancelFindMatch = () => {
     if (gameSocket) gameSocket.disconnect();
@@ -118,24 +112,38 @@ export default function GameMenu() {
       >
         Cyberpong
       </Typography>
-      <Button
-        variant='contained'
-        sx={{
-          bgcolor: '#4CC9F080',
-          ':hover': {
-            bgcolor: '#4CC9F060',
-          },
-        }}
-        onClick={(event) => setGameMenuAnchor(event.currentTarget)}
-        disabled={matchState === MatchState.SEARCHING}
-      >
-        Start Game
-      </Button>
-      <GameMenuDropdown
-        anchorElement={gameMenuAnchor}
-        handleClose={() => setGameMenuAnchor(undefined)}
-        findMatch={findMatch}
-      />
+      <Box width='20vw' display='flex' justifyContent='space-between'>
+        <Button
+          sx={{
+            width: '10vw',
+            color: '#DDDDDD',
+            border: 'solid 3px #363636',
+            borderRadius: '15px',
+            bgcolor: '#4CC9F080',
+            ':hover': {
+              bgcolor: '#4CC9F060',
+            },
+          }}
+          onClick={() => findMatch(GameType.CLASSIC)}
+        >
+          Classic
+        </Button>
+        <Button
+          sx={{
+            width: '10vw',
+            color: '#DDDDDD',
+            border: 'solid 3px #363636',
+            borderRadius: '15px',
+            bgcolor: '#4CC9F080',
+            ':hover': {
+              bgcolor: '#4CC9F060',
+            },
+          }}
+          onClick={() => findMatch(GameType.CYBERPONG)}
+        >
+          Cyberpong
+        </Button>
+      </Box>
     </Box>
   );
 }
