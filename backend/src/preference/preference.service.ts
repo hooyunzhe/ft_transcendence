@@ -74,9 +74,6 @@ export class PreferenceService {
     if (preferenceDto.animations_enabled !== undefined) {
       currentPreference.animations_enabled = preferenceDto.animations_enabled;
     }
-    if (preferenceDto.light_mode_enabled !== undefined) {
-      currentPreference.light_mode_enabled = preferenceDto.light_mode_enabled;
-    }
     await this.preferenceRepository.save(currentPreference);
   }
 

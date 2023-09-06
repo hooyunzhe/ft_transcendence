@@ -118,9 +118,6 @@ function changeCurrentPreference(
         ...(type === PreferenceType.ANIMATIONS && {
           animations_enabled: checked,
         }),
-        ...(type === PreferenceType.LIGHT_MODE && {
-          light_mode_enabled: checked,
-        }),
       },
     },
   }));
@@ -140,9 +137,9 @@ function addUserStatus(
   userSocket: Socket,
   userIDs: number[],
 ): void {
-  userSocket.emit('getStatus', userIDs, (newStatus: UserStatusDictionary) => {
-    setUserStatus(set, newStatus);
-  });
+  userSocket.emit('getStatus', userIDs, (newStatus: UserStatusDictionary) =>
+    setUserStatus(set, newStatus),
+  );
 }
 
 function changeUserStatus(
@@ -159,6 +156,12 @@ function setupUserSocketEvents(set: StoreSetter, userSocket: Socket): void {
   );
   userSocket.on('newDisconnect', (userID: number) =>
     changeUserStatus(set, userID, UserStatus.OFFLINE),
+  );
+  userSocket.on('joinGame', (userID: number) =>
+    changeUserStatus(set, userID, UserStatus.IN_GAME),
+  );
+  userSocket.on('leaveGame', (userID: number) =>
+    changeUserStatus(set, userID, UserStatus.ONLINE),
   );
 }
 
@@ -177,7 +180,6 @@ const useUserStore = create<UserStore>()((set) => ({
       id: 0,
       music_enabled: false,
       animations_enabled: false,
-      light_mode_enabled: false,
     },
     isNewUser: false,
     userStatus: {},

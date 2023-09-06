@@ -1,10 +1,11 @@
-import { Channel, ChannelType } from '@/types/ChannelTypes';
-import callAPI from '../callAPI';
 import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
+import callAPI from '../callAPI';
+import emitToSocket from '../emitToSocket';
+import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberStatus, ChannelMember } from '@/types/ChannelMemberTypes';
 import { Message } from '@/types/MessageTypes';
-import emitToSocket from '../emitToSocket';
+import { User } from '@/types/UserTypes';
 
 interface ChannelStore {
   data: {
@@ -41,6 +42,7 @@ interface ChannelStore {
       channelSocket: Socket,
       currentUserID: number,
     ) => void;
+    setupChannelFriendSocketEvents: (friendSocket: Socket) => void;
   };
   checks: {
     checkChannelExists: (channelName: string) => boolean;
@@ -420,6 +422,15 @@ function setupChannelSocketEvents(
   );
 }
 
+function setupChannelFriendSocketEvents(
+  set: StoreSetter,
+  friendSocket: Socket,
+): void {
+  friendSocket.on('deleteFriend', (sender: User) =>
+    resetSelectedDirectChannel(set, sender.id),
+  );
+}
+
 function checkChannelExists(get: StoreGetter, channelName: string): boolean {
   return get().data.channels.some((channel) => channel.name === channelName);
 }
@@ -484,6 +495,8 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
       ),
     setupChannelSocketEvents: (channelSocket, currentUserID) =>
       setupChannelSocketEvents(set, get, channelSocket, currentUserID),
+    setupChannelFriendSocketEvents: (friendSocket) =>
+      setupChannelFriendSocketEvents(set, friendSocket),
   },
   checks: {
     checkChannelExists: (channelName) => checkChannelExists(get, channelName),

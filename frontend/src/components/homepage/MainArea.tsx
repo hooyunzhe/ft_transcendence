@@ -5,12 +5,13 @@ import GameRender from '../game/GameRender';
 import SocialDrawer from './SocialDrawer';
 import ContentBox from './ContentBox';
 import ChannelMemberDrawer from './ChannelMemberDrawer';
-import { useMatchState } from '@/lib/stores/useGameStore';
+import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { MatchState } from '@/types/GameTypes';
 
 export default function MainArea() {
   const matchState = useMatchState();
+  const { setMatchState } = useGameActions();
   const { displayBackdrop, resetBackdrop } = useBackdropActions();
   const [displayGame, setDisplayGame] = useState(false);
 
@@ -20,6 +21,15 @@ export default function MainArea() {
     if (matchState === MatchState.INGAME) {
       timeoutID = setTimeout(() => {
         setDisplayGame(true);
+        resetBackdrop();
+      }, 1500);
+      displayBackdrop(null, undefined, true);
+    }
+
+    if (matchState === MatchState.END) {
+      timeoutID = setTimeout(() => {
+        setDisplayGame(false);
+        setMatchState(MatchState.IDLE);
         resetBackdrop();
       }, 1500);
       displayBackdrop(null, undefined, true);

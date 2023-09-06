@@ -44,12 +44,16 @@ export class SeedService {
         description: 'Join a channel',
       },
       {
-        name: 'My First Game!',
-        description: 'Play a game of pong',
+        name: 'My First Classic Game!',
+        description: 'Play a game of Classic',
       },
       {
-        name: 'Master Sergeant Shooter Person',
-        description: 'Max a skill tree',
+        name: 'Jack of All Trades, Master of None',
+        description: 'Play as each class once',
+      },
+      {
+        name: 'Jack of No Trades, Master of One',
+        description: 'Play as any class 3 times',
       },
       {
         name: 'Wai you so pro',
@@ -64,8 +68,8 @@ export class SeedService {
         description: 'Enable two-factor authentication',
       },
       {
-        name: 'Hidden',
-        description: 'Hidden',
+        name: 'Ding is Love, Ding is Life',
+        description: 'Become a member of Dingoism',
       },
     ];
     await this.achievementsRepository.save(achievementsToSeed);

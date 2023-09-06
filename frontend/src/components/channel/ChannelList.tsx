@@ -147,12 +147,11 @@ export default function ChannelList() {
               !isMemberBanned(currentUser.id, channel.id) &&
               channel.type !== ChannelType.DIRECT,
           )
-          .sort((channelA, channelB) => {
-            return (
+          .sort(
+            (channelA, channelB) =>
               recentChannelActivity[channelB.id] -
-              recentChannelActivity[channelA.id]
-            );
-          })
+              recentChannelActivity[channelA.id],
+          )
           .map((channel, index) => (
             <ChannelDisplay
               key={index}

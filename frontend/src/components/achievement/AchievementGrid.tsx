@@ -24,6 +24,10 @@ export default function AchievementGrid() {
           key={index}
           achievement={achievement}
           dateAchieved={achievementsEarned[achievement.id]}
+          displayHidden={
+            achievement.id === 14 &&
+            achievementsEarned[achievement.id] === undefined
+          }
         />
       ))}
     </Box>

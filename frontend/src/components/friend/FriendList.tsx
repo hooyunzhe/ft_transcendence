@@ -77,9 +77,7 @@ export default function FriendList({
     <Collapse
       in={
         expand &&
-        friends.some((friend) => {
-          return friend.status === category.toUpperCase();
-        })
+        friends.some((friend) => friend.status === category.toUpperCase())
       }
       timeout='auto'
       unmountOnExit

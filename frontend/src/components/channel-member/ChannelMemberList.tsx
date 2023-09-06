@@ -14,12 +14,12 @@ import {
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { useFriendChecks, useFriends } from '@/lib/stores/useFriendStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useChannelSocket, useGameSocket } from '@/lib/stores/useSocketStore';
 import {
-  useChannelSocket,
-  useGameSocket,
-  useUserSocket,
-} from '@/lib/stores/useSocketStore';
-import { useGameActions, useInvitedUser } from '@/lib/stores/useGameStore';
+  useGameActions,
+  useMatchState,
+  useOutgoingInviteUser,
+} from '@/lib/stores/useGameStore';
 import { useTwoFactorActions } from '@/lib/stores/useTwoFactorStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
@@ -33,18 +33,18 @@ import {
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
 import { ChannelType } from '@/types/ChannelTypes';
-import { MatchState } from '@/types/GameTypes';
 import { User } from '@/types/UserTypes';
+import { MatchState } from '@/types/GameTypes';
 
 export default function ChannelMemberList() {
   const selectedChannel = useSelectedChannel();
   const currentUser = useCurrentUser();
   const channelMembers = useChannelMembers();
   const friends = useFriends();
-  const invitedUser = useInvitedUser();
+  const outgoingInviteUser = useOutgoingInviteUser();
+  const matchState = useMatchState();
   const channelSocket = useChannelSocket();
   const gameSocket = useGameSocket();
-  const userSocket = useUserSocket();
   const {
     kickChannelMember,
     changeChannelMemberRole,
@@ -52,7 +52,7 @@ export default function ChannelMemberList() {
   } = useChannelMemberActions();
   const { isChannelAdmin, isChannelOwner } = useChannelMemberChecks();
   const { isFriendBlocked } = useFriendChecks();
-  const { setMatchState, setInvitedUser } = useGameActions();
+  const { setOutgoingInviteUser } = useGameActions();
   const { displayTwoFactor } = useTwoFactorActions();
   const { displayDialog } = useDialogActions();
   const { displayConfirmation } = useConfirmationActions();
@@ -62,12 +62,11 @@ export default function ChannelMemberList() {
   const addableFriends = friends.filter(
     (friend) =>
       friend.status === FriendStatus.FRIENDS &&
-      channelMembers.every((member) => {
-        return (
+      channelMembers.every(
+        (member) =>
           member.user.id !== friend.incoming_friend.id ||
-          member.channel.id !== selectedChannel?.id
-        );
-      }),
+          member.channel.id !== selectedChannel?.id,
+      ),
   );
 
   function getCurrentRole(): ChannelMemberRole {
@@ -282,15 +281,21 @@ export default function ChannelMemberList() {
 
   function handleInvite(opponent: User): void {
     if (gameSocket) {
-      if (invitedUser) {
-        gameSocket.emit('cancelInvite', invitedUser.id);
-        setMatchState(MatchState.IDLE);
-        setInvitedUser(undefined);
+      if (outgoingInviteUser) {
+        gameSocket.emit('cancelInvite', {
+          user: currentUser,
+          opponent_id: outgoingInviteUser.id,
+        });
+        setOutgoingInviteUser(undefined);
+        displayNotification('error', 'Invite canceled');
       }
-      if (opponent.id !== invitedUser?.id) {
-        gameSocket.emit('sendInvite', opponent.id);
-        setMatchState(MatchState.INVITING);
-        setInvitedUser(opponent);
+      if (opponent.id !== outgoingInviteUser?.id) {
+        gameSocket.emit('sendInvite', {
+          user: currentUser,
+          opponent_id: opponent.id,
+        });
+        setOutgoingInviteUser(opponent);
+        displayNotification('success', 'Invite sent');
       }
     }
   }
@@ -352,8 +357,11 @@ export default function ChannelMemberList() {
               handleAction={handleDisplayAction}
             />
             {member.user.id !== currentUser.id && (
-              <IconButton onClick={() => handleInvite(member.user)}>
-                {invitedUser?.id === member.user.id ? (
+              <IconButton
+                disabled={matchState !== MatchState.IDLE}
+                onClick={() => handleInvite(member.user)}
+              >
+                {outgoingInviteUser?.id === member.user.id ? (
                   <HowToReg />
                 ) : (
                   <SportsTennis />

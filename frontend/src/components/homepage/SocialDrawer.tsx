@@ -26,9 +26,7 @@ export default function SocialDrawer() {
 
   return (
     <Box
-      onMouseOver={() => {
-        handleDrawerMouseOver(selectedChannel !== undefined);
-      }}
+      onMouseOver={() => handleDrawerMouseOver(selectedChannel !== undefined)}
       onMouseLeave={handleDrawerMouseLeave}
     >
       <Image

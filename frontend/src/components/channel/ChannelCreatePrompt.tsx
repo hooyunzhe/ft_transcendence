@@ -109,7 +109,6 @@ export default function ChannelCreatePrompt() {
   }
 
   async function handleAction(): Promise<void> {
-    console.log('handleAction');
     if (displayPasswordPrompt) {
       createChannel()
         .then(resetDialog)
@@ -133,7 +132,6 @@ export default function ChannelCreatePrompt() {
 
   useEffect(() => {
     if (actionClicked) {
-      console.log('action clicked');
       handleAction();
     }
     if (backClicked) {

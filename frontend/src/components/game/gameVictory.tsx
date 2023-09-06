@@ -1,6 +1,6 @@
 'use client';
+import { Box, Typography } from '@mui/material';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { Box, Button, Typography } from '@mui/material';
 
 interface GameVictoryProps {
   victor: { id: number; nickname: string };
@@ -18,16 +18,25 @@ export default function GameVictory({ victor, loser }: GameVictoryProps) {
     else return loser.nickname + '\n' + 'Lose!';
   }
   return (
-    <Box sx={{ ml: 2 }}>
-      <img
+    <Box
+      width='80vw'
+      height='80vh'
+      display='flex'
+      justifyContent='space-around'
+      alignItems='center'
+      sx={{
+        backgroundImage: '/assets/victory.gif',
+      }}
+    >
+      {/* <img
         style={{
           position: 'absolute',
           zIndex: -1,
           objectFit: 'cover',
         }}
-        src='/assets/victory.gif'
+        src=''
         alt='Looping GIF'
-      />
+      /> */}
       <Typography variant='h6'>{getText()}</Typography>
     </Box>
   );

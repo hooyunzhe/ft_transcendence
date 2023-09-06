@@ -1,17 +1,14 @@
 'use client';
 import Phaser from 'phaser';
 import { useEffect, useState } from 'react';
-import { Box, Typography } from '@mui/material';
 import GameMainScene from './scenes/GameMainScene';
-import GameVictoryScene from './scenes/GameVictory';
+import GameVictory from './GameVictory';
 import GameQuit from './GameQuit';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
-import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
+import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { useGameActions, useMatchInfo } from '@/lib/stores/useGameStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
-import { MatchState } from '@/types/GameTypes';
-import { View } from '@/types/UtilTypes';
-import GameVictory from './gameVictory';
+import { GameMode, MatchState } from '@/types/GameTypes';
 
 export interface gameData {
   ball: { x: number; y: number };
@@ -33,10 +30,9 @@ export interface effectData {
 export default function GameRender() {
   const gameSocket = useGameSocket();
   const gameAction = useGameActions();
-  const viewAction = useUtilActions();
   const currentView = useCurrentView();
   const matchInfo = useMatchInfo();
-  const { displayBackdrop } = useBackdropActions();
+  const { displayBackdrop, resetBackdrop } = useBackdropActions();
   const [gameSession, setGameSession] = useState<Phaser.Game | null>(null);
 
   let effectData: effectData = {
@@ -70,10 +66,11 @@ export default function GameRender() {
     if (triggered === false) effectData.reset = false;
     return effectData;
   };
+
   const endGame = () => {
     if (gameSocket) gameSocket.emit('end');
-    gameAction.setMatchState(MatchState.IDLE);
-    viewAction.setCurrentView(View.GAME);
+    gameAction.setMatchState(MatchState.END);
+    gameAction.setSelectedGameMode(GameMode.CYBERPONG);
   };
 
   useEffect(() => {
@@ -96,62 +93,25 @@ export default function GameRender() {
         },
       );
 
-      gameSocket.on('disc', () => {
-        displayBackdrop(
-          <Box sx={{ ml: 2 }}>
-            <Typography variant='h6'>
-              Opponent disconnected, returning to main menu...
-            </Typography>
-          </Box>,
-        );
-        const timer = setTimeout(() => {
-          gameAction.setMatchState(MatchState.IDLE);
-          viewAction.setCurrentView(View.GAME);
-          gameSocket.disconnect();
-        }, 3000);
-        return () => {
-          clearTimeout(timer);
-        };
-      });
-
-      gameSocket.on('victory', (player: number) => {
+      gameSocket.on('victory', (playerNum: 1 | 2) => {
         effectData.victory = true;
-        if (matchInfo)
-          switch (player) {
-            case 1:
-              displayBackdrop(
-                <GameVictory
-                  victor={{
-                    id: matchInfo.player1.id,
-                    nickname: matchInfo.player1.nickname,
-                  }}
-                  loser={{
-                    id: matchInfo.player2.id,
-                    nickname: matchInfo.player2.nickname,
-                  }}
-                />,
-              );
-              break;
-            case 2:
-              displayBackdrop(
-                <GameVictory
-                  victor={{
-                    id: matchInfo.player2.id,
-                    nickname: matchInfo.player2.nickname,
-                  }}
-                  loser={{
-                    id: matchInfo.player1.id,
-                    nickname: matchInfo.player1.nickname,
-                  }}
-                />,
-              );
-              break;
-            default:
-              break;
-          }
-        const timer = setTimeout(() => {
+        if (matchInfo) {
+          displayBackdrop(
+            <GameVictory
+              victor={{
+                id: matchInfo[`player${playerNum}`].id,
+                nickname: matchInfo[`player${playerNum}`].nickname,
+              }}
+              loser={{
+                id: matchInfo[`player${playerNum}`].id,
+                nickname: matchInfo[`player${playerNum}`].nickname,
+              }}
+            />,
+          );
+        }
+        setTimeout(() => {
           endGame();
-          clearTimeout(timer);
+          resetBackdrop();
         }, 2000);
       });
 
@@ -179,7 +139,7 @@ export default function GameRender() {
         autoCenter: Phaser.Scale.Center.CENTER_BOTH,
       },
 
-      scene: [game, new GameVictoryScene(endGame)],
+      scene: [game],
     };
 
     if (!gameSession) setGameSession(new Phaser.Game(config));

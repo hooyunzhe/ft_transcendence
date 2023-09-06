@@ -35,7 +35,6 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
 
   async function handleEdit(): Promise<void> {
     if (input.length === 0) {
-      console.log('length 0');
       handleDelete();
     } else if (input.trim().length === 0) {
       handleCancel();

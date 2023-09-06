@@ -15,13 +15,13 @@ import { useChannelSocket, useFriendSocket } from '@/lib/stores/useSocketStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { Friend, FriendStatus, FriendAction } from '@/types/FriendTypes';
 import { User } from '@/types/UserTypes';
 import { ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
 import { FriendCategory } from '@/types/UtilTypes';
-import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 
 export default function FriendStack() {
   const currentUser = useCurrentUser();
@@ -81,6 +81,7 @@ export default function FriendStack() {
         addChannelMember(friendMember);
         addChannelMember(selfMember);
         emitToSocket(channelSocket, 'newMember', friendMember);
+        emitToSocket(channelSocket, 'newMember', selfMember);
         emitToSocket(channelSocket, 'joinRoom', newDirectChannel.id);
       } else {
         console.log('FATAL ERROR: FAILED TO ADD DM MEMBERS IN BACKEND');
@@ -129,7 +130,7 @@ export default function FriendStack() {
       'warning',
       'Blocked ' + friendship.incoming_friend.username,
     );
-    resetSelectedFriend(friendship.id);
+    resetSelectedFriend(friendship.incoming_friend.id);
     resetSelectedDirectChannel(friendship.incoming_friend.id);
   }
 
@@ -158,7 +159,7 @@ export default function FriendStack() {
           'Unfriended ' + friendship.incoming_friend.username,
         ),
     );
-    resetSelectedFriend(friendship.id);
+    resetSelectedFriend(friendship.incoming_friend.id);
     resetSelectedDirectChannel(friendship.incoming_friend.id);
   }
 

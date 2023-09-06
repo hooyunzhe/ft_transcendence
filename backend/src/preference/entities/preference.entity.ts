@@ -18,9 +18,6 @@ export class Preference {
   @Column({ default: true })
   animations_enabled: boolean;
 
-  @Column({ default: false })
-  light_mode_enabled: boolean;
-
   @OneToOne(() => User, (user) => user.preference, {
     eager: true,
     onDelete: 'CASCADE',

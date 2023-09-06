@@ -104,6 +104,9 @@ export default function ChatBar() {
         if (messagesSent[selectedChannel.id] === 19) {
           handleAchievementsEarned(currentUser.id, 5, displayNotification);
         }
+        if (newMessage.content === 'Dingo Lingo') {
+          handleAchievementsEarned(currentUser.id, 14, displayNotification);
+        }
         updateRecentChannelActivity(selectedChannel.id);
         emitToSocket(channelSocket, 'newMessage', newMessage);
       } else {

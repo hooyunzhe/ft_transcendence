@@ -24,6 +24,9 @@ export default function SettingsUsernameChangePrompt() {
     if (newUsername.length > 16) {
       throw 'Username cannot be more than 16 characters long';
     }
+    if (/[^ a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newUsername)) {
+      throw 'Username can only contain alphanumeric and common symbols';
+    }
     await callAPI('PATCH', 'users', {
       id: currentUser.id,
       username: newUsername.trim(),

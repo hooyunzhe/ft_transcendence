@@ -117,12 +117,11 @@ class RectObj {
 export class GameClass {
   matchHandler: (matchDto: CreateMatchDto) => void;
   socketHandler: (roomid: string, message: string, data: any) => void;
-  gameDestructor: (roomid: string) => void;
-  timeFactor: number = 1;
+  timeFactor = 1;
   windowSize: Coor;
   direction: Coor;
   ball: RectObj;
-  baseSpeed: number = 30;
+  baseSpeed = 30;
   playerClass: { player1: Player; player2: Player };
   paddleClass: { paddle1: RectObj; paddle2: RectObj };
   velocity: number;
@@ -130,21 +129,20 @@ export class GameClass {
   matchinfo: MatchInfo;
   server: Server;
   intervalID: NodeJS.Timer = null;
-  ServingPaddle: Number = 1;
-  refreshMilisec: number = 16;
+  ServingPaddle = 1;
+  refreshMilisec = 16;
   loaded: { player1: boolean; player2: boolean } = {
     player1: false,
     player2: false,
   };
-  started: boolean = false;
-  slowed: boolean = false;
-  isSucked: boolean = false;
+  started = false;
+  slowed = false;
+  isSucked = false;
 
   constructor(
     matchinfo: MatchInfo,
     socketHandler: (roomid: string, message: string, data: any) => void,
     matchHandler: (matchDto: CreateMatchDto) => void,
-    gameDestructor: (roomid: string) => void,
   ) {
     this.windowSize = {
       x: 1920,
@@ -186,7 +184,6 @@ export class GameClass {
     this.matchinfo = matchinfo;
     this.socketHandler = socketHandler;
     this.matchHandler = matchHandler;
-    this.gameDestructor = gameDestructor;
   }
 
   gameStart(player: number) {
@@ -196,9 +193,9 @@ export class GameClass {
           x: (this.ball.x - this.windowSize.x / 2) / this.windowSize.x,
           y: (this.windowSize.y / 2 - this.ball.y) / this.windowSize.y,
         };
-        console.log(this.direction);
         this.started = true;
-        this.velocity = this.playerClass[`player${player}`].ballSpeed * this.baseSpeed;
+        this.velocity =
+          this.playerClass[`player${player}`].ballSpeed * this.baseSpeed;
       }
     }
   }
@@ -244,7 +241,6 @@ export class GameClass {
       paddle2size.width,
       paddle2size.height,
     );
-    console.log(paddle1size.width, paddle2size.width);
   }
 
   gameRefresh() {
@@ -316,15 +312,8 @@ export class GameClass {
         p2_class_id: this.playerClass.player1.classID,
       });
       clearInterval(this.intervalID);
-      this.gameDestructor(this.matchinfo.roomid);
     }
     this.ServingPaddle = player;
-    console.log(
-      'Player 1: ',
-      this.score.player1,
-      ' | Player 2: ',
-      this.score.player2,
-    );
     this.gameReset();
     this.socketHandler(this.matchinfo.roomid, 'reset', player);
     this.loaded = { player1: false, player2: false };
@@ -353,17 +342,15 @@ export class GameClass {
   }
 
   activeTeleportBall = (player: number) => {
-      this.ball.y = this.paddleClass[`paddle${player}`].y;
-      return true;
+    this.ball.y = this.paddleClass[`paddle${player}`].y;
+    return true;
   };
 
   activeSlowTime = (player: number) => {
     if (!this.slowed) {
-      console.log('slowed', this.slowed);
       this.timeFactor = 0.5;
       this.slowed = true;
       const timer = setTimeout(() => {
-        console.log('unslowed', this.slowed);
         this.timeFactor = 1;
         this.slowed = false;
         clearTimeout(timer);
@@ -452,7 +439,8 @@ export class GameClass {
   }
 
   gameCollision(obj1: RectObj, obj2: RectObj, player: number) {
-    this.velocity = this.playerClass[`player${player}`].ballSpeed * this.baseSpeed;
+    this.velocity =
+      this.playerClass[`player${player}`].ballSpeed * this.baseSpeed;
     return (
       obj1.left() <= obj2.right() &&
       obj1.right() >= obj2.left() &&

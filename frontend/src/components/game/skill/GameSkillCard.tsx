@@ -1,9 +1,5 @@
 'use client';
-import {
-  useGameActions,
-  useSelectedSkillClass,
-} from '@/lib/stores/useGameStore';
-import { SkillClass } from '@/types/MatchTypes';
+import { Box, Typography } from '@mui/material';
 import {
   Android,
   EmojiObjects,
@@ -12,16 +8,24 @@ import {
   Hardware,
   SportsKabaddi,
 } from '@mui/icons-material';
-import { Box, Typography } from '@mui/material';
-import GameSkillBox from './GameSkillBox';
 import GameSkillHeader from './GameSkillHeader';
-import React from 'react';
+import GameSkillBox from './GameSkillBox';
+import {
+  useGameActions,
+  useGameReady,
+  useSelectedGameMode,
+  useSelectedSkillClass,
+} from '@/lib/stores/useGameStore';
+import { SkillClass } from '@/types/MatchTypes';
+import { GameMode } from '@/types/GameTypes';
 
 interface GameSkillCardProps {
   skillClass: SkillClass;
 }
 
 export default function GameSkillCard({ skillClass }: GameSkillCardProps) {
+  const gameReady = useGameReady();
+  const selectedGameMode = useSelectedGameMode();
   const selectedSkillClass = useSelectedSkillClass();
   const { setSelectedSkillClass } = useGameActions();
 
@@ -106,7 +110,9 @@ export default function GameSkillCard({ skillClass }: GameSkillCardProps) {
   }
 
   function handleSelectSkillAction(skillClass: SkillClass) {
-    setSelectedSkillClass(skillClass);
+    if (selectedGameMode == GameMode.CYBERPONG && !gameReady) {
+      setSelectedSkillClass(skillClass);
+    }
   }
 
   return (
@@ -131,6 +137,10 @@ export default function GameSkillCard({ skillClass }: GameSkillCardProps) {
               : skillClass === SkillClass.TECH
               ? '#363bd695'
               : 'linear-gradient(90deg, #e8514995, #363bd695)',
+          filter:
+            selectedGameMode == GameMode.CLASSIC || gameReady
+              ? 'grayscale(70%)'
+              : 'none',
         }}
       >
         <GameSkillBox

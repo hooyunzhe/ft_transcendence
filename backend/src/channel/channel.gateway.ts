@@ -7,7 +7,9 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { Channel } from './entities/channel.entity';
 import { ChannelMember } from 'src/channel-member/entities/channel-member.entity';
+import { Message } from 'src/message/entities/message.entity';
 import {
   ChangeChannelMemberRoleEmitBodyParams,
   ChangeChannelMemberStatusEmitBodyParams,
@@ -15,8 +17,6 @@ import {
   ChangeChannelTypeEmitBodyParams,
   EditMessageEmitBodyParams,
 } from './params/emit-body-params';
-import { Channel } from './entities/channel.entity';
-import { Message } from 'src/message/entities/message.entity';
 
 @WebSocketGateway({
   cors: {
@@ -34,10 +34,10 @@ export class ChannelGateway implements OnGatewayConnection {
 
   @SubscribeMessage('initConnection')
   initConnection(
-    @MessageBody() data: number,
+    @MessageBody() user_id: number,
     @ConnectedSocket() client: Socket,
   ) {
-    client.data.user_id = data;
+    client.data.user_id = user_id;
     client.join(String(client.data.user_id));
   }
 

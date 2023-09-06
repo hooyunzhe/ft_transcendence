@@ -76,7 +76,6 @@ export default class GameMainScene extends Phaser.Scene {
 
   create() {
     const data = this.prediction(Date.now());
-    console.log(data.paddlesize);
     this.windowsize = {
       width: Number(this.game.config.width),
       height: Number(this.game.config.height),

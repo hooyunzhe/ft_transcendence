@@ -30,7 +30,7 @@ type StoreGetter = () => AchievementStore;
 
 async function getAchievementData(
   set: StoreSetter,
-  userID: number,
+  currentUserID: number,
 ): Promise<void> {
   const achievementData = await callAPI(
     'GET',
@@ -41,10 +41,12 @@ async function getAchievementData(
     'user-achievements?search_type=ALL',
   ).then((res) => res.body);
   const achievementsEarned: AchievementsEarnedDictionary = {};
-  const recentAchievements: RecentAchievementsDictionary = {};
+  const recentAchievements: RecentAchievementsDictionary = {
+    [currentUserID]: [],
+  };
 
   userAchievementData.forEach((userAchievement: UserAchievement) => {
-    if (userAchievement.user.id === userID) {
+    if (userAchievement.user.id === currentUserID) {
       achievementsEarned[userAchievement.achievement.id] = new Date(
         Date.now(),
       ).toLocaleDateString();
@@ -61,6 +63,7 @@ async function getAchievementData(
   for (const userID in recentAchievements) {
     recentAchievements[userID] = recentAchievements[userID].slice(-4).reverse();
   }
+
   set(({ data }) => ({
     data: {
       ...data,

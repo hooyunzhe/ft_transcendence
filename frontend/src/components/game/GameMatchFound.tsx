@@ -1,6 +1,6 @@
 'use client';
-import { useMatchInfo } from '@/lib/stores/useGameStore';
 import { Avatar, Box, Typography } from '@mui/material';
+import { useMatchInfo } from '@/lib/stores/useGameStore';
 
 interface PlayerCardProps {
   name: string;

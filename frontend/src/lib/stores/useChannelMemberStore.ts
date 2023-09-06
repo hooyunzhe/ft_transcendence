@@ -1,11 +1,11 @@
+import { create } from 'zustand';
+import { Socket } from 'socket.io-client';
+import callAPI from '../callAPI';
 import {
   ChannelMemberRole,
   ChannelMemberStatus,
   ChannelMember,
 } from '@/types/ChannelMemberTypes';
-import { create } from 'zustand';
-import callAPI from '../callAPI';
-import { Socket } from 'socket.io-client';
 
 interface ChannelMemberStore {
   data: {
@@ -155,9 +155,9 @@ function setupChannelMemberSocketEvents(
   channelSocket: Socket,
   currentUserID: number,
 ): void {
-  channelSocket.on('newMember', (member: ChannelMember) => {
-    addChannelMember(set, member);
-  });
+  channelSocket.on('newMember', (member: ChannelMember) =>
+    addChannelMember(set, member),
+  );
   channelSocket.on('kickMember', (member: ChannelMember) => {
     if (member.user.id === currentUserID) {
       deleteChannelMembers(set, member.channel.id);

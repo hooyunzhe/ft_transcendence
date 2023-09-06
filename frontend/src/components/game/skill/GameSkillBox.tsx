@@ -8,14 +8,13 @@ interface GameSkillBoxProps {
   skillDescription: React.ReactNode;
   children?: React.ReactNode;
 }
-//Press [E] for action.
+
 export default function GameSkillBox({
   skillType,
   skillName,
   skillDescription,
   children,
 }: GameSkillBoxProps) {
-  console.log(skillType);
   return (
     <Box border='3px solid black' borderRadius='10px' bgcolor='#A4B5C6'>
       <Box

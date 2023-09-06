@@ -1,12 +1,12 @@
 'use client';
 import { Box, Button, Typography } from '@mui/material';
+import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { View } from '@/types/UtilTypes';
-import { useGameSocket } from '@/lib/stores/useSocketStore';
 
 export default function GameQuit() {
-  const { setCurrentView } = useUtilActions();
   const gameSocket = useGameSocket();
+  const { setCurrentView } = useUtilActions();
 
   const leaveGame = () => {
     if (gameSocket) {

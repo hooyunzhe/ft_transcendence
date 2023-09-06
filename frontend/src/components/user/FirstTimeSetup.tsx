@@ -1,7 +1,6 @@
 'use client';
 import { Session } from 'next-auth';
-import { signOut } from 'next-auth/react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Avatar, Box, Grow, Slide, Typography } from '@mui/material';
 import InputField from '../utils/InputField';
 import NotificationBar from '../utils/NotificationBar';
@@ -20,27 +19,10 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
   const { setNewUser } = useUserActions();
   const { displayNotification } = useNotificationActions();
   const [username, setUsername] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
-  const [largeAvatarUrl, setLargeAvatarUrl] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState(session.avatarUrl);
+  const [largeAvatarUrl, setLargeAvatarUrl] = useState(session.largeAvatarUrl);
   const [isHover, setIsHover] = useState(false);
   const uploadRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    async function getData() {
-      const userData = await fetch(
-        `https://api.intra.42.fr/v2/me?access_token=${session.accessToken}`,
-        {
-          cache: 'no-store',
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        },
-      ).then((res) => (res.ok ? res.json() : signOut()));
-      setAvatarUrl(userData.image.versions.small);
-      setLargeAvatarUrl(userData.image.versions.large);
-    }
-
-    getData();
-  }, []);
 
   async function handleAvatarUpload(
     avatarFile: File | undefined,
@@ -123,9 +105,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
                     preference: Preference;
                   }) => setNewUser(newUser, preference),
                 )
-                .catch((error) => {
-                  displayNotification('error', error);
-                })
+                .catch((error) => displayNotification('error', error))
             }
           />
         </Box>

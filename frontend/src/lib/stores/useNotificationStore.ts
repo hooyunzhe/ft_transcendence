@@ -17,7 +17,11 @@ interface NotificationStore {
       isAchievement?: boolean,
     ) => void;
     resetNotification: () => void;
-    setupNotificationSocketEvents: (friendSocket: Socket) => void;
+    setupNotificationFriendSocketEvents: (friendSocket: Socket) => void;
+    setupNotificationGameSocketEvents: (
+      gameSocket: Socket,
+      isFriendBlocked: (friendID: number) => boolean,
+    ) => void;
   };
 }
 
@@ -38,7 +42,7 @@ function resetNotification(set: StoreSetter): void {
   set(({ data }) => ({ data: { ...data, display: false } }));
 }
 
-function setupNotificationSocketEvents(
+function setupNotificationFriendSocketEvents(
   set: StoreSetter,
   friendSocket: Socket,
 ): void {
@@ -49,15 +53,42 @@ function setupNotificationSocketEvents(
     displayNotification(
       set,
       'success',
-      sender.username + ' accepted your friend request!',
+      `${sender.username} accepted your friend request!`,
     ),
   );
   friendSocket.on('rejectRequest', (sender: User) =>
     displayNotification(
       set,
       'error',
-      sender.username + ' rejected your friend request!',
+      `${sender.username} rejected your friend request!`,
     ),
+  );
+}
+
+function setupNotificationGameSocketEvents(
+  set: StoreSetter,
+  gameSocket: Socket,
+  isFriendBlocked: (friendID: number) => boolean,
+): void {
+  gameSocket.on(
+    'rejectInvite',
+    (sender: User) =>
+      !isFriendBlocked(sender.id) &&
+      displayNotification(
+        set,
+        'error',
+        `${sender.username} rejected your game invite!`,
+      ),
+  );
+  gameSocket.on(
+    'cancelInvite',
+    (sender: User) =>
+      !isFriendBlocked(sender.id) &&
+      displayNotification(
+        set,
+        'error',
+        `${sender.username} canceled the game invite`,
+      ),
   );
 }
 
@@ -72,8 +103,10 @@ const useNotificationStore = create<NotificationStore>()((set) => ({
     displayNotification: (level, message, isAchievement) =>
       displayNotification(set, level, message, isAchievement),
     resetNotification: () => resetNotification(set),
-    setupNotificationSocketEvents: (friendSocket) =>
-      setupNotificationSocketEvents(set, friendSocket),
+    setupNotificationFriendSocketEvents: (friendSocket) =>
+      setupNotificationFriendSocketEvents(set, friendSocket),
+    setupNotificationGameSocketEvents: (gameSocket, isFriendBlocked) =>
+      setupNotificationGameSocketEvents(set, gameSocket, isFriendBlocked),
   },
 }));
 

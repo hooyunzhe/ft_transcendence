@@ -24,7 +24,8 @@ interface UtilStore {
     handleDrawerMouseOver: (channelSelected: boolean) => void;
     handleDrawerMouseLeave: () => void;
     setIsPromptOpen: (open: boolean) => void;
-    setupUtilSocketEvents: (friendSocket: Socket) => void;
+    setupUtilFriendSocketEvents: (friendSocket: Socket) => void;
+    setupUtilGameSocketEvents: (gameSocket: Socket) => void;
   };
 }
 
@@ -146,13 +147,20 @@ function setIsPromptOpen(set: StoreSetter, open: boolean): void {
   }
 }
 
-function setupFriendSocketEvents(set: StoreSetter, friendSocket: Socket): void {
+function setupUtilFriendSocketEvents(
+  set: StoreSetter,
+  friendSocket: Socket,
+): void {
   friendSocket.on('newRequest', () =>
     setCurrentFriendCategory(set, FriendCategory.PENDING),
   );
   friendSocket.on('acceptRequest', () =>
     setCurrentFriendCategory(set, FriendCategory.FRIENDS),
   );
+}
+
+function setupUtilGameSocketEvents(set: StoreSetter, gameSocket: Socket): void {
+  gameSocket.on('matchFound', () => setCurrentView(set, View.GAME));
 }
 
 const useUtilStore = create<UtilStore>()((set, get) => ({
@@ -180,8 +188,10 @@ const useUtilStore = create<UtilStore>()((set, get) => ({
       handleDrawerMouseOver(set, get, channelSelected),
     handleDrawerMouseLeave: () => handleDrawerMouseLeave(set),
     setIsPromptOpen: (open) => setIsPromptOpen(set, open),
-    setupUtilSocketEvents: (friendSocket) =>
-      setupFriendSocketEvents(set, friendSocket),
+    setupUtilFriendSocketEvents: (friendSocket) =>
+      setupUtilFriendSocketEvents(set, friendSocket),
+    setupUtilGameSocketEvents: (gameSocket) =>
+      setupUtilGameSocketEvents(set, gameSocket),
   },
 }));
 

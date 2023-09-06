@@ -9,8 +9,8 @@ import {
 } from '@nestjs/websockets';
 import { RemoteSocket, Server, Socket } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
-import { GameClass } from './game.class';
 import { GameService } from './game.service';
+import { User } from 'src/user/entities/user.entity';
 
 @WebSocketGateway({
   cors: {
@@ -30,10 +30,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('initConnection')
   initConnection(
-    @MessageBody() data: number,
+    @MessageBody() user_id: number,
     @ConnectedSocket() client: Socket,
   ) {
-    client.data.user_id = data;
+    client.data.user_id = user_id;
   }
 
   @SubscribeMessage('matchmake')
@@ -57,33 +57,37 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('sendInvite')
   async inviteGame(
-    @MessageBody() opponent_id: string,
+    @MessageBody() body: { user: User; opponent_id: string },
     @ConnectedSocket() client: Socket,
   ) {
-    const opponent = await this.fetchPlayerwithUID(opponent_id);
+    const opponent = await this.fetchPlayerwithUID(body.opponent_id);
 
     if (opponent) {
       client.data.ready = false;
       client.data.room_id = client.id;
       client.data.game_mode = 'cyberpong';
       client.join(client.data.room_id);
-      opponent.emit('newInvite', client.data.room_id);
+      opponent.emit('newInvite', {
+        user: body.user,
+        room_id: client.data.room_id,
+      });
     }
   }
 
   @SubscribeMessage('cancelInvite')
   async cancelInvite(
-    @MessageBody() opponent_id: string,
+    @MessageBody() body: { user: User; opponent_id: string },
     @ConnectedSocket() client: Socket,
   ) {
-    const opponent = await this.fetchPlayerwithUID(opponent_id);
-    this.leaveCurrentRoom(client);
+    const opponent = await this.fetchPlayerwithUID(body.opponent_id);
+
     if (opponent) {
-      opponent.emit('cancelInvite', client.data.room_id);
+      opponent.emit('cancelInvite', body.user);
     }
+    this.leaveCurrentRoom(client);
   }
 
-  @SubscribeMessage('accept')
+  @SubscribeMessage('acceptInvite')
   async acceptGame(
     @MessageBody() room_id: string,
     @ConnectedSocket() client: Socket,
@@ -99,35 +103,32 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('reject')
+  @SubscribeMessage('rejectInvite')
   rejectGame(
-    @MessageBody() data: { user_id: string; room_id: string },
+    @MessageBody() body: { user: User; room_id: string },
     @ConnectedSocket() client: Socket,
   ) {
-    this.server.to(data.room_id).emit('reject');
+    this.server.to(body.room_id).emit('rejectInvite', body.user);
   }
 
   @SubscribeMessage('end')
-  leaveRoom(client: Socket)
-  {
+  leaveRoom(client: Socket) {
     this.leaveCurrentRoom(client);
-
+    this.gameService.deleteGame(client.data.room_id);
   }
 
   @SubscribeMessage('disconnect')
   async disconnectGame(client: Socket) {
-    if (client.data.player === 1 || client.data.player === 2 )
-    {    
-      this.server.to(client.data.roomid).emit('disc');
+    if (client.data.player === 1 || client.data.player === 2) {
+      this.server.to(client.data.roomid).emit('playerDisconnected');
       this.gameService.deleteGame(client.data.roomid);
     }
     this.leaveCurrentRoom(client);
   }
-  
+
   async handleDisconnect(client: Socket) {
-    if (client.data.player === 1 || client.data.player === 2 )
-    {    
-      this.server.to(client.data.roomid).emit('disc');
+    if (client.data.player === 1 || client.data.player === 2) {
+      this.server.to(client.data.roomid).emit('playerDisconnected');
       this.gameService.deleteGame(client.data.roomid);
     }
     this.leaveCurrentRoom(client);
@@ -142,43 +143,31 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.roomid = uniquekey;
       client.leave(room_id);
       client.join(uniquekey);
-      client.emit('match', {
+      client.emit('matchFound', {
         player1: clients[0].data.user_id,
         player2: clients[1].data.user_id,
       });
     });
-    console.log(
-      'client found a match, joining room:',
-      clients[0].rooms + clients[1].id,
-    );
     clients[0].data.player = 1;
     clients[1].data.player = 2;
-    console.log('event: createroom: ', uniquekey);
     this.gameService.createGame(
-     {
-          roomid: uniquekey,
-          player1: clients[0].data.user_id,
-          player2: clients[1].data.user_id,
+      {
+        roomid: uniquekey,
+        player1: clients[0].data.user_id,
+        player2: clients[1].data.user_id,
       },
-        this.socketHandler,
-    ),
-    console.log('room size : ', this.gameService.roomlist.size);
+      this.socketHandler,
+    );
   }
 
   @SubscribeMessage('ready')
-  async start(
+  async startGame(
     @MessageBody() classes: number,
     @ConnectedSocket() client: Socket,
   ) {
     const players = await this.fetchPlayer(client.data.roomid);
     if (players.length != 2) return;
     client.data.ready = !client.data.ready;
-    console.log(
-      'client uid: ',
-      client.data.user_id,
-      'ready for the match: ',
-      client.data.ready,
-    );
     this.gameService.roomlist
       .get(client.data.roomid)
       .gameSetClass(
@@ -186,12 +175,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.data.game_mode === 'cyberpong' ? classes : 0,
       );
     if (players.every((player) => player.data.ready)) {
-      players.forEach((player) => player.emit('start', client.data.roomid));
-      console.log('Game is starting in room :', client.data.roomid);
+      players.forEach((player) => player.emit('startGame', client.data.roomid));
       this.gameService.roomlist.get(client.data.roomid).gameUpdate();
     }
   }
-
 
   @SubscribeMessage('Player')
   MovePaddle(
@@ -208,9 +195,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         .get(client.data.roomid)
         .gameSetPaddlePosition(client.data.player, 1);
     if (movement === ' ')
-      this.gameService.roomlist.get(client.data.roomid).gameStart(client.data.player);
+      this.gameService.roomlist
+        .get(client.data.roomid)
+        .gameStart(client.data.player);
     if (movement === 'e')
-      this.gameService.roomlist.get(client.data.roomid).gameActiveSkill(client.data.player);
+      this.gameService.roomlist
+        .get(client.data.roomid)
+        .gameActiveSkill(client.data.player);
   }
 
   @SubscribeMessage('spectator')
@@ -221,7 +212,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.player = 0;
     const friend = await this.fetchPlayerwithUID(friend_id);
     if (friend) {
-      if (this.gameService.roomlist[friend.data.roomid]) client.join(friend.data.roomid);
+      if (this.gameService.roomlist[friend.data.roomid])
+        client.join(friend.data.roomid);
       else this.server.to(client.id).emit('error');
     } else this.server.to(client.id).emit('error');
   }

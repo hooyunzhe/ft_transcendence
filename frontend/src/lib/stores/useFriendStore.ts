@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
+import callAPI from '../callAPI';
 import { Friend, FriendStatus } from '@/types/FriendTypes';
 import { User } from '@/types/UserTypes';
-import callAPI from '../callAPI';
 
 interface FriendStore {
   data: {
@@ -94,12 +94,14 @@ function setSelectedFriend(set: StoreSetter, friend: Friend | undefined): void {
   }));
 }
 
-function resetSelectedFriend(set: StoreSetter, friendID: number): void {
+function resetSelectedFriend(set: StoreSetter, incomingID: number): void {
   set(({ data }) => ({
     data: {
       ...data,
       selectedFriend:
-        data.selectedFriend?.id === friendID ? undefined : data.selectedFriend,
+        data.selectedFriend?.id === incomingID
+          ? undefined
+          : data.selectedFriend,
     },
   }));
 }
@@ -115,9 +117,10 @@ function setupFriendSocketEvents(set: StoreSetter, friendSocket: Socket): void {
   friendSocket.on('rejectRequest', (sender: User) =>
     deleteFriend(set, sender.id),
   );
-  friendSocket.on('deleteFriend', (sender: User) =>
-    deleteFriend(set, sender.id),
-  );
+  friendSocket.on('deleteFriend', (sender: User) => {
+    deleteFriend(set, sender.id);
+    resetSelectedFriend(set, sender.id);
+  });
 }
 
 function isFriendBlocked(get: StoreGetter, incomingID: number): boolean {

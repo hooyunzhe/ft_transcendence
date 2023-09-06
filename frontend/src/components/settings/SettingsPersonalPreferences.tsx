@@ -21,9 +21,6 @@ export default function SettingsPersonalPreferences() {
       ...(type === PreferenceType.ANIMATIONS && {
         animations_enabled: checked,
       }),
-      ...(type === PreferenceType.LIGHT_MODE && {
-        light_mode_enabled: checked,
-      }),
     });
     changeCurrentPreference(type, checked);
   }
@@ -48,19 +45,6 @@ export default function SettingsPersonalPreferences() {
           onChange={(event) =>
             handlePreferenceToggle(
               PreferenceType.ANIMATIONS,
-              event.target.checked,
-            )
-          }
-        />
-      </Box>
-      <Box>
-        <Typography variant='h6'>Light Mode</Typography>
-        <Switch
-          checked={currentPreference.light_mode_enabled}
-          onMouseDown={(event) => event.preventDefault()}
-          onChange={(event) =>
-            handlePreferenceToggle(
-              PreferenceType.LIGHT_MODE,
               event.target.checked,
             )
           }

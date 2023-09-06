@@ -2,7 +2,7 @@ export default function checkPasswordCriteria(password: string): string {
   const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
   const uppercaseChars = /[A-Z]/;
   const lowercaseChars = /[a-z]/;
-  const numberChars = /[1-9]/;
+  const numberChars = /[0-9]/;
 
   if (password.length < 12) {
     return 'length must be at least 12 characters long.';

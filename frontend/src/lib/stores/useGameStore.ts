@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import callAPI from '../callAPI';
-import { Match, SkillClass } from '@/types/MatchTypes';
-import { MatchState, MatchInfo, GameType } from '@/types/GameTypes';
-import { User } from '@/types/UserTypes';
 import { Socket } from 'socket.io-client';
+import callAPI from '../callAPI';
+import { MatchState, MatchInfo, GameMode } from '@/types/GameTypes';
+import { Match, SkillClass } from '@/types/MatchTypes';
+import { User } from '@/types/UserTypes';
 
 type RecentMatchesDictionary = { [userID: number]: Match[] };
 
@@ -16,9 +16,11 @@ interface GameStore {
     keyState: { [key: string]: boolean };
     matchInfo: MatchInfo | null;
     gameReady: boolean;
-    selectedSkillClass: SkillClass;
-    invitedUser: User | undefined;
-    selectedGameType: GameType;
+    selectedGameMode: GameMode;
+    selectedSkillClass: SkillClass | undefined;
+    outgoingInviteUser: User | undefined;
+    incomingInviteUser: User | undefined;
+    incomingInviteRoomID: string | undefined;
   };
   actions: {
     getGameData: (userID: number) => void;
@@ -36,10 +38,12 @@ interface GameStore {
     setKeyState: (key: string, isPressed: boolean) => void;
     setMatchInfo: (matchinfo: MatchInfo) => void;
     setGameReady: (ready: boolean) => void;
+    setSelectedGameMode: (mode: GameMode) => void;
     setSelectedSkillClass: (skillClass: SkillClass) => void;
-    setInvitedUser: (user: User | undefined) => void;
+    setOutgoingInviteUser: (user: User | undefined) => void;
+    setIncomingInviteUser: (user: User | undefined) => void;
+    setIncomingInviteRoomID: (roomID: string | undefined) => void;
     setupGameSocketEvents: (gameSocket: Socket) => void;
-    setSelectedGameType: (type: GameType) => void;
   };
 }
 
@@ -231,6 +235,15 @@ function setMatchInfo(set: StoreSetter, matchInfo: MatchInfo): void {
   }));
 }
 
+function setSelectedGameMode(set: StoreSetter, mode: GameMode): void {
+  set((state) => ({
+    data: {
+      ...state.data,
+      selectedGameMode: mode,
+    },
+  }));
+}
+
 function setSelectedSkillClass(set: StoreSetter, skillClass: SkillClass): void {
   set(({ data }) => ({
     data: {
@@ -240,26 +253,91 @@ function setSelectedSkillClass(set: StoreSetter, skillClass: SkillClass): void {
   }));
 }
 
-function setInvitedUser(set: StoreSetter, user: User | undefined): void {
+function setOutgoingInviteUser(set: StoreSetter, user: User | undefined): void {
   set(({ data }) => ({
     data: {
       ...data,
-      invitedUser: user,
+      outgoingInviteUser: user,
     },
   }));
+}
+
+function setIncomingInviteUser(set: StoreSetter, user: User | undefined): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      incomingInviteUser: user,
+    },
+  }));
+}
+
+function setIncomingInviteRoomID(
+  set: StoreSetter,
+  roomID: string | undefined,
+): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      incomingInviteRoomID: roomID,
+    },
+  }));
+}
+
+async function getPlayerData(
+  player1: string,
+  player2: string,
+): Promise<MatchInfo> {
+  const [player1response, player2response] = await Promise.all([
+    callAPI('GET', 'users?search_type=ONE&search_number=' + player1),
+    callAPI('GET', 'users?search_type=ONE&search_number=' + player2),
+  ]);
+
+  const player1data = player1response.body;
+  const player2data = player2response.body;
+
+  const matchInfo: MatchInfo = {
+    player1: {
+      id: player1data.id,
+      nickname: player1data.username,
+      avatar: player1data.avatar_url,
+    },
+    player2: {
+      id: player2data.id,
+      nickname: player2data.username,
+      avatar: player2data.avatar_url,
+    },
+  };
+  return matchInfo;
 }
 
 function setupGameSocketEvents(set: StoreSetter, gameSocket: Socket): void {
-  gameSocket.on('newInvite', (room_id) => console.log(room_id));
-}
-
-function setSelectedGameType(set: StoreSetter, gameType: GameType): void {
-  set((state) => ({
-    data: {
-      ...state.data,
-      gameType: gameType,
+  gameSocket.on(
+    'matchFound',
+    async ({ player1, player2 }: { player1: string; player2: string }) => {
+      setMatchState(set, MatchState.FOUND);
+      setMatchInfo(set, await getPlayerData(player1, player2));
+      setOutgoingInviteUser(set, undefined);
+      setIncomingInviteUser(set, undefined);
+      setIncomingInviteRoomID(set, undefined);
     },
-  }));
+  );
+  gameSocket.on('startGame', () => setMatchState(set, MatchState.INGAME));
+  gameSocket.on('playerDisconnected', () => {
+    setTimeout(() => setMatchState(set, MatchState.END), 1500);
+    setSelectedGameMode(set, GameMode.CYBERPONG);
+  });
+  gameSocket.on('rejectInvite', () => setOutgoingInviteUser(set, undefined));
+  gameSocket.on(
+    'newInvite',
+    ({ user, room_id }: { user: User; room_id: string }) => {
+      setIncomingInviteUser(set, user);
+      setIncomingInviteRoomID(set, room_id);
+    },
+  );
+  gameSocket.on('cancelInvite', () => {
+    setIncomingInviteUser(set, undefined);
+    setIncomingInviteRoomID(set, undefined);
+  });
 }
 
 const useGameStore = create<GameStore>()((set, get) => ({
@@ -271,9 +349,11 @@ const useGameStore = create<GameStore>()((set, get) => ({
     keyState: {},
     gameReady: false,
     matchInfo: null,
-    selectedSkillClass: SkillClass.STRENGTH,
-    invitedUser: undefined,
-    selectedGameType: GameType.CLASSIC,
+    selectedGameMode: GameMode.CYBERPONG,
+    selectedSkillClass: undefined,
+    outgoingInviteUser: undefined,
+    incomingInviteUser: undefined,
+    incomingInviteRoomID: undefined,
   },
   actions: {
     getGameData: (userID) => getGameData(set, userID),
@@ -289,11 +369,13 @@ const useGameStore = create<GameStore>()((set, get) => ({
     setKeyState: (key, isPressed) => setKeyState(set, key, isPressed),
     setMatchInfo: (matchInfo) => setMatchInfo(set, matchInfo),
     setGameReady: (ready) => setGameReady(set, ready),
+    setSelectedGameMode: (gameMode) => setSelectedGameMode(set, gameMode),
     setSelectedSkillClass: (path) => setSelectedSkillClass(set, path),
-    setInvitedUser: (user) => setInvitedUser(set, user),
+    setOutgoingInviteUser: (user) => setOutgoingInviteUser(set, user),
+    setIncomingInviteUser: (user) => setIncomingInviteUser(set, user),
+    setIncomingInviteRoomID: (roomID) => setIncomingInviteRoomID(set, roomID),
     setupGameSocketEvents: (gameSocket) =>
       setupGameSocketEvents(set, gameSocket),
-    setSelectedGameType: (gameType) => setSelectedGameType(set, gameType),
   },
 }));
 
@@ -305,10 +387,15 @@ export const useRecentMatches = () =>
 export const useMatchState = () =>
   useGameStore((state) => state.data.matchState);
 export const useMatchInfo = () => useGameStore((state) => state.data.matchInfo);
+export const useGameReady = () => useGameStore((state) => state.data.gameReady);
+export const useSelectedGameMode = () =>
+  useGameStore((state) => state.data.selectedGameMode);
 export const useSelectedSkillClass = () =>
   useGameStore((state) => state.data.selectedSkillClass);
-export const useInvitedUser = () =>
-  useGameStore((state) => state.data.invitedUser);
-export const useSelectedGameType = () =>
-  useGameStore((state) => state.data.selectedGameType);
+export const useOutgoingInviteUser = () =>
+  useGameStore((state) => state.data.outgoingInviteUser);
+export const useIncomingInviteUser = () =>
+  useGameStore((state) => state.data.incomingInviteUser);
+export const useIncomingInviteRoomID = () =>
+  useGameStore((state) => state.data.incomingInviteRoomID);
 export const useGameActions = () => useGameStore((state) => state.actions);

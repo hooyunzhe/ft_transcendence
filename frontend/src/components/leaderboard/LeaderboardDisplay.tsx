@@ -36,9 +36,7 @@ export default function LeaderboardDisplay({
       }, 1000);
     }
 
-    return () => {
-      clearTimeout(scrollTimeoutID);
-    };
+    return () => clearTimeout(scrollTimeoutID);
   }, []);
 
   const statsToDisplay = [

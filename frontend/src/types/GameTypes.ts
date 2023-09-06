@@ -1,4 +1,4 @@
-export enum GameType {
+export enum GameMode {
   CLASSIC = 'CLASSIC',
   CYBERPONG = 'CYBERPONG',
 }
@@ -6,11 +6,10 @@ export enum GameType {
 export enum MatchState {
   IDLE = 'IDLE',
   SEARCHING = 'SEARCHING',
-  INVITING = 'INVITING',
   FOUND = 'FOUND',
   READY = 'READY',
   INGAME = 'INGAME',
-  SPECTATE = 'SPECTATE',
+  END = 'END',
 }
 
 export interface MatchInfo {

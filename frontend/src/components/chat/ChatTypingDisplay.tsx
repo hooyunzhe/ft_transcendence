@@ -8,6 +8,7 @@ export default function ChatTypingDisplay() {
   const selectedChannel = useSelectedChannel();
   const typingMembers = useTypingMembers();
   const [isTypingText, setIsTypingText] = useState('');
+  const [isTypingDots, setIsTypingDots] = useState(0);
   const [isTypingIntervalID, setIsTypingIntervalID] = useState<
     NodeJS.Timer | undefined
   >();
@@ -40,23 +41,20 @@ export default function ChatTypingDisplay() {
     if (filteredTypingMembers.length) {
       clearInterval(isTypingIntervalID);
       setIsTypingIntervalID(
-        setInterval(() => {
-          setIsTypingText((isTypingText) => {
-            return isTypingText.length - isTypingText.lastIndexOf('g') < 4
-              ? isTypingText + '.'
-              : isTypingText.slice(0, isTypingText.lastIndexOf('g') + 1);
-          });
-        }, 500),
+        setInterval(
+          () => setIsTypingDots((prev) => (prev < 3 ? prev + 1 : 0)),
+          500,
+        ),
       );
     }
   }, [selectedChannel, typingMembers]);
 
   return (
     <Typography
-      sx={{ padding: '3px 12px', opacity: '70%' }}
+      sx={{ padding: '3px 12px', color: '#DDDDDD', opacity: '70%' }}
       variant='subtitle2'
     >
-      {isTypingText}
+      {isTypingText && isTypingText + '.'.repeat(isTypingDots)}
     </Typography>
   );
 }
