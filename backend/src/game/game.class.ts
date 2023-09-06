@@ -122,6 +122,7 @@ export class GameClass {
   windowSize: Coor;
   direction: Coor;
   ball: RectObj;
+  baseSpeed: number = 30;
   playerClass: { player1: Player; player2: Player };
   paddleClass: { paddle1: RectObj; paddle2: RectObj };
   velocity: number;
@@ -137,6 +138,7 @@ export class GameClass {
   };
   started: boolean = false;
   slowed: boolean = false;
+  isSucked: boolean = false;
 
   constructor(
     matchinfo: MatchInfo,
@@ -153,7 +155,7 @@ export class GameClass {
       y: 0,
     };
     this.playerClass = { player1: new Player(), player2: new Player() };
-    this.velocity = 30;
+    this.velocity = this.baseSpeed * this.playerClass.player1.ballSpeed;
     this.score = {
       player1: 0,
       player2: 0,
@@ -196,6 +198,7 @@ export class GameClass {
         };
         console.log(this.direction);
         this.started = true;
+        this.velocity = this.playerClass[`player${player}`].ballSpeed * this.baseSpeed;
       }
     }
   }
@@ -256,9 +259,9 @@ export class GameClass {
       this.gameHandleVictory(1);
     }
     if (
-      (this.gameCollision(this.ball, this.paddleClass.paddle1) &&
+      (this.gameCollision(this.ball, this.paddleClass.paddle1, 1) &&
         this.direction.x < 0) ||
-      (this.gameCollision(this.ball, this.paddleClass.paddle2) &&
+      (this.gameCollision(this.ball, this.paddleClass.paddle2, 2) &&
         this.direction.x > 0)
     ) {
       this.direction.x *= -1;
@@ -350,13 +353,9 @@ export class GameClass {
     }
   }
 
-  activeStickyPaddle = (player: number) => {
-    console.log(Math.abs(this.paddleClass[`paddle${player}`].x - this.ball.x));
-    if (Math.abs(this.paddleClass[`paddle${player}`].x - this.ball.x) < 300) {
+  activeTeleportBall = (player: number) => {
       this.ball.y = this.paddleClass[`paddle${player}`].y;
       return true;
-    }
-    return false;
   };
 
   activeSlowTime = (player: number) => {
@@ -406,7 +405,7 @@ export class GameClass {
       case 1:
         this.playerClass[`player${player}`].setClass(
           classes,
-          this.activeStickyPaddle,
+          this.activeTeleportBall,
         );
         break;
       case 2:
@@ -453,7 +452,8 @@ export class GameClass {
     else if (dir < 0) obj.y = obj.height / 2;
   }
 
-  gameCollision(obj1: RectObj, obj2: RectObj) {
+  gameCollision(obj1: RectObj, obj2: RectObj, player: number) {
+    this.velocity = this.playerClass[`player${player}`].ballSpeed * this.baseSpeed;
     return (
       obj1.left() <= obj2.right() &&
       obj1.right() >= obj2.left() &&
