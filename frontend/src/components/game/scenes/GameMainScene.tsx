@@ -213,31 +213,36 @@ export default class GameMainScene extends Phaser.Scene {
       )
       .setScale(1.5, 1.5);
     particles.startFollow(this.ball);
-
+    console.log(
+      'paddle1 :',
+      data.paddlesize.paddle1,
+      'paddle2 :',
+      data.paddlesize.paddle2,
+    );
     this.paddle1 = this.physics.add
       .sprite(
         this.windowsize.width * 0.05,
         this.windowsize.height * 0.5,
         'paddle1',
       )
+      .setOrigin(0.5, 0.5)
       .setDisplaySize(
         data.paddlesize.paddle1.width,
         data.paddlesize.paddle1.height,
-      )
-      .setOrigin(0.5, 0.5);
+      );
 
-    console.log(this.paddle1.displayHeight, data.paddlesize.paddle1.height);
     this.paddle2 = this.physics.add
       .sprite(
         this.windowsize.width * 0.95,
         this.windowsize.height * 0.5,
         'paddle2',
       )
+      .setOrigin(0.5, 0.5)
       .setDisplaySize(
         data.paddlesize.paddle2.width,
         data.paddlesize.paddle2.height,
-      )
-      .setOrigin(0.5, 0.5);
+      );
+
     console.log(this.paddle2.displayHeight, data.paddlesize.paddle2.height);
     const redglow = this.paddle1.preFX?.addGlow(0xff4444, 0, 0, false, 0.1, 3);
     const blueglow = this.paddle2.preFX?.addGlow(
@@ -402,14 +407,6 @@ export default class GameMainScene extends Phaser.Scene {
       this.prevDirectionX = data.balldirection.x;
       this.prevDirectionY = data.balldirection.y;
       this.score = data.score;
-      this.paddle1?.setDisplaySize(
-        data.paddlesize.paddle1.width,
-        data.paddlesize.paddle1.height,
-      );
-      this.paddle1?.setDisplaySize(
-        data.paddlesize.paddle2.width,
-        data.paddlesize.paddle2.height,
-      );
     }
   };
 

@@ -66,8 +66,8 @@ function setupBackdropSocketEvents(
 ): void {
   gameSocket.on('matchFound', () => displayBackdrop(set, matchFoundComponent));
   gameSocket.on('playerDisconnected', () => {
-    displayBackdrop(set, disconnectComponent),
-      setTimeout(() => resetBackdrop(set), 3000);
+    displayBackdrop(set, disconnectComponent);
+    setTimeout(() => resetBackdrop(set), 3000);
   });
   gameSocket.on(
     'newInvite',

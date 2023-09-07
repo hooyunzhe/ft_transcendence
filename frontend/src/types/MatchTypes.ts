@@ -4,7 +4,6 @@ export enum SkillClass {
   STRENGTH = 'STRENGTH',
   SPEED = 'SPEED',
   TECH = 'TECH',
-  NONE = 'NONE',
 }
 
 export interface Match {

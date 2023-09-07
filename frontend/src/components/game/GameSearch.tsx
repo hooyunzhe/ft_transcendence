@@ -20,6 +20,7 @@ export default function GameSearch() {
       display='flex'
       justifyContent='space-around'
       alignItems='center'
+      onClick={(event) => event.stopPropagation()}
     >
       <CircularProgress />
       <Box>

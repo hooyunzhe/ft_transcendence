@@ -60,7 +60,7 @@ export default function GameRender() {
       if (gameSocket) gameSocket.emit('Player', 'e');
     }
     if (gameAction.getKeyState('Escape') || gameAction.getKeyState('Esc')) {
-      displayBackdrop(<GameQuit />);
+      displayBackdrop(<GameQuit />, () => null);
     }
   };
 
@@ -76,7 +76,7 @@ export default function GameRender() {
   const endGame = () => {
     if (gameSocket) gameSocket.emit('end');
     gameAction.setGameReady(false);
-    gameAction.setSelectedSkillClass(SkillClass.NONE);
+    gameAction.setSelectedSkillClass(undefined);
     gameAction.setMatchState(MatchState.END);
     gameAction.setSelectedGameMode(GameMode.CYBERPONG);
   };

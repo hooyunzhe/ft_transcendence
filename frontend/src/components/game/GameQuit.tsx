@@ -20,7 +20,9 @@ export default function GameQuit() {
   };
   return (
     <Box sx={{ ml: 2 }} onClick={(event) => event.stopPropagation()}>
-      <Typography variant='h6'>Do you want to Quit the game?</Typography>
+      <Typography variant='h6' color='#DDDDDD'>
+        Do you want to Quit the game?
+      </Typography>
       <Button variant='contained' onClick={leaveGame}>
         YES
       </Button>

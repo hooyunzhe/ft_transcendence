@@ -40,6 +40,7 @@ export default function GameNewInvite() {
       alignItems='center'
       borderRadius='10px'
       bgcolor='#A4B5C680'
+      onClick={(event) => event.stopPropagation()}
     >
       {incomingInviteUser && (
         <Box

@@ -39,7 +39,7 @@ interface GameStore {
     setMatchInfo: (matchinfo: MatchInfo) => void;
     setGameReady: (ready: boolean) => void;
     setSelectedGameMode: (mode: GameMode) => void;
-    setSelectedSkillClass: (skillClass: SkillClass) => void;
+    setSelectedSkillClass: (skillClass: SkillClass | undefined) => void;
     setOutgoingInviteUser: (user: User | undefined) => void;
     setIncomingInviteUser: (user: User | undefined) => void;
     setIncomingInviteRoomID: (roomID: string | undefined) => void;
