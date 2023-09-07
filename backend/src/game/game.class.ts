@@ -116,7 +116,7 @@ class RectObj {
 
 export class GameClass {
   matchHandler: (matchDto: CreateMatchDto) => void;
-  socketHandler: (roomid: string, message: string, data: any) => void;
+  socketHandler: (room_id: string, message: string, data: any) => void;
   timeFactor = 1;
   windowSize: Coor;
   direction: Coor;
@@ -141,7 +141,7 @@ export class GameClass {
 
   constructor(
     matchinfo: MatchInfo,
-    socketHandler: (roomid: string, message: string, data: any) => void,
+    socketHandler: (room_id: string, message: string, data: any) => void,
     matchHandler: (matchDto: CreateMatchDto) => void,
   ) {
     this.windowSize = {
@@ -213,8 +213,8 @@ export class GameClass {
 
     this.playerClass.player1.resetCooldown();
     this.playerClass.player2.resetCooldown();
-    this.socketHandler(this.matchinfo.roomid, 'skillOn', 1);
-    this.socketHandler(this.matchinfo.roomid, 'skillOn', 2);
+    this.socketHandler(this.matchinfo.room_id, 'skillOn', 1);
+    this.socketHandler(this.matchinfo.room_id, 'skillOn', 2);
     this.started = false;
     this.ball.y = this.windowSize.y / 2;
     this.paddleClass.paddle1.y = this.windowSize.y / 2;
@@ -263,10 +263,10 @@ export class GameClass {
       this.direction.x *= -1;
     }
     if (this.playerClass.player1.checkCooldown())
-      this.socketHandler(this.matchinfo.roomid, 'skillOn', 1);
+      this.socketHandler(this.matchinfo.room_id, 'skillOn', 1);
     if (this.playerClass.player2.checkCooldown())
-      this.socketHandler(this.matchinfo.roomid, 'skillOn', 2);
-    this.socketHandler(this.matchinfo.roomid, 'game', {
+      this.socketHandler(this.matchinfo.room_id, 'skillOn', 2);
+    this.socketHandler(this.matchinfo.room_id, 'game', {
       ball: {
         x: this.ball.x,
         y: this.ball.y,
@@ -300,8 +300,8 @@ export class GameClass {
 
   gameHandleVictory(player: number) {
     this.score[`player${player}`]++;
-    if (this.score[`player${player}`] >= 11) {
-      this.socketHandler(this.matchinfo.roomid, 'victory', player);
+    if (this.score[`player${player}`] >= 1) {
+      this.socketHandler(this.matchinfo.room_id, 'victory', player);
       this.matchHandler({
         p1_id: this.matchinfo.player1,
         p2_id: this.matchinfo.player2,
@@ -315,7 +315,7 @@ export class GameClass {
     }
     this.ServingPaddle = player;
     this.gameReset();
-    this.socketHandler(this.matchinfo.roomid, 'reset', player);
+    this.socketHandler(this.matchinfo.room_id, 'reset', player);
     this.loaded = { player1: false, player2: false };
   }
 
@@ -421,7 +421,7 @@ export class GameClass {
       !this.playerClass[`player${player}`].inCooldown
     ) {
       if (this.playerClass[`player${player}`].activeSkill(player)) {
-        this.socketHandler(this.matchinfo.roomid, 'skillOff', player);
+        this.socketHandler(this.matchinfo.room_id, 'skillOff', player);
         this.playerClass[`player${player}`].setCooldown();
       }
     }

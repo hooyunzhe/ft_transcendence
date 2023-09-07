@@ -93,26 +93,26 @@ export default function GameRender() {
         },
       );
 
-      gameSocket.on('victory', (playerNum: 1 | 2) => {
+      gameSocket.on('victory', (victorNum: 1 | 2) => {
         effectData.victory = true;
         if (matchInfo) {
+          const loserNum = victorNum === 1 ? 2 : 1;
+
           displayBackdrop(
             <GameVictory
               victor={{
-                id: matchInfo[`player${playerNum}`].id,
-                nickname: matchInfo[`player${playerNum}`].nickname,
+                id: matchInfo[`player${victorNum}`].id,
+                nickname: matchInfo[`player${victorNum}`].nickname,
               }}
               loser={{
-                id: matchInfo[`player${playerNum}`].id,
-                nickname: matchInfo[`player${playerNum}`].nickname,
+                id: matchInfo[`player${loserNum}`].id,
+                nickname: matchInfo[`player${loserNum}`].nickname,
               }}
             />,
           );
         }
-        setTimeout(() => {
-          endGame();
-          resetBackdrop();
-        }, 2000);
+        setTimeout(() => endGame(), 3000);
+        setTimeout(() => resetBackdrop(), 6000);
       });
 
       gameSocket.on('reset', () => {

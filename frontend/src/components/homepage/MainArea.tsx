@@ -27,12 +27,8 @@ export default function MainArea() {
     }
 
     if (matchState === MatchState.END) {
-      timeoutID = setTimeout(() => {
-        setDisplayGame(false);
-        setMatchState(MatchState.IDLE);
-        resetBackdrop();
-      }, 1500);
-      displayBackdrop(null, undefined, true);
+      setDisplayGame(false);
+      setMatchState(MatchState.IDLE);
     }
 
     return () => clearTimeout(timeoutID);

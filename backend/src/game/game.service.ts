@@ -5,7 +5,7 @@ import { CreateMatchDto } from 'src/match/dto/create-match.dto';
 import { StatisticService } from 'src/statistic/statistic.service';
 
 export interface MatchInfo {
-  roomid: string;
+  room_id: string;
   player1: number;
   player2: number;
 }
@@ -23,16 +23,16 @@ export class GameService {
 
   createGame(
     matchinfo: MatchInfo,
-    socketHandler: (roomid: string, message: string, data: any) => void,
+    socketHandler: (room_id: string, message: string, data: any) => void,
   ) {
     this.roomlist.set(
-      matchinfo.roomid,
+      matchinfo.room_id,
       new GameClass(matchinfo, socketHandler, this.matchHandler),
     );
   }
 
-  deleteGame(roomid: string) {
-    this.roomlist.delete(roomid);
+  deleteGame(room_id: string) {
+    this.roomlist.delete(room_id);
   }
 
   matchHandler = async (matchDto: CreateMatchDto) => {

@@ -1,21 +1,25 @@
 'use client';
 import { Box, Button, Typography } from '@mui/material';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
-import { useUtilActions } from '@/lib/stores/useUtilStore';
-import { View } from '@/types/UtilTypes';
+import { useGameActions } from '@/lib/stores/useGameStore';
+import { useBackdropActions } from '@/lib/stores/useBackdropStore';
+import { GameMode, MatchState } from '@/types/GameTypes';
 
 export default function GameQuit() {
   const gameSocket = useGameSocket();
-  const { setCurrentView } = useUtilActions();
+  const { setMatchState, setSelectedGameMode } = useGameActions();
+  const { resetBackdrop } = useBackdropActions();
 
   const leaveGame = () => {
     if (gameSocket) {
       gameSocket.emit('disconnect');
-      setCurrentView(View.GAME);
+      setMatchState(MatchState.END);
+      setSelectedGameMode(GameMode.CYBERPONG);
+      resetBackdrop();
     }
   };
   return (
-    <Box sx={{ ml: 2 }}>
+    <Box sx={{ ml: 2 }} onClick={(event) => event.stopPropagation()}>
       <Typography variant='h6'>Do you want to Quit the game?</Typography>
       <Button variant='contained' onClick={leaveGame}>
         YES
