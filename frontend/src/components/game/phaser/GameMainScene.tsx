@@ -60,23 +60,26 @@ export default class GameMainScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.audio('laser', '/assets/collision.ogg');
-    this.load.audio('arcade', '/assets/arcade.ogg');
-    this.load.audio('banger', '/assets/bgm1.mp3');
-    this.load.video('background', '/assets/background1.mp4', true);
-    this.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
-    this.load.image('red', '/assets/neonpurple.png');
-    this.load.image('flame3', '/assets/flame_03.png');
-    this.load.image('bubble', '/assets/bubble.png');
+    this.load.audio('laser', '/assets/audios/collision.ogg');
+    this.load.audio('arcade', '/assets/audios/arcade.ogg');
+    this.load.audio('banger', '/assets/audios/bgm1.mp3');
+    this.load.video('background', '/assets/videos/background1.mp4', true);
+    this.load.multiatlas(
+      'ballsprite',
+      '/assets/textures/ballsprite.json',
+      'assets',
+    );
+    this.load.image('red', '/assets/textures/neonpurple.png');
+    this.load.image('flame3', '/assets/textures/flame_03.png');
+    this.load.image('bubble', '/assets/textures/bubble.png');
     this.load.bitmapFont(
       'font',
-      '/assets/scorefont_0.png',
-      '/assets/scorefont.fnt',
+      '/assets/fonts/scorefont_0.png',
+      '/assets/fonts/scorefont.fnt',
     );
-    this.load.image('paddle1', '/assets/redpaddle.png');
-    this.load.image('paddle2', '/assets/bluepaddle.png');
-    this.load.image('glowframe', '/assets/namebox.png');
-    this.load.image('normalframe', '/assets/namebox_normal.png');
+    this.load.image('paddle1', '/assets/textures/redpaddle.png');
+    this.load.image('paddle2', '/assets/textures/bluepaddle.png');
+    this.load.image('glowframe', '/assets/textures/namebox.png');
   }
 
   create() {
@@ -304,6 +307,7 @@ export default class GameMainScene extends Phaser.Scene {
     this.outofboundEffect.startFollow(this.ball);
 
     this.Socket?.on('reset', () => {
+      this.arcadeSoundEffect?.play();
       this.goalEffectToggle = true;
     });
 
@@ -464,7 +468,6 @@ export default class GameMainScene extends Phaser.Scene {
     if (this.outofboundEffect) this.outofboundEffect.explode(1);
 
     this.cameras.main.shake(50, 0.005);
-    this.arcadeSoundEffect?.play();
     const timer = setTimeout(() => {
       this.goalEffectToggle = false;
       this.Socket?.emit('load', true);

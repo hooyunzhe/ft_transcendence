@@ -49,7 +49,7 @@ export default function GameVictory({ victor, loser }: GameVictoryProps) {
           filter: currentUser.id === loser.id ? 'grayscale(70%)' : 'none',
         }}
       >
-        <source src='/assets/background1.mp4' type='video/mp4' />
+        <source src='/assets/videos/background1.mp4' type='video/mp4' />
       </video>
       <Image
         width={600}
@@ -60,7 +60,7 @@ export default function GameVictory({ victor, loser }: GameVictoryProps) {
           objectFit: 'cover',
           opacity: 0.5,
         }}
-        src='/assets/victory.gif'
+        src='/assets/videos/victory.gif'
         alt='Looping GIF'
       />
       <Typography

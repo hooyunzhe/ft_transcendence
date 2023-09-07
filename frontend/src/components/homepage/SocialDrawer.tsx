@@ -30,7 +30,7 @@ export default function SocialDrawer() {
       onMouseLeave={handleDrawerMouseLeave}
     >
       <Image
-        src='/assets/redpaddle.png'
+        src='/assets/textures/redpaddle.png'
         width={12}
         height={109}
         alt='Paddle 1'

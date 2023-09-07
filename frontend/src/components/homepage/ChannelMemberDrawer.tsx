@@ -54,7 +54,7 @@ export default function ChannelMemberDrawer() {
       onMouseLeave={handleDrawerMouseLeave}
     >
       <Image
-        src='/assets/bluepaddle.png'
+        src='/assets/textures/bluepaddle.png'
         width={12}
         height={109}
         alt='Paddle 2'

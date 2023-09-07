@@ -51,7 +51,7 @@ export default function MainArea() {
             objectFit: 'cover',
           }}
         >
-          <source src='/assets/background1.mp4' type='video/mp4' />
+          <source src='/assets/videos/background1.mp4' type='video/mp4' />
         </video>
       )}
       {!displayGame && (

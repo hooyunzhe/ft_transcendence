@@ -450,6 +450,8 @@ export class GameClass {
       obj.y += dir;
       this.stickEffect(obj);
       obj.velocity = dir > 0 ? 0.1 : -0.1;
+      if (this.gameCollisionTopBottom(obj, this.ball))
+        this.direction.y *= -1;
     } else if (dir > 0) obj.y = this.windowSize.y - obj.height / 2;
     else if (dir < 0) obj.y = obj.height / 2;
   }
@@ -462,4 +464,11 @@ export class GameClass {
       obj1.bottom() >= obj2.top()
     );
   }
+  gameCollisionTopBottom(obj1: RectObj, obj2: RectObj) {
+    return (
+      obj1.top() <= obj2.bottom() &&
+      obj1.bottom() >= obj2.top() 
+    );
+  }
 }
+
