@@ -33,13 +33,13 @@ class Player {
       case 1:
         {
           this.paddleSize = 192;
-          this.cooldown = 15;
+          this.cooldown = 30;
         }
         break;
       case 2:
         {
           this.paddleSpeed = 1.2;
-          this.cooldown = 20;
+          this.cooldown = 15;
         }
         break;
       case 3:

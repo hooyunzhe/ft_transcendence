@@ -13,6 +13,7 @@ import {
 } from '@/lib/stores/useGameStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { GameMode, MatchState } from '@/types/GameTypes';
+import { SkillClass } from '@/types/MatchTypes';
 
 export interface gameData {
   ball: { x: number; y: number };
@@ -75,7 +76,7 @@ export default function GameRender() {
   const endGame = () => {
     if (gameSocket) gameSocket.emit('end');
     gameAction.setGameReady(false);
-    gameAction.setSelectedSkillClass(undefined);
+    gameAction.setSelectedSkillClass(SkillClass.NONE);
     gameAction.setMatchState(MatchState.END);
     gameAction.setSelectedGameMode(GameMode.CYBERPONG);
   };
