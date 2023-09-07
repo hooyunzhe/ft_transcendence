@@ -23,7 +23,11 @@ interface GameStore {
     incomingInviteRoomID: string | undefined;
   };
   actions: {
-    getGameData: (userID: number) => void;
+    getGameData: (currentUserID: number) => void;
+    getNewMatch: (
+      userID: number,
+      opponentID: number,
+    ) => Promise<Match | undefined>;
     getNotableOpponents: (userID: number) => {
       punchingBag: string;
       archenemy: string;
@@ -50,15 +54,23 @@ interface GameStore {
 type StoreSetter = (helper: (state: GameStore) => Partial<GameStore>) => void;
 type StoreGetter = () => GameStore;
 
-async function getGameData(set: StoreSetter, userID: number): Promise<void> {
+async function getGameData(
+  set: StoreSetter,
+  currentUserID: number,
+): Promise<void> {
   const matchData = await callAPI('GET', 'matches?search_type=ALL').then(
     (res) => res.body,
   );
   const matchesPlayed: Match[] = [];
-  const recentMatches: RecentMatchesDictionary = {};
+  const recentMatches: RecentMatchesDictionary = {
+    [currentUserID]: [],
+  };
 
   matchData.forEach((match: Match) => {
-    if (match.player_one.id === userID || match.player_two.id === userID) {
+    if (
+      match.player_one.id === currentUserID ||
+      match.player_two.id === currentUserID
+    ) {
       matchesPlayed.push(match);
     }
     if (!recentMatches[match.player_one.id]) {
@@ -89,6 +101,22 @@ async function getGameData(set: StoreSetter, userID: number): Promise<void> {
       recentMatches: recentMatches,
     },
   }));
+}
+
+async function getNewMatch(
+  set: StoreSetter,
+  userID: number,
+  opponentID: number,
+): Promise<Match | undefined> {
+  const newMatchData = await callAPI(
+    'GET',
+    `matches?search_type=LATEST&search_number=${userID}&second_search_number=${opponentID}`,
+  ).then((res) => res.body);
+
+  if (newMatchData) {
+    addMatch(set, newMatchData, userID);
+  }
+  return newMatchData;
 }
 
 function getNotableOpponents(
@@ -184,6 +212,7 @@ function setKeyState(set: StoreSetter, key: string, isPressed: boolean): void {
 
 function getKeyState(key: string, get: StoreGetter) {
   const keyState = get().data.keyState;
+
   return !!keyState[key];
 }
 
@@ -244,7 +273,10 @@ function setSelectedGameMode(set: StoreSetter, mode: GameMode): void {
   }));
 }
 
-function setSelectedSkillClass(set: StoreSetter, skillClass: SkillClass): void {
+function setSelectedSkillClass(
+  set: StoreSetter,
+  skillClass: SkillClass | undefined,
+): void {
   set(({ data }) => ({
     data: {
       ...data,
@@ -323,6 +355,7 @@ function setupGameSocketEvents(set: StoreSetter, gameSocket: Socket): void {
   );
   gameSocket.on('startGame', () => setMatchState(set, MatchState.INGAME));
   gameSocket.on('playerDisconnected', () => {
+    gameSocket.emit('leaveRoom');
     setGameReady(set, false);
     setSelectedSkillClass(set, undefined);
     setTimeout(() => setMatchState(set, MatchState.END), 1500);
@@ -358,7 +391,8 @@ const useGameStore = create<GameStore>()((set, get) => ({
     incomingInviteRoomID: undefined,
   },
   actions: {
-    getGameData: (userID) => getGameData(set, userID),
+    getGameData: (currentUserID) => getGameData(set, currentUserID),
+    getNewMatch: (userID, opponentID) => getNewMatch(set, userID, opponentID),
     getNotableOpponents: (userID) => getNotableOpponents(get, userID),
     getMatchOpponent: (match, userID) => getMatchOpponent(match, userID),
     getMatchScore: (match, userID) => getMatchScore(match, userID),

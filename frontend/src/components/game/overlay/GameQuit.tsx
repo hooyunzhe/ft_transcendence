@@ -12,12 +12,13 @@ export default function GameQuit() {
 
   const leaveGame = () => {
     if (gameSocket) {
-      gameSocket.emit('disconnect');
+      gameSocket.emit('playerDisconnected');
       setMatchState(MatchState.END);
       setSelectedGameMode(GameMode.CYBERPONG);
       resetBackdrop();
     }
   };
+
   return (
     <Box sx={{ ml: 2 }} onClick={(event) => event.stopPropagation()}>
       <Typography variant='h6' color='#DDDDDD'>

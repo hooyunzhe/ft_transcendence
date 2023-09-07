@@ -15,19 +15,17 @@ export default function GameMatchFound() {
       sx={{
         display: 'flex',
         flexDirection: side === 'left' ? 'row' : 'row-reverse',
+        justifyContent: 'space-evenly',
         alignItems: 'center',
         width: '80%',
-        padding: '20px',
       }}
     >
-      <Avatar
-        sx={{ width: 100, height: 100, marginRight: '20px' }}
-        src={avatar}
-        alt={name}
-      />
+      <Avatar sx={{ width: 100, height: 100 }} src={avatar} alt={name} />
       <Typography
+        fontFamily='cyberthrone'
+        letterSpacing='1rem'
         variant='h2'
-        sx={{ fontFamily: 'cyberthrone', color: 'white' }}
+        color='white'
       >
         {name}
       </Typography>

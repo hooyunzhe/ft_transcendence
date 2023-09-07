@@ -1,7 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import { Box, Button, Typography } from '@mui/material';
-import GameSearch from './GameSearch';
+import GameSearch from './overlay/GameSearch';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
@@ -71,6 +71,7 @@ export default function GameMenu() {
               bgcolor: '#4CC9F060',
             },
           }}
+          disabled={matchState !== MatchState.IDLE}
           onClick={() => findMatch(GameMode.CLASSIC)}
         >
           Classic
@@ -86,6 +87,7 @@ export default function GameMenu() {
               bgcolor: '#4CC9F060',
             },
           }}
+          disabled={matchState !== MatchState.IDLE}
           onClick={() => findMatch(GameMode.CYBERPONG)}
         >
           Cyberpong

@@ -39,7 +39,7 @@ export default function GameNewInvite() {
       justifyContent='space-around'
       alignItems='center'
       borderRadius='10px'
-      bgcolor='#A4B5C680'
+      bgcolor='#DDDDDD'
       onClick={(event) => event.stopPropagation()}
     >
       {incomingInviteUser && (

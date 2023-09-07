@@ -84,8 +84,7 @@ class RectObj {
     this.y = y;
     this.width = width;
     this.height = height;
-    this.velocityX = 1;
-    this.velocityY = 1;
+    this.velocity = 0;
     this.player = player;
   }
 
@@ -109,8 +108,7 @@ class RectObj {
   y: number;
   width: number;
   height: number;
-  velocityX: number;
-  velocityY: number;
+  velocity: number;
   player: number;
 }
 
@@ -200,14 +198,17 @@ export class GameClass {
     }
   }
   gameReset() {
+    this.baseSpeed = 30;
     switch (this.ServingPaddle) {
       case 2:
         this.ball.x =
           this.paddleClass.paddle2.left() - this.ball.width / 2 - 10;
+        this.velocity = this.playerClass.player2.ballSpeed * this.baseSpeed;
         break;
       default:
         this.ball.x =
           10 + (this.paddleClass.paddle1.right() + this.ball.width / 2);
+        this.velocity = this.playerClass.player1.ballSpeed * this.baseSpeed;
         break;
     }
 
@@ -219,6 +220,8 @@ export class GameClass {
     this.ball.y = this.windowSize.y / 2;
     this.paddleClass.paddle1.y = this.windowSize.y / 2;
     this.paddleClass.paddle2.y = this.windowSize.y / 2;
+    this.paddleClass.paddle1.velocity = 0;
+    this.paddleClass.paddle2.velocity = 0;
     this.direction = {
       x: 0,
       y: 0,
@@ -255,13 +258,25 @@ export class GameClass {
       this.gameHandleVictory(1);
     }
     if (
-      (this.gameCollision(this.ball, this.paddleClass.paddle1, 1) &&
-        this.direction.x < 0) ||
-      (this.gameCollision(this.ball, this.paddleClass.paddle2, 2) &&
-        this.direction.x > 0)
+      this.gameCollision(this.ball, this.paddleClass.paddle1) &&
+      this.direction.x < 0
     ) {
       this.direction.x *= -1;
+      this.direction.y += this.paddleClass.paddle1.velocity;
+      this.baseSpeed += this.baseSpeed < 60 ? 5 : 0;
+      this.velocity = this.playerClass.player1.ballSpeed * this.baseSpeed;
     }
+    if (
+      this.gameCollision(this.ball, this.paddleClass.paddle2) &&
+      this.direction.x > 0
+    ) {
+      this.direction.x *= -1;
+      this.direction.y += this.paddleClass.paddle2.velocity;
+      this.baseSpeed += this.baseSpeed < 60 ? 5 : 0;
+      this.velocity = this.playerClass.player2.ballSpeed * this.baseSpeed;
+    }
+    this.paddleClass.paddle1.velocity = 0;
+    this.paddleClass.paddle2.velocity = 0;
     if (this.playerClass.player1.checkCooldown())
       this.socketHandler(this.matchinfo.room_id, 'skillOn', 1);
     if (this.playerClass.player2.checkCooldown())
@@ -300,8 +315,7 @@ export class GameClass {
 
   gameHandleVictory(player: number) {
     this.score[`player${player}`]++;
-    if (this.score[`player${player}`] >= 11) {
-      this.socketHandler(this.matchinfo.room_id, 'victory', player);
+    if (this.score[`player${player}`] >= 2) {
       this.matchHandler({
         p1_id: this.matchinfo.player1,
         p2_id: this.matchinfo.player2,
@@ -311,6 +325,7 @@ export class GameClass {
         p1_class_id: this.playerClass.player1.classID,
         p2_class_id: this.playerClass.player1.classID,
       });
+      this.socketHandler(this.matchinfo.room_id, 'victory', player);
       clearInterval(this.intervalID);
     }
     this.ServingPaddle = player;
@@ -387,7 +402,6 @@ export class GameClass {
   };
 
   gameSetClass(player: number, classes: number) {
-    // console.log('setting player :', player, " classes :" )
     switch (classes) {
       case 1:
         this.playerClass[`player${player}`].setClass(
@@ -421,7 +435,6 @@ export class GameClass {
       this.playerClass[`player${player}`].activeSkill &&
       !this.playerClass[`player${player}`].inCooldown
     ) {
-      console.log(player, 'uses skill');
       if (this.playerClass[`player${player}`].activeSkill(player)) {
         this.socketHandler(this.matchinfo.room_id, 'skillOff', player);
         this.playerClass[`player${player}`].setCooldown();
@@ -436,13 +449,12 @@ export class GameClass {
     if (obj.top() + dir >= 0 && obj.bottom() + dir <= this.windowSize.y) {
       obj.y += dir;
       this.stickEffect(obj);
+      obj.velocity = dir > 0 ? 0.1 : -0.1;
     } else if (dir > 0) obj.y = this.windowSize.y - obj.height / 2;
     else if (dir < 0) obj.y = obj.height / 2;
   }
 
-  gameCollision(obj1: RectObj, obj2: RectObj, player: number) {
-    this.velocity =
-      this.playerClass[`player${player}`].ballSpeed * this.baseSpeed;
+  gameCollision(obj1: RectObj, obj2: RectObj) {
     return (
       obj1.left() <= obj2.right() &&
       obj1.right() >= obj2.left() &&

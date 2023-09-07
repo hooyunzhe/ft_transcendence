@@ -8,7 +8,7 @@ import DialogPrompt from '../utils/DialogPrompt';
 import ConfirmationPrompt from '../utils/ConfirmationPrompt';
 import NotificationBar from '../utils/NotificationBar';
 import BackdropOverlay from '../utils/BackdropOverlay';
-import GameNewInvite from '../game/GameNewInvite';
+import GameNewInvite from '../game/overlay/GameNewInvite';
 import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import {
   useChannelSocket,
@@ -34,8 +34,8 @@ import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
-import GameMatchFound from '../game/GameMatchFound';
-import GameDisconnected from '../game/GameDisconnected';
+import GameMatchFound from '../game/overlay/GameMatchFound';
+import GameDisconnected from '../game/overlay/GameDisconnected';
 import { MatchState } from '@/types/GameTypes';
 
 export default function Cyberpong() {

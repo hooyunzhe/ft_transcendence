@@ -11,15 +11,27 @@ interface ProfileStore {
   };
   actions: {
     getProfileData: () => void;
+    getCurrentStatistic: (currentUserID: number) => Statistic | undefined;
     getFavoriteClass: (statistic: Statistic) => SkillClass | null;
     updateStatistic: (userID: number, newMatch: Match) => void;
     setSelectedStatistic: (userID: number | undefined) => void;
+  };
+  checks: {
+    isJackOfAllTrades: (
+      currentStatistic: Statistic,
+      selectedSkillClass: SkillClass | undefined,
+    ) => boolean;
+    isMasterOfOne: (
+      currentStatistic: Statistic,
+      selectedSkillClass: SkillClass | undefined,
+    ) => boolean;
   };
 }
 
 type StoreSetter = (
   helper: (state: ProfileStore) => Partial<ProfileStore>,
 ) => void;
+type StoreGetter = () => ProfileStore;
 
 async function getProfileData(set: StoreSetter): Promise<void> {
   const statisticData: Statistic[] = await callAPI(
@@ -38,6 +50,15 @@ async function getProfileData(set: StoreSetter): Promise<void> {
       ),
     },
   }));
+}
+
+function getCurrentStatistic(
+  get: StoreGetter,
+  currentUserID: number,
+): Statistic | undefined {
+  return get().data.statistics.find(
+    (statistic) => statistic.user.id === currentUserID,
+  );
 }
 
 function getFavoriteClass(statistic: Statistic): SkillClass | null {
@@ -137,7 +158,51 @@ function setSelectedStatistic(
   }));
 }
 
-const useProfileStore = create<ProfileStore>()((set) => ({
+function isJackOfAllTrades(
+  currentStatistic: Statistic,
+  selectedSkillClass: SkillClass | undefined,
+): boolean {
+  switch (selectedSkillClass) {
+    case SkillClass.STRENGTH:
+      return (
+        currentStatistic.speed_count > 0 &&
+        currentStatistic.tech_count > 0 &&
+        currentStatistic.strength_count === 1
+      );
+    case SkillClass.SPEED:
+      return (
+        currentStatistic.strength_count > 0 &&
+        currentStatistic.tech_count > 0 &&
+        currentStatistic.speed_count === 1
+      );
+    case SkillClass.TECH:
+      return (
+        currentStatistic.strength_count > 0 &&
+        currentStatistic.speed_count > 0 &&
+        currentStatistic.tech_count === 1
+      );
+    default:
+      return false;
+  }
+}
+
+function isMasterOfOne(
+  currentStatistic: Statistic,
+  selectedSkillClass: SkillClass | undefined,
+): boolean {
+  switch (selectedSkillClass) {
+    case SkillClass.STRENGTH:
+      return currentStatistic.strength_count === 3;
+    case SkillClass.SPEED:
+      return currentStatistic.speed_count === 3;
+    case SkillClass.TECH:
+      return currentStatistic.tech_count === 3;
+    default:
+      return false;
+  }
+}
+
+const useProfileStore = create<ProfileStore>()((set, get) => ({
   data: {
     statistics: [],
     selectedStatistic: undefined,
@@ -145,10 +210,18 @@ const useProfileStore = create<ProfileStore>()((set) => ({
   },
   actions: {
     getProfileData: () => getProfileData(set),
+    getCurrentStatistic: (currentUserID) =>
+      getCurrentStatistic(get, currentUserID),
     getFavoriteClass: (statistic) => getFavoriteClass(statistic),
     updateStatistic: (userID, newMatch) =>
       updateStatistic(set, userID, newMatch),
     setSelectedStatistic: (userID) => setSelectedStatistic(set, userID),
+  },
+  checks: {
+    isJackOfAllTrades: (currentStatistic, selectedSkillClass) =>
+      isJackOfAllTrades(currentStatistic, selectedSkillClass),
+    isMasterOfOne: (currentStatistic, selectedSkillClass) =>
+      isMasterOfOne(currentStatistic, selectedSkillClass),
   },
 }));
 
@@ -160,3 +233,4 @@ export const useSelectedStatisticIndex = () =>
   useProfileStore((state) => state.data.selectedStatisticIndex);
 export const useProfileActions = () =>
   useProfileStore((state) => state.actions);
+export const useProfileChecks = () => useProfileStore((state) => state.checks);

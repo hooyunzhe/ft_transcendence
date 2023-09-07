@@ -44,7 +44,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.ready = false;
     client.data.room_id = game_mode;
     client.data.game_mode = game_mode;
-    console.log(game_mode);
     client.join(client.data.room_id);
     this.makingRoom(client.data.room_id);
   }
@@ -63,8 +62,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const opponent = await this.fetchPlayerwithUID(body.opponent_id);
 
-    console.log(body.opponent_id);
-    console.log(opponent.data);
     if (opponent) {
       client.data.ready = false;
       client.data.room_id = client.id;
@@ -115,15 +112,22 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('end')
-  leaveRoom(client: Socket) {
+  endGame(@ConnectedSocket() client: Socket) {
     this.leaveCurrentRoom(client);
     this.gameService.deleteGame(client.data.room_id);
   }
 
-  @SubscribeMessage('disconnect')
+  @SubscribeMessage('leaveRoom')
+  leaveRoom(@ConnectedSocket() client: Socket) {
+    this.leaveCurrentRoom(client);
+  }
+
+  @SubscribeMessage('playerDisconnected')
   async disconnectGame(client: Socket) {
     if (client.data.player === 1 || client.data.player === 2) {
-      this.server.to(client.data.room_id).emit('playerDisconnected');
+      this.server
+        .to(client.data.room_id)
+        .emit('playerDisconnected', client.data.user_id);
       this.gameService.deleteGame(client.data.room_id);
     }
     this.leaveCurrentRoom(client);
@@ -131,7 +135,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleDisconnect(client: Socket) {
     if (client.data.player === 1 || client.data.player === 2) {
-      this.server.to(client.data.room_id).emit('playerDisconnected');
+      this.server
+        .to(client.data.room_id)
+        .emit('playerDisconnected', client.data.user_id);
       this.gameService.deleteGame(client.data.room_id);
     }
     this.leaveCurrentRoom(client);
@@ -141,7 +147,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     clients: RemoteSocket<DefaultEventsMap, any>[],
     room_id: string,
   ) {
-    const uniquekey = clients[0].id + clients[1].id;
+    const uniquekey = clients[0].id + clients[1].id + Date.now();
+
     clients.forEach((client) => {
       client.data.room_id = uniquekey;
       client.leave(room_id);
@@ -169,7 +176,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ) {
     const players = await this.fetchPlayer(client.data.room_id);
-    console.log(client.data.ready, client.data.user_id, 'classes :', classes);
     if (players.length != 2) return;
     client.data.ready = !client.data.ready;
     this.gameService.roomlist

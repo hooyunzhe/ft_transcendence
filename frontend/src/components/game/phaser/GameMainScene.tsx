@@ -1,6 +1,5 @@
 import { Socket } from 'socket.io-client';
-import { effectData, gameData } from '../GameRender';
-import { MatchInfo } from '@/types/GameTypes';
+import { GameData, MatchInfo } from '@/types/GameTypes';
 
 export default class GameMainScene extends Phaser.Scene {
   private ball: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
@@ -25,7 +24,12 @@ export default class GameMainScene extends Phaser.Scene {
   private streakEffect:
     | Phaser.GameObjects.Particles.ParticleEmitter
     | undefined;
-  private soundEffect:
+  private laserSoundEffect:
+    | Phaser.Sound.NoAudioSound
+    | Phaser.Sound.HTML5AudioSound
+    | Phaser.Sound.WebAudioSound
+    | undefined;
+  private arcadeSoundEffect:
     | Phaser.Sound.NoAudioSound
     | Phaser.Sound.HTML5AudioSound
     | Phaser.Sound.WebAudioSound
@@ -35,20 +39,20 @@ export default class GameMainScene extends Phaser.Scene {
     | undefined;
   private goalEffectToggle: boolean = false;
   private keyloop: () => void;
-  private prediction: (timestamp: number) => gameData;
-  private effectHandler: (triggered?: boolean) => effectData;
+  private prediction: () => GameData;
+  private victoryHandler: () => boolean;
   constructor(
     gameSocket: Socket | null,
     keyloop: () => void,
-    prediction: (timestamp: number) => gameData,
-    effectHandler: (triggered?: boolean) => effectData,
+    prediction: () => GameData,
+    victoryHandler: () => boolean,
     matchInfo: MatchInfo | null,
   ) {
     super({ key: 'MainScene' });
     this.Socket = gameSocket;
     this.keyloop = keyloop;
     this.prediction = prediction;
-    this.effectHandler = effectHandler;
+    this.victoryHandler = victoryHandler;
     this.score = { player1: 0, player2: 0 };
     this.windowsize = { width: 0, height: 0 };
     this.p1name = matchInfo ? matchInfo.player1.nickname : '';
@@ -57,6 +61,7 @@ export default class GameMainScene extends Phaser.Scene {
 
   preload() {
     this.load.audio('laser', '/assets/collision.ogg');
+    this.load.audio('arcade', '/assets/arcade.ogg');
     this.load.audio('banger', '/assets/bgm1.mp3');
     this.load.video('background', '/assets/background1.mp4', true);
     this.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
@@ -75,7 +80,8 @@ export default class GameMainScene extends Phaser.Scene {
   }
 
   create() {
-    const data = this.prediction(Date.now());
+    const data = this.prediction();
+
     this.windowsize = {
       width: Number(this.game.config.width),
       height: Number(this.game.config.height),
@@ -94,7 +100,6 @@ export default class GameMainScene extends Phaser.Scene {
       this.windowsize.height / 1080,
     );
     videoSprite.play(true);
-    const game = this;
     const music = this.sound.add('banger', { loop: true }).setVolume(0.5);
     music.play();
     this.p1scoretext = this.add
@@ -134,7 +139,6 @@ export default class GameMainScene extends Phaser.Scene {
       followOffset: { x: 0, y: 0 },
       rotate: { min: -180, max: 180 },
     });
-    // wisp.startFollow(this.ball);
 
     this.p1frame = this.add
       .image(
@@ -157,22 +161,6 @@ export default class GameMainScene extends Phaser.Scene {
       .setOrigin(0.5, 0.5)
       .setDisplaySize(this.windowsize.width * 0.2, this.windowsize.height * 0.1)
       .setFlipX(true);
-
-    // const p1cooldownEffect = this.tweens.add({
-    //   targets: p1glow,
-    //   outerStrength: 10,
-    //   yoyo: true,
-    //   loop: -1,
-    //   ease: 'sine.inout',
-    // });
-
-    // const p2cooldownEffect = this.tweens.add({
-    //   targets: p2glow,
-    //   outerStrength: 10,
-    //   yoyo: true,
-    //   loop: -1,
-    //   ease: 'sine.inout',
-    // });
 
     const textstyle = {
       fontFamily: 'cyberthrone',
@@ -203,7 +191,8 @@ export default class GameMainScene extends Phaser.Scene {
       )
       .setOrigin(0.5, 0.5);
 
-    this.soundEffect = this.sound.add('laser');
+    this.laserSoundEffect = this.sound.add('laser');
+    this.arcadeSoundEffect = this.sound.add('arcade');
     this.ball = this.physics.add
       .sprite(
         this.windowsize.width * 0.5,
@@ -313,6 +302,11 @@ export default class GameMainScene extends Phaser.Scene {
     this.streakEffect.stop();
 
     this.outofboundEffect.startFollow(this.ball);
+
+    this.Socket?.on('reset', () => {
+      this.goalEffectToggle = true;
+    });
+
     this.Socket?.on('skillOn', (player: number) => {
       switch (player) {
         case 1:
@@ -349,7 +343,7 @@ export default class GameMainScene extends Phaser.Scene {
 
   handleCollision1 = () => {
     if (!this.paddle1) return;
-    if (this.soundEffect) this.soundEffect.play();
+    if (this.laserSoundEffect) this.laserSoundEffect.play();
     const paddlebloom1 = this.paddle1.postFX.addBloom(0xffffff, 0.8, 0.8, 1, 3);
     this.time.addEvent({
       delay: 150,
@@ -362,7 +356,7 @@ export default class GameMainScene extends Phaser.Scene {
   handleCollision2 = () => {
     {
       if (!this.paddle2) return;
-      if (this.soundEffect) this.soundEffect.play();
+      if (this.laserSoundEffect) this.laserSoundEffect.play();
       const paddlebloom2 = this.paddle2.postFX.addBloom(
         0xffffff,
         0.8,
@@ -386,12 +380,12 @@ export default class GameMainScene extends Phaser.Scene {
   };
 
   updatePosition = () => {
-    const data = this.prediction(Date.now());
+    const data = this.prediction();
     if (this.goalEffectToggle) {
       this.triggerOutofBoundEffect();
       return;
     }
-    if (data) {
+    if (data && !this.goalEffectToggle) {
       if (this.ball) {
         this.ball.x = data.ball.x;
         this.ball.y = data.ball.y;
@@ -408,6 +402,7 @@ export default class GameMainScene extends Phaser.Scene {
       this.prevDirectionY = data.balldirection.y;
       this.score = data.score;
     }
+    if (this.goalEffectToggle) this.triggerOutofBoundEffect();
   };
 
   updateScore = () => {
@@ -467,19 +462,18 @@ export default class GameMainScene extends Phaser.Scene {
 
   triggerOutofBoundEffect = () => {
     if (this.outofboundEffect) this.outofboundEffect.explode(1);
+
     this.cameras.main.shake(50, 0.005);
+    this.arcadeSoundEffect?.play();
     const timer = setTimeout(() => {
       this.goalEffectToggle = false;
       this.Socket?.emit('load', true);
-      clearTimeout(timer);
     }, 1000);
+    return () => {
+      clearTimeout(timer);
+    };
   };
 
-  resetEffect() {
-    this.goalEffectToggle = true;
-    this.triggerOutofBoundEffect();
-    this.effectHandler(false);
-  }
   victoryEffect() {
     {
       if (this.ball) {
@@ -500,9 +494,7 @@ export default class GameMainScene extends Phaser.Scene {
     }
   }
   updateEffect() {
-    const data = this.effectHandler();
-    if (data.reset) this.resetEffect();
-    if (data.victory) this.victoryEffect();
+    if (this.victoryHandler()) this.victoryEffect();
   }
   update() {
     this.keyloop();
