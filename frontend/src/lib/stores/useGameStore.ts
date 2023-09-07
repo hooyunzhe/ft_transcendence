@@ -323,6 +323,8 @@ function setupGameSocketEvents(set: StoreSetter, gameSocket: Socket): void {
   );
   gameSocket.on('startGame', () => setMatchState(set, MatchState.INGAME));
   gameSocket.on('playerDisconnected', () => {
+    setGameReady(set, false);
+    setSelectedSkillClass(set, undefined);
     setTimeout(() => setMatchState(set, MatchState.END), 1500);
     setSelectedGameMode(set, GameMode.CYBERPONG);
   });

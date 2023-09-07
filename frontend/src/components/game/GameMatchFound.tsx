@@ -16,9 +16,8 @@ export default function GameMatchFound() {
         display: 'flex',
         flexDirection: side === 'left' ? 'row' : 'row-reverse',
         alignItems: 'center',
-        width: '50%',
+        width: '80%',
         padding: '20px',
-        borderBottom: '1px solid #ccc',
       }}
     >
       <Avatar
@@ -26,7 +25,10 @@ export default function GameMatchFound() {
         src={avatar}
         alt={name}
       />
-      <Typography variant='h5' sx={{ color: 'white' }}>
+      <Typography
+        variant='h2'
+        sx={{ fontFamily: 'cyberthrone', color: 'white' }}
+      >
         {name}
       </Typography>
     </Box>
@@ -40,7 +42,8 @@ export default function GameMatchFound() {
         alignItems: 'center',
         justifyContent: 'center',
         height: '100vh',
-        backgroundColor: '#0e0e2a',
+        width: '80vh',
+        backgroundColor: '#0e0e2a30',
       }}
     >
       <PlayerCard
@@ -55,24 +58,11 @@ export default function GameMatchFound() {
           marginTop: '20px',
           marginBottom: '20px',
           position: 'relative',
-          fontFamily: 'sans-serif',
+          fontFamily: 'cyberfont',
           fontSize: '4rem',
         }}
       >
-        <span
-        // style={{
-        //   position: 'absolute',
-        //   width: '100%',
-        //   height: '100%',
-        //   background: 'linear-gradient(45deg, #FF4500, #FF0000, #FF4500)',
-        //   backgroundClip: 'text',
-        //   color: 'transparent',
-        //   animation: 'burn 2s infinite',
-        //   clipPath: 'polygon(0 0, 100% 0, 100% 80%, 0% 100%)',
-        // }}
-        >
-          VS
-        </span>
+        <span>VS</span>
       </Typography>
       <PlayerCard
         name={matchInfo.player2.nickname}

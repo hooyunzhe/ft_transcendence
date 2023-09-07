@@ -300,7 +300,7 @@ export class GameClass {
 
   gameHandleVictory(player: number) {
     this.score[`player${player}`]++;
-    if (this.score[`player${player}`] >= 1) {
+    if (this.score[`player${player}`] >= 11) {
       this.socketHandler(this.matchinfo.room_id, 'victory', player);
       this.matchHandler({
         p1_id: this.matchinfo.player1,
@@ -387,6 +387,7 @@ export class GameClass {
   };
 
   gameSetClass(player: number, classes: number) {
+    // console.log('setting player :', player, " classes :" )
     switch (classes) {
       case 1:
         this.playerClass[`player${player}`].setClass(
@@ -420,6 +421,7 @@ export class GameClass {
       this.playerClass[`player${player}`].activeSkill &&
       !this.playerClass[`player${player}`].inCooldown
     ) {
+      console.log(player, 'uses skill');
       if (this.playerClass[`player${player}`].activeSkill(player)) {
         this.socketHandler(this.matchinfo.room_id, 'skillOff', player);
         this.playerClass[`player${player}`].setCooldown();

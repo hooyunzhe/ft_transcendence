@@ -6,7 +6,11 @@ import GameVictory from './GameVictory';
 import GameQuit from './GameQuit';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
-import { useGameActions, useMatchInfo } from '@/lib/stores/useGameStore';
+import {
+  useGameActions,
+  useMatchInfo,
+  useMatchState,
+} from '@/lib/stores/useGameStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { GameMode, MatchState } from '@/types/GameTypes';
 
@@ -30,6 +34,7 @@ export interface effectData {
 export default function GameRender() {
   const gameSocket = useGameSocket();
   const gameAction = useGameActions();
+  const matchState = useMatchState();
   const currentView = useCurrentView();
   const matchInfo = useMatchInfo();
   const { displayBackdrop, resetBackdrop } = useBackdropActions();
@@ -41,16 +46,16 @@ export default function GameRender() {
   };
   let gameInfo: gameData;
   const keyLoop = () => {
-    if (gameAction.getKeyState('w')) {
+    if (gameAction.getKeyState('w') || gameAction.getKeyState('W')) {
       if (gameSocket) gameSocket.emit('Player', 'w');
     }
-    if (gameAction.getKeyState('s')) {
+    if (gameAction.getKeyState('s') || gameAction.getKeyState('S')) {
       if (gameSocket) gameSocket.emit('Player', 's');
     }
     if (gameAction.getKeyState(' ')) {
       if (gameSocket) gameSocket.emit('Player', ' ');
     }
-    if (gameAction.getKeyState('e')) {
+    if (gameAction.getKeyState('e') || gameAction.getKeyState('E')) {
       if (gameSocket) gameSocket.emit('Player', 'e');
     }
     if (gameAction.getKeyState('Escape') || gameAction.getKeyState('Esc')) {
@@ -69,6 +74,8 @@ export default function GameRender() {
 
   const endGame = () => {
     if (gameSocket) gameSocket.emit('end');
+    gameAction.setGameReady(false);
+    gameAction.setSelectedSkillClass(undefined);
     gameAction.setMatchState(MatchState.END);
     gameAction.setSelectedGameMode(GameMode.CYBERPONG);
   };
@@ -153,7 +160,7 @@ export default function GameRender() {
       window.removeEventListener('keyup', setKeyStateFalse, true);
       window.removeEventListener('keydown', setKeyStateTrue, true);
     };
-  }, [currentView]);
+  }, [matchState]);
 
   function setKeyStateFalse(event: KeyboardEvent) {
     gameAction.setKeyState(event.key, false);

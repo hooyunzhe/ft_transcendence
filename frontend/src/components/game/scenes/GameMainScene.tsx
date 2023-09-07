@@ -183,14 +183,6 @@ export default class GameMainScene extends Phaser.Scene {
       align: 'center',
       stroke: '#18191A',
       strokeThickness: 5,
-      // shadow: {
-      //   offsetX: 2,
-      //   offsetY: 2,
-      //   color: '#2b38ed',
-      //   blur: 5,
-      //   stroke: true,
-      //   fill: true,
-      // },
     };
 
     const p1text = this.add
@@ -231,7 +223,10 @@ export default class GameMainScene extends Phaser.Scene {
       .setDisplaySize(
         data.paddlesize.paddle1.width,
         data.paddlesize.paddle1.height,
-      );
+      )
+      .setOrigin(0.5, 0.5);
+
+    console.log(this.paddle1.displayHeight, data.paddlesize.paddle1.height);
     this.paddle2 = this.physics.add
       .sprite(
         this.windowsize.width * 0.95,
@@ -241,8 +236,9 @@ export default class GameMainScene extends Phaser.Scene {
       .setDisplaySize(
         data.paddlesize.paddle2.width,
         data.paddlesize.paddle2.height,
-      );
-
+      )
+      .setOrigin(0.5, 0.5);
+    console.log(this.paddle2.displayHeight, data.paddlesize.paddle2.height);
     const redglow = this.paddle1.preFX?.addGlow(0xff4444, 0, 0, false, 0.1, 3);
     const blueglow = this.paddle2.preFX?.addGlow(
       0x34646ff,

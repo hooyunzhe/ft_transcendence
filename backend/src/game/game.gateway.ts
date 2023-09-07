@@ -44,6 +44,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.ready = false;
     client.data.room_id = game_mode;
     client.data.game_mode = game_mode;
+    console.log(game_mode);
     client.join(client.data.room_id);
     this.makingRoom(client.data.room_id);
   }
@@ -67,7 +68,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (opponent) {
       client.data.ready = false;
       client.data.room_id = client.id;
-      client.data.game_mode = 'cyberpong';
+      client.data.game_mode = 'CYBERPONG';
       client.join(client.data.room_id);
       opponent.emit('newInvite', {
         user: body.user,
@@ -99,7 +100,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (opponent === 1) {
       client.data.ready = false;
       client.data.room_id = room_id;
-      client.data.game_mode = 'cyberpong';
+      client.data.game_mode = 'CYBERPONG';
       client.join(room_id);
       this.makingRoom(client.data.room_id);
     }
@@ -168,13 +169,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ) {
     const players = await this.fetchPlayer(client.data.room_id);
+    console.log(client.data.ready, client.data.user_id, 'classes :', classes);
     if (players.length != 2) return;
     client.data.ready = !client.data.ready;
     this.gameService.roomlist
       .get(client.data.room_id)
       .gameSetClass(
         client.data.player,
-        client.data.game_mode === 'cyberpong' ? classes : 0,
+        client.data.game_mode === 'CYBERPONG' ? classes : 0,
       );
     if (players.every((player) => player.data.ready)) {
       players.forEach((player) =>
@@ -189,7 +191,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() movement: string,
     @ConnectedSocket() client: Socket,
   ): void {
-    if (client.data.player === 0) return;
+    const gameClass = this.gameService.roomlist.get(client.data.room_id);
+    if (client.data.player === 0 || !gameClass) return;
     if (movement === 'w')
       this.gameService.roomlist
         .get(client.data.room_id)
@@ -249,6 +252,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.room_id = '';
     client.data.game_mode = '';
     client.data.player = 0;
+    client.data.ready = false;
   }
 
   socketHandler = (room_id: string, message: string, data: any) => {
