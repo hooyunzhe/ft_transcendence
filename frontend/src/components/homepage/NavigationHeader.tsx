@@ -2,12 +2,12 @@
 import { useEffect, useState } from 'react';
 import { Avatar, Box, Divider, Drawer, Tab, Tabs } from '@mui/material';
 import {
-  AssignmentIndRounded,
-  ChatRounded,
-  EmojiEventsRounded,
-  LeaderboardRounded,
-  SettingsRounded,
-  SportsTennisRounded,
+  AssignmentInd,
+  Chat,
+  EmojiEvents,
+  Leaderboard,
+  Settings,
+  SportsEsports,
 } from '@mui/icons-material';
 import {
   useCurrentPreference,
@@ -71,34 +71,34 @@ export default function NavigationHeader() {
         >
           <Tab
             sx={{
-              color: 'green',
+              color: '#ba413a',
             }}
-            icon={<SportsTennisRounded />}
+            icon={<SportsEsports />}
             value={View.GAME}
             onClick={() => changeCurrentView(View.GAME)}
           />
           <Tab
-            icon={<ChatRounded />}
+            icon={<Chat />}
             value={View.CHAT}
             onClick={() => changeCurrentView(View.CHAT)}
           />
           <Tab
-            icon={<AssignmentIndRounded />}
+            icon={<AssignmentInd />}
             value={View.PROFILE}
             onClick={() => changeCurrentView(View.PROFILE)}
           />
           <Tab
-            icon={<LeaderboardRounded />}
+            icon={<Leaderboard />}
             value={View.LEADERBOARD}
             onClick={() => changeCurrentView(View.LEADERBOARD)}
           />
           <Tab
-            icon={<EmojiEventsRounded />}
+            icon={<EmojiEvents />}
             value={View.ACHIEVEMENTS}
             onClick={() => changeCurrentView(View.ACHIEVEMENTS)}
           />
           <Tab
-            icon={<SettingsRounded />}
+            icon={<Settings />}
             value={View.SETTINGS}
             onClick={() => changeCurrentView(View.SETTINGS)}
           />

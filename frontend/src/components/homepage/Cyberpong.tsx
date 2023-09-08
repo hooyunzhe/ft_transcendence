@@ -64,6 +64,7 @@ export default function Cyberpong() {
   const { addUserStatus, setupUserSocketEvents } = useUserActions();
   const {
     setupNotificationFriendSocketEvents,
+    setupNotificationChannelSocketEvents,
     setupNotificationGameSocketEvents,
   } = useNotificationActions();
   const { setupBackdropSocketEvents } = useBackdropActions();
@@ -122,7 +123,7 @@ export default function Cyberpong() {
   useEffect(() => {
     if (friendSocket) {
       setupFriendSocketEvents(friendSocket);
-      setupChannelFriendSocketEvents(friendSocket);
+      setupChannelFriendSocketEvents(friendSocket, currentUser.id);
       setupNotificationFriendSocketEvents(friendSocket);
       setupUtilFriendSocketEvents(friendSocket);
     }
@@ -133,6 +134,7 @@ export default function Cyberpong() {
       setupChannelSocketEvents(channelSocket, currentUser.id);
       setupChannelMemberSocketEvents(channelSocket, currentUser.id);
       setupChatSocketEvents(channelSocket);
+      setupNotificationChannelSocketEvents(channelSocket, currentUser.id);
     }
   }, [channelSocket]);
 

@@ -56,11 +56,6 @@ export default function PasswordField({
         }
         onChange(event.target.value);
       }}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' && !dialogActionButtonDisabled) {
-          onSubmit();
-        }
-      }}
       error={emptyError || criteriaError.length > 0}
       helperText={
         emptyError
@@ -74,6 +69,7 @@ export default function PasswordField({
           <InputAdornment position='end'>
             <IconButton
               disabled={disabled}
+              onMouseDown={(event) => event.preventDefault()}
               onClick={() => setShowPassword((showPassword) => !showPassword)}
             >
               {showPassword ? <VisibilityOff /> : <Visibility />}

@@ -51,14 +51,17 @@ export default function ChannelMemberDisplay({
         {member?.role === ChannelMemberRole.MEMBER && <Person />}
       </ListItemIcon>
       <ListItemText primary={user.username} />
-      {(member?.role === ChannelMemberRole.MEMBER &&
+      {((member?.role === ChannelMemberRole.MEMBER &&
         currentUserRole === ChannelMemberRole.ADMIN) ||
         (member?.role !== ChannelMemberRole.OWNER &&
-          currentUserRole === ChannelMemberRole.OWNER && (
-            <IconButton onClick={(event) => setMenuAnchor(event.currentTarget)}>
-              <ManageAccounts />
-            </IconButton>
-          ))}
+          currentUserRole === ChannelMemberRole.OWNER)) && (
+        <IconButton
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={(event) => setMenuAnchor(event.currentTarget)}
+        >
+          <ManageAccounts />
+        </IconButton>
+      )}
       {member && currentUserRole && handleAction && (
         <ChannelMemberActionMenu
           anchorElement={menuAnchor}

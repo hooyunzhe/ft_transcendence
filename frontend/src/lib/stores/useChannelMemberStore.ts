@@ -13,6 +13,7 @@ interface ChannelMemberStore {
   };
   actions: {
     getChannelMemberData: () => void;
+    getMembersOfChannel: (channelID: number) => void;
     getChannelMember: (
       userID: number,
       channelID: number,
@@ -60,6 +61,23 @@ async function getChannelMemberData(set: StoreSetter): Promise<void> {
   ).then((res) => res.body);
   set(({ data }) => ({
     data: { ...data, channelMembers: channelMembersData },
+  }));
+}
+
+async function getMembersOfChannel(
+  set: StoreSetter,
+  channelID: number,
+): Promise<void> {
+  const membersData = await callAPI(
+    'GET',
+    `channel-members?search_type=CHANNEL&search_number=${channelID}`,
+  ).then((res) => res.body);
+
+  set(({ data }) => ({
+    data: {
+      ...data,
+      channelMembers: [...data.channelMembers, ...membersData],
+    },
   }));
 }
 
@@ -155,9 +173,13 @@ function setupChannelMemberSocketEvents(
   channelSocket: Socket,
   currentUserID: number,
 ): void {
-  channelSocket.on('newMember', (member: ChannelMember) =>
-    addChannelMember(set, member),
-  );
+  channelSocket.on('newMember', (member: ChannelMember) => {
+    if (member.user.id === currentUserID) {
+      getMembersOfChannel(set, member.channel.id);
+    } else {
+      addChannelMember(set, member);
+    }
+  });
   channelSocket.on('kickMember', (member: ChannelMember) => {
     if (member.user.id === currentUserID) {
       deleteChannelMembers(set, member.channel.id);
@@ -268,6 +290,7 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
   },
   actions: {
     getChannelMemberData: () => getChannelMemberData(set),
+    getMembersOfChannel: (channelID) => getMembersOfChannel(set, channelID),
     getChannelMember: (userID, channelID) =>
       getChannelMember(get, userID, channelID),
     addChannelMember: (channelMember) => addChannelMember(set, channelMember),

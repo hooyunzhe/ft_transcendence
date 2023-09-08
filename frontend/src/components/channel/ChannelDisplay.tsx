@@ -23,7 +23,8 @@ import { useChannelActions } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { ChannelType } from '@/types/ChannelTypes';
-import { ChannelMember } from '@/types/ChannelMemberTypes';
+import { ChannelMember, ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 export interface ChannelDisplayProps {
   channelID: number;
@@ -49,18 +50,33 @@ export default function ChannelDisplay({
   const channelSocket = useChannelSocket();
   const { deleteJoinedChannel, resetSelectedChannel } = useChannelActions();
   const { kickChannelMember, deleteChannelMembers } = useChannelMemberActions();
-  const { displayConfirmation } = useConfirmationActions();
+  const { displayConfirmation, resetConfirmation } = useConfirmationActions();
+  const { displayNotification } = useNotificationActions();
 
   async function leaveChannel(
     leavingChannelMember: ChannelMember,
   ): Promise<void> {
-    await callAPI('DELETE', 'channel-members', { id: leavingChannelMember.id });
-    kickChannelMember(leavingChannelMember.id);
-    deleteChannelMembers(leavingChannelMember.channel.id);
-    deleteJoinedChannel(leavingChannelMember.channel.id);
-    emitToSocket(channelSocket, 'kickMember', leavingChannelMember);
-    emitToSocket(channelSocket, 'leaveRoom', leavingChannelMember.channel.id);
-    resetSelectedChannel(leavingChannelMember.channel.id);
+    if (leavingChannelMember.role === ChannelMemberRole.OWNER) {
+      displayNotification(
+        'error',
+        'You are now the owner of the channel, unable to leave',
+      );
+      resetConfirmation();
+    } else {
+      await callAPI('DELETE', 'channel-members', {
+        id: leavingChannelMember.id,
+      });
+      kickChannelMember(leavingChannelMember.id);
+      deleteChannelMembers(leavingChannelMember.channel.id);
+      deleteJoinedChannel(leavingChannelMember.channel.id);
+      emitToSocket(channelSocket, 'kickMember', leavingChannelMember);
+      emitToSocket(channelSocket, 'leaveRoom', leavingChannelMember.channel.id);
+      resetSelectedChannel(leavingChannelMember.channel.id);
+      displayNotification(
+        'info',
+        `You have left ${leavingChannelMember.channel.name}`,
+      );
+    }
   }
 
   async function leaveChannelConfirmation(
@@ -79,7 +95,11 @@ export default function ChannelDisplay({
   return (
     <Box border='solid 3px #a23833' borderRadius='10px' bgcolor='#A4B5C6'>
       <ListItem>
-        <ListItemButton selected={selected} onClick={selectCurrent}>
+        <ListItemButton
+          selected={selected}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={selectCurrent}
+        >
           <ListItemAvatar>
             <Avatar sx={{ border: 'solid 1px black', bgcolor: '#11111180' }}>
               {channelName.charAt(0)}
@@ -104,6 +124,7 @@ export default function ChannelDisplay({
         ) : (
           currentChannelMember && (
             <IconButton
+              onMouseDown={(event) => event.preventDefault()}
               onClick={() =>
                 leaveChannelConfirmation(channelName, currentChannelMember)
               }

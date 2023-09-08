@@ -41,6 +41,7 @@ export default function LeaderboardDisplay({
 
   const statsToDisplay = [
     { minWidth: '2.5vw', name: 'Wins', stat: `${statistic.wins}` },
+    { minWidth: '2.5vw', name: 'Losses', stat: `${statistic.losses}` },
     {
       minWidth: '4vw',
       name: 'Win Rate',

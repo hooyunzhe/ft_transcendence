@@ -66,10 +66,16 @@ export class MatchService {
     const playerTwoFound = await this.userService.findOne(playerTwoID, false);
 
     const matches = await this.matchRepository.find({
-      where: {
-        player_one: { id: playerOneFound.id },
-        player_two: { id: playerTwoFound.id },
-      },
+      where: [
+        {
+          player_one: { id: playerOneFound.id },
+          player_two: { id: playerTwoFound.id },
+        },
+        {
+          player_one: { id: playerTwoFound.id },
+          player_two: { id: playerOneFound.id },
+        },
+      ],
     });
 
     return matches[matches.length - 1];
@@ -102,10 +108,16 @@ export class MatchService {
     const playerTwoFound = await this.userService.findOne(playerTwoID, false);
 
     return await this.matchRepository.find({
-      where: {
-        player_one: { id: playerOneFound.id },
-        player_two: { id: playerTwoFound.id },
-      },
+      where: [
+        {
+          player_one: { id: playerOneFound.id },
+          player_two: { id: playerTwoFound.id },
+        },
+        {
+          player_one: { id: playerTwoFound.id },
+          player_two: { id: playerOneFound.id },
+        },
+      ],
     });
   }
 

@@ -38,6 +38,19 @@ export default function SettingsPersonalPreferences() {
         />
       </Box>
       <Box>
+        <Typography variant='h6'>Sound Effects</Typography>
+        <Switch
+          checked={currentPreference.sound_effects_enabled}
+          onMouseDown={(event) => event.preventDefault()}
+          onChange={(event) =>
+            handlePreferenceToggle(
+              PreferenceType.SOUND_EFFECTS,
+              event.target.checked,
+            )
+          }
+        />
+      </Box>
+      <Box>
         <Typography variant='h6'>Animations</Typography>
         <Switch
           checked={currentPreference.animations_enabled}

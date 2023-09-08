@@ -104,10 +104,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('rejectInvite')
-  rejectGame(
-    @MessageBody() body: { user: User; room_id: string },
-    @ConnectedSocket() client: Socket,
-  ) {
+  rejectGame(@MessageBody() body: { user: User; room_id: string }) {
     this.server.to(body.room_id).emit('rejectInvite', body.user);
   }
 
@@ -254,6 +251,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   leaveCurrentRoom(client: Socket) {
+    this.gameService.clearGame(client.data.room_id);
     client.leave(client.data.room_id);
     client.data.room_id = '';
     client.data.game_mode = '';

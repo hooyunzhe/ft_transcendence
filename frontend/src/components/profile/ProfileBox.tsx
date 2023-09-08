@@ -28,6 +28,7 @@ export default function ProfileBox() {
             opacity: '50%',
           }}
           variant='h5'
+          color='#DDDDDD'
           align='center'
           marginTop='33vh'
         >

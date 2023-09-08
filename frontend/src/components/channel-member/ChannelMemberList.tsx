@@ -359,6 +359,7 @@ export default function ChannelMemberList() {
             {member.user.id !== currentUser.id && (
               <IconButton
                 disabled={matchState !== MatchState.IDLE}
+                onMouseDown={(event) => event.preventDefault()}
                 onClick={() => handleInvite(member.user)}
               >
                 {outgoingInviteUser?.id === member.user.id ? (

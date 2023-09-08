@@ -1,5 +1,5 @@
 'use client';
-import { Collapse, ListItemButton, Box, Stack } from '@mui/material';
+import { Collapse, ListItemButton, Stack } from '@mui/material';
 import FriendDisplay from './FriendDisplay';
 import {
   useFriendActions,
@@ -7,7 +7,7 @@ import {
   useSelectedFriend,
 } from '@/lib/stores/useFriendStore';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
-import { useUserStatus } from '@/lib/stores/useUserStore';
+import { useCurrentUser, useUserStatus } from '@/lib/stores/useUserStore';
 import {
   useProfileActions,
   useSelectedStatistic,
@@ -29,6 +29,7 @@ export default function FriendList({
   handleAction,
 }: FriendListProps) {
   const friends = useFriends();
+  const currentUser = useCurrentUser();
   const selectedFriend = useSelectedFriend();
   const selectedStatistic = useSelectedStatistic();
   const userStatus = useUserStatus();
@@ -58,7 +59,7 @@ export default function FriendList({
   function handleFriendSelect(friend: Friend): void {
     if (
       selectedFriend?.id === friend.id &&
-      selectedStatistic?.id === friend.incoming_friend.id
+      selectedStatistic?.user.id === friend.incoming_friend.id
     ) {
       setSelectedFriend(undefined);
       setSelectedChannel(undefined);
@@ -68,7 +69,7 @@ export default function FriendList({
       if (!currentView) {
         setCurrentView(View.CHAT);
       }
-      setSelectedDirectChannel(friend.incoming_friend.id);
+      setSelectedDirectChannel(currentUser.id, friend.incoming_friend.id);
       setSelectedStatistic(friend.incoming_friend.id);
     }
   }

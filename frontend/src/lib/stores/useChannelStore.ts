@@ -27,10 +27,16 @@ interface ChannelStore {
     deleteJoinedChannel: (channelID: number) => void;
     updateRecentChannelActivity: (channelID: number) => void;
     setSelectedChannel: (channel: Channel | undefined) => void;
-    setSelectedDirectChannel: (incomingID: number) => void;
+    setSelectedDirectChannel: (
+      currentUserID: number,
+      incomingID: number,
+    ) => void;
     setSelectedChannelMuted: (channelID: number, isMuted: boolean) => void;
     resetSelectedChannel: (channelID: number) => void;
-    resetSelectedDirectChannel: (incomingID: number) => void;
+    resetSelectedDirectChannel: (
+      currentUserID: number,
+      incomingID: number,
+    ) => void;
     setUnmuteTimeout: (
       mutedUntil: string,
       memberID: number,
@@ -42,7 +48,10 @@ interface ChannelStore {
       channelSocket: Socket,
       currentUserID: number,
     ) => void;
-    setupChannelFriendSocketEvents: (friendSocket: Socket) => void;
+    setupChannelFriendSocketEvents: (
+      friendSocket: Socket,
+      currentUserID: number,
+    ) => void;
   };
   checks: {
     checkChannelExists: (channelName: string) => boolean;
@@ -231,12 +240,14 @@ function setSelectedChannel(
 function setSelectedDirectChannel(
   set: StoreSetter,
   get: StoreGetter,
+  currentUserID: number,
   incomingID: number,
 ): void {
   const selectedDirectChannel = get().data.channels.find(
     (channel) =>
       channel.type === ChannelType.DIRECT &&
-      channel.name.includes(String(incomingID)),
+      (channel.name === `${currentUserID}+${incomingID}DM` ||
+        channel.name === `${incomingID}+${currentUserID}DM`),
   );
 
   if (selectedDirectChannel) {
@@ -274,6 +285,7 @@ function resetSelectedChannel(set: StoreSetter, channelID: number): void {
 
 function resetSelectedDirectChannel(
   set: StoreSetter,
+  currentUserID: number,
   incomingID: number,
 ): void {
   set(({ data }) => ({
@@ -281,7 +293,8 @@ function resetSelectedDirectChannel(
       ...data,
       selectedChannel:
         data.selectedChannel?.type === ChannelType.DIRECT &&
-        data.selectedChannel?.name.includes(String(incomingID))
+        (data.selectedChannel?.name === `${currentUserID}+${incomingID}DM` ||
+          data.selectedChannel?.name === `${incomingID}+${currentUserID}DM`)
           ? undefined
           : data.selectedChannel,
     },
@@ -425,9 +438,10 @@ function setupChannelSocketEvents(
 function setupChannelFriendSocketEvents(
   set: StoreSetter,
   friendSocket: Socket,
+  currentUserID: number,
 ): void {
   friendSocket.on('deleteFriend', (sender: User) =>
-    resetSelectedDirectChannel(set, sender.id),
+    resetSelectedDirectChannel(set, currentUserID, sender.id),
   );
 }
 
@@ -470,13 +484,13 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     updateRecentChannelActivity: (channelID) =>
       updateRecentChannelActivity(set, channelID),
     setSelectedChannel: (channel) => setSelectedChannel(set, channel),
-    setSelectedDirectChannel: (incomingID) =>
-      setSelectedDirectChannel(set, get, incomingID),
+    setSelectedDirectChannel: (currentUserID, incomingID) =>
+      setSelectedDirectChannel(set, get, currentUserID, incomingID),
     setSelectedChannelMuted: (channelID, isMuted) =>
       setSelectedChannelMuted(set, channelID, isMuted),
     resetSelectedChannel: (channelID) => resetSelectedChannel(set, channelID),
-    resetSelectedDirectChannel: (incomingID) =>
-      resetSelectedDirectChannel(set, incomingID),
+    resetSelectedDirectChannel: (currentUserID, incomingID) =>
+      resetSelectedDirectChannel(set, currentUserID, incomingID),
     setUnmuteTimeout: (
       mutedUntil,
       memberID,
@@ -495,8 +509,8 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
       ),
     setupChannelSocketEvents: (channelSocket, currentUserID) =>
       setupChannelSocketEvents(set, get, channelSocket, currentUserID),
-    setupChannelFriendSocketEvents: (friendSocket) =>
-      setupChannelFriendSocketEvents(set, friendSocket),
+    setupChannelFriendSocketEvents: (friendSocket, currentUserID) =>
+      setupChannelFriendSocketEvents(set, friendSocket, currentUserID),
   },
   checks: {
     checkChannelExists: (channelName) => checkChannelExists(get, channelName),

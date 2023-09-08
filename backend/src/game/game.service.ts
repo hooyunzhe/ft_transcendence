@@ -31,19 +31,30 @@ export class GameService {
     );
   }
 
+  clearGame(room_id: string) {
+    const room = this.roomlist.get(room_id);
+
+    if (room) {
+      room.gameClear();
+    }
+  }
+
   deleteGame(room_id: string) {
     this.roomlist.delete(room_id);
   }
 
   matchHandler = async (matchDto: CreateMatchDto) => {
     const newMatch = await this.matchService.create(matchDto);
-    this.statisticService.update({
+
+    await this.statisticService.update({
       user_id: newMatch.player_one.id,
       match_id: newMatch.id,
     });
-    this.statisticService.update({
+    await this.statisticService.update({
       user_id: newMatch.player_two.id,
       match_id: newMatch.id,
     });
+
+    return newMatch;
   };
 }

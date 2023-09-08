@@ -188,11 +188,11 @@ function getMatchClass(match: Match, userID: number): SkillClass | null {
 function getClassName(skillClass: SkillClass | null): string {
   switch (skillClass) {
     case SkillClass.STRENGTH:
-      return 'Kratos';
+      return 'Cratos';
     case SkillClass.SPEED:
       return 'Chronos';
     case SkillClass.TECH:
-      return 'Qosmos';
+      return 'Cosmos';
     case null:
       return 'N/A';
   }
@@ -210,7 +210,7 @@ function setKeyState(set: StoreSetter, key: string, isPressed: boolean): void {
   }));
 }
 
-function getKeyState(key: string, get: StoreGetter) {
+function getKeyState(get: StoreGetter, key: string) {
   const keyState = get().data.keyState;
 
   return !!keyState[key];
@@ -228,10 +228,9 @@ function addMatch(
       matchesPlayed: [...data.matchesPlayed, newMatch],
       recentMatches: {
         ...data.recentMatches,
-        [currentUserID]: [
-          newMatch,
-          ...data.recentMatches[currentUserID].slice(0, -1),
-        ],
+        [currentUserID]: data.recentMatches[currentUserID]
+          ? [newMatch, ...data.recentMatches[currentUserID].slice(0, 3)]
+          : [newMatch],
       },
     },
   }));
@@ -398,7 +397,7 @@ const useGameStore = create<GameStore>()((set, get) => ({
     getMatchScore: (match, userID) => getMatchScore(match, userID),
     getMatchClass: (match, userID) => getMatchClass(match, userID),
     getClassName: (path) => getClassName(path),
-    getKeyState: (key) => getKeyState(key, get),
+    getKeyState: (key) => getKeyState(get, key),
     addMatch: (newMatch, currentUserID) =>
       addMatch(set, newMatch, currentUserID),
     setMatchState: (MatchState) => setMatchState(set, MatchState),

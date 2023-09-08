@@ -5,6 +5,7 @@ import GameMainScene from './phaser/GameMainScene';
 import GameVictory from './overlay/GameVictory';
 import GameQuit from './overlay/GameQuit';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useCurrentPreference } from '@/lib/stores/useUserStore';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import {
   useGameActions,
@@ -16,25 +17,22 @@ import {
 import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
-import { GameData, GameMode, MatchState } from '@/types/GameTypes';
 import {
   useProfileActions,
   useProfileChecks,
 } from '@/lib/stores/useProfileStore';
+import { GameData, GameMode, MatchState } from '@/types/GameTypes';
+import { Match } from '@/types/MatchTypes';
 
-export interface effectData {
-  victory: boolean;
-  reset: boolean;
-}
 export default function GameRender() {
   const currentUser = useCurrentUser();
+  const currentPreference = useCurrentPreference();
   const gameSocket = useGameSocket();
   const gameAction = useGameActions();
   const matchState = useMatchState();
   const matchInfo = useMatchInfo();
   const selectedGameMode = useSelectedGameMode();
   const selectedSkillClass = useSelectedSkillClass();
-  const { getNewMatch } = useGameActions();
   const { getCurrentStatistic, updateStatistic } = useProfileActions();
   const { isJackOfAllTrades, isMasterOfOne } = useProfileChecks();
   const { handleAchievementsEarned } = useAchievementActions();
@@ -112,31 +110,31 @@ export default function GameRender() {
             gameInfo = data;
           },
         );
-        gameSocket.on('victory', async (victorNum: 1 | 2) => {
+        gameSocket.on('victory', (newMatch: Match) => {
           setVictory(true);
           if (matchInfo) {
-            const isWinner =
-              matchInfo[`player${victorNum}`].id === currentUser.id;
-            const loserNum = victorNum === 1 ? 2 : 1;
-            const newMatch = await getNewMatch(
-              currentUser.id,
-              isWinner
-                ? matchInfo[`player${loserNum}`].id
-                : matchInfo[`player${victorNum}`].id,
-            );
+            const winner =
+              newMatch.winner_id === newMatch.player_one.id
+                ? newMatch.player_one
+                : newMatch.player_two;
+            const loser =
+              newMatch.winner_id === newMatch.player_one.id
+                ? newMatch.player_two
+                : newMatch.player_one;
 
-            if (newMatch) {
-              updateStatistic(currentUser.id, newMatch);
-            }
+            gameAction.addMatch(newMatch, winner.id);
+            gameAction.addMatch(newMatch, loser.id);
+            updateStatistic(winner.id, newMatch);
+            updateStatistic(loser.id, newMatch);
             displayBackdrop(
               <GameVictory
                 victor={{
-                  id: matchInfo[`player${victorNum}`].id,
-                  nickname: matchInfo[`player${victorNum}`].nickname,
+                  id: winner.id,
+                  nickname: winner.username,
                 }}
                 loser={{
-                  id: matchInfo[`player${loserNum}`].id,
-                  nickname: matchInfo[`player${loserNum}`].nickname,
+                  id: loser.id,
+                  nickname: loser.username,
                 }}
               />,
             );
@@ -160,7 +158,7 @@ export default function GameRender() {
                   displayNotification,
                 );
               }
-              if (isWinner) {
+              if (winner.id === currentUser.id) {
                 if (currentStatistic.current_winstreak === 5) {
                   handleAchievementsEarned(
                     currentUser.id,
@@ -168,7 +166,7 @@ export default function GameRender() {
                     displayNotification,
                   );
                 }
-                if (gameInfo.score[`player${loserNum}`] === 0) {
+                if (newMatch.p1_score === 0 || newMatch.p2_score === 0) {
                   handleAchievementsEarned(
                     currentUser.id,
                     12,
@@ -177,9 +175,9 @@ export default function GameRender() {
                 }
               }
             }
-            setTimeout(() => resetBackdrop(), 6000);
+            setTimeout(() => resetBackdrop(), 3000);
           }
-          setTimeout(() => endGame(), 3000);
+          setTimeout(() => endGame(), 1500);
         });
       }
 
@@ -189,6 +187,8 @@ export default function GameRender() {
         clientsidePrediction,
         victoryHandler,
         matchInfo,
+        currentPreference.music_enabled,
+        currentPreference.sound_effects_enabled,
       );
       const config = {
         type: Phaser.AUTO,
@@ -213,7 +213,10 @@ export default function GameRender() {
 
     if (matchState === MatchState.END) {
       if (gameSession) {
-        gameSession.destroy(true, false);
+        gameSocket?.off('reset');
+        gameSocket?.off('skillOn');
+        gameSocket?.off('skillOff');
+        gameSession.destroy(true, true);
       }
     }
 
@@ -222,6 +225,9 @@ export default function GameRender() {
 
     return () => {
       if (gameSession) {
+        gameSocket?.off('reset');
+        gameSocket?.off('skillOn');
+        gameSocket?.off('skillOff');
         gameSession.destroy(true, false);
       }
       gameSocket?.off('game');

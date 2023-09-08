@@ -81,7 +81,6 @@ export default function FriendStack() {
         addChannelMember(friendMember);
         addChannelMember(selfMember);
         emitToSocket(channelSocket, 'newMember', friendMember);
-        emitToSocket(channelSocket, 'newMember', selfMember);
         emitToSocket(channelSocket, 'joinRoom', newDirectChannel.id);
       } else {
         console.log('FATAL ERROR: FAILED TO ADD DM MEMBERS IN BACKEND');
@@ -98,8 +97,7 @@ export default function FriendStack() {
     displayNotification('success', 'Request accepted');
     setCurrentFriendCategory(FriendCategory.FRIENDS);
 
-    const directChannelName =
-      String(request.incoming_friend.id) + String(currentUser.id) + 'DM';
+    const directChannelName = `${request.incoming_friend.id}+${currentUser.id}DM`;
     if (!checkChannelExists(directChannelName)) {
       createDirectChannel(directChannelName, request.incoming_friend.id);
     }
@@ -131,7 +129,7 @@ export default function FriendStack() {
       'Blocked ' + friendship.incoming_friend.username,
     );
     resetSelectedFriend(friendship.incoming_friend.id);
-    resetSelectedDirectChannel(friendship.incoming_friend.id);
+    resetSelectedDirectChannel(currentUser.id, friendship.incoming_friend.id);
   }
 
   async function unblockFriend(friendship: Friend): Promise<void> {
@@ -160,7 +158,7 @@ export default function FriendStack() {
         ),
     );
     resetSelectedFriend(friendship.incoming_friend.id);
-    resetSelectedDirectChannel(friendship.incoming_friend.id);
+    resetSelectedDirectChannel(currentUser.id, friendship.incoming_friend.id);
   }
 
   function handleAction(request: Friend, action: FriendAction): void {

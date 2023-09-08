@@ -3,10 +3,12 @@ import { Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { useTypingMembers } from '@/lib/stores/useChatStore';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
 
 export default function ChatTypingDisplay() {
   const selectedChannel = useSelectedChannel();
   const typingMembers = useTypingMembers();
+  const currentUser = useCurrentUser();
   const [isTypingText, setIsTypingText] = useState('');
   const [isTypingDots, setIsTypingDots] = useState(0);
   const [isTypingIntervalID, setIsTypingIntervalID] = useState<
@@ -24,12 +26,22 @@ export default function ChatTypingDisplay() {
         setIsTypingText('');
         break;
       case 1:
-        setIsTypingText(filteredTypingMembers[0].user.username + ' is typing');
+        setIsTypingText(
+          filteredTypingMembers[0].user.id === currentUser.id
+            ? 'You are typing from another window'
+            : filteredTypingMembers[0].user.username + ' is typing',
+        );
         break;
       case 2:
         setIsTypingText(
           filteredTypingMembers
-            .map((typingMember) => typingMember.user.username)
+            .map((typingMember, index) =>
+              typingMember.user.id === currentUser.id
+                ? index === 0
+                  ? 'You'
+                  : 'you'
+                : typingMember.user.username,
+            )
             .join(' and ') + ' are typing',
         );
         break;

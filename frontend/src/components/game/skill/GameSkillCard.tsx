@@ -46,16 +46,20 @@ export default function GameSkillCard({ skillClass }: GameSkillCardProps) {
     if (skillClass === SkillClass.STRENGTH) {
       return (
         <Typography component={'span'}>
-          <b style={{ color: 'purple' }}>Pulls ball to own paddle, </b> 15s cd.
-          Press<b style={{ fontWeight: 800 }}> [E]. </b>
+          <b style={{ color: 'purple' }}>
+            Instantly teleports ball vertically to paddle level
+          </b>
+          , 20s cd. Press<b style={{ fontWeight: 800 }}> [E]. </b>
         </Typography>
       );
     }
     if (skillClass === SkillClass.SPEED) {
       return (
         <Typography component={'span'}>
-          <b style={{ color: 'purple' }}>Slows downs everyone's time </b>for 3s,
-          20s cd. Press<b style={{ fontWeight: 800 }}> [E]. </b>
+          <b style={{ color: 'purple' }}>
+            Slows downs opponent's paddle time by 60% and ball by 30% for 3s
+          </b>
+          , 15s cd. Press<b style={{ fontWeight: 800 }}> [E]. </b>
         </Typography>
       );
     }
@@ -63,9 +67,9 @@ export default function GameSkillCard({ skillClass }: GameSkillCardProps) {
       return (
         <Typography component={'span'}>
           <b style={{ color: 'purple' }}>
-            Inverts opponent's paddle direction{' '}
+            Inverts opponent's paddle direction for 3s
           </b>
-          for 3s, 30s cd. Press<b style={{ fontWeight: 800 }}> [E]. </b>
+          , 25s cd. Press<b style={{ fontWeight: 800 }}> [E]. </b>
         </Typography>
       );
     }
@@ -77,7 +81,7 @@ export default function GameSkillCard({ skillClass }: GameSkillCardProps) {
       return 'Cratos Might';
     }
     if (skillClass === SkillClass.SPEED) {
-      return 'Cronos Agility';
+      return 'Chronos Agility';
     }
     if (skillClass === SkillClass.TECH) {
       return 'Cosmos Wisdom';

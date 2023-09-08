@@ -37,16 +37,24 @@ export default class GameMainScene extends Phaser.Scene {
   private outofboundEffect:
     | Phaser.GameObjects.Particles.ParticleEmitter
     | undefined;
-  private goalEffectToggle: boolean = false;
+  private goalEffectToggle = false;
   private keyloop: () => void;
   private prediction: () => GameData;
   private victoryHandler: () => boolean;
+
+  private musicEnabled: boolean;
+  private soundEffectsEnabled: boolean;
+
+  private loaded = false;
+
   constructor(
     gameSocket: Socket | null,
     keyloop: () => void,
     prediction: () => GameData,
     victoryHandler: () => boolean,
     matchInfo: MatchInfo | null,
+    musicEnabled: boolean,
+    soundEffectsEnabled: boolean,
   ) {
     super({ key: 'MainScene' });
     this.Socket = gameSocket;
@@ -57,6 +65,8 @@ export default class GameMainScene extends Phaser.Scene {
     this.windowsize = { width: 0, height: 0 };
     this.p1name = matchInfo ? matchInfo.player1.nickname : '';
     this.p2name = matchInfo ? matchInfo.player2.nickname : '';
+    this.musicEnabled = musicEnabled;
+    this.soundEffectsEnabled = soundEffectsEnabled;
   }
 
   preload() {
@@ -64,11 +74,7 @@ export default class GameMainScene extends Phaser.Scene {
     this.load.audio('arcade', '/assets/audios/arcade.ogg');
     this.load.audio('banger', '/assets/audios/bgm1.mp3');
     this.load.video('background', '/assets/videos/background1.mp4', true);
-    this.load.multiatlas(
-      'ballsprite',
-      '/assets/textures/ballsprite.json',
-      'assets',
-    );
+    this.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
     this.load.image('red', '/assets/textures/neonpurple.png');
     this.load.image('flame3', '/assets/textures/flame_03.png');
     this.load.image('bubble', '/assets/textures/bubble.png');
@@ -103,8 +109,10 @@ export default class GameMainScene extends Phaser.Scene {
       this.windowsize.height / 1080,
     );
     videoSprite.play(true);
-    const music = this.sound.add('banger', { loop: true }).setVolume(0.5);
-    music.play();
+    if (this.musicEnabled) {
+      const music = this.sound.add('banger', { loop: true }).setVolume(0.5);
+      music.play();
+    }
     this.p1scoretext = this.add
       .bitmapText(
         this.windowsize.width * 0.47,
@@ -176,7 +184,7 @@ export default class GameMainScene extends Phaser.Scene {
       strokeThickness: 5,
     };
 
-    const p1text = this.add
+    this.add
       .text(
         this.p1frame.x,
         this.p1frame.y,
@@ -185,7 +193,7 @@ export default class GameMainScene extends Phaser.Scene {
       )
       .setOrigin(0.5, 0.5);
 
-    const p2text = this.add
+    this.add
       .text(
         this.p2frame.x,
         this.p2frame.y,
@@ -205,12 +213,6 @@ export default class GameMainScene extends Phaser.Scene {
       )
       .setScale(1.5, 1.5);
     particles.startFollow(this.ball);
-    console.log(
-      'paddle1 :',
-      data.paddlesize.paddle1,
-      'paddle2 :',
-      data.paddlesize.paddle2,
-    );
     this.paddle1 = this.physics.add
       .sprite(
         this.windowsize.width * 0.05,
@@ -235,7 +237,6 @@ export default class GameMainScene extends Phaser.Scene {
         data.paddlesize.paddle2.height,
       );
 
-    console.log(this.paddle2.displayHeight, data.paddlesize.paddle2.height);
     const redglow = this.paddle1.preFX?.addGlow(0xff4444, 0, 0, false, 0.1, 3);
     const blueglow = this.paddle2.preFX?.addGlow(
       0x34646ff,
@@ -307,7 +308,9 @@ export default class GameMainScene extends Phaser.Scene {
     this.outofboundEffect.startFollow(this.ball);
 
     this.Socket?.on('reset', () => {
-      this.arcadeSoundEffect?.play();
+      if (this.loaded && this.soundEffectsEnabled && this.arcadeSoundEffect) {
+        this.arcadeSoundEffect.play();
+      }
       this.goalEffectToggle = true;
     });
 
@@ -337,6 +340,7 @@ export default class GameMainScene extends Phaser.Scene {
     });
 
     this.Socket?.emit('load', true);
+    this.loaded = true;
   }
 
   trimName(name: string) {
@@ -347,7 +351,9 @@ export default class GameMainScene extends Phaser.Scene {
 
   handleCollision1 = () => {
     if (!this.paddle1) return;
-    if (this.laserSoundEffect) this.laserSoundEffect.play();
+    if (this.soundEffectsEnabled && this.laserSoundEffect) {
+      this.laserSoundEffect.play();
+    }
     const paddlebloom1 = this.paddle1.postFX.addBloom(0xffffff, 0.8, 0.8, 1, 3);
     this.time.addEvent({
       delay: 150,
@@ -360,7 +366,9 @@ export default class GameMainScene extends Phaser.Scene {
   handleCollision2 = () => {
     {
       if (!this.paddle2) return;
-      if (this.laserSoundEffect) this.laserSoundEffect.play();
+      if (this.soundEffectsEnabled && this.laserSoundEffect) {
+        this.laserSoundEffect.play();
+      }
       const paddlebloom2 = this.paddle2.postFX.addBloom(
         0xffffff,
         0.8,
@@ -368,7 +376,6 @@ export default class GameMainScene extends Phaser.Scene {
         1,
         3,
       );
-      // const effect = this.paddle1.postFX.addDisplacement('red', this.paddle1.x + this.paddle1.width / 2, this.ball.y)
       this.time.addEvent({
         delay: 150,
         callback: () => {

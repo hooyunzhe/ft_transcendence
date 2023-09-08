@@ -79,7 +79,7 @@ function changeDialog(
       description: description,
       actionButtonText: actionButtonText,
       backButtonText: backButtonText,
-      actionButtonDisabled: actionButtonDisabled ?? false,
+      actionButtonDisabled: actionButtonDisabled ?? true,
     },
   }));
 }
@@ -148,8 +148,21 @@ const useDialogStore = create<DialogStore>()((set) => ({
     backClicked: false,
   },
   actions: {
-    displayDialog: (title, description, children, actionButtonText) =>
-      displayDialog(set, title, description, children, actionButtonText),
+    displayDialog: (
+      title,
+      description,
+      children,
+      actionButtonText,
+      actionButtonDisabled,
+    ) =>
+      displayDialog(
+        set,
+        title,
+        description,
+        children,
+        actionButtonText,
+        actionButtonDisabled,
+      ),
     changeDialog: (
       title,
       description,

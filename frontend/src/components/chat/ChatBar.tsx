@@ -3,7 +3,7 @@ import { TextField } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useCurrentUser, useUserActions } from '@/lib/stores/useUserStore';
 import {
   useChannelActions,
   useSelectedChannel,
@@ -27,6 +27,7 @@ export default function ChatBar() {
   const currentSocialTab = useCurrentSocialTab();
   const channelSocket = useChannelSocket();
   const messagesSent = useMessagesSent();
+  const { changeCurrentUserAvatar } = useUserActions();
   const { getChannelMember } = useChannelMemberActions();
   const { addMessage } = useChatActions();
   const { updateRecentChannelActivity } = useChannelActions();
@@ -105,7 +106,17 @@ export default function ChatBar() {
           handleAchievementsEarned(currentUser.id, 5, displayNotification);
         }
         if (newMessage.content === 'Dingo Lingo') {
-          handleAchievementsEarned(currentUser.id, 14, displayNotification);
+          handleAchievementsEarned(
+            currentUser.id,
+            14,
+            displayNotification,
+          ).then((achievementEarned) => {
+            if (!achievementEarned) {
+              changeCurrentUserAvatar(
+                'https://cdn.discordapp.com/attachments/845369395231326219/1149002607193501746/IMG-20191207-WA0001.jpg',
+              );
+            }
+          });
         }
         updateRecentChannelActivity(selectedChannel.id);
         emitToSocket(channelSocket, 'newMessage', newMessage);

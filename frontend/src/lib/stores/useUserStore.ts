@@ -115,6 +115,9 @@ function changeCurrentPreference(
       currentPreference: {
         ...data.currentPreference,
         ...(type === PreferenceType.MUSIC && { music_enabled: checked }),
+        ...(type === PreferenceType.SOUND_EFFECTS && {
+          sound_effects_enabled: checked,
+        }),
         ...(type === PreferenceType.ANIMATIONS && {
           animations_enabled: checked,
         }),

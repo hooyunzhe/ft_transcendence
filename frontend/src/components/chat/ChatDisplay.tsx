@@ -7,7 +7,6 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Paper,
   Typography,
 } from '@mui/material';
 import { Clear, Done } from '@mui/icons-material';
@@ -132,10 +131,16 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
           )}
           {selectedMessage?.id === message.id ? (
             <>
-              <IconButton onClick={handleEdit}>
+              <IconButton
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={handleEdit}
+              >
                 <Done fontSize='small' />
               </IconButton>
-              <IconButton onClick={handleCancel}>
+              <IconButton
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={handleCancel}
+              >
                 <Clear fontSize='small' />
               </IconButton>
             </>
