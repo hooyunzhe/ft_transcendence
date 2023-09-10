@@ -15,7 +15,7 @@ import {
   useSelectedStatistic,
 } from '@/lib/stores/useProfileStore';
 import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
-import { User } from '@/types/UserTypes';
+import { User, UserStatus } from '@/types/UserTypes';
 import {
   ChannelMember,
   ChannelMemberAction,
@@ -25,6 +25,7 @@ import { View } from '@/types/UtilTypes';
 
 interface ChannelMemberDisplayProps {
   user: User;
+  status?: UserStatus;
   member?: ChannelMember;
   currentUserRole?: ChannelMemberRole;
   handleAction?: (
@@ -35,6 +36,7 @@ interface ChannelMemberDisplayProps {
 
 export default function ChannelMemberDisplay({
   user,
+  status,
   member,
   currentUserRole,
   handleAction,
@@ -42,7 +44,7 @@ export default function ChannelMemberDisplay({
   const currentView = useCurrentView();
   const selectedStatistic = useSelectedStatistic();
   const { setCurrentView } = useUtilActions();
-  const { setSelectedStatistic } = useProfileActions();
+  const { setSelectedStatistic, resetSelectedStatistic } = useProfileActions();
   const [menuAnchor, setMenuAnchor] = useState<HTMLButtonElement | undefined>();
 
   function handleAvatarClick(): void {
@@ -51,7 +53,7 @@ export default function ChannelMemberDisplay({
         currentView === View.PROFILE &&
         selectedStatistic?.user.id === member.user.id
       ) {
-        setSelectedStatistic(undefined);
+        resetSelectedStatistic();
       } else {
         setSelectedStatistic(member.user.id);
         setCurrentView(View.PROFILE);
@@ -61,23 +63,31 @@ export default function ChannelMemberDisplay({
 
   return (
     <ListItem>
-      <ListItemAvatar>
-        <Avatar
-          src={user.avatar_url}
-          alt={user.username}
-          sx={{
-            border: 'solid 1px black',
-            cursor: 'pointer',
-          }}
-          onClick={handleAvatarClick}
-        />
-      </ListItemAvatar>
-      <ListItemIcon sx={{ minWidth: '1.5vw' }}>
-        {member?.role === ChannelMemberRole.OWNER && <Star />}
-        {member?.role === ChannelMemberRole.ADMIN && <Security />}
-        {member?.role === ChannelMemberRole.MEMBER && <Person />}
-      </ListItemIcon>
-      <ListItemText primary={user.username} />
+      <ListItem
+        component='div'
+        sx={{
+          padding: '0',
+          opacity: status === UserStatus.OFFLINE ? '25%' : '100%',
+        }}
+      >
+        <ListItemAvatar>
+          <Avatar
+            src={user.avatar_url}
+            alt={user.username}
+            sx={{
+              border: 'solid 1px black',
+              cursor: 'pointer',
+            }}
+            onClick={handleAvatarClick}
+          />
+        </ListItemAvatar>
+        <ListItemIcon sx={{ minWidth: '1.5vw' }}>
+          {member?.role === ChannelMemberRole.OWNER && <Star />}
+          {member?.role === ChannelMemberRole.ADMIN && <Security />}
+          {member?.role === ChannelMemberRole.MEMBER && <Person />}
+        </ListItemIcon>
+        <ListItemText primary={user.username} />
+      </ListItem>
       {((member?.role === ChannelMemberRole.MEMBER &&
         currentUserRole === ChannelMemberRole.ADMIN) ||
         (member?.role !== ChannelMemberRole.OWNER &&

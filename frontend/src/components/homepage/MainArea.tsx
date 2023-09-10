@@ -18,7 +18,12 @@ export default function MainArea() {
   const { setMatchState } = useGameActions();
   const { setSelectedFriend } = useFriendActions();
   const { setSelectedChannel } = useChannelActions();
-  const { setCurrentView, setSocialDrawerClose } = useUtilActions();
+  const {
+    setCurrentView,
+    setSocialDrawerClose,
+    handleDrawerMouseLeave,
+    setShowSocialPaddle,
+  } = useUtilActions();
   const { displayBackdrop, resetBackdrop } = useBackdropActions();
   const [displayGame, setDisplayGame] = useState(false);
 
@@ -41,6 +46,8 @@ export default function MainArea() {
       setCurrentView(View.GAME);
       setDisplayGame(false);
       setMatchState(MatchState.IDLE);
+      setShowSocialPaddle(false);
+      handleDrawerMouseLeave();
     }
 
     return () => clearTimeout(timeoutID);

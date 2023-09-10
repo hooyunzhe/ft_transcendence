@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { Socket } from 'socket.io-client';
 import callAPI from '../callAPI';
 import { Statistic } from '@/types/StatisticTypes';
 import { Match, SkillClass } from '@/types/MatchTypes';
@@ -11,10 +12,14 @@ interface ProfileStore {
   };
   actions: {
     getProfileData: () => void;
+    getStatistic: (userID: number) => Promise<Statistic>;
     getCurrentStatistic: (currentUserID: number) => Statistic | undefined;
     getFavoriteClass: (statistic: Statistic) => SkillClass | null;
     updateStatistic: (userID: number, newMatch: Match) => void;
-    setSelectedStatistic: (userID: number | undefined) => void;
+    deleteStatistic: (userID: number) => void;
+    setSelectedStatistic: (userID: number) => void;
+    resetSelectedStatistic: () => void;
+    setupProfileUserSocketEvents: (userSocket: Socket) => void;
   };
   checks: {
     isJackOfAllTrades: (
@@ -46,10 +51,40 @@ async function getProfileData(set: StoreSetter): Promise<void> {
         (a, b) =>
           b.wins - a.wins ||
           a.losses - b.losses ||
-          b.highest_winstreak - a.highest_winstreak,
+          b.highest_winstreak - a.highest_winstreak ||
+          a.user.username.localeCompare(b.user.username),
       ),
     },
   }));
+}
+
+async function getStatistic(
+  set: StoreSetter,
+  userID: number,
+): Promise<Statistic> {
+  const statisticData: Statistic = await callAPI(
+    'GET',
+    `statistics?search_type=USER&search_number=${userID}`,
+  ).then((res) => res.body);
+
+  set(({ data }) => ({
+    data: {
+      ...data,
+      statistics: [
+        ...data.statistics.filter(
+          (statistic) => statistic.user.id !== statisticData.user.id,
+        ),
+        statisticData,
+      ].sort(
+        (a, b) =>
+          b.wins - a.wins ||
+          a.losses - b.losses ||
+          b.highest_winstreak - a.highest_winstreak ||
+          a.user.username.localeCompare(b.user.username),
+      ),
+    },
+  }));
+  return statisticData;
 }
 
 function getCurrentStatistic(
@@ -135,25 +170,46 @@ function updateStatistic(
           (a, b) =>
             b.wins - a.wins ||
             a.losses - b.losses ||
-            b.highest_winstreak - a.highest_winstreak,
+            b.highest_winstreak - a.highest_winstreak ||
+            a.user.username.localeCompare(b.user.username),
         ),
     },
   }));
 }
 
-function setSelectedStatistic(
-  set: StoreSetter,
-  userID: number | undefined,
-): void {
+function deleteStatistic(set: StoreSetter, userID: number): void {
   set(({ data }) => ({
     data: {
       ...data,
-      selectedStatistic: data.statistics.find(
-        (statistic) => statistic.user.id === userID,
+      statistics: data.statistics.filter(
+        (statistic) => statistic.user.id !== userID,
       ),
+    },
+  }));
+}
+
+async function setSelectedStatistic(
+  set: StoreSetter,
+  userID: number,
+): Promise<void> {
+  const statistic = await getStatistic(set, userID);
+
+  set(({ data }) => ({
+    data: {
+      ...data,
+      selectedStatistic: statistic,
       selectedStatisticIndex: data.statistics.findIndex(
-        (statistic) => statistic.user.id === userID,
+        (statistic) => statistic.id === statistic.id,
       ),
+    },
+  }));
+}
+
+function resetSelectedStatistic(set: StoreSetter): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      selectedStatistic: undefined,
     },
   }));
 }
@@ -202,6 +258,19 @@ function isMasterOfOne(
   }
 }
 
+function setupProfileUserSocketEvents(
+  set: StoreSetter,
+  get: StoreGetter,
+  userSocket: Socket,
+): void {
+  userSocket.on('deleteAccount', (userID: number) => {
+    if (get().data.selectedStatistic?.user.id === userID) {
+      resetSelectedStatistic(set);
+    }
+    deleteStatistic(set, userID);
+  });
+}
+
 const useProfileStore = create<ProfileStore>()((set, get) => ({
   data: {
     statistics: [],
@@ -210,12 +279,17 @@ const useProfileStore = create<ProfileStore>()((set, get) => ({
   },
   actions: {
     getProfileData: () => getProfileData(set),
+    getStatistic: (userID) => getStatistic(set, userID),
     getCurrentStatistic: (currentUserID) =>
       getCurrentStatistic(get, currentUserID),
     getFavoriteClass: (statistic) => getFavoriteClass(statistic),
     updateStatistic: (userID, newMatch) =>
       updateStatistic(set, userID, newMatch),
+    deleteStatistic: (userID) => deleteStatistic(set, userID),
     setSelectedStatistic: (userID) => setSelectedStatistic(set, userID),
+    resetSelectedStatistic: () => resetSelectedStatistic(set),
+    setupProfileUserSocketEvents: (userSocket) =>
+      setupProfileUserSocketEvents(set, get, userSocket),
   },
   checks: {
     isJackOfAllTrades: (currentStatistic, selectedSkillClass) =>

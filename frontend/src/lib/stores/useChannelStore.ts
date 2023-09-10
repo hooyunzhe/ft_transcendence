@@ -52,6 +52,10 @@ interface ChannelStore {
       friendSocket: Socket,
       currentUserID: number,
     ) => void;
+    setupChannelUserSocketEvents: (
+      userSocket: Socket,
+      currentUserID: number,
+    ) => void;
   };
   checks: {
     checkChannelExists: (channelName: string) => boolean;
@@ -358,6 +362,7 @@ function setupChannelSocketEvents(
   channelSocket.on('deleteChannel', (channelID: number) => {
     resetSelectedChannel(set, channelID);
     deleteChannel(set, channelID);
+    channelSocket.emit('leaveRoom', channelID);
   });
   channelSocket.on('newMember', (channelMember: ChannelMember) => {
     if (channelMember.user.id === currentUserID) {
@@ -445,6 +450,16 @@ function setupChannelFriendSocketEvents(
   );
 }
 
+function setupChannelUserSocketEvents(
+  set: StoreSetter,
+  userSocket: Socket,
+  currentUserID: number,
+): void {
+  userSocket.on('deleteAccount', (userID: number) =>
+    resetSelectedDirectChannel(set, currentUserID, userID),
+  );
+}
+
 function checkChannelExists(get: StoreGetter, channelName: string): boolean {
   return get().data.channels.some((channel) => channel.name === channelName);
 }
@@ -511,6 +526,8 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
       setupChannelSocketEvents(set, get, channelSocket, currentUserID),
     setupChannelFriendSocketEvents: (friendSocket, currentUserID) =>
       setupChannelFriendSocketEvents(set, friendSocket, currentUserID),
+    setupChannelUserSocketEvents: (userSocket, currentUserID) =>
+      setupChannelUserSocketEvents(set, userSocket, currentUserID),
   },
   checks: {
     checkChannelExists: (channelName) => checkChannelExists(get, channelName),

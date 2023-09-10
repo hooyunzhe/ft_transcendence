@@ -50,18 +50,26 @@ export default function Cyberpong() {
   const matchState = useMatchState();
   const { initSockets, resetSockets } = useSocketActions();
   const { getGameData, setupGameSocketEvents } = useGameActions();
-  const { getFriendData, setupFriendSocketEvents } = useFriendActions();
+  const {
+    getFriendData,
+    setupFriendSocketEvents,
+    setupFriendUserSocketEvents,
+  } = useFriendActions();
   const { isFriendBlocked } = useFriendChecks();
   const {
     getChannelData,
     setupChannelSocketEvents,
     setupChannelFriendSocketEvents,
+    setupChannelUserSocketEvents,
   } = useChannelActions();
   const { getChatData, setupChatSocketEvents } = useChatActions();
   const { getAchievementData } = useAchievementActions();
-  const { getChannelMemberData, setupChannelMemberSocketEvents } =
-    useChannelMemberActions();
-  const { getProfileData } = useProfileActions();
+  const {
+    getChannelMemberData,
+    setupChannelMemberSocketEvents,
+    setupChannelMemberUserSocketEvents,
+  } = useChannelMemberActions();
+  const { getProfileData, setupProfileUserSocketEvents } = useProfileActions();
   const { addUserStatus, setupUserSocketEvents } = useUserActions();
   const {
     setupNotificationFriendSocketEvents,
@@ -118,6 +126,10 @@ export default function Cyberpong() {
   useEffect(() => {
     if (userSocket) {
       setupUserSocketEvents(userSocket);
+      setupFriendUserSocketEvents(userSocket);
+      setupChannelUserSocketEvents(userSocket, currentUser.id);
+      setupChannelMemberUserSocketEvents(userSocket);
+      setupProfileUserSocketEvents(userSocket);
     }
   }, [userSocket]);
 

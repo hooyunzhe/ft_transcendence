@@ -3,7 +3,9 @@ import { useEffect, useRef } from 'react';
 import { Avatar, Box, Typography } from '@mui/material';
 import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { useGameActions } from '@/lib/stores/useGameStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { Statistic } from '@/types/StatisticTypes';
+import { View } from '@/types/UtilTypes';
 
 interface LeaderboardDisplayProps {
   rank: number;
@@ -16,9 +18,15 @@ export default function LeaderboardDisplay({
   statistic,
   isCurrentUser,
 }: LeaderboardDisplayProps) {
-  const leaderboardDisplay = useRef<HTMLDivElement | null>(null);
-  const { getFavoriteClass } = useProfileActions();
+  const { getFavoriteClass, setSelectedStatistic } = useProfileActions();
   const { getClassName } = useGameActions();
+  const { setCurrentView } = useUtilActions();
+  const leaderboardDisplay = useRef<HTMLDivElement | null>(null);
+
+  function handleAvatarClick(): void {
+    setSelectedStatistic(statistic.user.id);
+    setCurrentView(View.PROFILE);
+  }
 
   useEffect(() => {
     let scrollTimeoutID: NodeJS.Timeout;
@@ -88,6 +96,7 @@ export default function LeaderboardDisplay({
           src={statistic.user.avatar_url}
           alt={statistic.user.username}
           sx={{ border: 'solid 1px black' }}
+          onClick={handleAvatarClick}
         />
         <Typography variant='h6'>{statistic.user.username}</Typography>
       </Box>

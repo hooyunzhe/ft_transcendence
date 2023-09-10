@@ -2,11 +2,17 @@
 import { Box } from '@mui/material';
 import LeaderboardDisplay from './LeaderboardDisplay';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
-import { useStatistics } from '@/lib/stores/useProfileStore';
+import { useProfileActions, useStatistics } from '@/lib/stores/useProfileStore';
+import { useEffect } from 'react';
 
 export default function LeaderboardList() {
   const currentUser = useCurrentUser();
   const statistics = useStatistics();
+  const { getProfileData } = useProfileActions();
+
+  useEffect(() => {
+    getProfileData();
+  }, []);
 
   return (
     <Box

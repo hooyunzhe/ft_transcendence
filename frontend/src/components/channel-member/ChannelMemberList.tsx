@@ -12,7 +12,7 @@ import {
   useChannelMembers,
 } from '@/lib/stores/useChannelMemberStore';
 import { useFriendChecks, useFriends } from '@/lib/stores/useFriendStore';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useCurrentUser, useUserStatus } from '@/lib/stores/useUserStore';
 import { useChannelSocket, useGameSocket } from '@/lib/stores/useSocketStore';
 import {
   useGameActions,
@@ -32,7 +32,7 @@ import {
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
-import { User } from '@/types/UserTypes';
+import { User, UserStatus } from '@/types/UserTypes';
 import { MatchState } from '@/types/GameTypes';
 
 export default function ChannelMemberList({
@@ -43,6 +43,7 @@ export default function ChannelMemberList({
   const currentUser = useCurrentUser();
   const channelMembers = useChannelMembers();
   const friends = useFriends();
+  const userStatus = useUserStatus();
   const outgoingInviteUser = useOutgoingInviteUser();
   const matchState = useMatchState();
   const channelSocket = useChannelSocket();
@@ -71,6 +72,31 @@ export default function ChannelMemberList({
       ),
   );
 
+  function getSortOrder(member: ChannelMember): number {
+    if (member.user.id === currentUser.id) {
+      return 0;
+    } else if (member.role === ChannelMemberRole.OWNER) {
+      return 1;
+    } else if (member.role === ChannelMemberRole.ADMIN) {
+      return 2;
+    } else {
+      return 3;
+    }
+  }
+
+  function sortChannelMembers(
+    memberA: ChannelMember,
+    memberB: ChannelMember,
+  ): number {
+    const sortOrderA = getSortOrder(memberA);
+    const sortOrderB = getSortOrder(memberB);
+
+    if (sortOrderA !== sortOrderB) {
+      return sortOrderA - sortOrderB;
+    }
+    return memberA.user.username.localeCompare(memberB.user.username);
+  }
+
   function getCurrentRole(): ChannelMemberRole {
     if (selectedChannel) {
       if (isChannelOwner(currentUser.id, selectedChannel.id)) {
@@ -82,20 +108,33 @@ export default function ChannelMemberList({
     return ChannelMemberRole.MEMBER;
   }
 
+  function hasPrivilege(member: ChannelMember): boolean {
+    return (
+      (member.role === ChannelMemberRole.MEMBER &&
+        getCurrentRole() === ChannelMemberRole.ADMIN) ||
+      (member.role !== ChannelMemberRole.OWNER &&
+        getCurrentRole() === ChannelMemberRole.OWNER)
+    );
+  }
+
   // * Helper Function for update locals * //
 
   async function kickUser(member: ChannelMember): Promise<void> {
-    await callAPI('DELETE', 'channel-members', { id: member.id });
-    kickChannelMember(member.id);
-    emitToSocket(channelSocket, 'kickMember', member);
-    await handleAchievementsEarned(currentUser.id, 4, displayNotification).then(
-      (earned) =>
-        earned &&
-        displayNotification(
-          'success',
-          `Channel member ${member.user.username} kicked`,
-        ),
-    );
+    if (hasPrivilege(member)) {
+      await callAPI('DELETE', 'channel-members', { id: member.id });
+      kickChannelMember(member.id);
+      emitToSocket(channelSocket, 'kickMember', member);
+      await handleAchievementsEarned(currentUser.id, 4, displayNotification);
+      displayNotification(
+        'success',
+        `Channel member ${member.user.username} kicked`,
+      );
+    } else {
+      displayNotification(
+        'error',
+        'You are no longer an admin, unable to kick',
+      );
+    }
   }
 
   async function changeToAdmin(member: ChannelMember) {
@@ -135,42 +174,53 @@ export default function ChannelMemberList({
   }
 
   async function unmuteMember(member: ChannelMember) {
-    await callAPI('PATCH', 'channel-members', {
-      id: member.id,
-      status: ChannelMemberStatus.DEFAULT,
-    });
-    changeChannelMemberStatus(member.id, ChannelMemberStatus.DEFAULT);
-    const data = {
-      memberID: member.id,
-      userID: member.user.id,
-      channelID: member.channel.id,
-      newStatus: ChannelMemberStatus.DEFAULT,
-    };
-    emitToSocket(channelSocket, 'changeStatus', data);
-    displayNotification(
-      'success',
-      `Channel member ${member.user.username} unmuted`,
-    );
+    if (hasPrivilege(member)) {
+      await callAPI('PATCH', 'channel-members', {
+        id: member.id,
+        status: ChannelMemberStatus.DEFAULT,
+      });
+      changeChannelMemberStatus(member.id, ChannelMemberStatus.DEFAULT);
+      const data = {
+        memberID: member.id,
+        userID: member.user.id,
+        channelID: member.channel.id,
+        newStatus: ChannelMemberStatus.DEFAULT,
+      };
+      emitToSocket(channelSocket, 'changeStatus', data);
+      displayNotification(
+        'success',
+        `Channel member ${member.user.username} unmuted`,
+      );
+    } else {
+      displayNotification(
+        'error',
+        'You are no longer an admin, unable to unmute',
+      );
+    }
   }
 
   async function banMember(member: ChannelMember) {
-    await callAPI('PATCH', 'channel-members', {
-      id: member.id,
-      status: ChannelMemberStatus.BANNED,
-      muted_until: new Date().toISOString(),
-    });
-    changeChannelMemberStatus(member.id, ChannelMemberStatus.BANNED);
-    const data = {
-      memberID: member.id,
-      userID: member.user.id,
-      channelID: member.channel.id,
-      newStatus: ChannelMemberStatus.BANNED,
-    };
-    emitToSocket(channelSocket, 'changeStatus', data);
-    displayNotification(
-      'success',
-      `Channel member ${member.user.username} banned`,
-    );
+    if (hasPrivilege(member)) {
+      await callAPI('PATCH', 'channel-members', {
+        id: member.id,
+        status: ChannelMemberStatus.BANNED,
+        muted_until: new Date().toISOString(),
+      });
+      changeChannelMemberStatus(member.id, ChannelMemberStatus.BANNED);
+      const data = {
+        memberID: member.id,
+        userID: member.user.id,
+        channelID: member.channel.id,
+        newStatus: ChannelMemberStatus.BANNED,
+      };
+      emitToSocket(channelSocket, 'changeStatus', data);
+      displayNotification(
+        'success',
+        `Channel member ${member.user.username} banned`,
+      );
+    } else {
+      displayNotification('error', 'You are no longer an admin, unable to ban');
+    }
   }
 
   async function changeOwnership(newOwner: ChannelMember) {
@@ -179,6 +229,7 @@ export default function ChannelMemberList({
         member.user.id === currentUser.id &&
         member.channel.id === newOwner.channel.id,
     );
+
     if (currentOwner === undefined) {
       console.log('FATAL ERROR: CURRENT OWNER NOT FOUND!');
       return undefined;
@@ -355,25 +406,34 @@ export default function ChannelMemberList({
                 member.channel.type !== ChannelType.DIRECT) &&
               !isFriendBlocked(member.user.id),
           )
+          .sort(sortChannelMembers)
           .map((member: ChannelMember, index: number) => (
             <ListItem
               key={index}
               sx={{
                 border: 'solid 3px #4a4eda',
                 borderRadius: '10px',
-                bgcolor: '#A4B5C6',
+                // bgcolor: '#A4B5C6',
+                background:
+                  userStatus[member.user.id] === UserStatus.IN_GAME
+                    ? 'linear-gradient(90deg, #e85149, #363bd6)'
+                    : '#A4B5C6',
               }}
               component='div'
             >
               <ChannelMemberDisplay
                 user={member.user}
+                status={userStatus[member.user.id]}
                 member={member}
                 currentUserRole={getCurrentRole()}
                 handleAction={handleDisplayAction}
               />
               {member.user.id !== currentUser.id && (
                 <IconButton
-                  disabled={matchState !== MatchState.IDLE}
+                  disabled={
+                    matchState !== MatchState.IDLE ||
+                    userStatus[member.user.id] !== UserStatus.ONLINE
+                  }
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => handleInvite(member.user)}
                 >

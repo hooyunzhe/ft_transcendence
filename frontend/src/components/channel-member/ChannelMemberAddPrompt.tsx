@@ -50,17 +50,10 @@ export default function ChannelMemberAddPrompt({
       if (newChannelMember) {
         addChannelMember(newChannelMember);
         emitToSocket(channelSocket, 'newMember', newChannelMember);
-        await handleAchievementsEarned(
-          currentUser.id,
-          3,
-          displayNotification,
-        ).then(
-          (earned) =>
-            earned &&
-            displayNotification(
-              'success',
-              `${newChannelMember.user.username} added`,
-            ),
+        await handleAchievementsEarned(currentUser.id, 3, displayNotification);
+        displayNotification(
+          'success',
+          `${newChannelMember.user.username} added`,
         );
       } else {
         throw 'FATAL ERROR: FAILED TO ADD CHANNEL MEMBER IN BACKEND';

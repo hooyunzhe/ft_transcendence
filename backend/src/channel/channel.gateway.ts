@@ -38,17 +38,21 @@ export class ChannelGateway implements OnGatewayConnection {
     @ConnectedSocket() client: Socket,
   ) {
     client.data.user_id = user_id;
-    client.join(String(client.data.user_id));
+    client.join(`user_${client.data.user_id}`);
+  }
+
+  emitToChannel(client: Socket, channelID: number, message: string, arg: any) {
+    client.to(`channel_${channelID}`).emit(message, arg);
   }
 
   @SubscribeMessage('joinRoom')
   joinRoom(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
-    client.join(String(data));
+    client.join(`channel_${data}`);
   }
 
   @SubscribeMessage('leaveRoom')
   leaveRoom(@MessageBody() data: number, @ConnectedSocket() client: Socket) {
-    client.leave(String(data));
+    client.leave(`channel_${data}`);
   }
 
   @SubscribeMessage('newChannel')
@@ -61,7 +65,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: ChangeChannelNameEmitBodyParams,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.id)).emit('changeChannelName', data);
+    this.emitToChannel(client, data.id, 'changeChannelName', data);
   }
 
   @SubscribeMessage('changeChannelType')
@@ -69,7 +73,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: ChangeChannelTypeEmitBodyParams,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.id)).emit('changeChannelType', data);
+    this.emitToChannel(client, data.id, 'changeChannelType', data);
   }
 
   @SubscribeMessage('deleteChannel')
@@ -78,7 +82,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @ConnectedSocket() client: Socket,
   ) {
     client.broadcast.emit('deleteChannel', data);
-    client.leave(String(data));
+    client.leave(`channel_${data}`);
   }
 
   @SubscribeMessage('newMember')
@@ -87,7 +91,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @ConnectedSocket() client: Socket,
   ) {
     client
-      .to([String(data.channel.id), String(data.user.id)])
+      .to([`channel_${data.channel.id}`, `user_${data.user.id}`])
       .emit('newMember', data);
   }
 
@@ -96,7 +100,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: ChangeChannelMemberRoleEmitBodyParams,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.channelID)).emit('changeRole', data);
+    this.emitToChannel(client, data.channelID, 'changeRole', data);
   }
 
   @SubscribeMessage('changeStatus')
@@ -104,7 +108,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: ChangeChannelMemberStatusEmitBodyParams,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.channelID)).emit('changeStatus', data);
+    this.emitToChannel(client, data.channelID, 'changeStatus', data);
   }
 
   @SubscribeMessage('kickMember')
@@ -112,12 +116,12 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: ChannelMember,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.channel.id)).emit('kickMember', data);
+    this.emitToChannel(client, data.channel.id, 'kickMember', data);
   }
 
   @SubscribeMessage('newMessage')
   newMessage(@MessageBody() data: Message, @ConnectedSocket() client: Socket) {
-    client.to(String(data.channel.id)).emit('newMessage', data);
+    this.emitToChannel(client, data.channel.id, 'newMessage', data);
   }
 
   @SubscribeMessage('editMessage')
@@ -125,7 +129,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: EditMessageEmitBodyParams,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.channelID)).emit('editMessage', data);
+    this.emitToChannel(client, data.channelID, 'editMessage', data);
   }
 
   @SubscribeMessage('deleteMessage')
@@ -134,6 +138,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @ConnectedSocket() client: Socket,
   ) {
     client.to(String(data.channel.id)).emit('deleteMessage', data);
+    this.emitToChannel(client, data.channel.id, 'deleteMessage', data);
   }
 
   @SubscribeMessage('startTyping')
@@ -141,7 +146,7 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: ChannelMember,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.channel.id)).emit('startTyping', data);
+    this.emitToChannel(client, data.channel.id, 'startTyping', data);
   }
 
   @SubscribeMessage('stopTyping')
@@ -149,6 +154,6 @@ export class ChannelGateway implements OnGatewayConnection {
     @MessageBody() data: ChannelMember,
     @ConnectedSocket() client: Socket,
   ) {
-    client.to(String(data.channel.id)).emit('stopTyping', data);
+    this.emitToChannel(client, data.channel.id, 'stopTyping', data);
   }
 }

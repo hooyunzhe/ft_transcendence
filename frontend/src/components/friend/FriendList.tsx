@@ -12,7 +12,6 @@ import {
   useCurrentPreference,
   useUserStatus,
 } from '@/lib/stores/useUserStore';
-import { useSelectedStatistic } from '@/lib/stores/useProfileStore';
 import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { Friend, FriendAction } from '@/types/FriendTypes';
 import { UserStatus } from '@/types/UserTypes';

@@ -57,6 +57,31 @@ export default function ChannelMemberActionMenu({
           <ListItemText>Pass Channel Ownership</ListItemText>
         </MenuItem>
       )}
+      {currentUserRole === ChannelMemberRole.OWNER && (
+        <MenuItem
+          onClick={() => {
+            handleClose();
+            if (member.role === ChannelMemberRole.MEMBER) {
+              handleAction(member, ChannelMemberAction.ADMIN);
+            } else {
+              handleAction(member, ChannelMemberAction.UNADMIN);
+            }
+          }}
+        >
+          <ListItemIcon>
+            {member.role === ChannelMemberRole.MEMBER ? (
+              <AddModerator />
+            ) : (
+              <RemoveModerator />
+            )}
+          </ListItemIcon>
+          <ListItemText>
+            {member.role === ChannelMemberRole.MEMBER
+              ? 'Promote to Admin'
+              : 'Demote to Member'}
+          </ListItemText>
+        </MenuItem>
+      )}
       {currentUserRole !== ChannelMemberRole.MEMBER && (
         <MenuItem
           onClick={() => {
@@ -81,31 +106,6 @@ export default function ChannelMemberActionMenu({
             <SportsMartialArts fontSize='small' />
           </ListItemIcon>
           <ListItemText>Kick User</ListItemText>
-        </MenuItem>
-      )}
-      {currentUserRole === ChannelMemberRole.OWNER && (
-        <MenuItem
-          onClick={() => {
-            handleClose();
-            if (member.role === ChannelMemberRole.MEMBER) {
-              handleAction(member, ChannelMemberAction.ADMIN);
-            } else {
-              handleAction(member, ChannelMemberAction.UNADMIN);
-            }
-          }}
-        >
-          <ListItemIcon>
-            {member.role === ChannelMemberRole.MEMBER ? (
-              <AddModerator />
-            ) : (
-              <RemoveModerator />
-            )}
-          </ListItemIcon>
-          <ListItemText>
-            {member.role === ChannelMemberRole.MEMBER
-              ? 'Promote to Admin'
-              : 'Demote to Member'}
-          </ListItemText>
         </MenuItem>
       )}
       {currentUserRole !== ChannelMemberRole.MEMBER && (

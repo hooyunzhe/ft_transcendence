@@ -21,6 +21,7 @@ interface FriendStore {
     setSelectedFriend: (friend: Friend | undefined) => void;
     resetSelectedFriend: (friendID: number) => void;
     setupFriendSocketEvents: (friendSocket: Socket) => void;
+    setupFriendUserSocketEvents: (userSocket: Socket) => void;
   };
   checks: {
     isFriendBlocked: (friendID: number) => boolean;
@@ -123,6 +124,16 @@ function setupFriendSocketEvents(set: StoreSetter, friendSocket: Socket): void {
   });
 }
 
+function setupFriendUserSocketEvents(
+  set: StoreSetter,
+  userSocket: Socket,
+): void {
+  userSocket.on('deleteAccount', (userID: number) => {
+    deleteFriend(set, userID);
+    resetSelectedFriend(set, userID);
+  });
+}
+
 function isFriendBlocked(get: StoreGetter, incomingID: number): boolean {
   return get().data.friends.some(
     (friend) =>
@@ -143,6 +154,8 @@ const useFriendStore = create<FriendStore>()((set, get) => ({
     resetSelectedFriend: (friendID) => resetSelectedFriend(set, friendID),
     setupFriendSocketEvents: (friendSocket) =>
       setupFriendSocketEvents(set, friendSocket),
+    setupFriendUserSocketEvents: (userSocket) =>
+      setupFriendUserSocketEvents(set, userSocket),
   },
   checks: {
     isFriendBlocked: (incomingID) => isFriendBlocked(get, incomingID),

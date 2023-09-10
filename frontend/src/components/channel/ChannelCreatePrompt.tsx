@@ -69,14 +69,8 @@ export default function ChannelCreatePrompt() {
         addChannelMember(channelCreator);
         emitToSocket(channelSocket, 'joinRoom', newChannel.id);
         emitToSocket(channelSocket, 'newMember', channelCreator);
-        await handleAchievementsEarned(
-          currentUser.id,
-          6,
-          displayNotification,
-        ).then(
-          (earned) =>
-            earned && displayNotification('success', 'Channel created'),
-        );
+        await handleAchievementsEarned(currentUser.id, 6, displayNotification);
+        displayNotification('success', 'Channel created');
         setSelectedChannel(newChannel);
         setCurrentView(View.CHAT);
       } else {

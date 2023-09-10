@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import InputField from '../utils/InputField';
 import callAPI from '@/lib/callAPI';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
+import { useUserSocket } from '@/lib/stores/useSocketStore';
 import {
   useDialogActions,
   useDialogTriggers,
@@ -12,6 +13,7 @@ import { useNotificationActions } from '@/lib/stores/useNotificationStore';
 
 export default function SettingsAccountDeletePrompt() {
   const currentUser = useCurrentUser();
+  const userSocket = useUserSocket();
   const [confirmPhrase, setConfirmPhrase] = useState('');
   const { actionClicked, backClicked } = useDialogTriggers();
   const { setActionButtonDisabled, resetTriggers, resetDialog } =
@@ -27,6 +29,7 @@ export default function SettingsAccountDeletePrompt() {
     await callAPI('DELETE', 'users', {
       id: currentUser.id,
     });
+    userSocket?.emit('deleteAccount');
     displayNotification('error', 'Account deleted, goodbye...');
   }
 

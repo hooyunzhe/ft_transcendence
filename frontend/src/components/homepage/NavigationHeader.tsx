@@ -28,7 +28,7 @@ export default function NavigationHeader() {
   const currentView = useCurrentView();
   const selectedStatistic = useSelectedStatistic();
   const matchState = useMatchState();
-  const { setSelectedStatistic } = useProfileActions();
+  const { setSelectedStatistic, resetSelectedStatistic } = useProfileActions();
   const { setCurrentView, changeCurrentView } = useUtilActions();
   const [open, setOpen] = useState(false);
 
@@ -37,7 +37,7 @@ export default function NavigationHeader() {
       currentView === View.PROFILE &&
       selectedStatistic?.user.id === currentUser.id
     ) {
-      setSelectedStatistic(undefined);
+      resetSelectedStatistic();
     } else {
       setSelectedStatistic(currentUser.id);
       setCurrentView(View.PROFILE);

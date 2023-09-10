@@ -38,14 +38,14 @@ export default function FriendDisplay({
   const currentView = useCurrentView();
   const selectedStatistic = useSelectedStatistic();
   const { setCurrentView } = useUtilActions();
-  const { setSelectedStatistic } = useProfileActions();
+  const { setSelectedStatistic, resetSelectedStatistic } = useProfileActions();
 
   function handleAvatarClick(): void {
     if (
       currentView === View.PROFILE &&
       selectedStatistic?.user.id === friend.incoming_friend.id
     ) {
-      setSelectedStatistic(undefined);
+      resetSelectedStatistic();
     } else {
       setSelectedStatistic(friend.incoming_friend.id);
       setCurrentView(View.PROFILE);
@@ -57,7 +57,11 @@ export default function FriendDisplay({
       sx={{
         border: 'solid 3px #a23833',
         borderRadius: '10px',
-        bgcolor: '#A4B5C6',
+        // bgcolor: '#A4B5C6',
+        background:
+          status === UserStatus.IN_GAME
+            ? 'linear-gradient(90deg, #e85149, #363bd6)'
+            : '#A4B5C6',
       }}
     >
       <ListItem

@@ -4,19 +4,24 @@ import { Box, Button, Typography } from '@mui/material';
 import GameSearch from './overlay/GameSearch';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
 import { GameMode, MatchState } from '@/types/GameTypes';
+import { View } from '@/types/UtilTypes';
 
 export default function GameMenu() {
   const gameSocket = useGameSocket();
   const matchState = useMatchState();
   const gameAction = useGameActions();
+  const { setCurrentView } = useUtilActions();
   const { displayBackdrop, resetBackdrop } = useBackdropActions();
 
   useEffect(() => {
     if (matchState === MatchState.FOUND) {
+      setCurrentView(false);
       const matchFoundtimer = setTimeout(() => {
         gameAction.setMatchState(MatchState.READY);
+        setCurrentView(View.GAME);
         resetBackdrop();
       }, 3000);
       return () => clearTimeout(matchFoundtimer);

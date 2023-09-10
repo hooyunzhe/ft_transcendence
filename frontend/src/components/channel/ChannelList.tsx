@@ -42,6 +42,8 @@ export default function ChannelList() {
   const { setCurrentView } = useUtilActions();
   const joinableChannels = channels.filter(
     (channel) =>
+      channel.type !== ChannelType.DIRECT &&
+      channel.type !== ChannelType.PRIVATE &&
       !joinedChannels[channel.id] &&
       !isMemberBanned(currentUser.id, channel.id),
   );

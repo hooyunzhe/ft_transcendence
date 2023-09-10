@@ -76,10 +76,8 @@ export default function ChannelJoinPrompt({
             currentUser.id,
             7,
             displayNotification,
-          ).then(
-            (earned) =>
-              earned && displayNotification('success', 'Channel joined'),
           );
+          displayNotification('success', 'Channel joined');
           setSelectedChannel(selectedChannelToJoin);
           setCurrentView(View.CHAT);
         } else {
@@ -168,29 +166,27 @@ export default function ChannelJoinPrompt({
         '&::-webkit-scrollbar': { display: 'none' },
       }}
     >
-      {joinableChannels
-        .filter((channel) => channel.type !== ChannelType.PRIVATE)
-        .map((channel: Channel, index: number) => (
-          <ChannelDisplay
-            key={index}
-            channelID={channel.id}
-            channelName={channel.name}
-            channelType={channel.type}
-            channelHash={channel.hash}
-            isOwner={false}
-            currentChannelMember={undefined}
-            selected={selectedChannelToJoin?.id === channel.id ?? false}
-            selectCurrent={() => {
-              changeActionText(
-                channel.type === ChannelType.PROTECTED ? 'Next' : 'Join',
-              );
-              setSelectedChannelToJoin(
-                channel.id === selectedChannelToJoin?.id ? undefined : channel,
-              );
-              setActionButtonDisabled(channel.id === selectedChannelToJoin?.id);
-            }}
-          />
-        ))}
+      {joinableChannels.map((channel: Channel, index: number) => (
+        <ChannelDisplay
+          key={index}
+          channelID={channel.id}
+          channelName={channel.name}
+          channelType={channel.type}
+          channelHash={channel.hash}
+          isOwner={false}
+          currentChannelMember={undefined}
+          selected={selectedChannelToJoin?.id === channel.id ?? false}
+          selectCurrent={() => {
+            changeActionText(
+              channel.type === ChannelType.PROTECTED ? 'Next' : 'Join',
+            );
+            setSelectedChannelToJoin(
+              channel.id === selectedChannelToJoin?.id ? undefined : channel,
+            );
+            setActionButtonDisabled(channel.id === selectedChannelToJoin?.id);
+          }}
+        />
+      ))}
     </Stack>
   );
 }

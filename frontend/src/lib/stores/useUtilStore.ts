@@ -189,12 +189,14 @@ function setupUtilFriendSocketEvents(
   set: StoreSetter,
   friendSocket: Socket,
 ): void {
-  friendSocket.on('newRequest', () =>
-    setCurrentFriendCategory(set, FriendCategory.PENDING),
-  );
-  friendSocket.on('acceptRequest', () =>
-    setCurrentFriendCategory(set, FriendCategory.FRIENDS),
-  );
+  friendSocket.on('newRequest', () => {
+    setCurrentFriendCategory(set, FriendCategory.PENDING);
+    setSocialDrawerOpen(set);
+  });
+  friendSocket.on('acceptRequest', () => {
+    setCurrentFriendCategory(set, FriendCategory.FRIENDS);
+    setSocialDrawerOpen(set);
+  });
 }
 
 function setupUtilGameSocketEvents(set: StoreSetter, gameSocket: Socket): void {

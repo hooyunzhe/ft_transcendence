@@ -38,6 +38,11 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.broadcast.emit('newConnection', client.data.user_id);
   }
 
+  @SubscribeMessage('deleteAccount')
+  deleteAccount(@ConnectedSocket() client: Socket) {
+    client.broadcast.emit('deleteAccount', client.data.user_id);
+  }
+
   @SubscribeMessage('joinGame')
   joinGame(@ConnectedSocket() client: Socket) {
     client.broadcast.emit('joinGame', client.data.user_id);

@@ -80,13 +80,8 @@ export default function FriendAddPrompt() {
         outgoing_request: newRequests[0],
         incoming_request: newRequests[1],
       });
-      await handleAchievementsEarned(
-        currentUser.id,
-        1,
-        displayNotification,
-      ).then(
-        (earned) => earned && displayNotification('success', 'Request sent'),
-      );
+      await handleAchievementsEarned(currentUser.id, 1, displayNotification);
+      displayNotification('success', 'Request sent');
       setCurrentFriendCategory(FriendCategory.INVITED);
     } else {
       console.log('FATAL ERROR: FAILED TO ADD FRIEND IN BACKEND');

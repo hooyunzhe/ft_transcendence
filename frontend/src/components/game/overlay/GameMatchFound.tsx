@@ -45,7 +45,6 @@ export default function GameMatchFound() {
         justifyContent: 'center',
         height: '100vh',
         width: '80vh',
-        backgroundColor: '#0e0e2a30',
       }}
     >
       <PlayerCard

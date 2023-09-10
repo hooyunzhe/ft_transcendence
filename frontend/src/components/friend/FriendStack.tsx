@@ -35,7 +35,7 @@ export default function FriendStack() {
   const { checkChannelExists } = useChannelChecks();
   const { addChannelMember } = useChannelMemberActions();
   const { handleAchievementsEarned } = useAchievementActions();
-  const { setSelectedStatistic } = useProfileActions();
+  const { resetSelectedStatistic } = useProfileActions();
   const { displayDialog } = useDialogActions();
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
@@ -132,7 +132,7 @@ export default function FriendStack() {
     );
     resetSelectedFriend(friendship.incoming_friend.id);
     resetSelectedDirectChannel(currentUser.id, friendship.incoming_friend.id);
-    setSelectedStatistic(undefined);
+    resetSelectedStatistic();
   }
 
   async function unblockFriend(friendship: Friend): Promise<void> {
@@ -152,13 +152,10 @@ export default function FriendStack() {
     await callFriendsAPI('DELETE', friendship.incoming_friend);
     deleteFriend(friendship);
     emitToSocket(friendSocket, 'deleteFriend', friendship);
-    await handleAchievementsEarned(currentUser.id, 2, displayNotification).then(
-      (earned) =>
-        earned &&
-        displayNotification(
-          'error',
-          'Unfriended ' + friendship.incoming_friend.username,
-        ),
+    await handleAchievementsEarned(currentUser.id, 2, displayNotification);
+    displayNotification(
+      'error',
+      'Unfriended ' + friendship.incoming_friend.username,
     );
     resetSelectedFriend(friendship.incoming_friend.id);
     resetSelectedDirectChannel(currentUser.id, friendship.incoming_friend.id);

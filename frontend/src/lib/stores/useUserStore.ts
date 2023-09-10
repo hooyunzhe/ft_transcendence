@@ -182,6 +182,7 @@ const useUserStore = create<UserStore>()((set) => ({
     currentPreference: {
       id: 0,
       music_enabled: false,
+      sound_effects_enabled: false,
       animations_enabled: false,
     },
     isNewUser: false,

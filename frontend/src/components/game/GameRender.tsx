@@ -83,11 +83,11 @@ export default function GameRender() {
   };
 
   const endGame = () => {
-    if (gameSocket) gameSocket.emit('end');
+    gameSocket?.emit('end');
     gameAction.setGameReady(false);
+    gameAction.setSelectedGameMode(GameMode.CYBERPONG);
     gameAction.setSelectedSkillClass(undefined);
     gameAction.setMatchState(MatchState.END);
-    gameAction.setSelectedGameMode(GameMode.CYBERPONG);
   };
 
   useEffect(() => {

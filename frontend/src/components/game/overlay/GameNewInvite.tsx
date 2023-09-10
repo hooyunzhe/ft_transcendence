@@ -6,21 +6,17 @@ import {
   useIncomingInviteUser,
 } from '@/lib/stores/useGameStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
-import { useUtilActions } from '@/lib/stores/useUtilStore';
-import { View } from '@/types/UtilTypes';
 
 export default function GameNewInvite() {
   const gameSocket = useGameSocket();
   const incomingInviteUser = useIncomingInviteUser();
   const incomingInviteRoomID = useIncomingInviteRoomID();
   const { resetBackdrop } = useBackdropActions();
-  const { setCurrentView } = useUtilActions();
 
   function handleAccept(): void {
     if (gameSocket) {
       if (incomingInviteRoomID) {
         gameSocket.emit('acceptInvite', incomingInviteRoomID);
-        setCurrentView(View.GAME);
         resetBackdrop();
       } else {
         console.log('FATAL ERROR: INCOMING INVITE ROOM ID IS UNDEFINED');
