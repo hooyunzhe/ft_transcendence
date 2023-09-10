@@ -93,7 +93,7 @@ export default function ChannelMemberUnbanPrompt({
             setActionButtonDisabled(member.id === selectedMemberToUnban?.id);
           }}
         >
-          <ChannelMemberDisplay stylesDisabled user={member.user} />
+          <ChannelMemberDisplay user={member.user} />
         </ListItemButton>
       ))}
     </Stack>

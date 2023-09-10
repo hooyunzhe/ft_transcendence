@@ -18,6 +18,9 @@ export default function SettingsPersonalPreferences() {
     await callAPI('PATCH', 'preferences', {
       id: currentPreference.id,
       ...(type === PreferenceType.MUSIC && { music_enabled: checked }),
+      ...(type === PreferenceType.SOUND_EFFECTS && {
+        sound_effects_enabled: checked,
+      }),
       ...(type === PreferenceType.ANIMATIONS && {
         animations_enabled: checked,
       }),

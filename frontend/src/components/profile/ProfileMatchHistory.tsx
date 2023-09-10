@@ -22,7 +22,7 @@ export default function ProfileMatchHistory({
       justifyContent='flex-start'
       alignItems='center'
       padding='5px'
-      gap='1vh'
+      gap='1.5vh'
       borderRadius='10px'
       bgcolor='#a291d275'
     >

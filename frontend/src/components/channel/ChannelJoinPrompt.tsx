@@ -15,8 +15,10 @@ import {
 } from '@/lib/stores/useDialogStore';
 import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { ChannelMember, ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import { View } from '@/types/UtilTypes';
 
 interface ChannelJoinPromptProps {
   joinableChannels: Channel[];
@@ -27,7 +29,7 @@ export default function ChannelJoinPrompt({
 }: ChannelJoinPromptProps) {
   const currentUser = useCurrentUser();
   const channelSocket = useChannelSocket();
-  const { addJoinedChannel } = useChannelActions();
+  const { addJoinedChannel, setSelectedChannel } = useChannelActions();
   const { addChannelMember, deleteChannelMembers } = useChannelMemberActions();
   const {
     changeDialog,
@@ -39,6 +41,7 @@ export default function ChannelJoinPrompt({
   const { actionClicked, backClicked } = useDialogTriggers();
   const { handleAchievementsEarned } = useAchievementActions();
   const { displayNotification } = useNotificationActions();
+  const { setCurrentView } = useUtilActions();
   const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
   const [selectedChannelToJoin, setSelectedChannelToJoin] = useState<
     Channel | undefined
@@ -77,6 +80,8 @@ export default function ChannelJoinPrompt({
             (earned) =>
               earned && displayNotification('success', 'Channel joined'),
           );
+          setSelectedChannel(selectedChannelToJoin);
+          setCurrentView(View.CHAT);
         } else {
           throw 'FATAL ERROR: FAILED TO GET CHANNEL MEMBERS IN BACKEND';
         }

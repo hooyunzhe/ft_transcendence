@@ -66,7 +66,7 @@ export default function LeaderboardDisplay({
   return (
     <Box
       width='100%'
-      height='7.85vh'
+      height='7.9vh'
       boxSizing='border-box'
       display='flex'
       justifyContent='space-between'
@@ -86,12 +86,13 @@ export default function LeaderboardDisplay({
         <Typography variant='h6'>{`#${rank + 1}`}</Typography>
         <Avatar
           src={statistic.user.avatar_url}
+          alt={statistic.user.username}
           sx={{ border: 'solid 1px black' }}
         />
         <Typography variant='h6'>{statistic.user.username}</Typography>
       </Box>
       <Box
-        width='30vw'
+        width='32.5vw'
         display='flex'
         justifyContent='space-between'
         alignItems='center'

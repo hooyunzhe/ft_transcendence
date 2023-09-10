@@ -2,6 +2,7 @@
 import { Avatar, Box, Typography } from '@mui/material';
 import { FitnessCenter, Psychology, ShutterSpeed } from '@mui/icons-material';
 import { useGameActions } from '@/lib/stores/useGameStore';
+import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { Match, SkillClass } from '@/types/MatchTypes';
 import { User } from '@/types/UserTypes';
 
@@ -16,7 +17,16 @@ export default function ProfileMatchDisplay({
 }: ProfileMatchDisplayProps) {
   const { getMatchOpponent, getMatchScore, getMatchClass, getClassName } =
     useGameActions();
+  const { setSelectedStatistic } = useProfileActions();
   const matchClass = getMatchClass(match, currentPlayer.id);
+
+  function handleAvatarClick(): void {
+    setSelectedStatistic(
+      match.player_one.id === currentPlayer.id
+        ? match.player_two.id
+        : match.player_one.id,
+    );
+  }
 
   return (
     <Box
@@ -26,7 +36,13 @@ export default function ProfileMatchDisplay({
       justifyContent='space-evenly'
       alignItems='center'
       borderRadius='10px'
-      bgcolor={match.winner_id === currentPlayer.id ? '#00930095' : '#EB370095'}
+      // bgcolor={match.winner_id === currentPlayer.id ? '#00930095' : '#EB370095'}
+      sx={{
+        background:
+          match.winner_id === currentPlayer.id
+            ? 'linear-gradient(90deg, #00930095, 75%, #EB370095)'
+            : 'linear-gradient(90deg, #EB370095, 75%, #00930095)',
+      }}
     >
       <Avatar
         src={
@@ -34,9 +50,16 @@ export default function ProfileMatchDisplay({
             ? match.player_two.avatar_url
             : match.player_one.avatar_url
         }
+        alt={
+          match.player_one.id === currentPlayer.id
+            ? match.player_two.username
+            : match.player_one.username
+        }
         sx={{
           border: 'solid 1px black',
+          cursor: 'pointer',
         }}
+        onClick={handleAvatarClick}
       />
       <Box width='10vw'>
         <Typography variant='h6' sx={{ wordBreak: 'break-word' }}>

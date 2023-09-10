@@ -7,11 +7,12 @@ import {
   useSelectedFriend,
 } from '@/lib/stores/useFriendStore';
 import { useChannelActions } from '@/lib/stores/useChannelStore';
-import { useCurrentUser, useUserStatus } from '@/lib/stores/useUserStore';
 import {
-  useProfileActions,
-  useSelectedStatistic,
-} from '@/lib/stores/useProfileStore';
+  useCurrentUser,
+  useCurrentPreference,
+  useUserStatus,
+} from '@/lib/stores/useUserStore';
+import { useSelectedStatistic } from '@/lib/stores/useProfileStore';
 import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { Friend, FriendAction } from '@/types/FriendTypes';
 import { UserStatus } from '@/types/UserTypes';
@@ -30,13 +31,12 @@ export default function FriendList({
 }: FriendListProps) {
   const friends = useFriends();
   const currentUser = useCurrentUser();
+  const currentPreference = useCurrentPreference();
   const selectedFriend = useSelectedFriend();
-  const selectedStatistic = useSelectedStatistic();
   const userStatus = useUserStatus();
   const currentView = useCurrentView();
   const { setSelectedFriend } = useFriendActions();
   const { setSelectedChannel, setSelectedDirectChannel } = useChannelActions();
-  const { setSelectedStatistic } = useProfileActions();
   const { setCurrentView } = useUtilActions();
   const sortOrder = {
     [UserStatus.IN_GAME]: 0,
@@ -57,20 +57,13 @@ export default function FriendList({
   }
 
   function handleFriendSelect(friend: Friend): void {
-    if (
-      selectedFriend?.id === friend.id &&
-      selectedStatistic?.user.id === friend.incoming_friend.id
-    ) {
+    if (currentView === View.CHAT && selectedFriend?.id === friend.id) {
       setSelectedFriend(undefined);
       setSelectedChannel(undefined);
-      setSelectedStatistic(undefined);
     } else {
       setSelectedFriend(friend);
-      if (!currentView) {
-        setCurrentView(View.CHAT);
-      }
+      setCurrentView(View.CHAT);
       setSelectedDirectChannel(currentUser.id, friend.incoming_friend.id);
-      setSelectedStatistic(friend.incoming_friend.id);
     }
   }
 
@@ -80,10 +73,9 @@ export default function FriendList({
         expand &&
         friends.some((friend) => friend.status === category.toUpperCase())
       }
-      timeout='auto'
+      timeout={currentPreference.animations_enabled ? 'auto' : 0}
       unmountOnExit
       sx={{
-        p: '2px',
         overflow: 'auto',
         '&::-webkit-scrollbar': { display: 'none' },
       }}
@@ -101,7 +93,9 @@ export default function FriendList({
             category === FriendCategory.FRIENDS ? (
               <ListItemButton
                 key={index}
-                disableGutters
+                sx={{
+                  padding: '0',
+                }}
                 selected={selectedFriend?.id === friend.id ?? false}
                 onClick={() => handleFriendSelect(friend)}
               >

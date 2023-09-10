@@ -18,7 +18,7 @@ import {
   useChannelMemberChecks,
 } from '@/lib/stores/useChannelMemberStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
-import { useUtilActions } from '@/lib/stores/useUtilStore';
+import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberStatus } from '@/types/ChannelMemberTypes';
 import { View } from '@/types/UtilTypes';
@@ -29,6 +29,7 @@ export default function ChannelList() {
   const joinedChannels = useJoinedChannels();
   const recentChannelActivity = useRecentChannelActivity();
   const selectedChannel = useSelectedChannel();
+  const currentView = useCurrentView();
   const channelSocket = useChannelSocket();
   const { setSelectedChannel, setSelectedChannelMuted, setUnmuteTimeout } =
     useChannelActions();
@@ -46,7 +47,7 @@ export default function ChannelList() {
   );
 
   function handleChannelSelect(channel: Channel): void {
-    if (selectedChannel?.id === channel.id) {
+    if (currentView === View.CHAT && selectedChannel?.id === channel.id) {
       setSelectedChannelMuted(channel.id, false);
       setSelectedChannel(undefined);
     } else {
@@ -75,9 +76,7 @@ export default function ChannelList() {
         channel.id,
         isMemberMuted(currentUser.id, channel.id),
       );
-      if (selectedChannel === undefined) {
-        setCurrentView(View.CHAT);
-      }
+      setCurrentView(View.CHAT);
       setSelectedFriend(undefined);
     }
   }
@@ -135,7 +134,6 @@ export default function ChannelList() {
       <Stack
         spacing={1}
         sx={{
-          p: '2px',
           overflow: 'auto',
           '&::-webkit-scrollbar': { display: 'none' },
         }}

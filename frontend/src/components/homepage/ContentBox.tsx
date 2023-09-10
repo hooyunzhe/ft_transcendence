@@ -9,14 +9,11 @@ import AchievementBox from '../achievement/AchievementBox';
 import SettingsBox from '../settings/SettingsBox';
 import { useCurrentView } from '@/lib/stores/useUtilStore';
 import { useCurrentPreference } from '@/lib/stores/useUserStore';
-import { useMatchState } from '@/lib/stores/useGameStore';
-import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
 
 export default function ContentBox() {
   const currentView = useCurrentView();
   const currentPreference = useCurrentPreference();
-  const matchState = useMatchState();
   const [localView, setLocalView] = useState<View | false>(false);
   const [open, setOpen] = useState(false);
   const [toggleTimeoutID, setToggleTimeoutID] = useState<
@@ -32,7 +29,7 @@ export default function ContentBox() {
           setTimeout(() => {
             setLocalView(currentView);
             setOpen(true);
-          }, 1250),
+          }, 750),
         );
       } else {
         setLocalView(currentView);
@@ -59,8 +56,8 @@ export default function ContentBox() {
       }}
       variant='persistent'
       anchor='bottom'
-      transitionDuration={currentPreference.animations_enabled ? 1000 : 0}
-      open={matchState !== MatchState.INGAME && open}
+      transitionDuration={500}
+      open={open || !currentPreference.animations_enabled}
     >
       {localView === View.GAME && <GameBox />}
       {localView === View.CHAT && <ChatBox />}

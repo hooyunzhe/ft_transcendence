@@ -12,10 +12,11 @@ import {
 } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useChannelSocket, useFriendSocket } from '@/lib/stores/useSocketStore';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
+import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
-import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { Friend, FriendStatus, FriendAction } from '@/types/FriendTypes';
 import { User } from '@/types/UserTypes';
@@ -33,11 +34,12 @@ export default function FriendStack() {
     useChannelActions();
   const { checkChannelExists } = useChannelChecks();
   const { addChannelMember } = useChannelMemberActions();
+  const { handleAchievementsEarned } = useAchievementActions();
+  const { setSelectedStatistic } = useProfileActions();
   const { displayDialog } = useDialogActions();
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
   const { setCurrentFriendCategory } = useUtilActions();
-  const { handleAchievementsEarned } = useAchievementActions();
 
   async function callFriendsAPI(
     method: string,
@@ -130,6 +132,7 @@ export default function FriendStack() {
     );
     resetSelectedFriend(friendship.incoming_friend.id);
     resetSelectedDirectChannel(currentUser.id, friendship.incoming_friend.id);
+    setSelectedStatistic(undefined);
   }
 
   async function unblockFriend(friendship: Friend): Promise<void> {
@@ -240,7 +243,6 @@ export default function FriendStack() {
       <Stack
         spacing={1}
         sx={{
-          p: '5px 2px',
           overflow: 'auto',
           '&::-webkit-scrollbar': { display: 'none' },
         }}

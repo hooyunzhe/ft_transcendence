@@ -1,64 +1,87 @@
 'use client';
-import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { Box, Drawer } from '@mui/material';
 import ToolbarHeader from '../utils/ToolbarHeader';
 import ChannelMemberList from '../channel-member/ChannelMemberList';
 import {
   useChannelMemberDrawerToggle,
+  useShowChannelMemberPaddle,
   useUtilActions,
 } from '@/lib/stores/useUtilStore';
 import { useCurrentPreference } from '@/lib/stores/useUserStore';
-import { useMatchState } from '@/lib/stores/useGameStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
-import { MatchState } from '@/types/GameTypes';
-import { ChannelType } from '@/types/ChannelTypes';
+import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { ToolbarHeaderType } from '@/types/UtilTypes';
 
 export default function ChannelMemberDrawer() {
   const channelMemberDrawerToggle = useChannelMemberDrawerToggle();
+  const showChannelMemberPaddle = useShowChannelMemberPaddle();
   const currentPreference = useCurrentPreference();
-  const matchState = useMatchState();
   const selectedChannel = useSelectedChannel();
   const {
     setChannelMemberDrawerOpen,
     setChannelMemberDrawerClose,
+    handleDrawerMouseEnter,
     handleDrawerMouseLeave,
-    handleDrawerMouseOver,
+    setShowChannelMemberPaddle,
   } = useUtilActions();
   const [toggleTimeoutID, setToggleTimeoutID] = useState<
     NodeJS.Timeout | undefined
+  >();
+  const [localSelectedChannel, setLocalSelectedChannel] = useState<
+    Channel | undefined
   >();
 
   useEffect(() => {
     clearTimeout(toggleTimeoutID);
     if (selectedChannel) {
-      if (channelMemberDrawerToggle) {
+      if (channelMemberDrawerToggle && currentPreference.animations_enabled) {
         setChannelMemberDrawerClose();
-        setToggleTimeoutID(setTimeout(() => setChannelMemberDrawerOpen(), 500));
+        setToggleTimeoutID(
+          setTimeout(() => {
+            setLocalSelectedChannel(selectedChannel);
+            setChannelMemberDrawerOpen();
+          }, 750),
+        );
       } else {
+        setLocalSelectedChannel(selectedChannel);
         setChannelMemberDrawerOpen();
+        setShowChannelMemberPaddle(false);
       }
     } else {
+      if (currentPreference.animations_enabled) {
+        setToggleTimeoutID(
+          setTimeout(() => {
+            setShowChannelMemberPaddle(true);
+          }, 500),
+        );
+      } else {
+        setLocalSelectedChannel(undefined);
+      }
       setChannelMemberDrawerClose();
     }
+
+    return () => clearTimeout(toggleTimeoutID);
   }, [selectedChannel]);
 
   return (
     <Box
-      onMouseOver={() => {
-        if (selectedChannel) {
-          handleDrawerMouseOver(true);
-        }
-      }}
+      onMouseEnter={() => handleDrawerMouseEnter(selectedChannel !== undefined)}
       onMouseLeave={handleDrawerMouseLeave}
     >
-      <Image
-        src='/assets/textures/bluepaddle.png'
-        width={12}
-        height={109}
-        alt='Paddle 2'
-      />
+      {currentPreference.animations_enabled && showChannelMemberPaddle && (
+        <Image
+          src='/assets/textures/bluepaddle.png'
+          width={12}
+          height={109}
+          style={{
+            width: '18px',
+            height: '163.5px',
+          }}
+          alt='Blue Paddle'
+        />
+      )}
       <Drawer
         PaperProps={{
           sx: {
@@ -73,28 +96,28 @@ export default function ChannelMemberDrawer() {
         }}
         variant='persistent'
         anchor='right'
+        transitionDuration={500}
         open={
-          matchState !== MatchState.INGAME &&
-          (channelMemberDrawerToggle || !currentPreference.animations_enabled)
+          channelMemberDrawerToggle || !currentPreference.animations_enabled
         }
       >
         <ToolbarHeader
           title={
-            !selectedChannel
+            !localSelectedChannel
               ? ''
-              : selectedChannel.type === ChannelType.DIRECT
+              : localSelectedChannel.type === ChannelType.DIRECT
               ? 'Direct Message'
               : 'Members'
           }
           type={
-            !selectedChannel
+            !localSelectedChannel
               ? ToolbarHeaderType.NONE
-              : selectedChannel.type === ChannelType.DIRECT
+              : localSelectedChannel.type === ChannelType.DIRECT
               ? ToolbarHeaderType.DIRECT_MESSAGE
               : ToolbarHeaderType.CHANNEL_MEMBER
           }
         />
-        <ChannelMemberList />
+        <ChannelMemberList selectedChannel={localSelectedChannel} />
       </Drawer>
     </Box>
   );

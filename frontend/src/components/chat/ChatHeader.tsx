@@ -14,7 +14,7 @@ export default function ChatHeader() {
   return (
     <Box
       display='flex'
-      minHeight='6.1vh'
+      height='80px'
       justifyContent='center'
       alignItems='center'
       sx={{

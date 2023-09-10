@@ -1,40 +1,54 @@
 'use client';
-import { Box, Drawer, Tab, Tabs } from '@mui/material';
 import Image from 'next/image';
+import { useEffect } from 'react';
+import { Box, Drawer, Tab, Tabs } from '@mui/material';
 import ToolbarHeader from '../utils/ToolbarHeader';
 import FriendStack from '../friend/FriendStack';
 import ChannelList from '../channel/ChannelList';
 import {
   useCurrentSocialTab,
+  useShowSocialPaddle,
   useSocialDrawerToggle,
   useUtilActions,
 } from '@/lib/stores/useUtilStore';
 import { useCurrentPreference } from '@/lib/stores/useUserStore';
-import { useMatchState } from '@/lib/stores/useGameStore';
 import { useSelectedChannel } from '@/lib/stores/useChannelStore';
-import { MatchState } from '@/types/GameTypes';
 import { ToolbarHeaderType, SocialTab } from '@/types/UtilTypes';
 
 export default function SocialDrawer() {
   const socialDrawerToggle = useSocialDrawerToggle();
+  const showSocialPaddle = useShowSocialPaddle();
   const currentPreference = useCurrentPreference();
   const currentSocialTab = useCurrentSocialTab();
-  const matchState = useMatchState();
   const selectedChannel = useSelectedChannel();
-  const { setCurrentSocialTab, handleDrawerMouseLeave, handleDrawerMouseOver } =
-    useUtilActions();
+  const {
+    setCurrentSocialTab,
+    setSocialDrawerOpen,
+    handleDrawerMouseLeave,
+    handleDrawerMouseEnter,
+  } = useUtilActions();
+
+  useEffect(() => {
+    setSocialDrawerOpen();
+  }, []);
 
   return (
     <Box
-      onMouseOver={() => handleDrawerMouseOver(selectedChannel !== undefined)}
+      onMouseEnter={() => handleDrawerMouseEnter(selectedChannel !== undefined)}
       onMouseLeave={handleDrawerMouseLeave}
     >
-      <Image
-        src='/assets/textures/redpaddle.png'
-        width={12}
-        height={109}
-        alt='Paddle 1'
-      />
+      {currentPreference.animations_enabled && showSocialPaddle && (
+        <Image
+          src='/assets/textures/redpaddle.png'
+          width={12}
+          height={109}
+          style={{
+            width: '18px',
+            height: '163.5px',
+          }}
+          alt='Red Paddle'
+        />
+      )}
       <Drawer
         PaperProps={{
           sx: {
@@ -49,10 +63,8 @@ export default function SocialDrawer() {
         }}
         variant='persistent'
         anchor='left'
-        open={
-          matchState !== MatchState.INGAME &&
-          (socialDrawerToggle || !currentPreference.animations_enabled)
-        }
+        transitionDuration={500}
+        open={socialDrawerToggle || !currentPreference.animations_enabled}
       >
         <ToolbarHeader title='Social' type={ToolbarHeaderType.SOCIAL} />
         <Tabs

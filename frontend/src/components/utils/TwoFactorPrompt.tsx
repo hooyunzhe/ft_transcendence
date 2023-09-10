@@ -177,6 +177,7 @@ export default function TwoFactorPrompt() {
             <Avatar
               variant='square'
               src={twoFactorUrl}
+              alt='Two Factor QR Code'
               sx={{ width: '100%', height: '100%' }}
             />
           </Box>

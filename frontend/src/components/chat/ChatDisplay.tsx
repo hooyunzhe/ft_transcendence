@@ -88,6 +88,7 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
           <ListItemAvatar>
             <Avatar
               src={message.user.avatar_url}
+              alt={message.user.username}
               sx={{
                 border: 'solid 1px black',
               }}

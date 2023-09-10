@@ -112,7 +112,7 @@ export default function ChannelMemberAddPrompt({
             setActionButtonDisabled(friend.id === selectedFriendToJoin?.id);
           }}
         >
-          <ChannelMemberDisplay stylesDisabled user={friend.incoming_friend} />
+          <ChannelMemberDisplay user={friend.incoming_friend} />
         </ListItemButton>
       ))}
     </Stack>

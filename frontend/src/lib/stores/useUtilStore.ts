@@ -10,6 +10,9 @@ interface UtilStore {
     socialDrawerToggle: boolean;
     channelMemberDrawerToggle: boolean;
     drawerTimeoutID: NodeJS.Timeout | undefined;
+    showSocialPaddle: boolean;
+    showChannelMemberPaddle: boolean;
+    paddleTimeoutID: NodeJS.Timeout | undefined;
     isPromptOpen: boolean;
   };
   actions: {
@@ -21,8 +24,10 @@ interface UtilStore {
     setSocialDrawerClose: () => void;
     setChannelMemberDrawerOpen: () => void;
     setChannelMemberDrawerClose: () => void;
-    handleDrawerMouseOver: (channelSelected: boolean) => void;
+    handleDrawerMouseEnter: (channelSelected: boolean) => void;
     handleDrawerMouseLeave: () => void;
+    setShowSocialPaddle: (show: boolean) => void;
+    setShowChannelMemberPaddle: (show: boolean) => void;
     setIsPromptOpen: (open: boolean) => void;
     setupUtilFriendSocketEvents: (friendSocket: Socket) => void;
     setupUtilGameSocketEvents: (gameSocket: Socket) => void;
@@ -91,6 +96,15 @@ function setSocialDrawerClose(set: StoreSetter): void {
   }));
 }
 
+function setChannelMemberDrawerOpen(set: StoreSetter): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      channelMemberDrawerToggle: true,
+    },
+  }));
+}
+
 function setChannelMemberDrawerClose(set: StoreSetter): void {
   set(({ data }) => ({
     data: {
@@ -102,24 +116,18 @@ function setChannelMemberDrawerClose(set: StoreSetter): void {
   }));
 }
 
-function setChannelMemberDrawerOpen(set: StoreSetter): void {
-  set(({ data }) => ({
-    data: {
-      ...data,
-      channelMemberDrawerToggle: true,
-    },
-  }));
-}
-
-function handleDrawerMouseOver(
+function handleDrawerMouseEnter(
   set: StoreSetter,
   get: StoreGetter,
   channelSelected: boolean,
 ): void {
   clearTimeout(get().data.drawerTimeoutID);
+  clearTimeout(get().data.paddleTimeoutID);
   setSocialDrawerOpen(set);
+  setShowSocialPaddle(set, false);
   if (channelSelected) {
     setChannelMemberDrawerOpen(set);
+    setShowChannelMemberPaddle(set, false);
   }
 }
 
@@ -131,11 +139,41 @@ function handleDrawerMouseLeave(set: StoreSetter): void {
         setSocialDrawerClose(set);
         setChannelMemberDrawerClose(set);
       }, 2000),
+      paddleTimeoutID: data.isPromptOpen
+        ? data.paddleTimeoutID
+        : setTimeout(() => {
+            setShowSocialPaddle(set, true);
+            setShowChannelMemberPaddle(set, true);
+          }, 2500),
     },
   }));
 }
 
-function setIsPromptOpen(set: StoreSetter, open: boolean): void {
+function setShowSocialPaddle(set: StoreSetter, show: boolean): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      showSocialPaddle: show,
+    },
+  }));
+}
+
+function setShowChannelMemberPaddle(set: StoreSetter, show: boolean): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      showChannelMemberPaddle: show,
+    },
+  }));
+}
+
+function setIsPromptOpen(
+  set: StoreSetter,
+  get: StoreGetter,
+  open: boolean,
+): void {
+  clearTimeout(get().data.drawerTimeoutID);
+  clearTimeout(get().data.paddleTimeoutID);
   set(({ data }) => ({
     data: {
       ...data,
@@ -165,13 +203,15 @@ function setupUtilGameSocketEvents(set: StoreSetter, gameSocket: Socket): void {
 
 const useUtilStore = create<UtilStore>()((set, get) => ({
   data: {
-    currentView: false,
+    currentView: View.GAME,
     currentSocialTab: SocialTab.FRIEND,
     currentFriendCategory: FriendCategory.FRIENDS,
     socialDrawerToggle: false,
     channelMemberDrawerToggle: false,
     drawerTimeoutID: undefined,
-    channelSelected: false,
+    showSocialPaddle: false,
+    showChannelMemberPaddle: true,
+    paddleTimeoutID: undefined,
     isPromptOpen: false,
   },
   actions: {
@@ -184,10 +224,12 @@ const useUtilStore = create<UtilStore>()((set, get) => ({
     setSocialDrawerClose: () => setSocialDrawerClose(set),
     setChannelMemberDrawerOpen: () => setChannelMemberDrawerOpen(set),
     setChannelMemberDrawerClose: () => setChannelMemberDrawerClose(set),
-    handleDrawerMouseOver: (channelSelected) =>
-      handleDrawerMouseOver(set, get, channelSelected),
+    handleDrawerMouseEnter: (channelSelected) =>
+      handleDrawerMouseEnter(set, get, channelSelected),
     handleDrawerMouseLeave: () => handleDrawerMouseLeave(set),
-    setIsPromptOpen: (open) => setIsPromptOpen(set, open),
+    setShowSocialPaddle: (show) => setShowSocialPaddle(set, show),
+    setShowChannelMemberPaddle: (show) => setShowChannelMemberPaddle(set, show),
+    setIsPromptOpen: (open) => setIsPromptOpen(set, get, open),
     setupUtilFriendSocketEvents: (friendSocket) =>
       setupUtilFriendSocketEvents(set, friendSocket),
     setupUtilGameSocketEvents: (gameSocket) =>
@@ -203,6 +245,10 @@ export const useCurrentFriendCategory = () =>
   useUtilStore((state) => state.data.currentFriendCategory);
 export const useSocialDrawerToggle = () =>
   useUtilStore((state) => state.data.socialDrawerToggle);
+export const useShowSocialPaddle = () =>
+  useUtilStore((state) => state.data.showSocialPaddle);
+export const useShowChannelMemberPaddle = () =>
+  useUtilStore((state) => state.data.showChannelMemberPaddle);
 export const useChannelMemberDrawerToggle = () =>
   useUtilStore((state) => state.data.channelMemberDrawerToggle);
 export const useUtilActions = () => useUtilStore((state) => state.actions);

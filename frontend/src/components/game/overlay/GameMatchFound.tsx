@@ -20,7 +20,11 @@ export default function GameMatchFound() {
         width: '80%',
       }}
     >
-      <Avatar sx={{ width: 100, height: 100 }} src={avatar} alt={name} />
+      <Avatar
+        sx={{ width: 100, height: 100, border: 'solid 1px black' }}
+        src={avatar}
+        alt={name}
+      />
       <Typography
         fontFamily='cyberthrone'
         letterSpacing='1rem'

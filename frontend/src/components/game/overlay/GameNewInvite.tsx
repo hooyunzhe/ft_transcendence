@@ -56,6 +56,7 @@ export default function GameNewInvite() {
         >
           <Avatar
             src={incomingInviteUser.avatar_url}
+            alt={incomingInviteUser.username}
             sx={{ width: '50px', height: '50px', border: 'solid 1px black' }}
           />
           <Typography variant='h5'>{incomingInviteUser.username}</Typography>

@@ -39,7 +39,7 @@ export default function SettingsAvatarSegment() {
 
   return (
     <Box
-      onMouseOver={() => setIsHover(true)}
+      onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
       onClick={() =>
         displayTwoFactor(() => uploadRef && uploadRef.current?.click())
@@ -54,6 +54,7 @@ export default function SettingsAvatarSegment() {
       />
       <Avatar
         src={currentUser.avatar_url}
+        alt={currentUser.username}
         sx={{
           width: '125px',
           height: '125px',

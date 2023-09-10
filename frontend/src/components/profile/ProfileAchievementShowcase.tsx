@@ -1,6 +1,6 @@
 'use client';
 import { Box, Typography } from '@mui/material';
-import ProfileAchievementDisplay from './ProfileAchievementDisplay';
+import ProfileAchievementRow from './ProfileAchievementRow';
 import { useRecentAchievements } from '@/lib/stores/useAchievementStore';
 import { Statistic } from '@/types/StatisticTypes';
 
@@ -23,19 +23,21 @@ export default function ProfileAchievementShowcase({
       alignContent='flex-start'
       alignItems='center'
       padding='5px'
-      gap='1vw'
+      rowGap='0.9vh'
       borderRadius='10px'
       bgcolor='#a291d275'
     >
-      {recentAchievements[statistic.user.id] ? (
-        recentAchievements[statistic.user.id].map((userAchievement, index) => (
-          <ProfileAchievementDisplay
-            key={index}
-            achievement={userAchievement.achievement}
-            dateEarned={userAchievement.date_of_creation}
-          />
-        ))
-      ) : (
+      {recentAchievements[statistic.user.id] && (
+        <ProfileAchievementRow
+          achievements={recentAchievements[statistic.user.id].slice(0, 2)}
+        />
+      )}
+      {recentAchievements[statistic.user.id] && (
+        <ProfileAchievementRow
+          achievements={recentAchievements[statistic.user.id].slice(2, 4)}
+        />
+      )}
+      {!recentAchievements[statistic.user.id] && (
         <Typography
           sx={{
             opacity: '50%',

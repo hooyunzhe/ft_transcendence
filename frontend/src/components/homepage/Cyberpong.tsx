@@ -1,6 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import { Box } from '@mui/material';
+import Logo from './Logo';
 import NavigationHeader from './NavigationHeader';
 import MainArea from './MainArea';
 import TwoFactorPrompt from '../utils/TwoFactorPrompt';
@@ -164,6 +165,7 @@ export default function Cyberpong() {
         borderRadius: '15px',
       }}
     >
+      <Logo />
       <NavigationHeader />
       <MainArea />
       <TwoFactorPrompt />

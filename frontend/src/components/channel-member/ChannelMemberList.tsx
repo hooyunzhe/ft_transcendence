@@ -11,7 +11,6 @@ import {
   useChannelMemberChecks,
   useChannelMembers,
 } from '@/lib/stores/useChannelMemberStore';
-import { useSelectedChannel } from '@/lib/stores/useChannelStore';
 import { useFriendChecks, useFriends } from '@/lib/stores/useFriendStore';
 import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useChannelSocket, useGameSocket } from '@/lib/stores/useSocketStore';
@@ -32,12 +31,15 @@ import {
   ChannelMemberRole,
   ChannelMemberStatus,
 } from '@/types/ChannelMemberTypes';
-import { ChannelType } from '@/types/ChannelTypes';
+import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { User } from '@/types/UserTypes';
 import { MatchState } from '@/types/GameTypes';
 
-export default function ChannelMemberList() {
-  const selectedChannel = useSelectedChannel();
+export default function ChannelMemberList({
+  selectedChannel,
+}: {
+  selectedChannel: Channel | undefined;
+}) {
   const currentUser = useCurrentUser();
   const channelMembers = useChannelMembers();
   const friends = useFriends();
@@ -301,7 +303,13 @@ export default function ChannelMemberList() {
   }
 
   return (
-    <Stack direction='column' justifyContent='center' spacing={1} padding='7px'>
+    <Stack
+      direction='column'
+      justifyContent='center'
+      spacing={1}
+      padding='7px'
+      overflow='hidden'
+    >
       {selectedChannel &&
         (isChannelAdmin(currentUser.id, selectedChannel.id) ||
           isChannelOwner(currentUser.id, selectedChannel.id)) && (
@@ -331,46 +339,54 @@ export default function ChannelMemberList() {
             Add Member
           </Button>
         )}
-      {channelMembers
-        .filter(
-          (member) =>
-            member.channel.id === selectedChannel?.id &&
-            member.status !== ChannelMemberStatus.BANNED &&
-            (member.user.id !== currentUser.id ||
-              member.channel.type !== ChannelType.DIRECT) &&
-            !isFriendBlocked(member.user.id),
-        )
-        .map((member: ChannelMember, index: number) => (
-          <ListItem
-            key={index}
-            sx={{
-              border: 'solid 3px #4a4eda',
-              borderRadius: '10px',
-              bgcolor: '#A4B5C6',
-            }}
-            component='div'
-          >
-            <ChannelMemberDisplay
-              user={member.user}
-              member={member}
-              currentUserRole={getCurrentRole()}
-              handleAction={handleDisplayAction}
-            />
-            {member.user.id !== currentUser.id && (
-              <IconButton
-                disabled={matchState !== MatchState.IDLE}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => handleInvite(member.user)}
-              >
-                {outgoingInviteUser?.id === member.user.id ? (
-                  <HowToReg />
-                ) : (
-                  <SportsTennis />
-                )}
-              </IconButton>
-            )}
-          </ListItem>
-        ))}
+      <Stack
+        spacing={1}
+        sx={{
+          overflow: 'auto',
+          '&::-webkit-scrollbar': { display: 'none' },
+        }}
+      >
+        {channelMembers
+          .filter(
+            (member) =>
+              member.channel.id === selectedChannel?.id &&
+              member.status !== ChannelMemberStatus.BANNED &&
+              (member.user.id !== currentUser.id ||
+                member.channel.type !== ChannelType.DIRECT) &&
+              !isFriendBlocked(member.user.id),
+          )
+          .map((member: ChannelMember, index: number) => (
+            <ListItem
+              key={index}
+              sx={{
+                border: 'solid 3px #4a4eda',
+                borderRadius: '10px',
+                bgcolor: '#A4B5C6',
+              }}
+              component='div'
+            >
+              <ChannelMemberDisplay
+                user={member.user}
+                member={member}
+                currentUserRole={getCurrentRole()}
+                handleAction={handleDisplayAction}
+              />
+              {member.user.id !== currentUser.id && (
+                <IconButton
+                  disabled={matchState !== MatchState.IDLE}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => handleInvite(member.user)}
+                >
+                  {outgoingInviteUser?.id === member.user.id ? (
+                    <HowToReg />
+                  ) : (
+                    <SportsTennis />
+                  )}
+                </IconButton>
+              )}
+            </ListItem>
+          ))}
+      </Stack>
     </Stack>
   );
 }

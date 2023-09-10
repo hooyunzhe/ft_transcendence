@@ -62,7 +62,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
       <Grow in={avatarUrl.length > 0} timeout={2500}>
         <Box
           alignSelf='center'
-          onMouseOver={() => setIsHover(true)}
+          onMouseEnter={() => setIsHover(true)}
           onMouseLeave={() => setIsHover(false)}
           onClick={() => uploadRef && uploadRef.current?.click()}
         >
@@ -75,6 +75,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
           />
           <Avatar
             src={largeAvatarUrl}
+            alt='Avatar'
             sx={{
               width: 250,
               height: 250,
