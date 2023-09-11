@@ -163,7 +163,8 @@ export default function Cyberpong() {
         gameSocket,
         <GameNewInvite />,
         <GameMatchFound />,
-        <GameDisconnected />,
+        <GameDisconnected isCurrentUser={false} />,
+        <GameDisconnected isCurrentUser={true} />,
         isFriendBlocked,
         currentUser,
       );

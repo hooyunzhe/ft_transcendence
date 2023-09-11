@@ -22,6 +22,7 @@ interface BackdropStore {
       newInviteComponent: ReactNode,
       matchFoundComponent: ReactNode,
       disconnectComponent: ReactNode,
+      selfDisconnectComponent: ReactNode,
       isFriendBlocked: (friendID: number) => boolean,
       currentUser: User,
     ) => void;
@@ -61,12 +62,16 @@ function setupBackdropSocketEvents(
   newInviteComponent: ReactNode,
   matchFoundComponent: ReactNode,
   disconnectComponent: ReactNode,
+  selfDisconnectComponent: ReactNode,
   isFriendBlocked: (friendID: number) => boolean,
   currentUser: User,
 ): void {
   gameSocket.on('matchFound', () => displayBackdrop(set, matchFoundComponent));
   gameSocket.on('playerDisconnected', (user_id: number) => {
-    if (user_id !== currentUser.id) {
+    if (user_id === currentUser.id) {
+      displayBackdrop(set, selfDisconnectComponent);
+      setTimeout(() => resetBackdrop(set), 2000);
+    } else {
       displayBackdrop(set, disconnectComponent);
       setTimeout(() => resetBackdrop(set), 2000);
     }
@@ -102,6 +107,7 @@ const useBackdropStore = create<BackdropStore>()((set) => ({
       newInviteComponent,
       matchFoundComponent,
       disconnectComponent,
+      selfDisconnectComponent,
       isFriendBlocked,
       currentUser,
     ) =>
@@ -111,6 +117,7 @@ const useBackdropStore = create<BackdropStore>()((set) => ({
         newInviteComponent,
         matchFoundComponent,
         disconnectComponent,
+        selfDisconnectComponent,
         isFriendBlocked,
         currentUser,
       ),
