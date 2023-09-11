@@ -5,11 +5,13 @@ import { Achievement } from '@/types/AchievementTypes';
 interface AchievementDisplayProps {
   achievement: Achievement;
   dateAchieved: string;
+  displayHidden: boolean;
 }
 
 export default function AchievementDisplay({
   achievement,
   dateAchieved,
+  displayHidden,
 }: AchievementDisplayProps) {
   return (
     <Box width='50%' display='flex'>
@@ -31,7 +33,11 @@ export default function AchievementDisplay({
             variant='square'
             sx={{ width: '50px', height: '50px', bgcolor: 'black' }}
           >
-            <AchievementIcon achievementID={achievement.id} />
+            <AchievementIcon
+              achievementID={
+                displayHidden ? achievement.id + 1 : achievement.id
+              }
+            />
           </Avatar>
           <Box
             width='100%'
@@ -42,9 +48,11 @@ export default function AchievementDisplay({
           >
             <Box>
               <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
-                {achievement.name}
+                {displayHidden ? 'Hidden' : achievement.name}
               </Typography>
-              <Typography>{achievement.description}</Typography>
+              <Typography>
+                {displayHidden ? 'Hidden' : achievement.description}
+              </Typography>
             </Box>
             {dateAchieved && (
               <Typography marginLeft='auto'>

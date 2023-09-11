@@ -51,7 +51,7 @@ export default function Home() {
             objectFit: 'cover',
           }}
         >
-          <source src='/assets/mainmenu.mp4' type='video/mp4' />
+          <source src='/assets/videos/mainmenu.mp4' type='video/mp4' />
         </video>
       )}
       {session === null && <Login />}

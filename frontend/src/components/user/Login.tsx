@@ -1,5 +1,4 @@
 'use client';
-import '../../styles/cyberfont.css';
 import Image from 'next/image';
 import { signIn } from 'next-auth/react';
 import { Box, Button, Slide, Typography } from '@mui/material';
@@ -19,10 +18,10 @@ export default function Login() {
             textShadow: '4px 4px 6px black',
           }}
           fontFamily='cyberfont'
+          letterSpacing='1rem'
           color='#DDDDDD'
           variant='h1'
           align='center'
-          letterSpacing='1rem'
         >
           Cyberpong
         </Typography>

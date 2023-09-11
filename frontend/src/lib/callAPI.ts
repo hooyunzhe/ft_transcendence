@@ -5,7 +5,7 @@ export default async function callAPI(
   route: string,
   messageBody?: any,
 ): Promise<APIResponse> {
-  const domain = process.env.NEXT_PUBLIC_HOST_URL + ':4242/api/';
+  const domain = process.env.NEXT_PUBLIC_BACKEND_URL + '/api/';
   const response = await fetch(domain + route, {
     cache: 'no-store',
     method: method,

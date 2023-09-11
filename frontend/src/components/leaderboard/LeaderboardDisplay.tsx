@@ -3,7 +3,9 @@ import { useEffect, useRef } from 'react';
 import { Avatar, Box, Typography } from '@mui/material';
 import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { useGameActions } from '@/lib/stores/useGameStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { Statistic } from '@/types/StatisticTypes';
+import { View } from '@/types/UtilTypes';
 
 interface LeaderboardDisplayProps {
   rank: number;
@@ -16,9 +18,15 @@ export default function LeaderboardDisplay({
   statistic,
   isCurrentUser,
 }: LeaderboardDisplayProps) {
-  const leaderboardDisplay = useRef<HTMLDivElement | null>(null);
-  const { getFavoriteClass } = useProfileActions();
+  const { getFavoriteClass, setSelectedStatistic } = useProfileActions();
   const { getClassName } = useGameActions();
+  const { setCurrentView } = useUtilActions();
+  const leaderboardDisplay = useRef<HTMLDivElement | null>(null);
+
+  function handleAvatarClick(): void {
+    setSelectedStatistic(statistic.user.id);
+    setCurrentView(View.PROFILE);
+  }
 
   useEffect(() => {
     let scrollTimeoutID: NodeJS.Timeout;
@@ -36,13 +44,12 @@ export default function LeaderboardDisplay({
       }, 1000);
     }
 
-    return () => {
-      clearTimeout(scrollTimeoutID);
-    };
+    return () => clearTimeout(scrollTimeoutID);
   }, []);
 
   const statsToDisplay = [
     { minWidth: '2.5vw', name: 'Wins', stat: `${statistic.wins}` },
+    { minWidth: '2.5vw', name: 'Losses', stat: `${statistic.losses}` },
     {
       minWidth: '4vw',
       name: 'Win Rate',
@@ -67,7 +74,7 @@ export default function LeaderboardDisplay({
   return (
     <Box
       width='100%'
-      height='7.85vh'
+      height='7.9vh'
       boxSizing='border-box'
       display='flex'
       justifyContent='space-between'
@@ -87,12 +94,14 @@ export default function LeaderboardDisplay({
         <Typography variant='h6'>{`#${rank + 1}`}</Typography>
         <Avatar
           src={statistic.user.avatar_url}
+          alt={statistic.user.username}
           sx={{ border: 'solid 1px black' }}
+          onClick={handleAvatarClick}
         />
         <Typography variant='h6'>{statistic.user.username}</Typography>
       </Box>
       <Box
-        width='30vw'
+        width='32.5vw'
         display='flex'
         justifyContent='space-between'
         alignItems='center'

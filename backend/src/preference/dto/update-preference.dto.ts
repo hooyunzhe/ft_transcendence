@@ -7,8 +7,8 @@ export class UpdatePreferenceDto {
 
   @ValidateIf(
     (dto: UpdatePreferenceDto) =>
-      (dto.animations_enabled === undefined &&
-        dto.light_mode_enabled === undefined) ||
+      (dto.sound_effects_enabled === undefined &&
+        dto.animations_enabled === undefined) ||
       dto.music_enabled !== undefined,
   )
   @IsBoolean()
@@ -17,18 +17,18 @@ export class UpdatePreferenceDto {
   @ValidateIf(
     (dto: UpdatePreferenceDto) =>
       (dto.music_enabled === undefined &&
-        dto.light_mode_enabled === undefined) ||
-      dto.animations_enabled !== undefined,
+        dto.animations_enabled === undefined) ||
+      dto.music_enabled !== undefined,
   )
   @IsBoolean()
-  animations_enabled: boolean;
+  sound_effects_enabled: boolean;
 
   @ValidateIf(
     (dto: UpdatePreferenceDto) =>
       (dto.music_enabled === undefined &&
-        dto.animations_enabled === undefined) ||
-      dto.light_mode_enabled !== undefined,
+        dto.sound_effects_enabled === undefined) ||
+      dto.animations_enabled !== undefined,
   )
   @IsBoolean()
-  light_mode_enabled: boolean;
+  animations_enabled: boolean;
 }

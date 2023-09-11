@@ -2,12 +2,12 @@
 import { useEffect, useState } from 'react';
 import { Avatar, Box, Divider, Drawer, Tab, Tabs } from '@mui/material';
 import {
-  AssignmentIndRounded,
-  ChatRounded,
-  EmojiEventsRounded,
-  LeaderboardRounded,
-  SettingsRounded,
-  SportsTennisRounded,
+  AssignmentInd,
+  Chat,
+  EmojiEvents,
+  Leaderboard,
+  Settings,
+  SportsEsports,
 } from '@mui/icons-material';
 import {
   useCurrentPreference,
@@ -15,7 +15,10 @@ import {
 } from '@/lib/stores/useUserStore';
 import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { useMatchState } from '@/lib/stores/useGameStore';
-import { useProfileActions } from '@/lib/stores/useProfileStore';
+import {
+  useProfileActions,
+  useSelectedStatistic,
+} from '@/lib/stores/useProfileStore';
 import { MatchState } from '@/types/GameTypes';
 import { View } from '@/types/UtilTypes';
 
@@ -23,10 +26,23 @@ export default function NavigationHeader() {
   const currentUser = useCurrentUser();
   const currentPreference = useCurrentPreference();
   const currentView = useCurrentView();
+  const selectedStatistic = useSelectedStatistic();
   const matchState = useMatchState();
-  const { setSelectedStatistic } = useProfileActions();
+  const { setSelectedStatistic, resetSelectedStatistic } = useProfileActions();
   const { setCurrentView, changeCurrentView } = useUtilActions();
   const [open, setOpen] = useState(false);
+
+  function handleAvatarClick(): void {
+    if (
+      currentView === View.PROFILE &&
+      selectedStatistic?.user.id === currentUser.id
+    ) {
+      resetSelectedStatistic();
+    } else {
+      setSelectedStatistic(currentUser.id);
+      setCurrentView(View.PROFILE);
+    }
+  }
 
   useEffect(() => {
     setOpen(true);
@@ -39,7 +55,7 @@ export default function NavigationHeader() {
       PaperProps={{
         sx: {
           boxSizing: 'border-box',
-          width: '35vw',
+          width: '37vw',
           height: '6vh',
           marginTop: '0.5vh',
           marginRight: '0.5vh',
@@ -50,7 +66,7 @@ export default function NavigationHeader() {
       }}
       variant='persistent'
       anchor='right'
-      transitionDuration={1000}
+      transitionDuration={500}
       open={
         matchState !== MatchState.INGAME &&
         (open || !currentPreference.animations_enabled)
@@ -71,34 +87,34 @@ export default function NavigationHeader() {
         >
           <Tab
             sx={{
-              color: 'green',
+              color: '#ba413a',
             }}
-            icon={<SportsTennisRounded />}
+            icon={<SportsEsports />}
             value={View.GAME}
             onClick={() => changeCurrentView(View.GAME)}
           />
           <Tab
-            icon={<ChatRounded />}
+            icon={<Chat />}
             value={View.CHAT}
             onClick={() => changeCurrentView(View.CHAT)}
           />
           <Tab
-            icon={<AssignmentIndRounded />}
+            icon={<AssignmentInd />}
             value={View.PROFILE}
             onClick={() => changeCurrentView(View.PROFILE)}
           />
           <Tab
-            icon={<LeaderboardRounded />}
+            icon={<Leaderboard />}
             value={View.LEADERBOARD}
             onClick={() => changeCurrentView(View.LEADERBOARD)}
           />
           <Tab
-            icon={<EmojiEventsRounded />}
+            icon={<EmojiEvents />}
             value={View.ACHIEVEMENTS}
             onClick={() => changeCurrentView(View.ACHIEVEMENTS)}
           />
           <Tab
-            icon={<SettingsRounded />}
+            icon={<Settings />}
             value={View.SETTINGS}
             onClick={() => changeCurrentView(View.SETTINGS)}
           />
@@ -112,19 +128,15 @@ export default function NavigationHeader() {
           orientation='vertical'
           variant='middle'
         />
-        <Box
-          onClick={() => {
-            setSelectedStatistic(currentUser.id);
-            setCurrentView(View.PROFILE);
+        <Avatar
+          src={currentUser.avatar_url}
+          alt={currentUser.username}
+          sx={{
+            border: 'solid 1px black',
+            cursor: 'pointer',
           }}
-        >
-          <Avatar
-            src={currentUser.avatar_url}
-            sx={{
-              border: 'solid 1px black',
-            }}
-          />
-        </Box>
+          onClick={handleAvatarClick}
+        />
       </Box>
     </Drawer>
   );

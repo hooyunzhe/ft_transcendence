@@ -18,11 +18,11 @@ export default function SettingsPersonalPreferences() {
     await callAPI('PATCH', 'preferences', {
       id: currentPreference.id,
       ...(type === PreferenceType.MUSIC && { music_enabled: checked }),
+      ...(type === PreferenceType.SOUND_EFFECTS && {
+        sound_effects_enabled: checked,
+      }),
       ...(type === PreferenceType.ANIMATIONS && {
         animations_enabled: checked,
-      }),
-      ...(type === PreferenceType.LIGHT_MODE && {
-        light_mode_enabled: checked,
       }),
     });
     changeCurrentPreference(type, checked);
@@ -41,6 +41,19 @@ export default function SettingsPersonalPreferences() {
         />
       </Box>
       <Box>
+        <Typography variant='h6'>Sound Effects</Typography>
+        <Switch
+          checked={currentPreference.sound_effects_enabled}
+          onMouseDown={(event) => event.preventDefault()}
+          onChange={(event) =>
+            handlePreferenceToggle(
+              PreferenceType.SOUND_EFFECTS,
+              event.target.checked,
+            )
+          }
+        />
+      </Box>
+      <Box>
         <Typography variant='h6'>Animations</Typography>
         <Switch
           checked={currentPreference.animations_enabled}
@@ -48,19 +61,6 @@ export default function SettingsPersonalPreferences() {
           onChange={(event) =>
             handlePreferenceToggle(
               PreferenceType.ANIMATIONS,
-              event.target.checked,
-            )
-          }
-        />
-      </Box>
-      <Box>
-        <Typography variant='h6'>Light Mode</Typography>
-        <Switch
-          checked={currentPreference.light_mode_enabled}
-          onMouseDown={(event) => event.preventDefault()}
-          onChange={(event) =>
-            handlePreferenceToggle(
-              PreferenceType.LIGHT_MODE,
               event.target.checked,
             )
           }

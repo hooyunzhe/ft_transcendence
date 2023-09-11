@@ -34,7 +34,7 @@ export default function ChannelNameChangePrompt({
   const { checkChannelExists } = useChannelChecks();
 
   async function handleNameChange() {
-    if (newName === channelName) {
+    if (newName.trim() === channelName) {
       throw 'New name cannot be the same name. That is dumb.';
     }
     if (newName.length > 16) {
@@ -43,7 +43,7 @@ export default function ChannelNameChangePrompt({
     if (newName.trim().length === 0) {
       throw 'Cannot change name into just spaces.';
     }
-    if (checkChannelExists(newName)) {
+    if (checkChannelExists(newName.trim())) {
       throw 'Channel name already taken.';
     }
     const channelResponse = await callAPI('PATCH', 'channels', {
@@ -53,7 +53,7 @@ export default function ChannelNameChangePrompt({
     });
 
     if (channelResponse.status === 200) {
-      changeChannelName(channelID, newName);
+      changeChannelName(channelID, newName.trim());
       emitToSocket(channelSocket, 'changeChannelName', {
         id: channelID,
         newName: newName,

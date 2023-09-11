@@ -1,10 +1,11 @@
-import { Channel, ChannelType } from '@/types/ChannelTypes';
-import callAPI from '../callAPI';
 import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
+import callAPI from '../callAPI';
+import emitToSocket from '../emitToSocket';
+import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberStatus, ChannelMember } from '@/types/ChannelMemberTypes';
 import { Message } from '@/types/MessageTypes';
-import emitToSocket from '../emitToSocket';
+import { User } from '@/types/UserTypes';
 
 interface ChannelStore {
   data: {
@@ -26,10 +27,16 @@ interface ChannelStore {
     deleteJoinedChannel: (channelID: number) => void;
     updateRecentChannelActivity: (channelID: number) => void;
     setSelectedChannel: (channel: Channel | undefined) => void;
-    setSelectedDirectChannel: (incomingID: number) => void;
+    setSelectedDirectChannel: (
+      currentUserID: number,
+      incomingID: number,
+    ) => void;
     setSelectedChannelMuted: (channelID: number, isMuted: boolean) => void;
     resetSelectedChannel: (channelID: number) => void;
-    resetSelectedDirectChannel: (incomingID: number) => void;
+    resetSelectedDirectChannel: (
+      currentUserID: number,
+      incomingID: number,
+    ) => void;
     setUnmuteTimeout: (
       mutedUntil: string,
       memberID: number,
@@ -39,6 +46,14 @@ interface ChannelStore {
     ) => void;
     setupChannelSocketEvents: (
       channelSocket: Socket,
+      currentUserID: number,
+    ) => void;
+    setupChannelFriendSocketEvents: (
+      friendSocket: Socket,
+      currentUserID: number,
+    ) => void;
+    setupChannelUserSocketEvents: (
+      userSocket: Socket,
       currentUserID: number,
     ) => void;
   };
@@ -229,12 +244,14 @@ function setSelectedChannel(
 function setSelectedDirectChannel(
   set: StoreSetter,
   get: StoreGetter,
+  currentUserID: number,
   incomingID: number,
 ): void {
   const selectedDirectChannel = get().data.channels.find(
     (channel) =>
       channel.type === ChannelType.DIRECT &&
-      channel.name.includes(String(incomingID)),
+      (channel.name === `${currentUserID}+${incomingID}DM` ||
+        channel.name === `${incomingID}+${currentUserID}DM`),
   );
 
   if (selectedDirectChannel) {
@@ -272,6 +289,7 @@ function resetSelectedChannel(set: StoreSetter, channelID: number): void {
 
 function resetSelectedDirectChannel(
   set: StoreSetter,
+  currentUserID: number,
   incomingID: number,
 ): void {
   set(({ data }) => ({
@@ -279,7 +297,8 @@ function resetSelectedDirectChannel(
       ...data,
       selectedChannel:
         data.selectedChannel?.type === ChannelType.DIRECT &&
-        data.selectedChannel?.name.includes(String(incomingID))
+        (data.selectedChannel?.name === `${currentUserID}+${incomingID}DM` ||
+          data.selectedChannel?.name === `${incomingID}+${currentUserID}DM`)
           ? undefined
           : data.selectedChannel,
     },
@@ -343,13 +362,17 @@ function setupChannelSocketEvents(
   channelSocket.on('deleteChannel', (channelID: number) => {
     resetSelectedChannel(set, channelID);
     deleteChannel(set, channelID);
+    channelSocket.emit('leaveRoom', channelID);
   });
-  channelSocket.on('newMember', (channelMember: ChannelMember) => {
-    if (channelMember.user.id === currentUserID) {
-      addJoinedChannel(set, channelMember.channel.id);
-      channelSocket.emit('joinRoom', channelMember.channel.id);
-    }
-  });
+  channelSocket.on(
+    'newMember',
+    ({ newMember }: { newMember: ChannelMember }) => {
+      if (newMember.user.id === currentUserID) {
+        addJoinedChannel(set, newMember.channel.id);
+        channelSocket.emit('joinRoom', newMember.channel.id);
+      }
+    },
+  );
   channelSocket.on('kickMember', (channelMember: ChannelMember) => {
     if (channelMember.user.id === currentUserID) {
       resetSelectedChannel(set, channelMember.channel.id);
@@ -420,6 +443,26 @@ function setupChannelSocketEvents(
   );
 }
 
+function setupChannelFriendSocketEvents(
+  set: StoreSetter,
+  friendSocket: Socket,
+  currentUserID: number,
+): void {
+  friendSocket.on('deleteFriend', (sender: User) =>
+    resetSelectedDirectChannel(set, currentUserID, sender.id),
+  );
+}
+
+function setupChannelUserSocketEvents(
+  set: StoreSetter,
+  userSocket: Socket,
+  currentUserID: number,
+): void {
+  userSocket.on('deleteAccount', (userID: number) =>
+    resetSelectedDirectChannel(set, currentUserID, userID),
+  );
+}
+
 function checkChannelExists(get: StoreGetter, channelName: string): boolean {
   return get().data.channels.some((channel) => channel.name === channelName);
 }
@@ -459,13 +502,13 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
     updateRecentChannelActivity: (channelID) =>
       updateRecentChannelActivity(set, channelID),
     setSelectedChannel: (channel) => setSelectedChannel(set, channel),
-    setSelectedDirectChannel: (incomingID) =>
-      setSelectedDirectChannel(set, get, incomingID),
+    setSelectedDirectChannel: (currentUserID, incomingID) =>
+      setSelectedDirectChannel(set, get, currentUserID, incomingID),
     setSelectedChannelMuted: (channelID, isMuted) =>
       setSelectedChannelMuted(set, channelID, isMuted),
     resetSelectedChannel: (channelID) => resetSelectedChannel(set, channelID),
-    resetSelectedDirectChannel: (incomingID) =>
-      resetSelectedDirectChannel(set, incomingID),
+    resetSelectedDirectChannel: (currentUserID, incomingID) =>
+      resetSelectedDirectChannel(set, currentUserID, incomingID),
     setUnmuteTimeout: (
       mutedUntil,
       memberID,
@@ -484,6 +527,10 @@ const useChannelStore = create<ChannelStore>()((set, get) => ({
       ),
     setupChannelSocketEvents: (channelSocket, currentUserID) =>
       setupChannelSocketEvents(set, get, channelSocket, currentUserID),
+    setupChannelFriendSocketEvents: (friendSocket, currentUserID) =>
+      setupChannelFriendSocketEvents(set, friendSocket, currentUserID),
+    setupChannelUserSocketEvents: (userSocket, currentUserID) =>
+      setupChannelUserSocketEvents(set, userSocket, currentUserID),
   },
   checks: {
     checkChannelExists: (channelName) => checkChannelExists(get, channelName),

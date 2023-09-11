@@ -14,8 +14,8 @@ export default function ProfileAchievementDisplay({
 }: ProfileAchievementDisplayProps) {
   return (
     <Box
-      width='13.75vw'
-      height='17vh'
+      width='14vw'
+      height='17.5vh'
       display='flex'
       flexDirection='column'
       justifyContent='space-around'

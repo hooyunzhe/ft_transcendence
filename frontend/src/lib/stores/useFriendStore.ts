@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { Socket } from 'socket.io-client';
+import callAPI from '../callAPI';
 import { Friend, FriendStatus } from '@/types/FriendTypes';
 import { User } from '@/types/UserTypes';
-import callAPI from '../callAPI';
 
 interface FriendStore {
   data: {
@@ -21,9 +21,10 @@ interface FriendStore {
     setSelectedFriend: (friend: Friend | undefined) => void;
     resetSelectedFriend: (friendID: number) => void;
     setupFriendSocketEvents: (friendSocket: Socket) => void;
+    setupFriendUserSocketEvents: (userSocket: Socket) => void;
   };
   checks: {
-    isFriendBlocked: (friendID: number) => boolean;
+    isFriendBlocked: (incomingID: number) => boolean;
   };
 }
 
@@ -94,12 +95,14 @@ function setSelectedFriend(set: StoreSetter, friend: Friend | undefined): void {
   }));
 }
 
-function resetSelectedFriend(set: StoreSetter, friendID: number): void {
+function resetSelectedFriend(set: StoreSetter, incomingID: number): void {
   set(({ data }) => ({
     data: {
       ...data,
       selectedFriend:
-        data.selectedFriend?.id === friendID ? undefined : data.selectedFriend,
+        data.selectedFriend?.id === incomingID
+          ? undefined
+          : data.selectedFriend,
     },
   }));
 }
@@ -115,9 +118,20 @@ function setupFriendSocketEvents(set: StoreSetter, friendSocket: Socket): void {
   friendSocket.on('rejectRequest', (sender: User) =>
     deleteFriend(set, sender.id),
   );
-  friendSocket.on('deleteFriend', (sender: User) =>
-    deleteFriend(set, sender.id),
-  );
+  friendSocket.on('deleteFriend', (sender: User) => {
+    deleteFriend(set, sender.id);
+    resetSelectedFriend(set, sender.id);
+  });
+}
+
+function setupFriendUserSocketEvents(
+  set: StoreSetter,
+  userSocket: Socket,
+): void {
+  userSocket.on('deleteAccount', (userID: number) => {
+    deleteFriend(set, userID);
+    resetSelectedFriend(set, userID);
+  });
 }
 
 function isFriendBlocked(get: StoreGetter, incomingID: number): boolean {
@@ -140,6 +154,8 @@ const useFriendStore = create<FriendStore>()((set, get) => ({
     resetSelectedFriend: (friendID) => resetSelectedFriend(set, friendID),
     setupFriendSocketEvents: (friendSocket) =>
       setupFriendSocketEvents(set, friendSocket),
+    setupFriendUserSocketEvents: (userSocket) =>
+      setupFriendUserSocketEvents(set, userSocket),
   },
   checks: {
     isFriendBlocked: (incomingID) => isFriendBlocked(get, incomingID),

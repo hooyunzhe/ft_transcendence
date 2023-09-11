@@ -63,6 +63,7 @@ export default function ChannelPassChangePrompt({
 
       if (changedChannel) {
         changeChannelHash(channelID, changedChannel.hash);
+        displayNotification('success', 'Channel password changed');
       } else {
         throw 'FATAL ERROR: FAILED TO GET CHANGED CHANNEL IN BACKEND';
       }

@@ -1,6 +1,6 @@
-import { Inter } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'] });
+import NonSSRWrapper from '@/NonSSRWrapper';
+import '../styles/cyberfont.css';
+import '../styles/cyberthrone.css';
 
 export const metadata = {
   title: 'Cyberpong',
@@ -15,11 +15,8 @@ export default async function RootLayout({
 }) {
   return (
     <html lang='en'>
-      <body
-        className={inter.className}
-        style={{ margin: '0px', overflow: 'hidden' }}
-      >
-        {children}
+      <body style={{ margin: '0px', overflow: 'hidden' }}>
+        <NonSSRWrapper>{children}</NonSSRWrapper>
       </body>
     </html>
   );

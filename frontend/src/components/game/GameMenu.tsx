@@ -1,109 +1,49 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Box, Button, Typography } from '@mui/material';
-import GameSearch from './GameSearch';
-import GameMatchFound from './GameMatchFound';
-import callAPI from '@/lib/callAPI';
-import { useCurrentUser } from '@/lib/stores/useUserStore';
+import GameSearch from './overlay/GameSearch';
 import { useGameSocket } from '@/lib/stores/useSocketStore';
 import { useGameActions, useMatchState } from '@/lib/stores/useGameStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { useBackdropActions } from '@/lib/stores/useBackdropStore';
-import { MatchInfo, MatchState } from '@/types/GameTypes';
-import GameMenuDropdown from './GameMenuDropdown';
+import { GameMode, MatchState } from '@/types/GameTypes';
+import { View } from '@/types/UtilTypes';
 
 export default function GameMenu() {
-  const currentUser = useCurrentUser();
   const gameSocket = useGameSocket();
   const matchState = useMatchState();
   const gameAction = useGameActions();
+  const { setCurrentView } = useUtilActions();
   const { displayBackdrop, resetBackdrop } = useBackdropActions();
-  const [gameMenuAnchor, setGameMenuAnchor] = useState<
-    HTMLElement | undefined
-  >();
-
-  useEffect(() => {
-    if (!gameSocket) return;
-    gameSocket.on(
-      'match',
-      async (data: { player1: string; player2: string }) => {
-        gameAction.setMatchState(MatchState.FOUND);
-
-        const matchInfo = await getPlayerData(data);
-        console.log(matchInfo);
-        gameAction.setMatchInfo(matchInfo);
-        displayBackdrop(<GameMatchFound />);
-      },
-    ),
-      gameSocket.on('connect', () => {
-        gameSocket.sendBuffer = [];
-        gameSocket.emit('init', currentUser.id);
-      });
-    gameSocket.on('disconnect', () => {
-      gameSocket.sendBuffer = [];
-      console.log('game socket disconnected');
-    });
-    return () => {
-      gameSocket.off('connect');
-      gameSocket.off('disconnect');
-      gameSocket.off('match');
-    };
-  }, []);
 
   useEffect(() => {
     if (matchState === MatchState.FOUND) {
+      setCurrentView(false);
       const matchFoundtimer = setTimeout(() => {
         gameAction.setMatchState(MatchState.READY);
+        setCurrentView(View.GAME);
         resetBackdrop();
       }, 3000);
-      return () => {
-        clearTimeout(matchFoundtimer);
-      };
+      return () => clearTimeout(matchFoundtimer);
     }
   }, [matchState]);
 
-  const findMatch = (gameMode: string) => {
+  const cancelFindMatch = () => gameAction.setMatchState(MatchState.IDLE);
+
+  const findMatch = (gameMode: GameMode) => {
+    if (gameMode === GameMode.CLASSIC) {
+      gameAction.setSelectedGameMode(GameMode.CLASSIC);
+    } else {
+      gameAction.setSelectedGameMode(GameMode.CYBERPONG);
+    }
     if (gameSocket) {
-      gameSocket.connect();
       gameSocket.sendBuffer = [];
-      gameSocket.emit('init', currentUser.id, gameMode);
+      gameSocket.emit('matchmake', gameMode);
       gameAction.setMatchState(MatchState.SEARCHING);
       displayBackdrop(<GameSearch />, cancelFindMatch);
     }
-    console.log(matchState);
   };
 
-  const startGame = () => {
-    if (!gameSocket) return;
-    gameSocket.emit('ready');
-  };
-
-  const cancelFindMatch = () => {
-    if (gameSocket) gameSocket.disconnect();
-    gameAction.setMatchState(MatchState.IDLE);
-  };
-
-  async function getPlayerData(data: { player1: string; player2: string }) {
-    const [player1response, player2response] = await Promise.all([
-      callAPI('GET', 'users?search_type=ONE&search_number=' + data.player1),
-      callAPI('GET', 'users?search_type=ONE&search_number=' + data.player2),
-    ]);
-
-    const player1data = player1response.body;
-    const player2data = player2response.body;
-
-    console.log(player1data);
-    const matchInfo: MatchInfo = {
-      player1: {
-        nickname: player1data.username,
-        avatar: player1data.avatar_url,
-      },
-      player2: {
-        nickname: player2data.username,
-        avatar: player2data.avatar_url,
-      },
-    };
-    return matchInfo;
-  }
   return (
     <Box
       height='100%'
@@ -112,27 +52,52 @@ export default function GameMenu() {
       justifyContent='space-evenly'
       alignItems='center'
     >
-      <Typography variant='h2' color='white'>
-        CYBERPONG
-      </Typography>
-      <Button
-        variant='contained'
+      <Typography
         sx={{
-          bgcolor: '#4CC9F080',
-          ':hover': {
-            bgcolor: '#4CC9F060',
-          },
+          textShadow: '4px 4px 6px black',
         }}
-        onClick={(event) => setGameMenuAnchor(event.currentTarget)}
-        disabled={matchState === MatchState.SEARCHING}
+        fontFamily='cyberfont'
+        letterSpacing='1rem'
+        color='#DDDDDD'
+        variant='h2'
+        align='center'
       >
-        Start Game
-      </Button>
-      <GameMenuDropdown
-        anchorElement={gameMenuAnchor}
-        handleClose={() => setGameMenuAnchor(undefined)}
-        findMatch={findMatch}
-      />
+        Cyberpong
+      </Typography>
+      <Box width='20vw' display='flex' justifyContent='space-between'>
+        <Button
+          sx={{
+            width: '10vw',
+            color: '#DDDDDD',
+            border: 'solid 3px #363636',
+            borderRadius: '15px',
+            bgcolor: '#4CC9F080',
+            ':hover': {
+              bgcolor: '#4CC9F060',
+            },
+          }}
+          disabled={matchState !== MatchState.IDLE}
+          onClick={() => findMatch(GameMode.CLASSIC)}
+        >
+          Classic
+        </Button>
+        <Button
+          sx={{
+            width: '10vw',
+            color: '#DDDDDD',
+            border: 'solid 3px #363636',
+            borderRadius: '15px',
+            bgcolor: '#4CC9F080',
+            ':hover': {
+              bgcolor: '#4CC9F060',
+            },
+          }}
+          disabled={matchState !== MatchState.IDLE}
+          onClick={() => findMatch(GameMode.CYBERPONG)}
+        >
+          Cyberpong
+        </Button>
+      </Box>
     </Box>
   );
 }

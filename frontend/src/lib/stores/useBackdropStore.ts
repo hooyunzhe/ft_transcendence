@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
 import { create } from 'zustand';
+import { Socket } from 'socket.io-client';
+import { User } from '@/types/UserTypes';
 
 interface BackdropStore {
   data: {
@@ -15,6 +17,14 @@ interface BackdropStore {
       fadeTransition?: boolean,
     ) => void;
     resetBackdrop: () => void;
+    setupBackdropSocketEvents: (
+      gameSocket: Socket,
+      newInviteComponent: ReactNode,
+      matchFoundComponent: ReactNode,
+      disconnectComponent: ReactNode,
+      isFriendBlocked: (friendID: number) => boolean,
+      currentUser: User,
+    ) => void;
   };
 }
 
@@ -45,6 +55,37 @@ function resetBackdrop(set: StoreSetter): void {
   }));
 }
 
+function setupBackdropSocketEvents(
+  set: StoreSetter,
+  gameSocket: Socket,
+  newInviteComponent: ReactNode,
+  matchFoundComponent: ReactNode,
+  disconnectComponent: ReactNode,
+  isFriendBlocked: (friendID: number) => boolean,
+  currentUser: User,
+): void {
+  gameSocket.on('matchFound', () => displayBackdrop(set, matchFoundComponent));
+  gameSocket.on('playerDisconnected', (user_id: number) => {
+    if (user_id !== currentUser.id) {
+      displayBackdrop(set, disconnectComponent);
+      setTimeout(() => resetBackdrop(set), 2000);
+    }
+  });
+  gameSocket.on(
+    'newInvite',
+    ({ user, room_id }) =>
+      !isFriendBlocked(user.id) &&
+      displayBackdrop(set, newInviteComponent, () => {
+        gameSocket.emit('rejectInvite', {
+          user: currentUser,
+          room_id: room_id,
+        });
+        resetBackdrop(set);
+      }),
+  );
+  gameSocket.on('cancelInvite', () => resetBackdrop(set));
+}
+
 const useBackdropStore = create<BackdropStore>()((set) => ({
   data: {
     display: false,
@@ -56,6 +97,23 @@ const useBackdropStore = create<BackdropStore>()((set) => ({
     displayBackdrop: (children, handleClose, fadeTransition) =>
       displayBackdrop(set, children, handleClose, fadeTransition),
     resetBackdrop: () => resetBackdrop(set),
+    setupBackdropSocketEvents: (
+      gameSocket,
+      newInviteComponent,
+      matchFoundComponent,
+      disconnectComponent,
+      isFriendBlocked,
+      currentUser,
+    ) =>
+      setupBackdropSocketEvents(
+        set,
+        gameSocket,
+        newInviteComponent,
+        matchFoundComponent,
+        disconnectComponent,
+        isFriendBlocked,
+        currentUser,
+      ),
   },
 }));
 

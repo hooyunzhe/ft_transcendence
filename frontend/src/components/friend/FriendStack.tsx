@@ -12,6 +12,8 @@ import {
 } from '@/lib/stores/useChannelStore';
 import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
 import { useChannelSocket, useFriendSocket } from '@/lib/stores/useSocketStore';
+import { useAchievementActions } from '@/lib/stores/useAchievementStore';
+import { useProfileActions } from '@/lib/stores/useProfileStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
@@ -21,7 +23,6 @@ import { User } from '@/types/UserTypes';
 import { ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
 import { FriendCategory } from '@/types/UtilTypes';
-import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 
 export default function FriendStack() {
   const currentUser = useCurrentUser();
@@ -33,11 +34,12 @@ export default function FriendStack() {
     useChannelActions();
   const { checkChannelExists } = useChannelChecks();
   const { addChannelMember } = useChannelMemberActions();
+  const { handleAchievementsEarned } = useAchievementActions();
+  const { resetSelectedStatistic } = useProfileActions();
   const { displayDialog } = useDialogActions();
   const { displayConfirmation } = useConfirmationActions();
   const { displayNotification } = useNotificationActions();
   const { setCurrentFriendCategory } = useUtilActions();
-  const { handleAchievementsEarned } = useAchievementActions();
 
   async function callFriendsAPI(
     method: string,
@@ -80,7 +82,10 @@ export default function FriendStack() {
         addJoinedChannel(newDirectChannel.id);
         addChannelMember(friendMember);
         addChannelMember(selfMember);
-        emitToSocket(channelSocket, 'newMember', friendMember);
+        emitToSocket(channelSocket, 'newMember', {
+          newMember: friendMember,
+          adminMember: selfMember,
+        });
         emitToSocket(channelSocket, 'joinRoom', newDirectChannel.id);
       } else {
         console.log('FATAL ERROR: FAILED TO ADD DM MEMBERS IN BACKEND');
@@ -97,8 +102,7 @@ export default function FriendStack() {
     displayNotification('success', 'Request accepted');
     setCurrentFriendCategory(FriendCategory.FRIENDS);
 
-    const directChannelName =
-      String(request.incoming_friend.id) + String(currentUser.id) + 'DM';
+    const directChannelName = `${request.incoming_friend.id}+${currentUser.id}DM`;
     if (!checkChannelExists(directChannelName)) {
       createDirectChannel(directChannelName, request.incoming_friend.id);
     }
@@ -129,8 +133,9 @@ export default function FriendStack() {
       'warning',
       'Blocked ' + friendship.incoming_friend.username,
     );
-    resetSelectedFriend(friendship.id);
-    resetSelectedDirectChannel(friendship.incoming_friend.id);
+    resetSelectedFriend(friendship.incoming_friend.id);
+    resetSelectedDirectChannel(currentUser.id, friendship.incoming_friend.id);
+    resetSelectedStatistic();
   }
 
   async function unblockFriend(friendship: Friend): Promise<void> {
@@ -150,16 +155,13 @@ export default function FriendStack() {
     await callFriendsAPI('DELETE', friendship.incoming_friend);
     deleteFriend(friendship);
     emitToSocket(friendSocket, 'deleteFriend', friendship);
-    await handleAchievementsEarned(currentUser.id, 2, displayNotification).then(
-      (earned) =>
-        earned &&
-        displayNotification(
-          'error',
-          'Unfriended ' + friendship.incoming_friend.username,
-        ),
+    await handleAchievementsEarned(currentUser.id, 2, displayNotification);
+    displayNotification(
+      'error',
+      'Unfriended ' + friendship.incoming_friend.username,
     );
-    resetSelectedFriend(friendship.id);
-    resetSelectedDirectChannel(friendship.incoming_friend.id);
+    resetSelectedFriend(friendship.incoming_friend.id);
+    resetSelectedDirectChannel(currentUser.id, friendship.incoming_friend.id);
   }
 
   function handleAction(request: Friend, action: FriendAction): void {
@@ -241,7 +243,6 @@ export default function FriendStack() {
       <Stack
         spacing={1}
         sx={{
-          p: '5px 2px',
           overflow: 'auto',
           '&::-webkit-scrollbar': { display: 'none' },
         }}

@@ -3,8 +3,12 @@ import { useEffect, useState } from 'react';
 import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
+import { useCurrentUser } from '@/lib/stores/useUserStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
-import { useChannelMemberActions } from '@/lib/stores/useChannelMemberStore';
+import {
+  useChannelMemberActions,
+  useChannelMemberChecks,
+} from '@/lib/stores/useChannelMemberStore';
 import {
   useDialogActions,
   useDialogTriggers,
@@ -14,6 +18,7 @@ import {
   ChannelMemberMuteDuration,
   ChannelMember,
   ChannelMemberStatus,
+  ChannelMemberRole,
 } from '@/types/ChannelMemberTypes';
 
 interface ChannelMemberMutePromptProps {
@@ -23,8 +28,10 @@ interface ChannelMemberMutePromptProps {
 export default function ChannelMemberMutePrompt({
   member,
 }: ChannelMemberMutePromptProps) {
+  const currentUser = useCurrentUser();
   const channelSocket = useChannelSocket();
   const { changeChannelMemberStatus } = useChannelMemberActions();
+  const { isChannelAdmin, isChannelOwner } = useChannelMemberChecks();
   const { actionClicked, backClicked } = useDialogTriggers();
   const { resetDialog, resetTriggers } = useDialogActions();
   const { displayNotification } = useNotificationActions();
@@ -45,26 +52,39 @@ export default function ChannelMemberMutePrompt({
   }
 
   async function muteUser(): Promise<void> {
-    const mutedUntil = calculateMuteUntil();
+    if (
+      (member.role === ChannelMemberRole.MEMBER &&
+        isChannelAdmin(currentUser.id, member.channel.id)) ||
+      (member.role !== ChannelMemberRole.OWNER &&
+        isChannelOwner(currentUser.id, member.channel.id))
+    ) {
+      const mutedUntil = calculateMuteUntil();
 
-    await callAPI('PATCH', 'channel-members', {
-      id: member.id,
-      status: ChannelMemberStatus.MUTED,
-      muted_until: mutedUntil,
-    });
-    changeChannelMemberStatus(member.id, ChannelMemberStatus.MUTED, mutedUntil);
-    const data = {
-      memberID: member.id,
-      userID: member.user.id,
-      channelID: member.channel.id,
-      newStatus: ChannelMemberStatus.MUTED,
-      mutedUntil: mutedUntil,
-    };
-    emitToSocket(channelSocket, 'changeStatus', data);
-    displayNotification(
-      'success',
-      `Channel member ${member.user.username} muted`,
-    );
+      await callAPI('PATCH', 'channel-members', {
+        id: member.id,
+        status: ChannelMemberStatus.MUTED,
+        muted_until: mutedUntil,
+      });
+      changeChannelMemberStatus(
+        member.id,
+        ChannelMemberStatus.MUTED,
+        mutedUntil,
+      );
+      const data = {
+        memberID: member.id,
+        userID: member.user.id,
+        channelID: member.channel.id,
+        newStatus: ChannelMemberStatus.MUTED,
+        mutedUntil: mutedUntil,
+      };
+      emitToSocket(channelSocket, 'changeStatus', data);
+      displayNotification(
+        'success',
+        `Channel member ${member.user.username} muted`,
+      );
+    } else {
+      throw 'You are no longer an admin, unable to unmute';
+    }
   }
 
   useEffect(() => {
@@ -72,7 +92,7 @@ export default function ChannelMemberMutePrompt({
       muteUser()
         .then(resetDialog)
         .catch((error) => {
-          resetTriggers();
+          resetDialog();
           displayNotification('error', error);
         });
     }

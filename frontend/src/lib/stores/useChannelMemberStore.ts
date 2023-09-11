@@ -1,11 +1,11 @@
+import { create } from 'zustand';
+import { Socket } from 'socket.io-client';
+import callAPI from '../callAPI';
 import {
   ChannelMemberRole,
   ChannelMemberStatus,
   ChannelMember,
 } from '@/types/ChannelMemberTypes';
-import { create } from 'zustand';
-import callAPI from '../callAPI';
-import { Socket } from 'socket.io-client';
 
 interface ChannelMemberStore {
   data: {
@@ -13,12 +13,15 @@ interface ChannelMemberStore {
   };
   actions: {
     getChannelMemberData: () => void;
+    getMembersOfChannel: (channelID: number) => void;
     getChannelMember: (
       userID: number,
       channelID: number,
     ) => ChannelMember | undefined;
+    getChannelOwner: (channelID: number) => ChannelMember | undefined;
     addChannelMember: (channelMember: ChannelMember) => void;
     kickChannelMember: (memberID: number) => void;
+    deleteChannelMember: (userID: number) => void;
     deleteChannelMembers: (channelID: number) => void;
     changeChannelMemberRole: (
       memberID: number,
@@ -33,6 +36,7 @@ interface ChannelMemberStore {
       channelSocket: Socket,
       currentUserID: number,
     ) => void;
+    setupChannelMemberUserSocketEvents: (userSocket: Socket) => void;
   };
   checks: {
     isChannelOwner: (userID: number, channelID: number) => boolean;
@@ -63,6 +67,23 @@ async function getChannelMemberData(set: StoreSetter): Promise<void> {
   }));
 }
 
+async function getMembersOfChannel(
+  set: StoreSetter,
+  channelID: number,
+): Promise<void> {
+  const membersData = await callAPI(
+    'GET',
+    `channel-members?search_type=CHANNEL&search_number=${channelID}`,
+  ).then((res) => res.body);
+
+  set(({ data }) => ({
+    data: {
+      ...data,
+      channelMembers: [...data.channelMembers, ...membersData],
+    },
+  }));
+}
+
 function getChannelMember(
   get: StoreGetter,
   userID: number,
@@ -70,6 +91,17 @@ function getChannelMember(
 ): ChannelMember | undefined {
   return get().data.channelMembers.find(
     (member) => member.user.id === userID && member.channel.id === channelID,
+  );
+}
+
+function getChannelOwner(
+  get: StoreGetter,
+  channelID: number,
+): ChannelMember | undefined {
+  return get().data.channelMembers.find(
+    (member) =>
+      member.channel.id === channelID &&
+      member.role === ChannelMemberRole.OWNER,
   );
 }
 
@@ -91,6 +123,17 @@ function kickChannelMember(set: StoreSetter, memberID: number): void {
       ...data,
       channelMembers: data.channelMembers.filter(
         (member) => member.id !== memberID,
+      ),
+    },
+  }));
+}
+
+function deleteChannelMember(set: StoreSetter, userID: number): void {
+  set(({ data }) => ({
+    data: {
+      ...data,
+      channelMembers: data.channelMembers.filter(
+        (member) => member.user.id !== userID,
       ),
     },
   }));
@@ -155,9 +198,17 @@ function setupChannelMemberSocketEvents(
   channelSocket: Socket,
   currentUserID: number,
 ): void {
-  channelSocket.on('newMember', (member: ChannelMember) => {
-    addChannelMember(set, member);
-  });
+  channelSocket.on(
+    'newMember',
+    ({ newMember }: { newMember: ChannelMember }) => {
+      if (newMember.user.id === currentUserID) {
+        deleteChannelMembers(set, newMember.channel.id);
+        getMembersOfChannel(set, newMember.channel.id);
+      } else {
+        addChannelMember(set, newMember);
+      }
+    },
+  );
   channelSocket.on('kickMember', (member: ChannelMember) => {
     if (member.user.id === currentUserID) {
       deleteChannelMembers(set, member.channel.id);
@@ -180,6 +231,15 @@ function setupChannelMemberSocketEvents(
       newStatus: ChannelMemberStatus;
       mutedUntil: string | undefined;
     }) => changeChannelMemberStatus(set, memberID, newStatus, mutedUntil),
+  );
+}
+
+function setupChannelMemberUserSocketEvents(
+  set: StoreSetter,
+  userSocket: Socket,
+): void {
+  userSocket.on('deleteAccount', (userID: number) =>
+    deleteChannelMember(set, userID),
   );
 }
 
@@ -268,17 +328,22 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
   },
   actions: {
     getChannelMemberData: () => getChannelMemberData(set),
+    getMembersOfChannel: (channelID) => getMembersOfChannel(set, channelID),
     getChannelMember: (userID, channelID) =>
       getChannelMember(get, userID, channelID),
+    getChannelOwner: (channelID) => getChannelOwner(get, channelID),
     addChannelMember: (channelMember) => addChannelMember(set, channelMember),
     kickChannelMember: (memberID) => kickChannelMember(set, memberID),
+    deleteChannelMember: (userID) => deleteChannelMember(set, userID),
+    deleteChannelMembers: (channelID) => deleteChannelMembers(set, channelID),
     changeChannelMemberRole: (memberID, newRole) =>
       changeChannelMemberRole(set, memberID, newRole),
     changeChannelMemberStatus: (memberID, newStatus, mutedUntil) =>
       changeChannelMemberStatus(set, memberID, newStatus, mutedUntil),
     setupChannelMemberSocketEvents: (channelSocket, currentUserID) =>
       setupChannelMemberSocketEvents(set, channelSocket, currentUserID),
-    deleteChannelMembers: (channelID) => deleteChannelMembers(set, channelID),
+    setupChannelMemberUserSocketEvents: (userSocket) =>
+      setupChannelMemberUserSocketEvents(set, userSocket),
   },
   checks: {
     isChannelOwner: (userID, channelID) =>

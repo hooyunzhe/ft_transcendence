@@ -14,7 +14,8 @@ export default function ProfileBox() {
       height='100%'
       flexDirection='column'
       justifyContent='space-between'
-      gap='3vh'
+      gap='2vh'
+      sx={{ overflow: 'auto', '&::-webkit-scrollbar': { display: 'none' } }}
     >
       {selectedStatistic ? (
         <>
@@ -28,6 +29,7 @@ export default function ProfileBox() {
             opacity: '50%',
           }}
           variant='h5'
+          color='#DDDDDD'
           align='center'
           marginTop='33vh'
         >

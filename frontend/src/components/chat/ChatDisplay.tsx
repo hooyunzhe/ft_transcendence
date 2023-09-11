@@ -7,7 +7,6 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Paper,
   Typography,
 } from '@mui/material';
 import { Clear, Done } from '@mui/icons-material';
@@ -15,10 +14,13 @@ import InputField from '../utils/InputField';
 import ChatMenu from './ChatMenu';
 import callAPI from '@/lib/callAPI';
 import emitToSocket from '@/lib/emitToSocket';
+import { useChannelSocket } from '@/lib/stores/useSocketStore';
 import { useChatActions, useSelectedMessage } from '@/lib/stores/useChatStore';
 import { useConfirmationActions } from '@/lib/stores/useConfirmationStore';
-import { useChannelSocket } from '@/lib/stores/useSocketStore';
+import { useProfileActions } from '@/lib/stores/useProfileStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { Message, MessageType } from '@/types/MessageTypes';
+import { View } from '@/types/UtilTypes';
 
 interface ChatDisplayProps {
   message: Message;
@@ -26,16 +28,21 @@ interface ChatDisplayProps {
 
 export default function ChatDisplay({ message }: ChatDisplayProps) {
   const selectedMessage = useSelectedMessage();
-  const { editMessage, setSelectedMessage } = useChatActions();
   const channelSocket = useChannelSocket();
-  const [input, setInput] = useState(message.content);
+  const { editMessage, deleteMessage, setSelectedMessage } = useChatActions();
   const { displayConfirmation } = useConfirmationActions();
-  const { deleteMessage } = useChatActions();
+  const { setSelectedStatistic } = useProfileActions();
+  const { setCurrentView } = useUtilActions();
+  const [input, setInput] = useState(message.content);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  function handleAvatarClick(): void {
+    setSelectedStatistic(message.user.id);
+    setCurrentView(View.PROFILE);
+  }
 
   async function handleEdit(): Promise<void> {
     if (input.length === 0) {
-      console.log('length 0');
       handleDelete();
     } else if (input.trim().length === 0) {
       handleCancel();
@@ -90,9 +97,11 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
           <ListItemAvatar>
             <Avatar
               src={message.user.avatar_url}
+              alt={message.user.username}
               sx={{
                 border: 'solid 1px black',
               }}
+              onClick={handleAvatarClick}
             />
           </ListItemAvatar>
           {selectedMessage?.id === message.id ? (
@@ -133,10 +142,16 @@ export default function ChatDisplay({ message }: ChatDisplayProps) {
           )}
           {selectedMessage?.id === message.id ? (
             <>
-              <IconButton onClick={handleEdit}>
+              <IconButton
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={handleEdit}
+              >
                 <Done fontSize='small' />
               </IconButton>
-              <IconButton onClick={handleCancel}>
+              <IconButton
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={handleCancel}
+              >
                 <Clear fontSize='small' />
               </IconButton>
             </>

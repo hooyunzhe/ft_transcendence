@@ -12,13 +12,13 @@ import {
   useSelectedChannel,
 } from '@/lib/stores/useChannelStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
-import { useFriendActions } from '@/lib/stores/useFriendStore';
+import { useFriendActions, useFriendChecks } from '@/lib/stores/useFriendStore';
 import {
   useChannelMemberActions,
   useChannelMemberChecks,
 } from '@/lib/stores/useChannelMemberStore';
 import { useDialogActions } from '@/lib/stores/useDialogStore';
-import { useUtilActions } from '@/lib/stores/useUtilStore';
+import { useCurrentView, useUtilActions } from '@/lib/stores/useUtilStore';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberStatus } from '@/types/ChannelMemberTypes';
 import { View } from '@/types/UtilTypes';
@@ -29,11 +29,13 @@ export default function ChannelList() {
   const joinedChannels = useJoinedChannels();
   const recentChannelActivity = useRecentChannelActivity();
   const selectedChannel = useSelectedChannel();
+  const currentView = useCurrentView();
   const channelSocket = useChannelSocket();
   const { setSelectedChannel, setSelectedChannelMuted, setUnmuteTimeout } =
     useChannelActions();
   const { setSelectedFriend } = useFriendActions();
-  const { getChannelMember, changeChannelMemberStatus } =
+  const { isFriendBlocked } = useFriendChecks();
+  const { getChannelMember, getChannelOwner, changeChannelMemberStatus } =
     useChannelMemberActions();
   const { isChannelOwner, isMemberBanned, isMemberMuted } =
     useChannelMemberChecks();
@@ -41,12 +43,14 @@ export default function ChannelList() {
   const { setCurrentView } = useUtilActions();
   const joinableChannels = channels.filter(
     (channel) =>
+      channel.type !== ChannelType.DIRECT &&
+      channel.type !== ChannelType.PRIVATE &&
       !joinedChannels[channel.id] &&
       !isMemberBanned(currentUser.id, channel.id),
   );
 
   function handleChannelSelect(channel: Channel): void {
-    if (selectedChannel?.id === channel.id) {
+    if (currentView === View.CHAT && selectedChannel?.id === channel.id) {
       setSelectedChannelMuted(channel.id, false);
       setSelectedChannel(undefined);
     } else {
@@ -75,9 +79,7 @@ export default function ChannelList() {
         channel.id,
         isMemberMuted(currentUser.id, channel.id),
       );
-      if (selectedChannel === undefined) {
-        setCurrentView(View.CHAT);
-      }
+      setCurrentView(View.CHAT);
       setSelectedFriend(undefined);
     }
   }
@@ -135,7 +137,6 @@ export default function ChannelList() {
       <Stack
         spacing={1}
         sx={{
-          p: '2px',
           overflow: 'auto',
           '&::-webkit-scrollbar': { display: 'none' },
         }}
@@ -145,14 +146,14 @@ export default function ChannelList() {
             (channel) =>
               joinedChannels[channel.id] &&
               !isMemberBanned(currentUser.id, channel.id) &&
+              !isFriendBlocked(getChannelOwner(channel.id)?.user.id ?? 0) &&
               channel.type !== ChannelType.DIRECT,
           )
-          .sort((channelA, channelB) => {
-            return (
+          .sort(
+            (channelA, channelB) =>
               recentChannelActivity[channelB.id] -
-              recentChannelActivity[channelA.id]
-            );
-          })
+              recentChannelActivity[channelA.id],
+          )
           .map((channel, index) => (
             <ChannelDisplay
               key={index}

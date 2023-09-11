@@ -12,10 +12,13 @@ export default async function signUp(
   preference: Preference;
 }> {
   if (username.trim().length === 0) {
-    throw 'Cannot change name into just spaces.';
+    throw 'Username cannot be just spaces';
   }
   if (username.length > 16) {
     throw 'Username cannot be more than 16 characters long';
+  }
+  if (/[^ a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(username)) {
+    throw 'Username can only contain alphanumeric and common symbols';
   }
 
   const userResponse = await callAPI('POST', 'users', {

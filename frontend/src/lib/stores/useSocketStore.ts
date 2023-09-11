@@ -19,22 +19,22 @@ type StoreGetter = () => SocketStore;
 
 function initSockets(set: StoreSetter, userID: number): void {
   const userSocket = io(
-    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/user',
+    process.env.NEXT_PUBLIC_BACKEND_URL + '/gateway/user',
   );
   const friendSocket = io(
-    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/friend',
+    process.env.NEXT_PUBLIC_BACKEND_URL + '/gateway/friend',
   );
   const channelSocket = io(
-    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/channel',
+    process.env.NEXT_PUBLIC_BACKEND_URL + '/gateway/channel',
   );
   const gameSocket = io(
-    process.env.NEXT_PUBLIC_HOST_URL + ':4242/gateway/game',
-    { autoConnect: false },
+    process.env.NEXT_PUBLIC_BACKEND_URL + '/gateway/game',
   );
 
   userSocket.emit('initConnection', userID);
   friendSocket.emit('initConnection', userID);
   channelSocket.emit('initConnection', userID);
+  gameSocket.emit('initConnection', userID);
   set({
     data: {
       userSocket: userSocket,

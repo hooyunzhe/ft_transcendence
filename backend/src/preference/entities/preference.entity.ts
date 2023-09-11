@@ -16,10 +16,10 @@ export class Preference {
   music_enabled: boolean;
 
   @Column({ default: true })
-  animations_enabled: boolean;
+  sound_effects_enabled: boolean;
 
-  @Column({ default: false })
-  light_mode_enabled: boolean;
+  @Column({ default: true })
+  animations_enabled: boolean;
 
   @OneToOne(() => User, (user) => user.preference, {
     eager: true,

@@ -1,7 +1,6 @@
 'use client';
 import { Session } from 'next-auth';
-import { signOut } from 'next-auth/react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Avatar, Box, Grow, Slide, Typography } from '@mui/material';
 import InputField from '../utils/InputField';
 import NotificationBar from '../utils/NotificationBar';
@@ -20,27 +19,10 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
   const { setNewUser } = useUserActions();
   const { displayNotification } = useNotificationActions();
   const [username, setUsername] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
-  const [largeAvatarUrl, setLargeAvatarUrl] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState(session.avatarUrl);
+  const [largeAvatarUrl, setLargeAvatarUrl] = useState(session.largeAvatarUrl);
   const [isHover, setIsHover] = useState(false);
   const uploadRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    async function getData() {
-      const userData = await fetch(
-        `https://api.intra.42.fr/v2/me?access_token=${session.accessToken}`,
-        {
-          cache: 'no-store',
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        },
-      ).then((res) => (res.ok ? res.json() : signOut()));
-      setAvatarUrl(userData.image.versions.small);
-      setLargeAvatarUrl(userData.image.versions.large);
-    }
-
-    getData();
-  }, []);
 
   async function handleAvatarUpload(
     avatarFile: File | undefined,
@@ -64,14 +46,23 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
       justifyContent='space-evenly'
     >
       <Slide direction='down' in timeout={2500}>
-        <Typography color='#DDDDDD' variant='h1' align='center'>
+        <Typography
+          sx={{
+            textShadow: '4px 4px 6px black',
+          }}
+          fontFamily='cyberfont'
+          letterSpacing='1rem'
+          color='#DDDDDD'
+          variant='h1'
+          align='center'
+        >
           Welcome, {session.user?.name}
         </Typography>
       </Slide>
       <Grow in={avatarUrl.length > 0} timeout={2500}>
         <Box
           alignSelf='center'
-          onMouseOver={() => setIsHover(true)}
+          onMouseEnter={() => setIsHover(true)}
           onMouseLeave={() => setIsHover(false)}
           onClick={() => uploadRef && uploadRef.current?.click()}
         >
@@ -84,6 +75,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
           />
           <Avatar
             src={largeAvatarUrl}
+            alt='Avatar'
             sx={{
               width: 250,
               height: 250,
@@ -114,9 +106,7 @@ export default function FirstTimeSetup({ session }: FirstTimeSetupProps) {
                     preference: Preference;
                   }) => setNewUser(newUser, preference),
                 )
-                .catch((error) => {
-                  displayNotification('error', error);
-                })
+                .catch((error) => displayNotification('error', error))
             }
           />
         </Box>

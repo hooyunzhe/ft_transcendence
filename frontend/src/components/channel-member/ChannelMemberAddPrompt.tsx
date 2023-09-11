@@ -28,7 +28,7 @@ export default function ChannelMemberAddPrompt({
 }: ChannelMemberAddPromptProps) {
   const currentUser = useCurrentUser();
   const channelSocket = useChannelSocket();
-  const { addChannelMember } = useChannelMemberActions();
+  const { getChannelMember, addChannelMember } = useChannelMemberActions();
   const { setActionButtonDisabled, resetDialog, resetTriggers } =
     useDialogActions();
   const { actionClicked, backClicked } = useDialogTriggers();
@@ -49,18 +49,14 @@ export default function ChannelMemberAddPrompt({
 
       if (newChannelMember) {
         addChannelMember(newChannelMember);
-        emitToSocket(channelSocket, 'newMember', newChannelMember);
-        await handleAchievementsEarned(
-          currentUser.id,
-          3,
-          displayNotification,
-        ).then(
-          (earned) =>
-            earned &&
-            displayNotification(
-              'success',
-              `${newChannelMember.user.username} added`,
-            ),
+        emitToSocket(channelSocket, 'newMember', {
+          newMember: newChannelMember,
+          adminMember: getChannelMember(currentUser.id, selectedChannel.id),
+        });
+        await handleAchievementsEarned(currentUser.id, 3, displayNotification);
+        displayNotification(
+          'success',
+          `${newChannelMember.user.username} added`,
         );
       } else {
         throw 'FATAL ERROR: FAILED TO ADD CHANNEL MEMBER IN BACKEND';
@@ -112,7 +108,7 @@ export default function ChannelMemberAddPrompt({
             setActionButtonDisabled(friend.id === selectedFriendToJoin?.id);
           }}
         >
-          <ChannelMemberDisplay stylesDisabled user={friend.incoming_friend} />
+          <ChannelMemberDisplay user={friend.incoming_friend} />
         </ListItemButton>
       ))}
     </Stack>

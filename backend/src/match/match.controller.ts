@@ -26,6 +26,11 @@ export class MatchController {
         return this.matchService.findAll();
       case MatchSearchType.ONE:
         return this.matchService.findOne(queryParams.search_number);
+      case MatchSearchType.LATEST:
+        return this.matchService.findOneWithBothPlayers(
+          queryParams.search_number,
+          queryParams.second_search_number,
+        );
       case MatchSearchType.USER:
         return this.matchService.findAllWithPlayer(queryParams.search_number);
       case MatchSearchType.WINNER:

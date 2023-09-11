@@ -18,19 +18,32 @@ export default function SettingsUsernameChangePrompt() {
   const [newUsername, setNewUsername] = useState('');
 
   async function handleUsernameChange(): Promise<void> {
+    if (newUsername.trim() === currentUser.username) {
+      throw 'New name cannot be the same name, that is dumb.';
+    }
     if (newUsername.trim().length === 0) {
       throw 'Cannot change name into just spaces.';
     }
     if (newUsername.length > 16) {
       throw 'Username cannot be more than 16 characters long';
     }
-    await callAPI('PATCH', 'users', {
+    if (/[^ a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newUsername)) {
+      throw 'Username can only contain alphanumeric and common symbols';
+    }
+    const userRes = await callAPI('PATCH', 'users', {
       id: currentUser.id,
       username: newUsername.trim(),
     });
-    changeCurrentUsername(newUsername.trim());
-    displayNotification('success', 'Username changed, refreshing...');
-    location.reload();
+
+    if (userRes.status === 200) {
+      changeCurrentUsername(newUsername.trim());
+      displayNotification('success', 'Username changed, refreshing...');
+      location.reload();
+    } else if (userRes.status === 400) {
+      throw 'Username already taken';
+    } else {
+      throw 'FATAL ERROR: FAILED TO CHANGE USERNAME IN BACKEND';
+    }
   }
 
   async function handleAction(): Promise<void> {

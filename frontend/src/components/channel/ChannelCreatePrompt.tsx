@@ -23,13 +23,16 @@ import {
 } from '@/lib/stores/useDialogStore';
 import { useAchievementActions } from '@/lib/stores/useAchievementStore';
 import { useNotificationActions } from '@/lib/stores/useNotificationStore';
+import { useUtilActions } from '@/lib/stores/useUtilStore';
 import { Channel, ChannelType } from '@/types/ChannelTypes';
 import { ChannelMemberRole } from '@/types/ChannelMemberTypes';
+import { View } from '@/types/UtilTypes';
 
 export default function ChannelCreatePrompt() {
   const currentUser = useCurrentUser();
   const channelSocket = useChannelSocket();
-  const { addChannel, addJoinedChannel } = useChannelActions();
+  const { addChannel, addJoinedChannel, setSelectedChannel } =
+    useChannelActions();
   const { checkChannelExists, checkChannelJoined } = useChannelChecks();
   const { addChannelMember } = useChannelMemberActions();
   const { actionClicked, backClicked } = useDialogTriggers();
@@ -37,6 +40,7 @@ export default function ChannelCreatePrompt() {
     useDialogActions();
   const { handleAchievementsEarned } = useAchievementActions();
   const { displayNotification } = useNotificationActions();
+  const { setCurrentView } = useUtilActions();
   const [displayPasswordPrompt, setDisplayPasswordPrompt] = useState(false);
   const [channelName, setChannelName] = useState('');
   const [channelType, setChannelType] = useState(ChannelType.PUBLIC);
@@ -64,15 +68,14 @@ export default function ChannelCreatePrompt() {
         addJoinedChannel(newChannel.id);
         addChannelMember(channelCreator);
         emitToSocket(channelSocket, 'joinRoom', newChannel.id);
-        emitToSocket(channelSocket, 'newMember', channelCreator);
-        await handleAchievementsEarned(
-          currentUser.id,
-          6,
-          displayNotification,
-        ).then(
-          (earned) =>
-            earned && displayNotification('success', 'Channel created'),
-        );
+        emitToSocket(channelSocket, 'newMember', {
+          newMember: channelCreator,
+          adminMember: channelCreator,
+        });
+        await handleAchievementsEarned(currentUser.id, 6, displayNotification);
+        displayNotification('success', 'Channel created');
+        setSelectedChannel(newChannel);
+        setCurrentView(View.CHAT);
       } else {
         throw 'FATAL ERROR: FAILED TO ADD MEMBER TO NEW CHANNEL IN BACKEND';
       }
@@ -109,7 +112,6 @@ export default function ChannelCreatePrompt() {
   }
 
   async function handleAction(): Promise<void> {
-    console.log('handleAction');
     if (displayPasswordPrompt) {
       createChannel()
         .then(resetDialog)
@@ -133,7 +135,6 @@ export default function ChannelCreatePrompt() {
 
   useEffect(() => {
     if (actionClicked) {
-      console.log('action clicked');
       handleAction();
     }
     if (backClicked) {

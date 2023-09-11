@@ -63,15 +63,8 @@ export default function TwoFactorPrompt() {
       resetTwoFactor();
       setTwoFactorCode('');
       setCurrentUserTwoFactorEnabled(true);
-      await handleAchievementsEarned(
-        currentUser.id,
-        12,
-        displayNotification,
-      ).then(
-        (earned) =>
-          earned &&
-          displayNotification('success', 'Two-factor authentication enabled!'),
-      );
+      await handleAchievementsEarned(currentUser.id, 12, displayNotification);
+      displayNotification('success', 'Two-factor authentication enabled!');
     } else if (setupResponse.status === 403) {
       displayNotification('error', 'Invalid code');
     } else {
@@ -177,6 +170,7 @@ export default function TwoFactorPrompt() {
             <Avatar
               variant='square'
               src={twoFactorUrl}
+              alt='Two Factor QR Code'
               sx={{ width: '100%', height: '100%' }}
             />
           </Box>

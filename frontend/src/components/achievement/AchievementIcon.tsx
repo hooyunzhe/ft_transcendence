@@ -5,10 +5,13 @@ import {
   AddReaction,
   Campaign,
   ChildCare,
+  Church,
   Filter5,
   HeartBroken,
-  MilitaryTech,
+  LooksOne,
+  Looks3,
   PhonelinkLock,
+  QuestionMark,
   SettingsSuggest,
   SportsMartialArts,
   VolunteerActivism,
@@ -39,15 +42,19 @@ export default function AchievementIcon({
     case 8:
       return <ChildCare />;
     case 9:
-      return <MilitaryTech />;
+      return <Looks3 />;
     case 10:
-      return <Filter5 />;
+      return <LooksOne />;
     case 11:
-      return <Accessible />;
+      return <Filter5 />;
     case 12:
+      return <Accessible />;
+    case 13:
       return <PhonelinkLock />;
-    // case 13:
-    //   return <Help />; // Not decided
+    case 14:
+      return <Church />;
+    case 15:
+      return <QuestionMark />;
   }
   return null;
 }

@@ -71,11 +71,12 @@ export class PreferenceService {
     if (preferenceDto.music_enabled !== undefined) {
       currentPreference.music_enabled = preferenceDto.music_enabled;
     }
+    if (preferenceDto.sound_effects_enabled !== undefined) {
+      currentPreference.sound_effects_enabled =
+        preferenceDto.sound_effects_enabled;
+    }
     if (preferenceDto.animations_enabled !== undefined) {
       currentPreference.animations_enabled = preferenceDto.animations_enabled;
-    }
-    if (preferenceDto.light_mode_enabled !== undefined) {
-      currentPreference.light_mode_enabled = preferenceDto.light_mode_enabled;
     }
     await this.preferenceRepository.save(currentPreference);
   }

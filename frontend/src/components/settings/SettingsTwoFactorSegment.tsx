@@ -30,14 +30,16 @@ export default function SettingsTwoFactorSegment() {
           color={currentUser.two_factor_enabled ? 'error' : 'success'}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() =>
-            displayTwoFactor(() => {
-              displayDialog(
-                'Remove Two-factor Authentication',
-                'Enter the following phrase to confirm 2fa removal: "Remove two-factor authentication for me"',
-                <SettingsTwoFactorRemovePrompt />,
-                'Remove',
-              );
-            }, !currentUser.two_factor_enabled)
+            displayTwoFactor(
+              () =>
+                displayDialog(
+                  'Remove Two-factor Authentication',
+                  'Enter the following phrase to confirm 2fa removal: "Remove two-factor authentication for me"',
+                  <SettingsTwoFactorRemovePrompt />,
+                  'Remove',
+                ),
+              !currentUser.two_factor_enabled,
+            )
           }
         >
           {currentUser.two_factor_enabled ? 'Remove' : 'Enable'}

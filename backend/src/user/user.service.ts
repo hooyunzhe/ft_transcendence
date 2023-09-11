@@ -231,6 +231,32 @@ export class UserService {
   }
 
   async update(userDto: UpdateUserDto): Promise<void> {
+    if (userDto.intra_id) {
+      const userExists = await this.userRepository.findOneBy({
+        intra_id: userDto.intra_id,
+      });
+
+      if (userExists) {
+        throw new EntityAlreadyExistsError(
+          'User',
+          'intra_id = ' + userDto.intra_id,
+        );
+      }
+    }
+
+    if (userDto.username) {
+      const userExists = await this.userRepository.findOneBy({
+        username: userDto.username,
+      });
+
+      if (userExists) {
+        throw new EntityAlreadyExistsError(
+          'User',
+          'username = ' + userDto.username,
+        );
+      }
+    }
+
     await this.userRepository.update(userDto.id, {
       ...(userDto.intra_id && { intra_id: userDto.intra_id }),
       ...(userDto.username && { username: userDto.username }),
