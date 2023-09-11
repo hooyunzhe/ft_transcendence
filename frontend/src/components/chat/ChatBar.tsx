@@ -59,10 +59,12 @@ export default function ChatBar() {
           setTypingTimeoutID(undefined);
         }, 2000),
       );
-      setUnsentMessages((unsentMessages) => {
-        unsentMessages[selectedChannel.id] = input;
-        return unsentMessages;
-      });
+      if (input.length < 256) {
+        setUnsentMessages((unsentMessages) => {
+          unsentMessages[selectedChannel.id] = input;
+          return unsentMessages;
+        });
+      }
     } else {
       console.log('FATAL ERROR: NO CHANNEL IS SELECTED');
     }
@@ -162,11 +164,11 @@ export default function ChatBar() {
         selectedChannelMuted
           ? 'Unable to message, you have been muted'
           : selectedChannel
-          ? 'Message ' +
+            ? 'Message ' +
             (selectedChannel.type === ChannelType.DIRECT
               ? selectedFriend?.incoming_friend.username
               : selectedChannel.name)
-          : `Select a ${currentSocialTab.toLowerCase()} to start messaging`
+            : `Select a ${currentSocialTab.toLowerCase()} to start messaging`
       }
       variant='filled'
     />

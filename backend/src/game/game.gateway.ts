@@ -34,6 +34,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ) {
     client.data.user_id = user_id;
+    client.data.room_id = '';
+    client.data.game_mode = '';
+    client.data.player = 0;
+    client.data.ready = false;
   }
 
   @SubscribeMessage('matchmake')
@@ -41,6 +45,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() game_mode: string,
     @ConnectedSocket() client: Socket,
   ) {
+    await this.resetDuplicates(client.data.user_id, client.id);
     client.data.ready = false;
     client.data.room_id = game_mode;
     client.data.game_mode = game_mode;
@@ -62,7 +67,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const opponent = await this.fetchPlayerwithUID(body.opponent_id);
 
-    if (opponent) {
+    if (opponent && opponent.data.room_id === '') {
       client.data.ready = false;
       client.data.room_id = client.id;
       client.data.game_mode = 'CYBERPONG';
@@ -81,7 +86,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const opponent = await this.fetchPlayerwithUID(body.opponent_id);
 
-    if (opponent) {
+    if (opponent && opponent.data.room_id === '') {
       opponent.emit('cancelInvite', body.user);
     }
     this.leaveCurrentRoom(client);
@@ -265,6 +270,30 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async fetchPlayerCount(room_id: string) {
     if (room_id) {
       return (await this.fetchPlayer(room_id)).length;
+    }
+  }
+
+  async resetDuplicates(user_id: string, client_id: string) {
+    if (user_id) {
+      const users = await this.server.fetchSockets();
+
+      users.forEach((user) => {
+        if (user.id !== client_id && user.data.user_id === user_id && user.data.room_id != '') {
+          user.emit('playerDisconnected', user_id);
+          if (user.data.player === 1 || user.data.player === 2) {
+            this.server
+              .to(user.data.room_id)
+              .emit('playerDisconnected', user.data.user_id);
+            this.gameService.deleteGame(user.data.room_id);
+          }
+          this.gameService.clearGame(user.data.room_id);
+          user.leave(user.data.room_id);
+          user.data.room_id = '';
+          user.data.game_mode = '';
+          user.data.player = 0;
+          user.data.ready = false;
+        }
+      });
     }
   }
 
