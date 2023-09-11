@@ -22,7 +22,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly gameService: GameService) {}
+  constructor(private readonly gameService: GameService) { }
 
   async handleConnection(client: Socket) {
     client.emit('socketConnected');
@@ -106,6 +106,18 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('rejectInvite')
   rejectGame(@MessageBody() body: { user: User; room_id: string }) {
     this.server.to(body.room_id).emit('rejectInvite', body.user);
+  }
+
+  @SubscribeMessage('getMatchPlayerIDs')
+  async getMatchPlayerIDs(@ConnectedSocket() client: Socket) {
+    const players = await this.fetchPlayer(client.data.room_id);
+
+    if (players.length === 2) {
+      client.emit('getMatchPlayerIDs', {
+        player1: players[0].data.user_id,
+        player2: players[1].data.user_id,
+      });
+    }
   }
 
   @SubscribeMessage('end')
@@ -238,16 +250,22 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async fetchPlayer(room_id: string) {
-    return this.server.in(room_id).fetchSockets();
+    if (room_id) {
+      return this.server.in(room_id).fetchSockets();
+    }
   }
 
   async fetchPlayerwithUID(user_id: string) {
-    const players = this.server.fetchSockets();
-    return (await players).find((player) => player.data.user_id === user_id);
+    if (user_id) {
+      const players = this.server.fetchSockets();
+      return (await players).find((player) => player.data.user_id === user_id);
+    }
   }
 
   async fetchPlayerCount(room_id: string) {
-    return (await this.fetchPlayer(room_id)).length;
+    if (room_id) {
+      return (await this.fetchPlayer(room_id)).length;
+    }
   }
 
   leaveCurrentRoom(client: Socket) {

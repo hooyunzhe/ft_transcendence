@@ -199,6 +199,7 @@ export default function GameRender() {
           default: 'arcade',
         },
         scale: {
+          // @ts-ignore
           mode: Phaser.Scale.AUTO,
           autoCenter: Phaser.Scale.Center.CENTER_BOTH,
         },

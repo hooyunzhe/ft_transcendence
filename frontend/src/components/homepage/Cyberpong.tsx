@@ -115,10 +115,10 @@ export default function Cyberpong() {
 
   useEffect(() => {
     if (userSocket) {
-      if (matchState === MatchState.INGAME) {
-        userSocket.emit('joinGame');
-      } else if (matchState === MatchState.IDLE) {
+      if (matchState === MatchState.IDLE) {
         userSocket.emit('leaveGame');
+      } else {
+        userSocket.emit('joinGame');
       }
     }
   }, [matchState]);

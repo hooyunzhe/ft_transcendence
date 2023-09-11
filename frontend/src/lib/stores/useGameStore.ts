@@ -147,13 +147,13 @@ function getNotableOpponents(
   return {
     punchingBag: Object.keys(bags).length
       ? Object.entries(bags).reduce((max, current) =>
-          current[1] > max[1] ? current : max,
-        )[0]
+        current[1] > max[1] ? current : max,
+      )[0]
       : 'N/A',
     archenemy: Object.keys(enemies).length
       ? Object.entries(enemies).reduce((max, current) =>
-          current[1] > max[1] ? current : max,
-        )[0]
+        current[1] > max[1] ? current : max,
+      )[0]
       : 'N/A',
   };
 }
@@ -345,13 +345,20 @@ function setupGameSocketEvents(set: StoreSetter, gameSocket: Socket): void {
   gameSocket.on(
     'matchFound',
     async ({ player1, player2 }: { player1: string; player2: string }) => {
+      if (player1 !== undefined && player2 !== undefined) {
+        setMatchInfo(set, await getPlayerData(player1, player2));
+      } else {
+        gameSocket.emit('getMatchPlayerIDs');
+      }
       setMatchState(set, MatchState.FOUND);
-      setMatchInfo(set, await getPlayerData(player1, player2));
       setOutgoingInviteUser(set, undefined);
       setIncomingInviteUser(set, undefined);
       setIncomingInviteRoomID(set, undefined);
     },
   );
+  gameSocket.on('getMatchPlayerIDs', async ({ player1, player2 }: { player1: string; player2: string }) => {
+    setMatchInfo(set, await getPlayerData(player1, player2));
+  })
   gameSocket.on('startGame', () => setMatchState(set, MatchState.INGAME));
   gameSocket.on('playerDisconnected', () => {
     gameSocket.emit('leaveRoom');

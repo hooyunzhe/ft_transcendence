@@ -213,7 +213,7 @@ export default class GameMainScene extends Phaser.Scene {
         this.windowsize.width * 0.5,
         this.windowsize.height * 0.5,
         'ballsprite',
-        '0.png',
+        '1.png',
       )
       .setScale(1.5, 1.5);
     particles.startFollow(this.ball);
@@ -267,7 +267,7 @@ export default class GameMainScene extends Phaser.Scene {
     });
 
     const frames = this.anims.generateFrameNames('ballsprite', {
-      start: 0,
+      start: 1,
       end: 215,
       zeroPad: 0,
       suffix: '.png',
