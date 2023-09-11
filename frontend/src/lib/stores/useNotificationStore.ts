@@ -23,6 +23,7 @@ interface NotificationStore {
     setupNotificationChannelSocketEvents: (
       channelSocket: Socket,
       currentUserID: number,
+      isFriendBlocked: (incomingID: number) => boolean,
     ) => void;
     setupNotificationGameSocketEvents: (
       gameSocket: Socket,
@@ -75,19 +76,27 @@ function setupNotificationChannelSocketEvents(
   set: StoreSetter,
   channelSocket: Socket,
   currentUserID: number,
+  isFriendBlocked: (incomingID: number) => boolean,
 ): void {
   channelSocket.on(
     'newMember',
-    (channelMember: ChannelMember) =>
-      channelMember.channel.type !== ChannelType.DIRECT &&
+    ({
+      newMember,
+      adminMember,
+    }: {
+      newMember: ChannelMember;
+      adminMember: ChannelMember;
+    }) =>
+      newMember.channel.type !== ChannelType.DIRECT &&
+      !isFriendBlocked(adminMember.user.id) &&
       displayNotification(
         set,
         'info',
         `${
-          channelMember.user.id === currentUserID
+          newMember.user.id === currentUserID
             ? 'You have'
-            : channelMember.user.username + ' has'
-        } been added to ${channelMember.channel.name}`,
+            : newMember.user.username + ' has'
+        } been added to ${newMember.channel.name}`,
       ),
   );
   channelSocket.on('kickMember', (member: ChannelMember) => {
@@ -141,8 +150,17 @@ const useNotificationStore = create<NotificationStore>()((set) => ({
     resetNotification: () => resetNotification(set),
     setupNotificationFriendSocketEvents: (friendSocket) =>
       setupNotificationFriendSocketEvents(set, friendSocket),
-    setupNotificationChannelSocketEvents: (channelSocket, currentUserID) =>
-      setupNotificationChannelSocketEvents(set, channelSocket, currentUserID),
+    setupNotificationChannelSocketEvents: (
+      channelSocket,
+      currentUserID,
+      isFriendBlocked,
+    ) =>
+      setupNotificationChannelSocketEvents(
+        set,
+        channelSocket,
+        currentUserID,
+        isFriendBlocked,
+      ),
     setupNotificationGameSocketEvents: (gameSocket, isFriendBlocked) =>
       setupNotificationGameSocketEvents(set, gameSocket, isFriendBlocked),
   },

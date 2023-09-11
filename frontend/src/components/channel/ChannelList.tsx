@@ -12,7 +12,7 @@ import {
   useSelectedChannel,
 } from '@/lib/stores/useChannelStore';
 import { useChannelSocket } from '@/lib/stores/useSocketStore';
-import { useFriendActions } from '@/lib/stores/useFriendStore';
+import { useFriendActions, useFriendChecks } from '@/lib/stores/useFriendStore';
 import {
   useChannelMemberActions,
   useChannelMemberChecks,
@@ -34,7 +34,8 @@ export default function ChannelList() {
   const { setSelectedChannel, setSelectedChannelMuted, setUnmuteTimeout } =
     useChannelActions();
   const { setSelectedFriend } = useFriendActions();
-  const { getChannelMember, changeChannelMemberStatus } =
+  const { isFriendBlocked } = useFriendChecks();
+  const { getChannelMember, getChannelOwner, changeChannelMemberStatus } =
     useChannelMemberActions();
   const { isChannelOwner, isMemberBanned, isMemberMuted } =
     useChannelMemberChecks();
@@ -145,6 +146,7 @@ export default function ChannelList() {
             (channel) =>
               joinedChannels[channel.id] &&
               !isMemberBanned(currentUser.id, channel.id) &&
+              !isFriendBlocked(getChannelOwner(channel.id)?.user.id ?? 0) &&
               channel.type !== ChannelType.DIRECT,
           )
           .sort(

@@ -1,3 +1,4 @@
+import NonSSRWrapper from '@/NonSSRWrapper';
 import '../styles/cyberfont.css';
 import '../styles/cyberthrone.css';
 
@@ -14,7 +15,9 @@ export default async function RootLayout({
 }) {
   return (
     <html lang='en'>
-      <body style={{ margin: '0px', overflow: 'hidden' }}>{children}</body>
+      <body style={{ margin: '0px', overflow: 'hidden' }}>
+        <NonSSRWrapper>{children}</NonSSRWrapper>
+      </body>
     </html>
   );
 }

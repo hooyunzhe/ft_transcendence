@@ -28,7 +28,7 @@ export default function ChannelMemberAddPrompt({
 }: ChannelMemberAddPromptProps) {
   const currentUser = useCurrentUser();
   const channelSocket = useChannelSocket();
-  const { addChannelMember } = useChannelMemberActions();
+  const { getChannelMember, addChannelMember } = useChannelMemberActions();
   const { setActionButtonDisabled, resetDialog, resetTriggers } =
     useDialogActions();
   const { actionClicked, backClicked } = useDialogTriggers();
@@ -49,7 +49,10 @@ export default function ChannelMemberAddPrompt({
 
       if (newChannelMember) {
         addChannelMember(newChannelMember);
-        emitToSocket(channelSocket, 'newMember', newChannelMember);
+        emitToSocket(channelSocket, 'newMember', {
+          newMember: newChannelMember,
+          adminMember: getChannelMember(currentUser.id, selectedChannel.id),
+        });
         await handleAchievementsEarned(currentUser.id, 3, displayNotification);
         displayNotification(
           'success',

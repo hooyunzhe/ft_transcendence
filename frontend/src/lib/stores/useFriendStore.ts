@@ -24,7 +24,7 @@ interface FriendStore {
     setupFriendUserSocketEvents: (userSocket: Socket) => void;
   };
   checks: {
-    isFriendBlocked: (friendID: number) => boolean;
+    isFriendBlocked: (incomingID: number) => boolean;
   };
 }
 

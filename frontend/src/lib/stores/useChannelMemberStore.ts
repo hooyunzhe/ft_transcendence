@@ -18,6 +18,7 @@ interface ChannelMemberStore {
       userID: number,
       channelID: number,
     ) => ChannelMember | undefined;
+    getChannelOwner: (channelID: number) => ChannelMember | undefined;
     addChannelMember: (channelMember: ChannelMember) => void;
     kickChannelMember: (memberID: number) => void;
     deleteChannelMember: (userID: number) => void;
@@ -90,6 +91,17 @@ function getChannelMember(
 ): ChannelMember | undefined {
   return get().data.channelMembers.find(
     (member) => member.user.id === userID && member.channel.id === channelID,
+  );
+}
+
+function getChannelOwner(
+  get: StoreGetter,
+  channelID: number,
+): ChannelMember | undefined {
+  return get().data.channelMembers.find(
+    (member) =>
+      member.channel.id === channelID &&
+      member.role === ChannelMemberRole.OWNER,
   );
 }
 
@@ -186,14 +198,17 @@ function setupChannelMemberSocketEvents(
   channelSocket: Socket,
   currentUserID: number,
 ): void {
-  channelSocket.on('newMember', (member: ChannelMember) => {
-    if (member.user.id === currentUserID) {
-      deleteChannelMembers(set, member.channel.id);
-      getMembersOfChannel(set, member.channel.id);
-    } else {
-      addChannelMember(set, member);
-    }
-  });
+  channelSocket.on(
+    'newMember',
+    ({ newMember }: { newMember: ChannelMember }) => {
+      if (newMember.user.id === currentUserID) {
+        deleteChannelMembers(set, newMember.channel.id);
+        getMembersOfChannel(set, newMember.channel.id);
+      } else {
+        addChannelMember(set, newMember);
+      }
+    },
+  );
   channelSocket.on('kickMember', (member: ChannelMember) => {
     if (member.user.id === currentUserID) {
       deleteChannelMembers(set, member.channel.id);
@@ -316,6 +331,7 @@ const useChannelMemberStore = create<ChannelMemberStore>()((set, get) => ({
     getMembersOfChannel: (channelID) => getMembersOfChannel(set, channelID),
     getChannelMember: (userID, channelID) =>
       getChannelMember(get, userID, channelID),
+    getChannelOwner: (channelID) => getChannelOwner(get, channelID),
     addChannelMember: (channelMember) => addChannelMember(set, channelMember),
     kickChannelMember: (memberID) => kickChannelMember(set, memberID),
     deleteChannelMember: (userID) => deleteChannelMember(set, userID),

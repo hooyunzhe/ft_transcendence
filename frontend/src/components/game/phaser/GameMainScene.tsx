@@ -74,7 +74,11 @@ export default class GameMainScene extends Phaser.Scene {
     this.load.audio('arcade', '/assets/audios/arcade.ogg');
     this.load.audio('banger', '/assets/audios/bgm1.mp3');
     this.load.video('background', '/assets/videos/background1.mp4', true);
-    this.load.multiatlas('ballsprite', '/assets/ballsprite.json', 'assets');
+    this.load.multiatlas(
+      'ballsprite',
+      '/assets/textures/ballsprite.json',
+      'assets/textures',
+    );
     this.load.image('red', '/assets/textures/neonpurple.png');
     this.load.image('flame3', '/assets/textures/flame_03.png');
     this.load.image('bubble', '/assets/textures/bubble.png');

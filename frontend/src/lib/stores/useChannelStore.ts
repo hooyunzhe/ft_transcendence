@@ -364,12 +364,15 @@ function setupChannelSocketEvents(
     deleteChannel(set, channelID);
     channelSocket.emit('leaveRoom', channelID);
   });
-  channelSocket.on('newMember', (channelMember: ChannelMember) => {
-    if (channelMember.user.id === currentUserID) {
-      addJoinedChannel(set, channelMember.channel.id);
-      channelSocket.emit('joinRoom', channelMember.channel.id);
-    }
-  });
+  channelSocket.on(
+    'newMember',
+    ({ newMember }: { newMember: ChannelMember }) => {
+      if (newMember.user.id === currentUserID) {
+        addJoinedChannel(set, newMember.channel.id);
+        channelSocket.emit('joinRoom', newMember.channel.id);
+      }
+    },
+  );
   channelSocket.on('kickMember', (channelMember: ChannelMember) => {
     if (channelMember.user.id === currentUserID) {
       resetSelectedChannel(set, channelMember.channel.id);

@@ -147,7 +147,11 @@ export default function Cyberpong() {
       setupChannelSocketEvents(channelSocket, currentUser.id);
       setupChannelMemberSocketEvents(channelSocket, currentUser.id);
       setupChatSocketEvents(channelSocket);
-      setupNotificationChannelSocketEvents(channelSocket, currentUser.id);
+      setupNotificationChannelSocketEvents(
+        channelSocket,
+        currentUser.id,
+        isFriendBlocked,
+      );
     }
   }, [channelSocket]);
 

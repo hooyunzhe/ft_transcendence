@@ -16,6 +16,7 @@ import {
   ChangeChannelNameEmitBodyParams,
   ChangeChannelTypeEmitBodyParams,
   EditMessageEmitBodyParams,
+  NewMemberEmitBodyParams,
 } from './params/emit-body-params';
 
 @WebSocketGateway({
@@ -87,11 +88,14 @@ export class ChannelGateway implements OnGatewayConnection {
 
   @SubscribeMessage('newMember')
   newMember(
-    @MessageBody() data: ChannelMember,
+    @MessageBody() data: NewMemberEmitBodyParams,
     @ConnectedSocket() client: Socket,
   ) {
     client
-      .to([`channel_${data.channel.id}`, `user_${data.user.id}`])
+      .to([
+        `channel_${data.newMember.channel.id}`,
+        `user_${data.newMember.user.id}`,
+      ])
       .emit('newMember', data);
   }
 

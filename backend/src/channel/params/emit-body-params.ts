@@ -1,4 +1,5 @@
 import {
+  ChannelMember,
   ChannelMemberRole,
   ChannelMemberStatus,
 } from 'src/channel-member/entities/channel-member.entity';
@@ -13,6 +14,11 @@ export class ChangeChannelTypeEmitBodyParams {
   id: number;
   newType: ChannelType;
   newHash?: string;
+}
+
+export class NewMemberEmitBodyParams {
+  newMember: ChannelMember;
+  adminMember: ChannelMember;
 }
 
 export class ChangeChannelMemberRoleEmitBodyParams {

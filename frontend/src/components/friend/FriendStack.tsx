@@ -82,7 +82,10 @@ export default function FriendStack() {
         addJoinedChannel(newDirectChannel.id);
         addChannelMember(friendMember);
         addChannelMember(selfMember);
-        emitToSocket(channelSocket, 'newMember', friendMember);
+        emitToSocket(channelSocket, 'newMember', {
+          newMember: friendMember,
+          adminMember: selfMember,
+        });
         emitToSocket(channelSocket, 'joinRoom', newDirectChannel.id);
       } else {
         console.log('FATAL ERROR: FAILED TO ADD DM MEMBERS IN BACKEND');

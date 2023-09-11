@@ -71,7 +71,10 @@ export default function ChannelJoinPrompt({
             addChannelMember(member),
           );
           emitToSocket(channelSocket, 'joinRoom', selectedChannelToJoin.id);
-          emitToSocket(channelSocket, 'newMember', joiningChannelMember);
+          emitToSocket(channelSocket, 'newMember', {
+            newMember: joiningChannelMember,
+            adminMember: joiningChannelMember,
+          });
           await handleAchievementsEarned(
             currentUser.id,
             7,

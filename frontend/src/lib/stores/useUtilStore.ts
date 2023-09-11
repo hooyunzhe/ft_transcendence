@@ -91,7 +91,7 @@ function setSocialDrawerClose(set: StoreSetter): void {
   set(({ data }) => ({
     data: {
       ...data,
-      socialDrawerToggle: data.isPromptOpen ? data.socialDrawerToggle : false,
+      socialDrawerToggle: false,
     },
   }));
 }
@@ -109,9 +109,7 @@ function setChannelMemberDrawerClose(set: StoreSetter): void {
   set(({ data }) => ({
     data: {
       ...data,
-      channelMemberDrawerToggle: data.isPromptOpen
-        ? data.channelMemberDrawerToggle
-        : false,
+      channelMemberDrawerToggle: false,
     },
   }));
 }
@@ -125,7 +123,7 @@ function handleDrawerMouseEnter(
   clearTimeout(get().data.paddleTimeoutID);
   setSocialDrawerOpen(set);
   setShowSocialPaddle(set, false);
-  if (channelSelected) {
+  if (channelSelected && !get().data.socialDrawerToggle) {
     setChannelMemberDrawerOpen(set);
     setShowChannelMemberPaddle(set, false);
   }
@@ -135,10 +133,12 @@ function handleDrawerMouseLeave(set: StoreSetter): void {
   set(({ data }) => ({
     data: {
       ...data,
-      drawerTimeoutID: setTimeout(() => {
-        setSocialDrawerClose(set);
-        setChannelMemberDrawerClose(set);
-      }, 2000),
+      drawerTimeoutID: data.isPromptOpen
+        ? data.drawerTimeoutID
+        : setTimeout(() => {
+            setSocialDrawerClose(set);
+            setChannelMemberDrawerClose(set);
+          }, 2000),
       paddleTimeoutID: data.isPromptOpen
         ? data.paddleTimeoutID
         : setTimeout(() => {
