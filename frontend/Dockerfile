@@ -5,7 +5,7 @@ WORKDIR /ft_transcendence-nextjs
 COPY ./package.json ./
 COPY ./yarn.lock ./
 
-# RUN npm install yarn
+RUN npm install yarn
 RUN yarn install
 
 COPY ./ ./

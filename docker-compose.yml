@@ -10,8 +10,8 @@ services:
       depends_on:
         - postgres
       restart: on-failure
-      volumes:
-        - ./backend:/ft_transcendence-nestjs
+      # volumes:
+      #   - ./backend:/ft_transcendence-nestjs
       expose:
         - "3000"
       # for dev
@@ -38,7 +38,7 @@ services:
       depends_on:
         - nestjs
       restart: on-failure
-      volumes:
-        - ./frontend:/ft_transcendence-nextjs
+      # volumes:
+      #   - ./frontend:/ft_transcendence-nextjs
       ports:
         - "3000:3000"
