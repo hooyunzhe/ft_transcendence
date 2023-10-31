@@ -1,5 +1,7 @@
 DOCKER	= docker
-COMPOSE	= docker-compose
+# for older version of docker compose
+# COMPOSE	= docker-compose
+COMPOSE = docker compose
 
 UP				= up
 DETACHED		= -d
@@ -12,10 +14,10 @@ CLEAN_ORPHANS	= --remove-orphans
 CLEAN_VOLUMES	= --volumes
 
 all:
-	$(COMPOSE) $(UP) $(DETACHED) $(BUILD_IMAGES) ${VERBOSE}
+	$(COMPOSE) $(UP) $(DETACHED) $(BUILD_IMAGES)
 
 dev:
-	$(COMPOSE) $(UP) $(DETACHED) $(BUILD_IMAGES) ${VERBOSE}
+	$(COMPOSE) $(UP) $(DETACHED) $(BUILD_IMAGES)
 	yarn --cwd backend start:dev
 
 clear:
